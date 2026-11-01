@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.seddikfire.jeu",
+    "sha256_cert_fingerprints": ["85:A2:1C:0F:25:BE:34:EA:5D:6A:D2:84:A1:11:5E:1F:B7:30:FC:67:17:79:38:5E:7C:C0:DB:56:04:39:8B:3C"]
+  }
+}]

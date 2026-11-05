@@ -1,16 +1,16 @@
 /* Seddik Fire — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'seddik-fire-v27';
+const VERSION = 'seddik-fire-v28';
 const FONTS = 'seddik-fire-fonts';
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
   './privacy.html',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/maskable-192.png',
-  './icons/maskable-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/icon-192-v2.png',
+  './icons/icon-512-v2.png',
+  './icons/maskable-192-v2.png',
+  './icons/maskable-512-v2.png',
+  './icons/apple-touch-icon-v2.png'
 ];
 
 self.addEventListener('install', (event) => {

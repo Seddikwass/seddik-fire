@@ -706,7 +706,7 @@ const PH=[{w:80,s:45,r:1550,d:1},{w:55,s:35,r:980,d:2},{w:45,s:30,r:600,d:3.5},{
 
 /* ===== storage ===== */
 const LSK='seddikfire.v1';
-const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,mode:'classic',map:'seddik',ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'foret',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
+const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,mode:'classic',map:'seddik',stage:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'foret',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
 if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';
 if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
@@ -851,7 +851,7 @@ function crate(x,y,mil){return addSolid({t:'r',x,y,w:44,h:44,k:'crate',hp:55,ali
 
 function genWorld(mid){
   if(!MAPS[mid])mid=MAPS[stats.map]?stats.map:'seddik';
-  MAP=MAPS[mid];MAP.id=mid;stats.map=mid;
+  MAP=MAPS[mid];MAP.id=mid;
   for(const a of[walls,solids,trees,bushes,crates,blds,roads,fields,occ])a.length=0;
   for(let i=0;i<POIS.length;i++)POIS[i].n=MAP.poi[i];
   SR=mulberry32(MAP.seed);
@@ -1080,7 +1080,7 @@ function zoneTarget(){if(zone.st==='end')return{x:zone.cx,y:zone.cy,r:Math.max(z
 function zoneDmg(){return PH[Math.min(zone.ph,PH.length-1)].d}
 
 function startMatch(){
-  if(stats.map!==MAP.id)genWorld(stats.map);
+  {const want=(MODES[stats.mode]&&MODES[stats.mode].map)||stats.map;if(want!==MAP.id)genWorld(want)}
   MDcur=MODES[stats.mode]||MODES.classic;ZTm=MDcur.zt;
   for(const c of crates){c.alive=true;c.hp=55}
   for(const b of blds)b.al=1;
@@ -1091,6 +1091,7 @@ function startMatch(){
   const names=shuffle(BOT_NAMES.slice());for(let i=0;i<MDcur.np-1;i++)ents.push(newEnt(decorate(names[i%names.length]),true));
   if(MDcur.team)ents.forEach((e,i)=>{e.team=Math.floor(i/MDcur.team)+1});
   if(MDcur.easy)for(const e of ents)if(e.bot)e.skill*=.45;
+  if(MDcur.sk)for(const e of ents)if(e.bot)e.skill*=MDcur.sk;
   for(const e of ents){if(MDcur.bare){e.cur=-1;continue}const t=e.bot?pick(SIDEARMS):stats.sidearm,W=WEAP[t];e.slots[0]={type:t,mag:W.mag};e.cur=0;e.ammo[W.am]=e.bot?W.mag:W.mag*2}
   for(const B of blds)B._dn=0;
   setupPlane();
@@ -2243,7 +2244,7 @@ function toLobby(){game.mode='lobby';$('#armory').hidden=true;$('#kb').hidden=tr
   $('#hud').hidden=true;$('#pause').hidden=true;$('#end').hidden=true;$('#bigmap').hidden=true;bigOpen=false;$('#lobby').hidden=false;fillStats();releaseWake();if(histArmed){histArmed=false;try{history.back()}catch(e){}}}
 function finish(){const win=player.alive;game.mode='end';if(!MDcur.nostat){stats.games++;if(win)stats.wins++;stats.kills+=player.kills;stats.best=Math.max(stats.best,player.kills)}gpXp(win);const MP=metaProgress(win);saveStats();
   const rank=win?1:player.rank;$('#endRank').textContent='#'+rank;$('#endRank').classList.toggle('win',win);
-  $('#endEye').textContent=win?'Dernier debout':'Partie terminée';
+  $('#endEye').textContent=win?(stats.mode==='cup'?cupAdv():'Dernier debout'):'Partie terminée';
   $('#endMsg').textContent=win?'L’île est à vous, '+player.name+'.':player.killer===player?'Vous vous êtes éliminé vous-même.':player.killerName==='Zone rouge'?'Pris sous le bombardement de la zone rouge.':player.killer?'Tombé au combat face à '+player.killerName+'.':'Emporté par la tempête de feu.';
   $('#eKills').textContent=player.kills;$('#eDmg').textContent=Math.round(player.dmg);$('#eTime').textContent=fmtT(win?matchT:player.deathT);fillEnd(win);$('#endMiss').innerHTML=MP.map(x=>'<li>'+esc(x)+'</li>').join('');
   $('#hud').hidden=true;$('#bigmap').hidden=true;bigOpen=false;$('#end').hidden=false;releaseWake();
@@ -2305,18 +2306,30 @@ function buildCust(){
   mk('#czBoots','boots',BOOTS,BOOT_LV,(c,i)=>'<span class="sw" style="--c:'+(c||'#1d1914')+'"></span>');
   mk('#czBag','bag',BAGC,BAG_LV,(c,i)=>c?'<span class="sw" style="--c:'+c+'"></span>':'<span>Aucune</span>')}
 /* ===== modes, missions, succès (lot 3) ===== */
+const STAGES=[
+  {n:'Échauffement',map:'seddik',np:12,sk:.6,zt:1.3},
+  {n:'Côte de Tunis',map:'cote',np:16,sk:.75,zt:1.1},
+  {n:'Hautes Terres',map:'hautes',np:20,sk:.9,zt:1},
+  {n:'Traversée du Sud',map:'sahara',np:24,sk:1,zt:.9},
+  {n:'Retour sur l’île',map:'seddik',np:30,sk:1.1,zt:.85},
+  {n:'Finale des champions',map:'cote',np:30,sk:1.25,zt:.75}];
+function cupAdv(){const i=stats.stage|0;if(i>=STAGES.length-1){stats.stage=0;saveStats();return 'Champion du Parcours ! Tout recommence'}stats.stage=i+1;saveStats();return 'Étape réussie · étape '+(i+2)+' débloquée : '+STAGES[i+1].n}
 const MODES={
   classic:{n:'Classique',d:'30 joueurs · 1 survivant',np:30,zt:1,xp:1},
   quick:{n:'Rapide',d:'16 joueurs · tempête plus rapide',np:16,zt:.55,xp:.8},
   team:{n:'Équipe',d:'Équipes de 3 contre l’IA · 24 joueurs · vos alliés ont un anneau bleu',np:24,zt:.9,xp:1.1,team:3},
   surv:{n:'Survie',d:'20 joueurs · personne n’a d’arme au départ : fouillez vite',np:20,zt:.8,xp:1.3,bare:1},
+  cup:{n:'Parcours',xp:1.3,
+    get st(){return STAGES[Math.min(stats.stage|0,STAGES.length-1)]},
+    get np(){return this.st.np},get zt(){return this.st.zt},get sk(){return this.st.sk},get map(){return this.st.map},
+    get d(){const i=Math.min(stats.stage|0,STAGES.length-1),t=this.st;return 'Étape '+(i+1)+'/'+STAGES.length+' · '+t.n+' · '+t.np+' joueurs · gagnez pour débloquer la suivante'}},
   train:{n:'Entraînement',d:'8 adversaires faibles · tempête lente · XP réduit, sans stats ni missions',np:8,zt:1.7,xp:.25,easy:1,nostat:1}};
 let MDcur=MODES.classic,ZTm=1;
 const MELEEN=new Set(['Poings','Couteau de combat','Machette']),NADEN=new Set(Object.values(NADE).map(x=>x.n));
 function oneTeam(){const t=player.team;if(!t)return alive<=1;for(const e of ents)if(e.alive&&e.team!==t)return false;return true}
 function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();const M=MODES[id];
-  $('#modeD').textContent=M.d;const st=document.querySelector('.stamp');if(st)st.textContent=MAP.n+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant');
-  const sm=document.querySelector('#play small');if(sm)sm.textContent=MAP.n+' · '+M.n.toLowerCase();
+  $('#modeD').textContent=M.d;const st=document.querySelector('.stamp');if(st)st.textContent=(M.map?MAPS[M.map].n:MAP.n)+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant');
+  const sm=document.querySelector('#play small');if(sm)sm.textContent=(M.map?MAPS[M.map].n:MAP.n)+' · '+M.n.toLowerCase();
   document.querySelectorAll('#modes .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.m===id)))}
 function buildModes(){const box=$('#modes');box.innerHTML=Object.keys(MODES).map(k=>'<button class="chip" role="radio" data-m="'+k+'" aria-checked="false">'+MODES[k].n+'</button>').join('');
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));setMode(stats.mode);buildMaps()}

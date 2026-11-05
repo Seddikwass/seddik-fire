@@ -817,7 +817,7 @@ const PAVED=[{x:MC.x-470,y:MC.y-420,w:940,h:840,c:'#cdb48b',g:42},{x:500,y:420,w
 const POIS=[{n:'La Médina',x:MC.x,y:MC.y},{n:'Le Port',x:2720,y:1150},{n:'Base militaire',x:900,y:700},{n:'Le Ksar',x:750,y:2650},{n:"L'Oasis",x:2300,y:2950},{n:'La Ferme',x:1780,y:540},{n:'Douar',x:1320,y:3160},{n:'Le Phare',x:2930,y:2330}];
 const MAPS={
  seddik:{n:'Île de Seddik',d:'La carte d’origine : médina, port, base militaire et oasis.',poi:['La Médina','Le Port','Base militaire','Le Ksar',"L'Oasis",'La Ferme','Douar','Le Phare'],seed:105112026,base:'#d4b884',lt:'rgba(240,222,180,.35)',dk:'rgba(165,125,78,.18)',gr:'rgba(122,138,66,.16)',fa:'#a5a45d',fb:'#b49b66',sea:['#3fa0aa','#2c8196','#1f5f78'],shore:'#e6d3a6',lake:['#2a7f93','#46a9b0'],v:[22,34,170,70,150],wx:''},
- cote:{n:'Côte méditerranéenne',d:'Villes du nord, végétation dense et mer turquoise. Brise marine.',poi:['Tunis','La Marsa','Carthage','Sidi Bou Saïd','Hammamet','Nabeul','Bizerte','Sousse'],seed:20261101,base:'#cdbf8f',lt:'rgba(240,230,190,.35)',dk:'rgba(150,130,80,.16)',gr:'rgba(98,150,66,.28)',fa:'#8fae5a',fb:'#b5a96a',sea:['#35b0c0','#1f8fb0','#16658f'],shore:'#efe0b4',lake:['#2a8fa3','#4fb8bd'],v:[26,44,200,40,190],wx:'breeze'},
+ cote:{n:'Côte méditerranéenne',d:'Villes du nord, végétation dense et mer turquoise. Brise marine.',poi:['Tunis','La Marsa','Carthage','Sidi Bou Saïd','Hammamet','Ariana','Bizerte','Sousse'],seed:20261101,base:'#cdbf8f',lt:'rgba(240,230,190,.35)',dk:'rgba(150,130,80,.16)',gr:'rgba(98,150,66,.28)',fa:'#8fae5a',fb:'#b5a96a',sea:['#35b0c0','#1f8fb0','#16658f'],shore:'#efe0b4',lake:['#2a8fa3','#4fb8bd'],v:[26,44,200,40,190],wx:'breeze'},
  sahara:{n:'Sahara & Sud',d:'Dunes, oasis et villes du désert. Tempête de sable : visibilité réduite.',poi:['Tozeur','Douz','Nefta','Kébili','Gabès','Tataouine','Matmata','Gafsa'],seed:20261102,base:'#e0c28a',lt:'rgba(250,228,175,.4)',dk:'rgba(190,140,80,.22)',gr:'rgba(140,140,70,.08)',fa:'#b9a56a',fb:'#c8ac72',sea:['#4fb0b0','#37909f','#2a6c86'],shore:'#f0dcae',lake:['#2a8a93','#4fb2ae'],v:[30,14,40,110,60],wx:'sand'},
  hautes:{n:'Hautes Terres',d:'Collines, forêts d’oliviers et rochers. Brume et bruine.',poi:['Kairouan','Le Kef','Jendouba','Kasserine','Sbeitla','Siliana','Béja','Tabarka'],seed:20261103,base:'#b7ae7d',lt:'rgba(220,214,170,.3)',dk:'rgba(120,100,60,.22)',gr:'rgba(88,128,58,.3)',fa:'#7f9a4e',fb:'#a09a5c',sea:['#3a8f9c','#2a7088','#1c4e68'],shore:'#d9cba0',lake:['#2a7a8a','#4a9ea6'],v:[8,10,260,120,200],wx:'fog'}
 };
@@ -886,7 +886,7 @@ function genWorld(mid){
   bld(2525,2690,140,110,'hut',[['w',.5]]);
   bld(2060,3135,140,110,'hut',[['n',.5]]);
   // Ferme
-  bld(1600,400,260,180,'farm',[['s',.3],['e',.6]]);
+  bld(1600,400,260,180,MAP.id==='cote'?'med':'farm',[['s',.3],['e',.6]]);
   bld(1950,440,170,130,'med',[['s',.5],['w',.5]]);
   addSolid({t:'c',x:1560,y:670,r:40,k:'silo'});addSolid({t:'c',x:1655,y:690,r:34,k:'silo'});
   // Douar
@@ -1988,9 +1988,10 @@ function drawBody(c,e){const sk=e.sk||SOLDIERS[1],w=curW(e),Wp=w?WEAP[w.type]:nu
   c.drawImage(SPR[sk.id],-28,-28,56,56);
   if(e.cust&&e.cust.bag&&!sk.ftr&&!sk.jc&&BAGC[e.cust.bag]){c.save();c.globalAlpha*=.62;c.fillStyle=BAGC[e.cust.bag];rrect(c,-17.5,-9,8,18,3);c.fill();c.restore()}
   if(e.vestLvl&&e.vest>0)c.drawImage(VSPR[e.vestLvl],-28,-28,56,56);
+  if(!sk.jc){c.fillStyle='rgba(255,255,255,.09)';for(const sd of[-1,1]){c.beginPath();c.ellipse(1,sd*11.5,5.2,3.2,sd*.25,0,TAU);c.fill()}}
   const ARM=sk.arm||'#555';
-  const arm=(x0,y0,x1,y1)=>{c.strokeStyle=OUTL;c.lineWidth=7;c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();c.strokeStyle=ARM;c.lineWidth=5.3;c.stroke();if(!sk.ftr&&!sk.jc){const mx=(x0+x1)/2,my=(y0+y1)/2;c.fillStyle=shade(ARM,.6);c.beginPath();c.arc(mx*.85+x0*.15,my*.85+y0*.15,2.6,0,TAU);c.fill();c.strokeStyle=shade(ARM,.55);c.lineWidth=5.6;c.beginPath();c.moveTo(x1-(x1-x0)*.16,y1-(y1-y0)*.16);c.lineTo(x1,y1);c.stroke()}};
-  const hand=(x,y,r)=>{c.fillStyle=sk.glove;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();c.strokeStyle=OUTL;c.lineWidth=.9;c.stroke()};
+  const arm=(x0,y0,x1,y1)=>{c.strokeStyle=OUTL;c.lineWidth=7;c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();c.strokeStyle=ARM;c.lineWidth=5.3;c.stroke();if(!sk.ftr&&!sk.jc){const mx=(x0+x1)/2,my=(y0+y1)/2;c.fillStyle=shade(ARM,.6);c.beginPath();c.arc(mx*.85+x0*.15,my*.85+y0*.15,2.6,0,TAU);c.fill();c.fillStyle='rgba(255,255,255,.1)';c.beginPath();c.ellipse(x0*.7+x1*.3,y0*.7+y1*.3-1.4,3.2,1.1,Math.atan2(y1-y0,x1-x0),0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=.6;c.beginPath();c.arc(x0*.5+x1*.5,y0*.5+y1*.5,2.8,.5,2.4);c.stroke();c.strokeStyle=shade(ARM,.55);c.lineWidth=5.6;c.beginPath();c.moveTo(x1-(x1-x0)*.16,y1-(y1-y0)*.16);c.lineTo(x1,y1);c.stroke()}};
+  const hand=(x,y,r)=>{c.fillStyle=sk.glove;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();c.strokeStyle=OUTL;c.lineWidth=.9;c.stroke();c.strokeStyle='rgba(20,10,4,.45)';c.lineWidth=.5;c.beginPath();for(const d of[-1.4,0,1.4]){c.moveTo(x+r*.3,y+d);c.lineTo(x+r*.95,y+d*1.1)}c.stroke();c.fillStyle='rgba(255,255,255,.2)';c.beginPath();c.ellipse(x-r*.2,y-r*.35,r*.45,r*.25,0,0,TAU);c.fill()};
   if(Wp){const pis=Wp.cls==='p',rc=e.fireCd>Wp.rate-.05?-2.5:0;let gx,gy,ax,ay,bx,by;
     if(pis){gx=10+rc;gy=.5;ax=12+rc;ay=2.6;bx=12+rc;by=-1.6}else{gx=3+rc;gy=3;ax=7+rc;ay=4.4;bx=6+Wp.len*.55+rc;by=2.2}
     let tilt=0,rk=0;if(e.reloadT>0){rk=clamp(1-e.reloadT/(e.reloadTot||1),0,1);const s=Math.sin(Math.min(1,rk*1.12)*Math.PI);tilt=(pis?-.6:.45)*s;const mx=pis?gx+1.5:gx+Wp.len*.22,my=pis?gy+6:gy+9;bx=lerp(bx,mx,s);by=lerp(by,my,s)}

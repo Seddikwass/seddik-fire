@@ -870,7 +870,7 @@ function addRock(x,y,r){const p=new Path2D();const n=9;for(let i=0;i<n;i++){cons
 function crate(x,y,mil){return addSolid({t:'r',x,y,w:44,h:44,k:'crate',hp:55,alive:true,mil:!!mil})}
 
 function genWorld(mid){
-  if(!MAPS[mid])mid=MAPS[stats.map]?stats.map:'seddik';
+  if(!MAPS[mid]){const M=MODES[stats.mode];mid=(M&&M.map)||(MAPS[stats.map]?stats.map:'seddik')}
   MAP=MAPS[mid];MAP.id=mid;
   for(const a of[walls,solids,trees,bushes,crates,blds,roads,fields,occ])a.length=0;
   for(let i=0;i<POIS.length;i++)POIS[i].n=MAP.poi[i];
@@ -2389,16 +2389,17 @@ let MDcur=MODES.classic,ZTm=1;
 const GUNN=new Set(Object.values(WEAP).map(w=>w.n));
 const MELEEN=new Set(['Poings','Couteau de combat','Machette','Lance de guerre','Hache de guerre','Marteau de guerre']),NADEN=new Set(Object.values(NADE).map(x=>x.n));
 function oneTeam(){const t=player.team;if(!t)return alive<=1;for(const e of ents)if(e.alive&&e.team!==t)return false;return true}
-function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();const M=MODES[id];
-  $('#modeD').textContent=M.d;const st=document.querySelector('.stamp');if(st)st.textContent=(M.map?MAPS[M.map].n:MAP.n)+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant');
-  const sm=document.querySelector('#play small');if(sm)sm.textContent=(M.map?MAPS[M.map].n:MAP.n)+' · '+M.n.toLowerCase();
+function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();const M=MODES[id];{const md=$('#mapD'),mm=MAPS[stats.map]||MAPS.seddik;if(md)md.textContent=(id==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.'}
+  $('#modeD').textContent=M.d;const st=document.querySelector('.stamp');if(st)st.textContent=selMap().n+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant');
+  const sm=document.querySelector('#play small');if(sm)sm.textContent=selMap().n+' · '+M.n.toLowerCase();
   document.querySelectorAll('#modes .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.m===id)))}
 function buildModes(){const box=$('#modes');box.innerHTML=Object.keys(MODES).map(k=>'<button class="chip" role="radio" data-m="'+k+'" aria-checked="false">'+MODES[k].n+'</button>').join('');
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));setMode(stats.mode);buildMaps()}
 function buildMaps(){const box=$('#maps');box.innerHTML=Object.keys(MAPS).map(k=>'<button class="chip" role="radio" data-k="'+k+'" aria-checked="false">'+MAPS[k].n+'</button>').join('');
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
-function markMap(){$('#mapD').textContent=MAP.d+' Villes : '+MAP.poi.join(', ')+'.';document.querySelectorAll('#maps .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===MAP.id)));setMode(stats.mode)}
-function setMap(id){if(!MAPS[id]||id===MAP.id)return;stats.map=id;saveStats();genWorld(id);markMap()}
+function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mode];return MAPS[(M&&M.map)||stats.map]}
+function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
+function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby')genWorld(id);markMap()}
 const MPOOL=[
   {id:'kills',n:k=>'Éliminez '+k+' adversaires',g:[2,3,5],xp:[120,180,280],key:'kills'},
   {id:'games',n:k=>'Jouez '+k+' parties',g:[2,3],xp:[100,160],key:'games'},

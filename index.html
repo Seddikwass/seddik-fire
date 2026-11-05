@@ -831,7 +831,7 @@ function sfxWhistle(x,y){const a=sfxAt(x,y,.9);if(!a||!vOK(.8))return;try{const 
 function sfxCrash(x,y,k){const a=sfxAt(x,y,1);if(!a||!vOK(.5))return;try{const t=AC.currentTime,o=sOut(a[0]*Math.min(1,.35+k),a[1]);nz(o,t,.25,'lowpass',900,1,.9);nz(o,t,.12,'bandpass',2600,1.5,.6);tone(o,t,.2,'sine',90,40,.7)}catch(e){}}
 function sfxDoor(x,y,on){const a=sfxAt(x,y,.6);if(!a||!vOK(.4))return;try{const t=AC.currentTime,o=sOut(a[0]*.45,a[1]);nz(o,t,.07,'bandpass',900,2,.8);tone(o,t,.08,'square',160,90,.15);if(on){tone(o,t+.1,.25,'sawtooth',40,75,.25)}}catch(e){}}
 function sfxAlarm(){if(!vOK(1.4))return;try{const t=AC.currentTime,o=sOut(.16,0);for(let i=0;i<3;i++){tone(o,t+i*.42,.18,'triangle',620,620,.5);tone(o,t+i*.42+.2,.18,'triangle',465,465,.5)}}catch(e){}}
-/* ambient music: original generative pads + soft percussion (modal minor, random walk melody), lobby and menus only */
+/* musique : voir musicSched (musique de guerre originale) */
 const MUS_CH=[[0,7,12,15],[-4,3,7,12],[-7,8,12,15],[-9,7,10,14],[-2,10,14,17],[-5,10,14,17]];
 const MUS_SC=[0,2,3,5,7,8,10,12,14,15,17,19,20,22];
 const mf=s=>110*Math.pow(2,s/12);
@@ -842,19 +842,38 @@ function mKick(t,v){const o=AC.createOscillator();o.frequency.setValueAtTime(95,
 function mHat(t,v){nz(AU.mus,t,.05,'highpass',7000,0,v)}
 function mTom(t){const o=AC.createOscillator();o.type='triangle';o.frequency.setValueAtTime(rand(190,230),t);o.frequency.exponentialRampToValueAtTime(130,t+.18);const g=AC.createGain();envG(g,t,.09,.22);o.connect(g);g.connect(AU.mus);g.connect(AU.dly);o.start(t);o.stop(t+.25)}
 function mPluck(t,s){const o=AC.createOscillator();o.type='triangle';o.frequency.value=mf(12+s);const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(2400,t);f.frequency.exponentialRampToValueAtTime(500,t+.5);const g=AC.createGain();envG(g,t,.07,.7);o.connect(f);f.connect(g);g.connect(AU.mus);g.connect(AU.dly);o.start(t);o.stop(t+.75)}
-function musicSched(t){const e8=60/76/2;if(AU.mT<t)AU.mT=t+.05;
-  while(AU.mT<t+.35){const s=AU.mStep%16,T=AU.mT;
-    if(s===0){if(AU.mBar%2===0){AU.chord=AU.mBar===0?0:(Math.random()<.3?0:1+Math.floor(Math.random()*(MUS_CH.length-1)));mPad(MUS_CH[AU.chord],T,e8*32)}AU.mBar++}
-    if(AU.mBar>2){if(s===0||(s===8&&Math.random()<.55)||(s===13&&Math.random()<.2))mKick(T,.16);if(s%2===1&&Math.random()<.65)mHat(T,s%4===3?.035:.018);if((s===6||s===11)&&Math.random()<.35)mTom(T)}
-    if(s%2===0&&Math.random()<.24){AU.deg=clamp(AU.deg+pick([-2,-1,-1,1,1,2,3,-3]),0,MUS_SC.length-1);mPluck(T,MUS_SC[AU.deg])}
-    AU.mStep++;AU.mT+=e8}}
+/* musique de guerre originale : tambours de guerre, cordes graves, cuivres, choeur et cor héroïque (ré mineur, 92 bpm) */
+const WAR_CH=[[5,8,12,17],[1,5,8,13],[8,12,15,20],[3,7,10,15],[5,8,12,17],[1,5,8,13],[-2,1,5,10],[0,4,7,12]];
+const WAR_MEL=[[17,null,15,13,12,null,10,12],[13,null,12,10,8,null,10,null],[15,null,13,12,13,null,15,17],[16,null,null,12,10,null,7,null]];
+function wTaiko(t,v,f){const o=AC.createOscillator();o.type='sine';o.frequency.setValueAtTime(f||82,t);o.frequency.exponentialRampToValueAtTime((f||82)*.48,t+.35);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+.75);o.connect(g);g.connect(AU.mus);g.connect(AU.dly);o.start(t);o.stop(t+.8);nz(AU.mus,t,.09,'bandpass',160,1.2,v*.6)}
+function wSnare(t,v){nz(AU.mus,t,.07,'highpass',1700,0,v);nz(AU.mus,t,.04,'bandpass',900,1,v*.6)}
+function wStr(t,s,d){for(const k of[0,-12]){const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=mf(s+k);o.detune.value=rand(-6,6);const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(1100,t);f.frequency.exponentialRampToValueAtTime(380,t+d);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.05,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(f);f.connect(g);g.connect(AU.mus);o.start(t);o.stop(t+d+.05)}}
+function wBrass(ch,t,d){const f=AC.createBiquadFilter();f.type='lowpass';f.Q.value=2;f.frequency.setValueAtTime(500,t);f.frequency.linearRampToValueAtTime(2300,t+d*.25);f.frequency.linearRampToValueAtTime(700,t+d);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.06,t+.06);g.gain.setTargetAtTime(.0001,t+d*.6,d*.25);f.connect(g);g.connect(AU.mus);g.connect(AU.dly);
+  for(let i=0;i<3;i++)for(const dt of[-8,8]){const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=mf(ch[i]+12);o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+d+.6)}}
+function wChoir(ch,t,d){const out=AC.createGain();out.gain.setValueAtTime(.0001,t);out.gain.linearRampToValueAtTime(.05,t+1.2);out.gain.setValueAtTime(.05,t+d-.6);out.gain.linearRampToValueAtTime(.0001,t+d+.6);out.connect(AU.mus);out.connect(AU.dly);
+  const f1=AC.createBiquadFilter();f1.type='bandpass';f1.frequency.value=720;f1.Q.value=5;const f2=AC.createBiquadFilter();f2.type='bandpass';f2.frequency.value=1150;f2.Q.value=6;f1.connect(out);f2.connect(out);
+  for(let i=0;i<ch.length;i++)for(const dt of[-12,0,12]){const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=mf(ch[i]+12);o.detune.value=dt+rand(-4,4);const lf=AC.createOscillator();lf.frequency.value=rand(4.5,5.5);const lg=AC.createGain();lg.gain.value=5;lf.connect(lg);lg.connect(o.detune);o.connect(f1);o.connect(f2);o.start(t);lf.start(t);o.stop(t+d+.8);lf.stop(t+d+.8)}}
+function wHorn(t,s,d){const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=mf(s+12);const o2=AC.createOscillator();o2.type='triangle';o2.frequency.value=mf(s+12);const v=AC.createOscillator();v.frequency.value=5.2;const vg=AC.createGain();vg.gain.value=7;v.connect(vg);vg.connect(o.detune);vg.connect(o2.detune);
+  const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(900,t);f.frequency.linearRampToValueAtTime(1800,t+.12);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.055,t+.07);g.gain.setValueAtTime(.05,t+d*.8);g.gain.linearRampToValueAtTime(.0001,t+d+.15);o.connect(f);o2.connect(f);f.connect(g);g.connect(AU.mus);g.connect(AU.dly);for(const x of[o,o2,v]){x.start(t);x.stop(t+d+.2)}}
+function musicSched(t){const e16=60/92/4,play=game.mode==='play';if(AU.mT<t)AU.mT=t+.05;
+  while(AU.mT<t+.35){const s=AU.mStep%16,T=AU.mT,bar=AU.mBar;
+    if(s===0){AU.chord=bar%8;const ch=WAR_CH[AU.chord];if(bar%2===0)wChoir(ch,T,e16*32);if(!play||bar%2===0)wBrass(ch,T,e16*(play?8:6));AU.mBar++}
+    const ch=WAR_CH[AU.chord||0];
+    // tambours de guerre
+    const big=s===0||s===8,tk=[0,3,6,8,11,12,14];if(tk.includes(s))wTaiko(T,big?.32:.16,big?72:96);if(s===14&&bar%4===3){wTaiko(T,.22,110);wTaiko(T+e16,.26,120)}
+    if(bar>1&&(s===4||s===12))wSnare(T,.08);if(bar%4===3&&s>=8)wSnare(T,.03+(s-8)*.008);
+    // cordes graves en ostinato
+    if(s%2===0)wStr(T,ch[0]-12+(s===6||s===14?7:0),e16*1.6);
+    // cor héroïque (hors partie)
+    if(!play&&bar>=4&&s%4===0){const m=WAR_MEL[Math.floor(bar/2)%4][(bar%2)*4+s/4];if(m!=null)wHorn(T,m-12,e16*3.6)}
+    AU.mStep++;AU.mT+=e16}}
 function audioTick(){if(!AC||!AU.master)return;const t=AC.currentTime;
   AU.master.gain.setTargetAtTime(stats.sound?1:0,t,.05);AU.sfx.gain.setTargetAtTime(.9*clamp(stats.sfxV,0,1),t,.05);
   if(!stats.sound){if(AC.state==='running'&&AU.master.gain.value<.01)AC.suspend().catch(()=>{});return}
   if(AC.state!=='running')return;
   const play=game.mode==='play'&&!!player&&!!zone;
-  AU.mus.gain.setTargetAtTime((play?0:.55)*clamp(stats.musV,0,1),t,play?.5:1.4);
-  if(!play||AU.mus.gain.value>.015)musicSched(t);else AU.mT=t;
+  AU.mus.gain.setTargetAtTime((play?.3:.6)*clamp(stats.musV,0,1),t,play?.8:1.4);
+  if(stats.musV>0)musicSched(t);else AU.mT=t;
   const L=AU.L;let sv=0,kv=0,pv=0,pp=0,ev=0,ef=46,ep=0;
   if(play){const p=player;
     if(p.alive&&!p.inPlane){const d=Math.hypot(p.x-zone.cx,p.y-zone.cy)-zone.r;sv=clamp((d+240)/340,0,1);kv=sv*(Math.random()<.35?rand(.15,.5):.03)}

@@ -457,6 +457,11 @@ body.desk .fire,body.desk .pist{display:none}
     </div>
     <div class="side">
       <div class="card">
+        <span class="lbl">Carte</span>
+        <div id="maps" class="chips" role="radiogroup" aria-label="Carte"></div>
+        <small id="mapD" class="czn"></small>
+      </div>
+      <div class="card">
         <span class="lbl">Mode de jeu</span>
         <div id="modes" class="chips" role="radiogroup" aria-label="Mode de jeu"></div>
         <small id="modeD" class="czn"></small>
@@ -687,7 +692,7 @@ const PH=[{w:80,s:45,r:1550,d:1},{w:55,s:35,r:980,d:2},{w:45,s:30,r:600,d:3.5},{
 
 /* ===== storage ===== */
 const LSK='seddikfire.v1';
-const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,mode:'classic',ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'foret',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
+const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,mode:'classic',map:'seddik',ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'foret',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
 if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';
 if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
@@ -796,6 +801,13 @@ const LAKE={x:2300,y:2950,r:170};
 const PIER={x:0,y:1080,w:260,h:48};
 const PAVED=[{x:MC.x-470,y:MC.y-420,w:940,h:840,c:'#cdb48b',g:42},{x:500,y:420,w:800,h:580,c:'#a9a28b',g:80},{x:2480,y:790,w:780,h:760,c:'#a6a196',g:70}];
 const POIS=[{n:'La Médina',x:MC.x,y:MC.y},{n:'Le Port',x:2720,y:1150},{n:'Base militaire',x:900,y:700},{n:'Le Ksar',x:750,y:2650},{n:"L'Oasis",x:2300,y:2950},{n:'La Ferme',x:1780,y:540},{n:'Douar',x:1320,y:3160},{n:'Le Phare',x:2930,y:2330}];
+const MAPS={
+ seddik:{n:'Île de Seddik',d:'La carte d’origine : médina, port, base militaire et oasis.',poi:['La Médina','Le Port','Base militaire','Le Ksar',"L'Oasis",'La Ferme','Douar','Le Phare'],seed:105112026,base:'#d4b884',lt:'rgba(240,222,180,.35)',dk:'rgba(165,125,78,.18)',gr:'rgba(122,138,66,.16)',fa:'#a5a45d',fb:'#b49b66',sea:['#3fa0aa','#2c8196','#1f5f78'],shore:'#e6d3a6',lake:['#2a7f93','#46a9b0'],v:[22,34,170,70,150],wx:''},
+ cote:{n:'Côte méditerranéenne',d:'Villes du nord, végétation dense et mer turquoise. Brise marine.',poi:['Tunis','La Marsa','Carthage','Sidi Bou Saïd','Hammamet','Nabeul','Bizerte','Sousse'],seed:20261101,base:'#cdbf8f',lt:'rgba(240,230,190,.35)',dk:'rgba(150,130,80,.16)',gr:'rgba(98,150,66,.28)',fa:'#8fae5a',fb:'#b5a96a',sea:['#35b0c0','#1f8fb0','#16658f'],shore:'#efe0b4',lake:['#2a8fa3','#4fb8bd'],v:[26,44,200,40,190],wx:'breeze'},
+ sahara:{n:'Sahara & Sud',d:'Dunes, oasis et villes du désert. Tempête de sable : visibilité réduite.',poi:['Tozeur','Douz','Nefta','Kébili','Gabès','Tataouine','Matmata','Gafsa'],seed:20261102,base:'#e0c28a',lt:'rgba(250,228,175,.4)',dk:'rgba(190,140,80,.22)',gr:'rgba(140,140,70,.08)',fa:'#b9a56a',fb:'#c8ac72',sea:['#4fb0b0','#37909f','#2a6c86'],shore:'#f0dcae',lake:['#2a8a93','#4fb2ae'],v:[30,14,40,110,60],wx:'sand'},
+ hautes:{n:'Hautes Terres',d:'Collines, forêts d’oliviers et rochers. Brume et bruine.',poi:['Kairouan','Le Kef','Jendouba','Kasserine','Sbeitla','Siliana','Béja','Tabarka'],seed:20261103,base:'#b7ae7d',lt:'rgba(220,214,170,.3)',dk:'rgba(120,100,60,.22)',gr:'rgba(88,128,58,.3)',fa:'#7f9a4e',fb:'#a09a5c',sea:['#3a8f9c','#2a7088','#1c4e68'],shore:'#d9cba0',lake:['#2a7a8a','#4a9ea6'],v:[8,10,260,120,200],wx:'fog'}
+};
+let MAP=MAPS.seddik;
 const STY={
   med:{floor:'#cdb38a',wall:'#f2ece0',edge:'#a8957a',roof:'#ece5d5',roof2:'#d6ccb7',door:'#2c6db3'},
   mil:{floor:'#8f8c74',wall:'#69704b',edge:'#3f4429',roof:'#626a46',roof2:'#4e5536',door:'#3a3f29'},
@@ -823,8 +835,12 @@ function addTree(x,y,r,k){const n=k==='palm'?7+Math.floor(SR()*3):0;trees.push({
 function addRock(x,y,r){const p=new Path2D();const n=9;for(let i=0;i<n;i++){const a=i/n*TAU,q=r*sr(.78,1.05);i?p.lineTo(x+Math.cos(a)*q,y+Math.sin(a)*q):p.moveTo(x+Math.cos(a)*q,y+Math.sin(a)*q)}p.closePath();const g=Math.floor(sr(0,3));addSolid({t:'c',x,y,r:r*.9,k:'rock',path:p,col:['#9a9082','#8c8476','#a69b8a'][g]})}
 function crate(x,y,mil){return addSolid({t:'r',x,y,w:44,h:44,k:'crate',hp:55,alive:true,mil:!!mil})}
 
-function genWorld(){
-  SR=mulberry32(105112026);
+function genWorld(mid){
+  if(!MAPS[mid])mid=MAPS[stats.map]?stats.map:'seddik';
+  MAP=MAPS[mid];MAP.id=mid;stats.map=mid;
+  for(const a of[walls,solids,trees,bushes,crates,blds,roads,fields,occ])a.length=0;
+  for(let i=0;i<POIS.length;i++)POIS[i].n=MAP.poi[i];
+  SR=mulberry32(MAP.seed);
   PIER.x=coastX(1104)-40;
   roads.push([[900,1000],[1250,1280],[1330,1760]]);
   roads.push([[MC.x,1340],[1790,1000],[1780,700]]);
@@ -881,11 +897,11 @@ function genWorld(){
   occ.push({x:1420,y:760,r:84});
   // scatter
   const place=(n,rf,fn,gen,opt)=>{let c=0,t=0;while(c<n&&t<n*60){t++;const p=gen(),r=rf();if(!free(p[0],p[1],r,opt))continue;fn(p[0],p[1],r);c++}};
-  place(22,()=>sr(34,44),(x,y,r)=>addTree(x,y,r,'palm'),()=>{const a=SR()*TAU,d=sr(LAKE.r+70,LAKE.r+330);return[LAKE.x+Math.cos(a)*d,LAKE.y+Math.sin(a)*d]});
-  place(34,()=>sr(32,42),(x,y,r)=>addTree(x,y,r,'palm'),()=>{const y=sr(150,WS-150);return[coastX(y)-sr(90,260),y]});
-  place(170,()=>sr(36,50),(x,y,r)=>addTree(x,y,r,'olive'),()=>[sr(100,WS-100),sr(100,WS-100)]);
-  place(70,()=>sr(20,38),(x,y,r)=>addRock(x,y,r),()=>[sr(100,WS-100),sr(100,WS-100)]);
-  place(150,()=>sr(24,32),(x,y,r)=>{bushes.push({x,y,r,c:SR()});occ.push({x,y,r:r*.5})},()=>[sr(100,WS-100),sr(100,WS-100)]);
+  place(MAP.v[0],()=>sr(34,44),(x,y,r)=>addTree(x,y,r,'palm'),()=>{const a=SR()*TAU,d=sr(LAKE.r+70,LAKE.r+330);return[LAKE.x+Math.cos(a)*d,LAKE.y+Math.sin(a)*d]});
+  place(MAP.v[1],()=>sr(32,42),(x,y,r)=>addTree(x,y,r,'palm'),()=>{const y=sr(150,WS-150);return[coastX(y)-sr(90,260),y]});
+  place(MAP.v[2],()=>sr(36,50),(x,y,r)=>addTree(x,y,r,'olive'),()=>[sr(100,WS-100),sr(100,WS-100)]);
+  place(MAP.v[3],()=>sr(20,38),(x,y,r)=>addRock(x,y,r),()=>[sr(100,WS-100),sr(100,WS-100)]);
+  place(MAP.v[4],()=>sr(24,32),(x,y,r)=>{bushes.push({x,y,r,c:SR()});occ.push({x,y,r:r*.5})},()=>[sr(100,WS-100),sr(100,WS-100)]);
   place(45,()=>24,(x,y)=>crate(x-22,y-22),()=>[sr(100,WS-100),sr(100,WS-100)]);
   // grid
   grid=new Array(COLS*COLS);for(let i=0;i<grid.length;i++)grid[i]=[];
@@ -950,10 +966,10 @@ function gradeCanvas(cv){try{const t=document.createElement('canvas');t.width=cv
 function buildGround(){
   const g=document.createElement('canvas');g.width=g.height=WS*GS;const c=g.getContext('2d');c.scale(GS,GS);
   const Rg=mulberry32(77);
-  c.fillStyle='#d4b884';c.fillRect(0,0,WS,WS);
-  for(let i=0;i<90;i++){const x=Rg()*WS,y=Rg()*WS,r=120+Rg()*420;const gr=c.createRadialGradient(x,y,0,x,y,r);const light=Rg()<.5;gr.addColorStop(0,light?'rgba(240,222,180,.35)':'rgba(165,125,78,.18)');gr.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=gr;c.fillRect(x-r,y-r,2*r,2*r)}
-  for(const z of[[1750,560,560],[2300,2950,480],[700,1600,380],[1200,2400,300],[2600,1900,280],[500,3200,300]]){for(let i=0;i<60;i++){const a=Rg()*TAU,d=Math.sqrt(Rg())*z[2],r=30+Rg()*90;c.fillStyle='rgba(122,138,66,.16)';c.beginPath();c.arc(z[0]+Math.cos(a)*d,z[1]+Math.sin(a)*d,r,0,TAU);c.fill()}}
-  for(const f of fields){for(let y=f.y,k=0;y<f.y+f.h;y+=22,k++){c.fillStyle=k%2?'#a5a45d':'#b49b66';c.fillRect(f.x,y,f.w,Math.min(22,f.y+f.h-y))}c.strokeStyle='rgba(90,70,40,.35)';c.lineWidth=4;c.strokeRect(f.x,f.y,f.w,f.h)}
+  c.fillStyle=MAP.base;c.fillRect(0,0,WS,WS);
+  for(let i=0;i<90;i++){const x=Rg()*WS,y=Rg()*WS,r=120+Rg()*420;const gr=c.createRadialGradient(x,y,0,x,y,r);const light=Rg()<.5;gr.addColorStop(0,light?MAP.lt:MAP.dk);gr.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=gr;c.fillRect(x-r,y-r,2*r,2*r)}
+  for(const z of[[1750,560,560],[2300,2950,480],[700,1600,380],[1200,2400,300],[2600,1900,280],[500,3200,300]]){for(let i=0;i<60;i++){const a=Rg()*TAU,d=Math.sqrt(Rg())*z[2],r=30+Rg()*90;c.fillStyle=MAP.gr;c.beginPath();c.arc(z[0]+Math.cos(a)*d,z[1]+Math.sin(a)*d,r,0,TAU);c.fill()}}
+  for(const f of fields){for(let y=f.y,k=0;y<f.y+f.h;y+=22,k++){c.fillStyle=k%2?MAP.fa:MAP.fb;c.fillRect(f.x,y,f.w,Math.min(22,f.y+f.h-y))}c.strokeStyle='rgba(90,70,40,.35)';c.lineWidth=4;c.strokeRect(f.x,f.y,f.w,f.h)}
   for(let i=0;i<15000;i++){c.fillStyle=Rg()<.5?'rgba(120,90,50,.22)':'rgba(255,245,215,.28)';const s=2+Rg()*3;c.fillRect(Rg()*WS,Rg()*WS,s,s)}
   c.lineCap='round';
   for(let i=0;i<1700;i++){const x=Rg()*WS,y=Rg()*WS,l=40+Rg()*130,a=.35+(Rg()-.5)*.35,bx=Math.cos(a),by=Math.sin(a);c.strokeStyle=Rg()<.5?'rgba(255,244,215,.17)':'rgba(140,100,55,.12)';c.lineWidth=2+Rg()*2.5;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+bx*l/2-by*9,y+by*l/2+bx*9,x+bx*l,y+by*l);c.stroke()}
@@ -969,14 +985,14 @@ function buildGround(){
   decoRoads(c);
   // sea
   const sea=new Path2D();sea.moveTo(WS+20,-20);for(let y=-20;y<=WS+20;y+=20)sea.lineTo(coastX(y),y);sea.lineTo(WS+20,WS+20);sea.closePath();
-  c.lineWidth=80;c.strokeStyle='#e6d3a6';c.stroke(sea);
-  const sg=c.createLinearGradient(3000,0,WS,0);sg.addColorStop(0,'#3fa0aa');sg.addColorStop(.3,'#2c8196');sg.addColorStop(1,'#1f5f78');c.fillStyle=sg;c.fill(sea);
+  c.lineWidth=80;c.strokeStyle=MAP.shore;c.stroke(sea);
+  const sg=c.createLinearGradient(3000,0,WS,0);sg.addColorStop(0,MAP.sea[0]);sg.addColorStop(.3,MAP.sea[1]);sg.addColorStop(1,MAP.sea[2]);c.fillStyle=sg;c.fill(sea);
   decoShore(c,sea);c.lineWidth=5;c.strokeStyle='rgba(255,255,255,.5)';c.stroke(sea);
   // pier
   c.fillStyle='#7f6141';c.fillRect(PIER.x,PIER.y,PIER.w,PIER.h);c.strokeStyle='rgba(40,25,10,.45)';c.lineWidth=2;c.beginPath();for(let x=PIER.x+12;x<PIER.x+PIER.w;x+=12){c.moveTo(x,PIER.y);c.lineTo(x,PIER.y+PIER.h)}c.stroke();
   // lake
-  c.fillStyle='#e6d3a6';c.beginPath();c.arc(LAKE.x,LAKE.y,LAKE.r+26,0,TAU);c.fill();
-  const lg=c.createRadialGradient(LAKE.x,LAKE.y,10,LAKE.x,LAKE.y,LAKE.r);lg.addColorStop(0,'#2a7f93');lg.addColorStop(1,'#46a9b0');c.fillStyle=lg;c.beginPath();c.arc(LAKE.x,LAKE.y,LAKE.r,0,TAU);c.fill();
+  c.fillStyle=MAP.shore;c.beginPath();c.arc(LAKE.x,LAKE.y,LAKE.r+26,0,TAU);c.fill();
+  const lg=c.createRadialGradient(LAKE.x,LAKE.y,10,LAKE.x,LAKE.y,LAKE.r);lg.addColorStop(0,MAP.lake[0]);lg.addColorStop(1,MAP.lake[1]);c.fillStyle=lg;c.beginPath();c.arc(LAKE.x,LAKE.y,LAKE.r,0,TAU);c.fill();
   c.strokeStyle='rgba(255,255,255,.5)';c.lineWidth=4;c.stroke();
   // floors
   for(const b of blds){const S=STY[b.st];c.fillStyle=S.floor;c.fillRect(b.x,b.y,b.w,b.h);c.strokeStyle='rgba(0,0,0,.1)';c.lineWidth=2;c.beginPath();const st=b.st==='mil'||b.st==='port'?60:28;for(let x=b.x+st;x<b.x+b.w;x+=st){c.moveTo(x,b.y);c.lineTo(x,b.y+b.h)}for(let y=b.y+st;y<b.y+b.h;y+=st){c.moveTo(b.x,y);c.lineTo(b.x+b.w,y)}c.stroke();
@@ -1050,6 +1066,7 @@ function zoneTarget(){if(zone.st==='end')return{x:zone.cx,y:zone.cy,r:Math.max(z
 function zoneDmg(){return PH[Math.min(zone.ph,PH.length-1)].d}
 
 function startMatch(){
+  if(stats.map!==MAP.id)genWorld(stats.map);
   MDcur=MODES[stats.mode]||MODES.classic;ZTm=MDcur.zt;
   for(const c of crates){c.alive=true;c.hp=55}
   for(const b of blds)b.al=1;
@@ -1673,6 +1690,13 @@ function updateCam(dt){const bz=baseZoom();let tx,ty,zt;
   else{tx=player.x;ty=player.y;if(player.air>0)zt=bz*(.3+.7*(1-player.air));else{const w=curW(player);zt=bz*(w?1-(1-WEAP[w.type].z)*.7:1);if(!player.alive)zt=bz*.85;
     const aiming=(sticks.aim.id!==null&&sticks.aim.mag>.2)||(isDesk&&mouse.active);if(aiming&&player.alive){const la=Math.min(170,Math.min(VW,VH)*.34/zt);tx+=Math.cos(player.angle)*la;ty+=Math.sin(player.angle)*la}}}
   const k=1-Math.exp(-dt*(player.inPlane?5:7));cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;cam.z+=(zt-cam.z)*(1-Math.exp(-dt*2.5));cam.shake=Math.max(0,cam.shake-dt*2)}
+function drawWeather(){const wx=MAP.wx;
+  if(wx==='sand'){ctx.fillStyle='rgba(214,172,104,.20)';ctx.fillRect(0,0,VW,VH);
+    ctx.strokeStyle='rgba(240,210,150,.35)';ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<46;i++){const k=i*97.13,y=((k*3.7)%VH),x=((k*11.3+TIME*(380+(i%5)*60))%(VW+300))-150;ctx.moveTo(x,y+(i%7)*3);ctx.lineTo(x+70+(i%4)*20,y+(i%7)*3-4)}ctx.stroke()}
+  else if(wx==='fog'){ctx.fillStyle='rgba(205,214,210,.16)';ctx.fillRect(0,0,VW,VH);
+    const g=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.3,VW/2,VH/2,Math.max(VW,VH)*.75);g.addColorStop(0,'rgba(210,218,214,0)');g.addColorStop(1,'rgba(200,210,206,.38)');ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);
+    ctx.strokeStyle='rgba(215,230,240,.28)';ctx.lineWidth=1.4;ctx.beginPath();for(let i=0;i<60;i++){const k=i*53.7,x=(k*7.9)%VW,y=((k*13.1+TIME*620)%(VH+80))-40;ctx.moveTo(x,y);ctx.lineTo(x-5,y+16)}ctx.stroke()}
+  else if(wx==='breeze'){const g=ctx.createLinearGradient(0,0,VW,VH);g.addColorStop(0,'rgba(255,236,190,.07)');g.addColorStop(1,'rgba(120,200,230,.07)');ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH)}}
 function updateLobby(dt){const bz=baseZoom();cam.z=bz*.4;cam.x=1800+850*Math.sin(TIME*.045);cam.y=1800+650*Math.sin(TIME*.033+1);
   lobbyPlane.x+=Math.cos(lobbyPlane.a)*260*dt;lobbyPlane.y+=Math.sin(lobbyPlane.a)*260*dt;
   if(Math.hypot(lobbyPlane.x-cam.x,lobbyPlane.y-cam.y)>2600){const a=Math.random()*TAU;lobbyPlane.a=a;lobbyPlane.x=cam.x-Math.cos(a)*1500;lobbyPlane.y=cam.y-Math.sin(a)*1500+rand(-300,300)}}
@@ -1754,6 +1778,7 @@ function render(){const z=cam.z;const sh=reduceMotion?0:cam.shake*10;const ox=(M
   for(const h of hitMarks){const q=toS(h.x,h.y),g=h.k?1+(.4-h.t)*2.5:1+(.16-h.t)*3;ctx.lineCap='round';ctx.strokeStyle='rgba(20,12,4,.55)';ctx.lineWidth=h.k?5:4;ctx.beginPath();for(const m of[[1,1],[1,-1],[-1,1],[-1,-1]]){ctx.moveTo(q[0]+m[0]*5*g,q[1]+m[1]*5*g);ctx.lineTo(q[0]+m[0]*12*g,q[1]+m[1]*12*g)}ctx.stroke();ctx.strokeStyle=h.k?'#ff4d3a':'#fff';ctx.lineWidth=h.k?3:2.2;ctx.stroke();if(h.k){ctx.globalAlpha=clamp(h.t/.4,0,1);ctx.strokeStyle='#ff6b22';ctx.lineWidth=2;ctx.beginPath();ctx.arc(q[0],q[1],22+(.4-h.t)*60,0,TAU);ctx.stroke();ctx.globalAlpha=1}}
   if(player.alive)for(const d of dmgDirs){const al=Math.min(.9,d.t);ctx.lineCap='butt';ctx.strokeStyle='rgba(229,72,43,'+al*.35+')';ctx.lineWidth=14;ctx.beginPath();ctx.arc(ps[0],ps[1],70,d.a-.42,d.a+.42);ctx.stroke();ctx.strokeStyle='rgba(255,120,80,'+al+')';ctx.lineWidth=5;ctx.beginPath();ctx.arc(ps[0],ps[1],70,d.a-.3,d.a+.3);ctx.stroke()}
   if(player&&player.alive&&player.lock&&player.lock.alive){const q=toS(player.lock.x,player.lock.y),R=26*z+8;ctx.strokeStyle='#ff4d3a';ctx.lineWidth=2.5;ctx.beginPath();for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){ctx.moveTo(q[0]+sx*R,q[1]+sy*(R-9));ctx.lineTo(q[0]+sx*R,q[1]+sy*R);ctx.lineTo(q[0]+sx*(R-9),q[1]+sy*R)}ctx.stroke()}
+  if(MAP.wx&&game.mode!=='lobby')drawWeather();
   if(flashT>0){ctx.fillStyle='rgba(255,255,250,'+Math.min(1,flashT/1.1).toFixed(3)+')';ctx.fillRect(0,0,VW,VH)}
   // hurt vignette
   if(player.hurtT>0){const a=Math.min(.55,player.hurtT*1.6);if(!vigH||vigH._w!==VW||vigH._h!==VH){vigH=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.35,VW/2,VH/2,Math.max(VW,VH)*.7);vigH.addColorStop(0,'rgba(229,72,43,0)');vigH.addColorStop(1,'rgba(229,72,43,1)');vigH._w=VW;vigH._h=VH}ctx.globalAlpha=a;ctx.fillStyle=vigH;ctx.fillRect(0,0,VW,VH);ctx.globalAlpha=1}
@@ -2270,11 +2295,15 @@ let MDcur=MODES.classic,ZTm=1;
 const MELEEN=new Set(['Poings','Couteau de combat','Machette']),NADEN=new Set(Object.values(NADE).map(x=>x.n));
 function oneTeam(){const t=player.team;if(!t)return alive<=1;for(const e of ents)if(e.alive&&e.team!==t)return false;return true}
 function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();const M=MODES[id];
-  $('#modeD').textContent=M.d;const st=document.querySelector('.stamp');if(st)st.textContent='Île de Seddik · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant');
-  const sm=document.querySelector('#play small');if(sm)sm.textContent='Île de Seddik · '+M.n.toLowerCase();
+  $('#modeD').textContent=M.d;const st=document.querySelector('.stamp');if(st)st.textContent=MAP.n+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant');
+  const sm=document.querySelector('#play small');if(sm)sm.textContent=MAP.n+' · '+M.n.toLowerCase();
   document.querySelectorAll('#modes .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.m===id)))}
 function buildModes(){const box=$('#modes');box.innerHTML=Object.keys(MODES).map(k=>'<button class="chip" role="radio" data-m="'+k+'" aria-checked="false">'+MODES[k].n+'</button>').join('');
-  box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));setMode(stats.mode)}
+  box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));setMode(stats.mode);buildMaps()}
+function buildMaps(){const box=$('#maps');box.innerHTML=Object.keys(MAPS).map(k=>'<button class="chip" role="radio" data-k="'+k+'" aria-checked="false">'+MAPS[k].n+'</button>').join('');
+  box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
+function markMap(){$('#mapD').textContent=MAP.d+' Villes : '+MAP.poi.join(', ')+'.';document.querySelectorAll('#maps .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===MAP.id)));setMode(stats.mode)}
+function setMap(id){if(!MAPS[id]||id===MAP.id)return;stats.map=id;saveStats();genWorld(id);markMap()}
 const MPOOL=[
   {id:'kills',n:k=>'Éliminez '+k+' adversaires',g:[2,3,5],xp:[120,180,280],key:'kills'},
   {id:'games',n:k=>'Jouez '+k+' parties',g:[2,3],xp:[100,160],key:'games'},

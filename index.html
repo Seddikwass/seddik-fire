@@ -405,7 +405,7 @@ body.desk .fire,body.desk .pist{display:none}
   <div class="acts">
     <button id="btnPick" class="act pick" hidden>Ramasser</button>
     <button id="btnVeh" class="act veh" hidden><span>Monter</span><span class="kbd">V</span></button>
-    <div id="nadeRow" class="nrow" hidden><button id="btnNadeSw" class="act nsw" aria-label="Changer de grenade"><span>M67</span><span class="kbd">T</span></button><button id="btnNade" class="act">Grenade <b id="nadeN">0</b><span class="kbd">G</span></button></div>
+    <div id="nadeRow" class="nrow" hidden><button id="btnNadeSw" class="act nsw" aria-label="Changer de grenade"><span>Frag.</span><span class="kbd">T</span></button><button id="btnNade" class="act">Grenade <b id="nadeN">0</b><span class="kbd">G</span></button></div>
     <button id="btnReload" class="act">Recharger<span class="kbd">R</span></button>
   </div>
   <button id="btnPist" class="pist" aria-label="Tirer au pistolet" hidden><img alt="" id="pistImg"></button>
@@ -484,7 +484,7 @@ body.desk .fire,body.desk .pist{display:none}
         <h3>Au clavier</h3>
         <ul><li>ZQSD ou WASD : bouger · souris : viser · clic : tirer</li><li>R recharger · E ramasser · 1 / 2 armes · F se soigner · G grenade · T changer de grenade · V véhicule · M carte · Échap pause</li></ul>
         <h3>Règles</h3>
-        <ul><li>Chaque joueur saute avec l'arme choisie au menu (une seule arme, peu de munitions). Le reste se trouve sur l'île.</li><li>La tempête de feu réduit la zone en 7 phases. Hors zone, vous perdez des PV chaque seconde.</li><li>Deux largages aériens tombent pendant la partie, avec un AWM et du matériel de niveau 3. Suivez la fumée rouge.</li><li>Zone rouge : un bombardement frappe le cercle rouge. Sortez-en ou abritez-vous dans un bâtiment.</li><li>Le gilet absorbe une partie des dégâts, le casque les réduit.</li></ul>
+        <ul><li>Chaque joueur saute avec l'arme choisie au menu (une seule arme, peu de munitions). Le reste se trouve sur l'île.</li><li>La tempête de feu réduit la zone en 7 phases. Hors zone, vous perdez des PV chaque seconde.</li><li>Deux largages aériens tombent pendant la partie, avec un Léviathan et du matériel de niveau 3. Suivez la fumée rouge.</li><li>Zone rouge : un bombardement frappe le cercle rouge. Sortez-en ou abritez-vous dans un bâtiment.</li><li>Le gilet absorbe une partie des dégâts, le casque les réduit.</li></ul>
       </div>
     </div>
     <dl class="stats">
@@ -607,20 +607,20 @@ const reduceMotion=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: re
 
 /* ===== data ===== */
 const WEAP={
-  m9:{n:'M9',cls:'p',am:'9mm',dmg:18,rate:.22,mag:15,rl:1.3,sp:.045,v:1500,rg:760,pel:1,len:13,tier:1,pref:240,z:1,furn:'#2b2b2b'},
-  m1911:{n:'M1911',cls:'p',am:'45',dmg:25,rate:.3,mag:7,rl:1.4,sp:.04,v:1450,rg:760,pel:1,len:13,tier:1,pref:230,z:1,furn:'#6b4a2e'},
-  pm:{n:'Makarov PM',cls:'p',am:'9mm',dmg:16,rate:.19,mag:8,rl:1.1,sp:.05,v:1450,rg:700,pel:1,len:11,tier:1,pref:220,z:1,furn:'#3a3a3a'},
-  uzi:{n:'UZI',cls:'smg',am:'9mm',dmg:11,rate:.055,mag:25,rl:1.8,sp:.14,v:1500,rg:600,pel:1,len:15,tier:2,pref:170,z:1,furn:'#2b2b2b'},
-  mp5:{n:'MP5',cls:'smg',am:'9mm',dmg:13,rate:.07,mag:30,rl:2,sp:.1,v:1550,rg:680,pel:1,len:19,tier:2,pref:210,z:1,furn:'#2b2b2b'},
-  m870:{n:'M870',cls:'sg',am:'12g',dmg:12,rate:.95,mag:5,rl:2.8,sp:.22,v:1350,rg:400,pel:8,len:27,tier:2,pref:110,z:1,furn:'#7a4e2c',wood:1},
-  spas:{n:'SPAS-12',cls:'sg',am:'12g',dmg:10,rate:.55,mag:8,rl:3.2,sp:.26,v:1350,rg:360,pel:8,len:25,tier:2,pref:100,z:1,furn:'#2b2b2b'},
-  ak:{n:'AK-47',cls:'ar',am:'762',dmg:27,rate:.12,mag:30,rl:2.4,sp:.07,v:1750,rg:1000,pel:1,len:28,tier:3,pref:340,z:.9,furn:'#8a5a33',wood:1},
-  m4:{n:'M4A1',cls:'ar',am:'556',dmg:23,rate:.095,mag:30,rl:2.2,sp:.05,v:1850,rg:1050,pel:1,len:27,tier:3,pref:360,z:.9,furn:'#2b2b2b'},
-  m16:{n:'M16A4',cls:'ar',am:'556',dmg:26,rate:.16,mag:30,rl:2.3,sp:.035,v:1950,rg:1150,pel:1,len:31,tier:3,pref:420,z:.88,furn:'#2b2b2b'},
-  sks:{n:'SKS',cls:'dmr',am:'762',dmg:44,rate:.32,mag:10,rl:2.6,sp:.02,v:2200,rg:1500,pel:1,len:31,tier:3,pref:520,z:.8,furn:'#7a4e2c',wood:1},
-  kar:{n:'Kar98k',cls:'sn',am:'762',dmg:82,rate:1.6,mag:5,rl:3.2,sp:.006,v:2600,rg:1900,pel:1,len:35,tier:3,pref:640,z:.72,furn:'#7a4e2c',wood:1,sc:1},
-  m24:{n:'M24',cls:'sn',am:'762',dmg:78,rate:1.4,mag:5,rl:3,sp:.005,v:2700,rg:1950,pel:1,len:35,tier:3,pref:660,z:.72,furn:'#4f5a3a',sc:1},
-  awm:{n:'AWM',cls:'sn',am:'mag',dmg:115,rate:1.8,mag:5,rl:3.6,sp:.004,v:3000,rg:2200,pel:1,len:37,tier:4,pref:700,z:.66,furn:'#56603c',sc:1}
+  m9:{n:'Sirocco 9',cls:'p',am:'9mm',dmg:18,rate:.22,mag:15,rl:1.3,sp:.045,v:1500,rg:760,pel:1,len:13,tier:1,pref:240,z:1,furn:'#2b2b2b'},
+  m1911:{n:'Corsaire .45',cls:'p',am:'45',dmg:25,rate:.3,mag:7,rl:1.4,sp:.04,v:1450,rg:760,pel:1,len:13,tier:1,pref:230,z:1,furn:'#6b4a2e'},
+  pm:{n:'Fennec P8',cls:'p',am:'9mm',dmg:16,rate:.19,mag:8,rl:1.1,sp:.05,v:1450,rg:700,pel:1,len:11,tier:1,pref:220,z:1,furn:'#3a3a3a'},
+  uzi:{n:'Vipère',cls:'smg',am:'9mm',dmg:11,rate:.055,mag:25,rl:1.8,sp:.14,v:1500,rg:600,pel:1,len:15,tier:2,pref:170,z:1,furn:'#2b2b2b'},
+  mp5:{n:'Zéphyr',cls:'smg',am:'9mm',dmg:13,rate:.07,mag:30,rl:2,sp:.1,v:1550,rg:680,pel:1,len:19,tier:2,pref:210,z:1,furn:'#2b2b2b'},
+  m870:{n:'Bélier',cls:'sg',am:'12g',dmg:12,rate:.95,mag:5,rl:2.8,sp:.22,v:1350,rg:400,pel:8,len:27,tier:2,pref:110,z:1,furn:'#7a4e2c',wood:1},
+  spas:{n:'Tonnerre',cls:'sg',am:'12g',dmg:10,rate:.55,mag:8,rl:3.2,sp:.26,v:1350,rg:360,pel:8,len:25,tier:2,pref:100,z:1,furn:'#2b2b2b'},
+  ak:{n:'Atlas-7',cls:'ar',am:'762',dmg:27,rate:.12,mag:30,rl:2.4,sp:.07,v:1750,rg:1000,pel:1,len:28,tier:3,pref:340,z:.9,furn:'#8a5a33',wood:1},
+  m4:{n:'Éclair 5',cls:'ar',am:'556',dmg:23,rate:.095,mag:30,rl:2.2,sp:.05,v:1850,rg:1050,pel:1,len:27,tier:3,pref:360,z:.9,furn:'#2b2b2b'},
+  m16:{n:'Sentinelle',cls:'ar',am:'556',dmg:26,rate:.16,mag:30,rl:2.3,sp:.035,v:1950,rg:1150,pel:1,len:31,tier:3,pref:420,z:.88,furn:'#2b2b2b'},
+  sks:{n:'Épervier',cls:'dmr',am:'762',dmg:44,rate:.32,mag:10,rl:2.6,sp:.02,v:2200,rg:1500,pel:1,len:31,tier:3,pref:520,z:.8,furn:'#7a4e2c',wood:1},
+  kar:{n:'Chacal',cls:'sn',am:'762',dmg:82,rate:1.6,mag:5,rl:3.2,sp:.006,v:2600,rg:1900,pel:1,len:35,tier:3,pref:640,z:.72,furn:'#7a4e2c',wood:1,sc:1},
+  m24:{n:'Faucon-M',cls:'sn',am:'762',dmg:78,rate:1.4,mag:5,rl:3,sp:.005,v:2700,rg:1950,pel:1,len:35,tier:3,pref:660,z:.72,furn:'#4f5a3a',sc:1},
+  awm:{n:'Léviathan',cls:'sn',am:'mag',dmg:115,rate:1.8,mag:5,rl:3.6,sp:.004,v:3000,rg:2200,pel:1,len:37,tier:4,pref:700,z:.66,furn:'#56603c',sc:1}
 };
 const CLS={p:'Pistolet',smg:'Pistolet-mitrailleur',sg:'Fusil à pompe',ar:"Fusil d'assaut",dmr:'Fusil de précision',sn:'Fusil de sniper'};
 const SND={p:'pistol',smg:'smg',sg:'shot',ar:'ar',dmr:'sniper',sn:'sniper'};
@@ -678,7 +678,7 @@ const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5'],BOOT_LV=[1,1,2,4,6];
 const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a'],BAG_LV=[1,2,3,5,7];
 const lvOK=n=>(stats.level||1)>=n;
 function soldierById(id){return SOLDIERS.find(x=>x.id===id)||SOLDIERS[1]}
-const AMMO={'9mm':{n:'9 mm',stack:30,cap:180},'45':{n:'.45 ACP',stack:21,cap:105},'556':{n:'5,56 mm',stack:30,cap:180},'762':{n:'7,62 mm',stack:30,cap:150},'12g':{n:'Cal. 12',stack:10,cap:40},'mag':{n:'.300 Magnum',stack:5,cap:20}};
+const AMMO={'9mm':{n:'9 mm',stack:30,cap:180},'45':{n:'.45',stack:21,cap:105},'556':{n:'5,56 mm',stack:30,cap:180},'762':{n:'7,62 mm',stack:30,cap:150},'12g':{n:'Cal. 12',stack:10,cap:40},'mag':{n:'.300',stack:5,cap:20}};
 const MEDS={bandage:{n:'Bandage',t:2.6,max:10},medkit:{n:'Trousse de soins',t:6,max:3},drink:{n:'Boisson énergisante',t:3,max:5}};
 const VEST_PTS=[0,50,75,100],VEST_RED=[0,.3,.4,.5],HELM_RED=[0,.1,.16,.22];
 const TIER_COL=['#fff','#e6dfcc','#79c1ff','#ffb347','#ff5d73'];
@@ -1390,7 +1390,7 @@ function landDrop(d){puff(d.x,d.y,18,'rgba(225,205,160,.9)',170,.9,8);const add=
   if(player&&player.alive&&dd2(player.x,player.y,d.x,d.y)<1200*1200)toast('Largage au sol : suivez la fumée rouge',2.4)}
 
 /* ===== grenades & smoke ===== */
-const NADE={frag:{n:'Grenade M67',sh:'M67',cap:4,fuse:3},smoke:{n:'Fumigène',sh:'Fumi.',cap:4,fuse:1.6},molotov:{n:'Cocktail incendiaire',sh:'Molo.',cap:3,fuse:1.3},flash:{n:'Grenade flash',sh:'Flash',cap:3,fuse:1.7}};
+const NADE={frag:{n:'Grenade à fragmentation',sh:'Frag.',cap:4,fuse:3},smoke:{n:'Fumigène',sh:'Fumi.',cap:4,fuse:1.6},molotov:{n:'Cocktail incendiaire',sh:'Molo.',cap:3,fuse:1.3},flash:{n:'Grenade flash',sh:'Flash',cap:3,fuse:1.7}};
 const NORD=['frag','smoke','molotov','flash'];let fires=[],flashT=0;
 const FRAG_R=170,FRAG_DMG=105,SMOKE_T=12,SMOKE_R=118,NADE_G=900;
 const LOWK={crate:1,bags:1,rock:1,fount:1,trunk:1};

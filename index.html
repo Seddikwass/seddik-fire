@@ -193,7 +193,8 @@ body.desk .kbd{display:inline-block}
 .side{grid-area:side;display:flex;flex-direction:column;gap:10px;min-width:0}
 .card{background:rgba(20,15,10,.82);border:1px solid var(--line);border-radius:3px;padding:12px;display:flex;flex-direction:column;gap:9px}
 .lbl{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
-.sidearms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.sidearms{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.sidearms .sa{flex:0 0 31%;min-width:104px;scroll-snap-align:start}
 .sa{border:1px solid var(--line);border-radius:3px;padding:7px 5px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;touch-action:manipulation;background:rgba(243,233,212,.03)}
 .sa img{width:100%;height:24px;object-fit:contain}
 .sa b{font-size:14px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
@@ -420,7 +421,7 @@ body.desk .fire,body.desk .pist{display:none}
     <div class="brand">
       <span class="stamp">Île de Seddik · 30 joueurs · 1 survivant</span>
       <h1 class="logo">Seddik<span>Fire</span></h1>
-      <p class="tag">Choisissez votre soldat et votre arme de poing, sautez de l'avion et tenez face à la tempête de feu.</p>
+      <p class="tag">Choisissez votre soldat, votre arme de départ, sautez de l'avion et tenez face à la tempête de feu.</p>
     </div>
     <div class="show">
       <div class="stage">
@@ -432,8 +433,8 @@ body.desk .fire,body.desk .pist{display:none}
     </div>
     <div class="side">
       <div class="card">
-        <span class="lbl">Arme de poing de départ</span>
-        <div id="sidearms" class="sidearms" role="radiogroup" aria-label="Arme de poing de départ"></div>
+        <span class="lbl">Arme de départ · faites défiler</span>
+        <div id="sidearms" class="sidearms" role="radiogroup" aria-label="Arme de départ"></div>
       </div>
       <div class="row"><button id="howBtn" class="ghost" aria-expanded="false">Comment jouer</button><button id="qBtn" class="ghost">Qualité : Haute</button></div>
       <div id="how" class="how" hidden>
@@ -442,7 +443,7 @@ body.desk .fire,body.desk .pist{display:none}
         <h3>Au clavier</h3>
         <ul><li>ZQSD ou WASD : bouger · souris : viser · clic : tirer</li><li>R recharger · E ramasser · 1 / 2 armes · F se soigner · G grenade · T changer de grenade · V véhicule · M carte · Échap pause</li></ul>
         <h3>Règles</h3>
-        <ul><li>Chaque soldat saute avec son arme de poing. Le reste se trouve sur l'île.</li><li>La tempête de feu réduit la zone en 7 phases. Hors zone, vous perdez des PV chaque seconde.</li><li>Deux largages aériens tombent pendant la partie, avec un AWM et du matériel de niveau 3. Suivez la fumée rouge.</li><li>Zone rouge : un bombardement frappe le cercle rouge. Sortez-en ou abritez-vous dans un bâtiment.</li><li>Le gilet absorbe une partie des dégâts, le casque les réduit.</li></ul>
+        <ul><li>Chaque joueur saute avec l'arme choisie au menu (une seule arme, peu de munitions). Le reste se trouve sur l'île.</li><li>La tempête de feu réduit la zone en 7 phases. Hors zone, vous perdez des PV chaque seconde.</li><li>Deux largages aériens tombent pendant la partie, avec un AWM et du matériel de niveau 3. Suivez la fumée rouge.</li><li>Zone rouge : un bombardement frappe le cercle rouge. Sortez-en ou abritez-vous dans un bâtiment.</li><li>Le gilet absorbe une partie des dégâts, le casque les réduit.</li></ul>
       </div>
     </div>
     <dl class="stats">
@@ -550,6 +551,7 @@ const WEAP={
 const CLS={p:'Pistolet',smg:'Pistolet-mitrailleur',sg:'Fusil à pompe',ar:"Fusil d'assaut",dmr:'Fusil de précision',sn:'Fusil de sniper'};
 const SND={p:'pistol',smg:'smg',sg:'shot',ar:'ar',dmr:'sniper',sn:'sniper'};
 const SIDEARMS=['m9','m1911','pm'];
+const STARTW=['m9','m1911','pm','uzi','mp5','m870','spas','ak','m4','m16','sks','kar','m24'];
 const PROF={
   ak:[[0,12,22,9,24,17,2,23],[24,8,30,9],[34,16,39,16,37,27,32,27],[44,16,52,16,57,31,49,33],[54,9,18,7],[54,6,22,3],[72,10,26,3],[93,6,3,5]],
   m4:[[0,10,18,9,18,18,2,20],[16,11,10,4],[24,7,26,10],[27,4,18,3],[34,17,39,17,37,27,32,26],[44,17,51,17,53,29,46,30],[50,8,20,8],[70,10,26,3],[78,5,3,5]],
@@ -588,6 +590,8 @@ const SOLDIERS=[
   {id:'nuit',n:'Nuit',d:'Tenue sombre et cagoule.',base:'#2f3542',cam:['#20242c','#404858','#283434'],hg:'bala',hc:'#16181d',pack:'#262a33',glove:'#111111'},
   {id:'commando',n:'Commando',d:'Noir tactique et béret rouge.',base:'#38332d',cam:['#4b453d','#27241f','#5a5246'],hg:'beret',hc:'#8e2a2a',pack:'#2e2a25',glove:'#1a1a1a'},
   {id:'marine',n:'Marine',d:'Camouflage numérique bleu-gris.',base:'#41596f',cam:['#2d4357','#6c8398','#22313f'],hg:'cap',hc:'#2d4357',pack:'#33475a',glove:'#1d2630',pat:'pix'},
+  {id:'ghillie',n:'Tireur d\'élite',d:'Tenue ghillie feuillue et chapeau de brousse.',base:'#59603a',cam:['#3c4426','#7a7a42','#2a2e1c'],hg:'boonie',hc:'#4d5430',pack:'#3f4629',glove:'#2a2e1c',blobs:46},
+  {id:'garde',n:'Garde d\'élite',d:'Uniforme gris anthracite, casque de combat et lunettes.',base:'#444b54',cam:['#2c3138','#5c6570','#20252b'],hg:'helmet',hc:'#2a2f36',pack:'#30363d',glove:'#17191c',blobs:22},
   {id:'neige',n:'Neige',d:'Blanc arctique et casque blanc.',base:'#e3e3dc',cam:['#b8bcbb','#8e9493','#f4f4ef'],hg:'helmet',hc:'#d9dad4',pack:'#a9adab',glove:'#6b6f6e'}
 ];
 function soldierById(id){return SOLDIERS.find(x=>x.id===id)||SOLDIERS[1]}
@@ -598,7 +602,7 @@ const TIER_COL=['#fff','#e6dfcc','#79c1ff','#ffb347','#ff5d73'];
 const VEST_BODY=['','#b8ad92','#6c7a52','#2f3337'],HELM_WEAR=['','#8a8f68','#55634a','#353b36'];
 const VEST_COL=['','#d7cfb8','#7fa3c4','#b39be6'],HELM_COL=['','#a9ae80','#7f9fb6','#b39be6'];
 const SKINS=['#c8946a','#a8754f','#d9a77b','#8d5d3b','#b98258'];
-const BOT_NAMES=['Hamma','Lassaad','Slim','Wajdi','Nizar','Sami','Aymen','Houssem','Karim','Yassine','Rami','Fares','Mehdi','Oussema','Ghassen','Bilel','Anis','Zied','Firas','Malek','Skander','Amine','Tarek','Chokri','Mounir','Hedi','Walid','Nabil','Raouf','Kais','Hatem','Moez','Sofiene','Achref'];
+const BOT_NAMES=['Hamma','Lassaad','Slim','Wajdi','Nizar','Sami','Aymen','Houssem','Karim','Yassine','Rami','Fares','Mehdi','Oussema','Ghassen','Bilel','Anis','Zied','Firas','Malek','Skander','Amine','Tarek','Chokri','Mounir','Hedi','Walid','Nabil','Raouf','Kais','Hatem','Moez','Sofiene','Achref','Hannibal','Gladiateur','Spartacus','Jugurtha','Massinissa','Didon','Maximus','Léonidas','Achille','Hercule','Centurion','Spartiate','Titan','Barbare','Samouraï','Viking','Cyclope','Faucon','Panthère','Cobra'];
 const LOOT_N=[['w:m9',3.5],['w:m1911',3],['w:pm',3],['w:uzi',4],['w:mp5',4],['w:m870',4],['w:spas',2.5],['w:ak',3.2],['w:m4',3.2],['w:m16',2],['w:sks',1.4],['w:kar',1],['w:m24',.6],['a',26],['m:bandage',13],['m:medkit',3.5],['m:drink',6],['v:1',5],['v:2',2.5],['v:3',.6],['h:1',5],['h:2',2.5],['h:3',.6],['g:frag',4],['g:smoke',2.5],['g:molotov',2.5],['g:flash',2],['k:knife',3],['k:machete',1.5]];
 const LOOT_M=[['w:mp5',4],['w:ak',7],['w:m4',7],['w:m16',5],['w:sks',4],['w:kar',3],['w:m24',2.5],['w:spas',3],['w:m1911',1],['a',24],['m:bandage',8],['m:medkit',6],['m:drink',6],['v:2',6],['v:3',3],['h:2',6],['h:3',3],['g:frag',6],['g:smoke',3],['g:molotov',3],['g:flash',3],['k:knife',2],['k:machete',2]];
 const PH=[{w:80,s:45,r:1550,d:1},{w:55,s:35,r:980,d:2},{w:45,s:30,r:600,d:3.5},{w:35,s:25,r:340,d:6},{w:28,s:20,r:170,d:9},{w:24,s:18,r:70,d:13},{w:20,s:20,r:0,d:20}];
@@ -607,7 +611,7 @@ const PH=[{w:80,s:45,r:1550,d:1},{w:55,s:35,r:980,d:2},{w:45,s:30,r:600,d:3.5},{
 const LSK='seddikfire.v1';
 const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,skin:'foret',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
-if(!SIDEARMS.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';
+if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';
 function saveStats(){try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}
 
 /* ===== audio ===== */
@@ -956,7 +960,7 @@ function newEnt(name,bot){const e={name,bot,x:0,y:0,r:15,angle:0,hp:100,boost:0,
   if(bot)e.ai={target:null,lastSeen:9,tx:0,ty:0,react:0,err:0,errT:0,strafe:1,strafeT:0,burst:0,firing:true,path:[],gx:null,gy:null,think:rand(0,.3),stT:0,sx:0,sy:0,unstuck:0,ua:0,alert:null,alertT:0,zph:-1,mode:'loot',goalItem:null,pathFor:null};
   gpInit(e);return e}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const q=a[i];a[i]=a[j];a[j]=q}return a}
-function decorate(n){return Math.random()<.5?n:n+pick(['_tn','07','216','_ks','99','.x','_92'])}
+function decorate(n){return n.length>9||Math.random()<.5?n:n+pick(['_tn','07','216','_ks','99','.x','_92'])}
 function chooseDrop(){if(Math.random()<.55){const pool=blds.flatMap(b=>b.mil?[b,b]:[b]);const c=[pick(pool),pick(pool),pick(pool)].sort((a,d)=>(a._dn||0)-(d._dn||0))[0];c._dn=(c._dn||0)+1;return{x:c.x+c.w/2+rand(-c.w*.2,c.w*.2),y:c.y+c.h/2+rand(-c.h*.2,c.h*.2)}}for(let i=0;i<30;i++){const x=rand(250,3000),y=rand(250,3350);if(!isWater(x,y)&&!pointBlocked(x,y,20))return{x,y}}return{x:MC.x,y:MC.y}}
 function setupPlane(){const a=Math.random()*TAU,dx=Math.cos(a),dy=Math.sin(a),cx=1700+rand(-420,420),cy=1800+rand(-420,420),L=2900;
   plane={sx:cx-dx*L,sy:cy-dy*L,dx,dy,x:0,y:0,trav:0,len:2*L,sp:320,done:false,sIn:0,sOut:2*L,ang:a};let sIn=-1,sOut=-1;
@@ -1749,11 +1753,18 @@ function drawTorso(c,sk,R){if(sk.ftr){drawFighterTorso(c,sk);return}const pk=sk.
   // torso
   c.save();c.beginPath();c.ellipse(0,0,10,15,0,0,TAU);c.closePath();c.fillStyle=sk.base;c.fill();c.clip();
   if(sk.pat==='pix'){for(let i=0;i<110;i++){c.fillStyle=sk.cam[Math.floor(R()*3)];const q=1.4+Math.floor(R()*2);c.fillRect(Math.round(-12+R()*24),Math.round(-16+R()*32),q,q)}}
-  else for(let i=0;i<18;i++){c.fillStyle=sk.cam[i%3];c.beginPath();c.ellipse(-11+R()*22,-16+R()*32,2.2+R()*4,1.5+R()*3,R()*TAU,0,TAU);c.fill()}
+  else for(let i=0;i<(sk.blobs||18);i++){c.fillStyle=sk.cam[i%3];c.beginPath();c.ellipse(-11+R()*22,-16+R()*32,2.2+R()*4,1.5+R()*3,R()*TAU,0,TAU);c.fill()}
   const g=c.createRadialGradient(2.5,-2,1,0,0,16);g.addColorStop(0,'rgba(255,248,230,.2)');g.addColorStop(.5,'rgba(255,248,230,0)');g.addColorStop(1,'rgba(10,6,2,.42)');c.fillStyle=g;c.fillRect(-12,-17,24,34);
   // chest rig (seen when no vest)
   c.fillStyle=shade(pk,.95);for(const y of[-7.5,-2.4,2.7]){rrect(c,3.6,y,4.4,4.6,1);c.fill()}
   c.fillStyle='rgba(255,255,255,.14)';for(const y of[-7.5,-2.4,2.7])c.fillRect(3.8,y+.3,4,1);
+  // plate carrier + straps + belt
+  c.fillStyle=shade(pk,.62);rrect(c,-5.6,-10.6,12.6,21.2,2.6);c.fill();c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=.6;c.stroke();
+  c.strokeStyle='rgba(255,255,255,.13)';c.lineWidth=.45;c.beginPath();for(let y=-9;y<=9;y+=2.1){c.moveTo(-4.6,y);c.lineTo(5.8,y)}c.stroke();
+  c.fillStyle=shade(pk,.5);c.fillRect(-9.6,-1.2,19.2,2.4);c.fillStyle='#a8893e';c.fillRect(-1.2,-1.4,2.4,2.8);
+  c.fillStyle=shade(pk,.78);for(const q of[[-3.6,-9],[-3.6,6.4]]){rrect(c,q[0],q[1],4.6,3.2,.9);c.fill();c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=.5;c.stroke()}
+  c.fillStyle='rgba(20,14,8,.35)';c.beginPath();c.arc(1.6,0,7,0,TAU);c.fill();
+  for(const sy of[-1,1]){c.fillStyle=shade(sk.base,.72);rrect(c,-2.6,sy*11.4-2.2,7.2,4.4,1.8);c.fill();c.strokeStyle=OUTL;c.lineWidth=.6;c.stroke();c.fillStyle=sy<0?'#b3322b':'#d8d2bd';c.fillRect(-.8,sy*11.4-1.2,3.2,2.4)}
   c.restore();
   c.strokeStyle=OUTL;c.lineWidth=1.5;c.beginPath();c.ellipse(0,0,10,15,0,0,TAU);c.stroke();
   // shoulder straps
@@ -1813,7 +1824,7 @@ function headSpr(hg,col,skin){const k=hg+col+skin;let s=HSPR.get(k);if(s)return 
 function drawHead(c,hg,col){c.lineWidth=1.1;c.strokeStyle=OUTL;
   const dome=(x,y,r,cl)=>{c.fillStyle=cl;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();const g=c.createRadialGradient(x-r*.3,y-r*.35,r*.1,x,y,r);g.addColorStop(0,'rgba(255,250,235,.32)');g.addColorStop(.5,'rgba(255,250,235,0)');g.addColorStop(1,'rgba(0,0,0,.3)');c.fillStyle=g;c.fill();c.strokeStyle=OUTL;c.lineWidth=1.1;c.stroke()};
   const blot=(x,y,r,cols)=>{c.save();c.beginPath();c.arc(x,y,r,0,TAU);c.clip();const P=[[-3,-3,2.4],[2,-4,1.8],[-1,2.5,2.2],[3.5,2,1.6],[-4.5,1,1.4],[0,-1,1.2]];P.forEach((p,i)=>{c.fillStyle=cols[i%cols.length];c.beginPath();c.ellipse(x+p[0],y+p[1],p[2]*1.3,p[2],i,0,TAU);c.fill()});c.restore()};
-  if(hg==='helmet'||hg==='h1'){dome(-.4,0,7.5,col);if(hg==='helmet'){blot(-.4,0,7.5,['rgba(0,0,0,.16)','rgba(255,255,255,.1)']);c.strokeStyle='rgba(0,0,0,.22)';c.lineWidth=.9;c.beginPath();c.arc(-.4,0,6.6,0,TAU);c.stroke()}
+  if(hg==='helmet'||hg==='h1'){dome(-.4,0,7.5,col);c.strokeStyle='rgba(15,12,8,.65)';c.lineWidth=.8;c.beginPath();c.arc(-.4,0,7.3,-.9,-.3);c.moveTo(1.2,6.9);c.lineTo(3.4,5.6);c.stroke();c.fillStyle='#16181a';rrect(c,6,-1.6,2.4,3.2,.8);c.fill();c.fillStyle='#2c3034';c.fillRect(5.2,-.5,1.2,1);c.strokeStyle='#15171a';c.lineWidth=.7;c.beginPath();c.moveTo(-1.2,-7.2);c.quadraticCurveTo(4,-9.4,7.4,-4.2);c.stroke();if(hg==='helmet'){blot(-.4,0,7.5,['rgba(0,0,0,.16)','rgba(255,255,255,.1)']);c.strokeStyle='rgba(0,0,0,.22)';c.lineWidth=.9;c.beginPath();c.arc(-.4,0,6.6,0,TAU);c.stroke()}
     else{c.strokeStyle='rgba(0,0,0,.28)';c.lineWidth=.7;c.beginPath();c.arc(-.4,0,6.2,0,TAU);c.stroke();c.strokeStyle='#3b3528';c.lineWidth=.9;c.beginPath();c.moveTo(1,-7.2);c.lineTo(5.4,-4.4);c.moveTo(1,7.2);c.lineTo(5.4,4.4);c.stroke()}}
   else if(hg==='h2'){dome(-.4,0,7.7,col);blot(-.4,0,7.7,['#3f4a35','#6f7a55','rgba(0,0,0,.2)']);c.strokeStyle='#23251e';c.lineWidth=1.5;c.beginPath();c.arc(-.4,0,6.7,-1.25,1.25);c.stroke();
     c.fillStyle='#1b1f22';rrect(c,4.3,-4.8,2.6,9.6,1.2);c.fill();c.fillStyle='rgba(150,200,225,.8)';c.fillRect(4.9,-4,1.3,3.1);c.fillRect(4.9,.9,1.3,3.1)}
@@ -1833,12 +1844,12 @@ function drawHead(c,hg,col){c.lineWidth=1.1;c.strokeStyle=OUTL;
     c.strokeStyle='#1b1714';c.lineWidth=1.2;c.beginPath();c.arc(-.2,0,6.2,-1.3,1.3);c.stroke();c.fillStyle='#e0bc5e';c.beginPath();c.arc(3.6,-3.4,1.6,0,TAU);c.fill();c.strokeStyle='#8a6a22';c.lineWidth=.5;c.stroke()}}
 function drawBody(c,e){const sk=e.sk||SOLDIERS[1],w=curW(e),Wp=w?WEAP[w.type]:null,ws=e._ws||0,sw=Math.sin(e.walkPh||0)*ws;
   c.save();c.scale(SV,SV);c.lineCap='round';
-  for(const s of[-1,1]){const fx=4+sw*s*8,fy=s*5.4;c.strokeStyle=OUTL;c.lineWidth=6.6;c.beginPath();c.moveTo(-1,fy);c.lineTo(fx,fy);c.stroke();c.strokeStyle=sk.legs||'#444';c.lineWidth=5;c.stroke();c.fillStyle=sk.ftr?shade(sk.base,.88):'#2a241c';c.beginPath();c.ellipse(fx+1.4,fy,3.6,2.8,0,0,TAU);c.fill()}
+  for(const s of[-1,1]){const fx=4+sw*s*8,fy=s*5.4;c.strokeStyle=OUTL;c.lineWidth=6.6;c.beginPath();c.moveTo(-1,fy);c.lineTo(fx,fy);c.stroke();c.strokeStyle=sk.legs||'#444';c.lineWidth=5;c.stroke();c.fillStyle=sk.ftr?shade(sk.base,.88):'#1d1914';c.beginPath();c.ellipse(fx+1.4,fy,3.9,3,0,0,TAU);c.fill();if(!sk.ftr){c.fillStyle='rgba(255,255,255,.14)';c.fillRect(fx-.6,fy-2,3.4,.7);c.fillStyle=shade(sk.legs||'#444',.6);c.beginPath();c.ellipse(fx*.45+1,fy,2,2.4,0,0,TAU);c.fill()}}
   if(sw)c.rotate(sw*.07);
   c.drawImage(SPR[sk.id],-28,-28,56,56);
   if(e.vestLvl&&e.vest>0)c.drawImage(VSPR[e.vestLvl],-28,-28,56,56);
   const ARM=sk.arm||'#555';
-  const arm=(x0,y0,x1,y1)=>{c.strokeStyle=OUTL;c.lineWidth=7;c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();c.strokeStyle=ARM;c.lineWidth=5.3;c.stroke()};
+  const arm=(x0,y0,x1,y1)=>{c.strokeStyle=OUTL;c.lineWidth=7;c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();c.strokeStyle=ARM;c.lineWidth=5.3;c.stroke();if(!sk.ftr){const mx=(x0+x1)/2,my=(y0+y1)/2;c.fillStyle=shade(ARM,.6);c.beginPath();c.arc(mx*.85+x0*.15,my*.85+y0*.15,2.6,0,TAU);c.fill();c.strokeStyle=shade(ARM,.55);c.lineWidth=5.6;c.beginPath();c.moveTo(x1-(x1-x0)*.16,y1-(y1-y0)*.16);c.lineTo(x1,y1);c.stroke()}};
   const hand=(x,y,r)=>{c.fillStyle=sk.glove;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();c.strokeStyle=OUTL;c.lineWidth=.9;c.stroke()};
   if(Wp){const pis=Wp.cls==='p',rc=e.fireCd>Wp.rate-.05?-2.5:0;let gx,gy,ax,ay,bx,by;
     if(pis){gx=10+rc;gy=.5;ax=12+rc;ay=2.6;bx=12+rc;by=-1.6}else{gx=3+rc;gy=3;ax=7+rc;ay=4.4;bx=6+Wp.len*.55+rc;by=2.2}
@@ -2050,7 +2061,7 @@ function buildGunIcons(){for(const k in WEAP){const g=document.createElement('ca
 let skinI=Math.max(0,SOLDIERS.findIndex(x=>x.id===stats.skin));
 function setSkin(i){skinI=(i+SOLDIERS.length)%SOLDIERS.length;const sk=SOLDIERS[skinI];stats.skin=sk.id;saveStats();$('#skinName').textContent=sk.n;$('#skinDesc').textContent=sk.d;$('#skinIdx').textContent=(skinI+1)+' / '+SOLDIERS.length}
 $('#skinPrev').addEventListener('click',()=>setSkin(skinI-1));$('#skinNext').addEventListener('click',()=>setSkin(skinI+1));
-function buildSidearms(){const box=$('#sidearms');box.innerHTML=SIDEARMS.map(t=>{const W=WEAP[t];return'<button class="sa" role="radio" data-t="'+t+'" aria-checked="'+(stats.sidearm===t)+'"><img alt="" src="'+PURL[t]+'"><b>'+W.n+'</b><small>'+AMMO[W.am].n+' · '+W.mag+' coups</small></button>'}).join('');
+function buildSidearms(){const box=$('#sidearms');box.innerHTML=STARTW.map(t=>{const W=WEAP[t];return'<button class="sa" role="radio" data-t="'+t+'" aria-checked="'+(stats.sidearm===t)+'"><img alt="" src="'+PURL[t]+'"><b>'+W.n+'</b><small>'+AMMO[W.am].n+' · '+W.mag+' coups</small></button>'}).join('');
   box.querySelectorAll('.sa').forEach(b=>b.addEventListener('click',()=>{stats.sidearm=b.dataset.t;saveStats();box.querySelectorAll('.sa').forEach(x=>x.setAttribute('aria-checked',String(x===b)))}))}
 function buildArmory(){const order=['p','smg','sg','ar','dmr','sn'];const keys=Object.keys(WEAP).sort((a,b)=>order.indexOf(WEAP[a].cls)-order.indexOf(WEAP[b].cls));
   const bar=(l,v,m,txt)=>'<div class="bar"><span>'+l+'</span><i><span style="width:'+Math.round(Math.min(1,v/m)*100)+'%"></span></i><em>'+txt+'</em></div>';

@@ -2,4 +2,9 @@
 
 Jeu de course 3D (WebGL) : 7 circuits, 10 voitures originales, météo (pluie), course, contre-la-montre, poursuite police, garage (peinture, jantes, néons, tuning) et carrière de 12 épreuves.
 
-Site statique (index.html, manifest, service worker hors ligne). Hébergé sur Render (branche super-joud).
+- Interface en français, anglais et arabe (de droite à gauche).
+- Téléphone : boutons, joystick flottant ou inclinaison ; opacité, sensibilité et vibration réglables.
+- Qualité Basse / Moyenne / Haute et résolution dynamique selon les FPS.
+- Musique et sons générés en temps réel ; jouable hors ligne après la première ouverture.
+
+Site statique (index.html, manifest, service worker). Hébergé sur Render (branche super-joud). Crédits : voir CREDITS.md.

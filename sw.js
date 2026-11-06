@@ -1,5 +1,5 @@
 /* Seddik Fire — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'seddik-fire-v38';
+const VERSION = 'seddik-fire-v39';
 const FONTS = 'seddik-fire-fonts';
 const CORE = [
   './',
@@ -10,8 +10,7 @@ const CORE = [
   './icons/icon-512-v2.png',
   './icons/maskable-192-v2.png',
   './icons/maskable-512-v2.png',
-  './icons/apple-touch-icon-v2.png',
-  './three.min.js'
+  './icons/apple-touch-icon-v2.png'
 ];
 
 self.addEventListener('install', (event) => {

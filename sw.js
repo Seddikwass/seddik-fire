@@ -1,5 +1,5 @@
 /* SUPER JOUD — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'super-joud-v3';
+const VERSION = 'super-joud-v4';
 const FONTS = 'super-joud-fonts';
 const CORE = [
   './',

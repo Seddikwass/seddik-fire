@@ -13,7 +13,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Chakra+Petch:wght@400;600;700&family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--acc:#ff7a18;--acc2:#ffb020;--cy:#19d3ff;--bg:#07080b;--pan:rgba(12,13,18,.78);--line:rgba(255,255,255,.09);--txt:#eef0f4;--mut:#8b90a0;--red:#ff3b3b;--ok:#39e07a;
+/* palette : nuit de Tunis (fond), plâtre chaulé (texte), ambre (action), bleu Sidi Bou (sélection/infos) */
+:root{--acc:#ff7a18;--acc2:#ffb020;--cy:#19d3ff;--blue:#2f7de1;--bg:#0b0e17;--pan:rgba(11,14,23,.8);--line:rgba(233,225,211,.1);--txt:#ece6da;--mut:#8d93a3;--red:#ff3b3b;--ok:#39e07a;
 --fh:'Russo One','Arial Black',Impact,sans-serif;--fb:'Chakra Petch','Segoe UI',Roboto,Arial,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--fb);user-select:none;-webkit-user-select:none;touch-action:none}
@@ -31,12 +32,12 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 #loading .bar{width:min(320px,70vw);height:4px;background:#1b1c22;overflow:hidden;border-radius:2px}
 #loading .bar i{display:block;height:100%;width:40%;background:linear-gradient(90deg,transparent,var(--acc),transparent);animation:ld 1s linear infinite}
 @keyframes ld{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
-#loading p{color:var(--mut);font-size:14px;letter-spacing:.2em;text-transform:uppercase}
+#loading p{color:var(--mut);font-size:15px}
 .box{background:linear-gradient(160deg,#15161d,#0b0c10);border:1px solid var(--line);padding:28px 30px;min-width:min(380px,90vw);max-width:94vw;max-height:92vh;overflow:auto;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));display:flex;flex-direction:column;gap:12px}
 .box.wide{width:min(720px,94vw)}
 .box h2{font-family:var(--fh);font-style:italic;font-size:30px;letter-spacing:.03em}
 .box .row{display:flex;gap:10px;justify-content:flex-end}
-.box button:not(.cta){padding:12px 18px;background:#1c1d25;border:1px solid var(--line);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.box button:not(.cta){padding:12px 18px;background:#171b27;border:1px solid var(--line);font-weight:700;font-size:15px}
 .box button:not(.cta):hover{background:#262833}
 .cta{font-family:var(--fh);font-style:italic;letter-spacing:.06em;font-size:18px;padding:14px 26px;background:linear-gradient(90deg,var(--acc),var(--acc2));color:#140a02;clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);transition:filter .15s,transform .15s}
 .cta:hover{filter:brightness(1.12);transform:translateY(-1px)}
@@ -54,8 +55,9 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .screen.on{display:flex}
 .screen>*{pointer-events:auto}
 /* main */
-#scr-main{flex-direction:column;justify-content:center;gap:24px;padding-inline-start:max(5vw,24px)}
-#scr-main .hero .tag{margin-top:12px;color:var(--mut);letter-spacing:.32em;text-transform:uppercase;font-size:13px}
+#scr-main{flex-direction:column;justify-content:center;gap:24px;padding-inline-start:max(5vw,24px);isolation:isolate}
+#scr-main .hero .tag{margin-top:10px;color:var(--mut);font-size:15px;max-width:30ch;line-height:1.35}
+.logo .ar{display:block;text-align:left;font-family:'Cairo',sans-serif;font-style:normal;font-weight:800;font-size:.34em;color:var(--txt);letter-spacing:0;margin-top:.18em;text-shadow:none;-webkit-text-stroke:0;opacity:.92}
 .mainnav{display:flex;flex-direction:column;gap:9px;width:min(360px,86vw)}
 .nbtn{position:relative;text-align:start;padding-block:13px 12px;padding-inline:22px 20px;background:linear-gradient(90deg,rgba(20,21,28,.92),rgba(20,21,28,.55));border-inline-start:3px solid transparent;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%);transition:all .15s}
 .nbtn b{display:block;font-family:var(--fh);font-style:italic;font-size:20px;letter-spacing:.04em;font-weight:400}
@@ -64,7 +66,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .nbtn.hl b{color:var(--acc)}
 .carline{position:absolute;inset-inline-end:max(4vw,20px);bottom:26px;text-align:end}
 .carline .cn{font-family:var(--fh);font-style:italic;font-size:26px}
-.carline .cs{color:var(--mut);font-size:13px;letter-spacing:.18em;text-transform:uppercase}
+.carline .cs{color:var(--mut);font-size:14px}
 /* heads */
 .scr-head{position:absolute;top:8px;inset-inline-start:max(18px,env(safe-area-inset-left));display:flex;align-items:center;gap:14px;z-index:4}
 .scr-head h1{font-family:var(--fh);font-style:italic;font-size:26px;letter-spacing:.04em}
@@ -88,14 +90,14 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .desc{color:#b8bccb;font-size:14px;line-height:1.4}
 .stats{display:flex;flex-direction:column;gap:7px}
 .stat{display:grid;grid-template-columns:110px 1fr 78px;align-items:center;gap:10px;font-size:13px}
-.stat label{color:var(--mut);letter-spacing:.06em;text-transform:uppercase;font-size:11.5px}
+.stat label{color:var(--mut);font-size:13px;font-weight:600}
 .stat .bar{height:7px;background:#20222b;position:relative;overflow:hidden;clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%)}
 .stat .bar i,.stat .bar u{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:left;transition:transform .3s ease}
 .stat .bar i{background:linear-gradient(90deg,var(--acc),var(--acc2));z-index:1}
 .stat .bar u{background:var(--cy)}
 .stat span{text-align:right;font-weight:700}
 .tabs{display:flex;gap:4px}
-.tabs button{flex:1;padding:9px 6px;background:#16171e;border-bottom:2px solid transparent;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--mut)}
+.tabs button{flex:1;padding:9px 6px;background:#141824;border-bottom:2px solid transparent;font-weight:700;font-size:14px;color:var(--mut)}
 .tabs button.on{color:#fff;border-bottom-color:var(--acc);background:#1d1f27}
 .sw{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .sw button{aspect-ratio:1;border:2px solid rgba(255,255,255,.12);border-radius:50%;position:relative}
@@ -110,7 +112,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 /* quick */
 #scr-quick,#scr-career,#scr-options,#scr-help{justify-content:center;overflow:auto;background:rgba(5,6,9,.74)}
 .qwrap{width:min(980px,96vw);display:flex;flex-direction:column;gap:12px;padding-bottom:20px}
-.qwrap h3{font-size:12px;letter-spacing:.3em;color:var(--mut);text-transform:uppercase;margin-top:6px}
+.qwrap h3{font-size:14px;font-weight:600;color:var(--mut);margin-top:6px}
 .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .mode{text-align:left;padding:14px 16px;background:var(--pan);border:1px solid var(--line);border-bottom:3px solid transparent;transition:all .12s}
 .mode b{display:block;font-family:var(--fh);font-style:italic;font-weight:400;font-size:18px}
@@ -126,7 +128,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .rimseg{flex-wrap:wrap}.rimseg button{flex:1 1 30%}
 .seg button:disabled{opacity:.6;cursor:not-allowed}
 .opt{background:var(--pan);border:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
-.opt label{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.opt label{font-size:13px;font-weight:600;color:var(--mut)}
 .stepper{display:flex;align-items:center;justify-content:space-between}
 .stepper button{width:34px;height:34px;background:#1d1f27;border:1px solid var(--line);font-size:18px;font-weight:700}
 .stepper span{font-family:var(--fh);font-size:20px}
@@ -140,11 +142,11 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .ev:hover:not(.lock){border-color:var(--acc)}
 .ev .num{font-family:var(--fh);font-size:34px;color:rgba(255,255,255,.07);position:absolute;right:10px;top:4px}
 .ev b{font-family:var(--fh);font-style:italic;font-weight:400;font-size:18px}
-.ev .meta{color:var(--acc2);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.ev .meta{color:var(--acc2);font-size:13px}
 .ev small{color:#aeb2c0;font-size:12.5px;line-height:1.35}
 .ev .rw{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:13px}
 .ev .rw em{font-style:normal;font-weight:700;color:var(--acc2)}
-.ev .st{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.ev .st{font-size:13px;font-weight:700}
 .ev.done .st{color:var(--ok)}.ev.next{border-color:rgba(255,122,24,.7);box-shadow:0 0 24px rgba(255,122,24,.15)}.ev.next .st{color:var(--acc)}
 .ev.lock{opacity:.45;cursor:not-allowed}.ev.lock .st{color:var(--mut)}
 .prog{display:flex;align-items:center;gap:12px;color:var(--mut);font-size:13px}
@@ -152,7 +154,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 /* options/help */
 .panel{width:min(640px,94vw);background:var(--pan);border:1px solid var(--line);padding:22px;display:flex;flex-direction:column;gap:16px;align-self:center}
 .panel .orow{display:grid;grid-template-columns:170px 1fr;align-items:center;gap:14px}
-.panel .orow>label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.panel .orow>label{font-size:13px;font-weight:600;color:var(--mut)}
 input[type=range]{width:100%;accent-color:var(--acc)}
 .danger{padding:10px 14px;background:#2a1215;border:1px solid rgba(255,59,59,.4);color:#ff8a8a;font-weight:700;letter-spacing:.06em}
 .keys{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px}
@@ -292,12 +294,22 @@ html[dir=rtl] .stat .bar i,html[dir=rtl] .stat .bar u,html[dir=rtl] .prog .pb i{
  .rbtns button{padding-inline:12px}
 }
 
+html[dir=rtl] .logo .ar{text-align:right}
+/* voile discret derrière la colonne du menu : lisibilité du texte devant les arcades lumineuses */
+#scr-main::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(90deg,rgba(11,14,23,.82) 0%,rgba(11,14,23,.55) 30%,rgba(11,14,23,0) 52%)}
+html[dir=rtl] #scr-main::before{background:linear-gradient(270deg,rgba(11,14,23,.82) 0%,rgba(11,14,23,.55) 30%,rgba(11,14,23,0) 52%)}
+@media (max-height:420px){.logo .ar,#scr-main .hero .tag{display:none}}
+/* téléphone en paysage : liste à gauche, panneau à droite, la voiture reste visible au centre */
+@media (max-height:520px) and (min-aspect-ratio:4/3){.garpanel{width:min(340px,43vw);margin-inline-start:auto;max-height:calc(100vh - 70px)}}
+/* très petites hauteurs (téléphone 360 px en paysage) : tout le menu tient sans défilement */
+@media (max-height:400px){#scr-main{gap:8px;padding-top:52px;padding-bottom:10px}.logo.big{font-size:30px}.mainnav{gap:5px}.mainnav .nbtn{padding-block:7px 6px}.nbtn.play b{font-size:18px}}
+
 </style>
 </head>
 <body>
 <canvas id="gl"></canvas>
 
-<div id="loading" class="overlay show"><div class="logo big">SUPER<span>JOUD</span></div><div class="bar"><i></i></div><p id="loadtxt" data-i18n="loading">Démarrage du moteur…</p></div>
+<div id="loading" class="overlay show"><div class="logo big">SUPER<span>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر جود</b></div><div class="bar"><i></i></div><p id="loadtxt" data-i18n="loading">Démarrage du moteur…</p></div>
 <div id="err" class="overlay"><div class="box"><h2>Oups…</h2><p id="errtxt"></p></div></div>
 
 <div id="ui">
@@ -308,7 +320,7 @@ html[dir=rtl] .stat .bar i,html[dir=rtl] .stat .bar u,html[dir=rtl] .prog .pb i{
   </div>
 
   <section id="scr-main" class="screen">
-    <div class="hero"><div class="logo big">SUPER<span>JOUD</span></div><div class="tag" data-i18n="tagline">Courses de rue · Police · Nitro</div></div>
+    <div class="hero"><div class="logo big">SUPER<span>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر جود</b></div><div class="tag" data-i18n="tagline">Courses de rue · Police · Nitro</div></div>
     <nav class="mainnav">
       <button id="m-play" class="nbtn play"><b><svg viewBox="0 0 24 24" class="ic"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg><span data-i18n="play">JOUER</span></b><small id="m-play-sub"></small></button>
       <button data-go="career" class="nbtn"><b data-i18n="career">CARRIÈRE</b><small id="m-career"></small></button>
@@ -416,6 +428,9 @@ const V3 = {
   norm: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; },
   lerp: (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t],
 };
+const GRADE0 = { lift: new Float32Array([0, 0, 0]), gain: new Float32Array([1, 1, 1]), con: 0.25 };
+// étalonnage : lift = teinte des ombres, gain = teinte des hautes lumières, con = courbe en S
+const GR = (lift, gain, con) => ({ lift: new Float32Array(lift), gain: new Float32Array(gain), con });
 const C_ZERO = new Float32Array([0, 0, 0]), C_ONE = new Float32Array([1, 1, 1]), C_RIM = new Float32Array([0.8, 0.8, 0.82]), C_FAR = new Float32Array([0, -999, 0]), C_FWD = new Float32Array([0, 0, 1]);
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -563,7 +578,7 @@ uniform vec3 uCam; uniform vec3 uSunDir; uniform vec3 uSunCol; uniform vec3 uSky
 uniform vec3 uPaint; uniform vec3 uRim; uniform vec3 uUnderCol; uniform vec3 uHeadPos; uniform vec3 uHeadDir; uniform vec3 uBakeCol;
 uniform vec3 uLP[8]; uniform vec3 uLC[8];
 uniform float uFogDen; uniform float uTime; uniform float uBrake; uniform float uDyn; uniform float uHead; uniform float uWet; uniform float uNight; uniform float uAlpha;
-uniform float uExpo; uniform float uDetail; uniform float uShOn; uniform float uShTex;
+uniform float uExpo; uniform float uDetail; uniform float uShOn; uniform float uShTex; uniform float uStudio;
 uniform sampler2D uNoise; uniform sampler2D uShadow;
 ${GLSL_COMMON}
 float unpackD(vec4 c){ return dot(c, vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0)); }
@@ -591,8 +606,16 @@ vec3 env(vec3 r){
     if (uNight > 0.5) { float lt = step(0.93, fract(sin(floor(az*90.0)*12.9898 + floor(t*160.0)*78.233)*43758.5453)); sil += vec3(1.0,0.75,0.45)*lt*0.6; }
     c = mix(c, sil, 0.85);
   }
+  if (uStudio > 0.0) {
+    // showroom : bandeaux lumineux du plafond (lignes nettes dans le vernis) + lueur ambre/bleue des arcades à l'horizon
+    float band = smoothstep(0.5,0.56,r.y)*smoothstep(0.02,0.0,abs(fract(r.z/max(r.y,0.2)*0.62+0.5)-0.5)-0.035);
+    float az2 = atan(r.z, r.x); float arc = smoothstep(0.28,0.02,abs(r.y-0.12))*(0.6+0.4*sin(az2*12.0));
+    c += vec3(1.0,0.96,0.9)*band*1.5*uStudio + mix(vec3(1.0,0.5,0.16), vec3(0.25,0.55,1.0), step(0.6, fract(az2*0.955+0.1)))*arc*0.35*uStudio;
+    return c;
+  }
   float s = max(dot(r,uSunDir),0.0);
-  return c + lin(uSunCol)*(pow(s,400.0)*6.0 + pow(s,12.0)*0.25);
+  // soleil dans les reflets : disque net + léger halo (une grosse tache uniforme paraissait plastique)
+  return c + lin(uSunCol)*(pow(s,1800.0)*10.0 + pow(s,24.0)*0.18);
 }
 void main(){
   float m = vMat; int mi = int(m + 0.5); vec3 base = lin(vCol);
@@ -609,9 +632,9 @@ void main(){
   float spec=0.06, shin=10.0, refl=0.0, emis=0.0, trans=0.0, coat=0.0;
   vec3 W = vW;
   if (mi == 0) { }
-  else if (mi == 1) { base = lin(uPaint)*vCol.r; spec=1.0; shin=90.0; coat=1.0; }
+  else if (mi == 1) { base = lin(uPaint)*vCol.r; spec=0.6; shin=60.0; coat=1.0; }
   else if (mi == 2) { emis = 1.6 + uNight*0.9; }
-  else if (mi == 3) { spec=1.4; shin=160.0; refl=0.9; }
+  else if (mi == 3) { spec=1.6; shin=220.0; refl=0.9; coat=2.0; }
   else if (mi == 4) { spec=1.0; shin=50.0; refl=0.6; }
   else if (mi == 5) { emis = 0.4 + 2.6*uBrake; }
   else if (mi == 6) { float f = step(0.0, sin(uTime*13.0)); emis = 0.2 + f*3.5; }
@@ -637,7 +660,7 @@ void main(){
   }
   else if (mi == 10) { fd = dist*0.32; fogF = 1.0 - exp(-fd*fd*uFogDen*uFogDen); }
   else if (mi == 14) { base = uUnderCol; emis = 1.8; }
-  else if (mi == 15) { emis = 1.6 + uNight*1.2; }
+  else if (mi == 15) { emis = 1.0 + uNight*(0.75 - uStudio*0.35); }
   else if (mi == 16) {
     if (uDetail > 0.5) { float g = texture2D(uNoise, W.xz*0.21).r, md = texture2D(uNoise, W.xz*0.027).g, lg = texture2D(uNoise, W.xz*0.0042).b;
       base *= (0.86+0.28*g)*(0.72+0.56*md); base = mix(base, base*vec3(1.25,1.08,0.7), smoothstep(0.45,0.8,lg)*0.7*step(base.r, base.g));
@@ -690,9 +713,17 @@ void main(){
       sc += hc*pow(max(dot(n,normalize(-l+v)),0.0),shin)*spec;
     }
     float ndv = max(dot(n,v),0.0);
-    if (coat > 0.0) {
+    if (coat > 1.5) {
+      // vitre teintée : sombre de face, reflet du ciel en incidence rasante (Fresnel)
       vec3 r = reflect(-v,n); float fr = 0.04+0.96*pow(1.0-ndv,5.0);
-      col = col*(1.0-fr*0.8) + env(r)*(fr*0.9+0.06)*mix(1.0,0.7,uNight);
+      col = col*0.45 + env(r)*(0.07+0.85*fr)*mix(1.0,0.65,uNight)*mix(1.0,0.4,uStudio);
+    } else if (coat > 0.0) {
+      // peinture vernie : teinte plus dense de face (effet « flop »), paillettes métalliques, vernis net
+      vec3 r = reflect(-v,n); float fr = 0.04+0.96*pow(1.0-ndv,5.0);
+      col *= mix(0.72, 1.0, ndv); // teinte plus dense de face (effet « flop »)
+      col = col*(1.0-fr*0.7) + env(r)*(fr*0.62+0.05)*mix(1.0,0.75,uNight);
+      // reflet net du soleil dans le vernis (petit éclat, pas une tache)
+      sc += lin(uSunCol)*pow(max(dot(n, normalize(uSunDir+v)),0.0), 2600.0)*4.0*sh;
     } else if (refl > 0.0) {
       vec3 r = reflect(-v,n); float fr = 0.04+0.96*pow(1.0-ndv,5.0);
       col = mix(col, env(r), clamp(refl*(0.25+fr),0.0,1.0));
@@ -762,7 +793,23 @@ void main(){ vec3 c = texture2D(uTex,vUv).rgb*0.227;
 const SH_COMP_F = `precision mediump float; varying vec2 vUv; uniform sampler2D uScene; uniform sampler2D uBloom;
 uniform float uBloomAmt; uniform float uBlur; uniform float uVig; uniform float uSat; uniform vec3 uTint; uniform float uFlash; uniform float uRain; uniform float uTime; uniform vec2 uRes;
 uniform float uSpeed; uniform float uHaze; uniform float uHit; uniform float uNos;
+uniform float uAA; uniform vec3 uLift; uniform vec3 uGain; uniform float uCon; uniform vec3 uSun; uniform vec3 uSunTint; uniform float uRays;
 float hh(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
+// anti-crénelage FXAA (9 lectures) : lisse les bords des voitures, rails et poteaux sans MSAA
+vec3 fxaa(vec2 uv){
+  vec2 px = 1.0/uRes; vec3 L = vec3(0.299,0.587,0.114);
+  vec3 nw = texture2D(uScene,uv+vec2(-1.0,-1.0)*px).rgb, ne = texture2D(uScene,uv+vec2(1.0,-1.0)*px).rgb;
+  vec3 sw = texture2D(uScene,uv+vec2(-1.0,1.0)*px).rgb, se = texture2D(uScene,uv+vec2(1.0,1.0)*px).rgb, m = texture2D(uScene,uv).rgb;
+  float lnw = dot(nw,L), lne = dot(ne,L), lsw = dot(sw,L), lse = dot(se,L), lm = dot(m,L);
+  float lmin = min(lm, min(min(lnw,lne),min(lsw,lse))), lmax = max(lm, max(max(lnw,lne),max(lsw,lse)));
+  if (lmax - lmin < max(0.03, lmax*0.1)) return m;
+  vec2 dir = vec2(-((lnw+lne)-(lsw+lse)), (lnw+lsw)-(lne+lse));
+  float red = max((lnw+lne+lsw+lse)*0.03125, 1.0/128.0);
+  dir = clamp(dir/(min(abs(dir.x),abs(dir.y))+red), -8.0, 8.0)*px;
+  vec3 a = 0.5*(texture2D(uScene,uv-dir*0.1667).rgb + texture2D(uScene,uv+dir*0.1667).rgb);
+  vec3 b = a*0.5 + 0.25*(texture2D(uScene,uv-dir*0.5).rgb + texture2D(uScene,uv+dir*0.5).rgb);
+  float lb = dot(b,L); return (lb < lmin || lb > lmax) ? a : b;
+}
 void main(){ vec2 uv=vUv;
  if (uRain > 0.0) {
    vec2 g = uv*vec2(uRes.x/uRes.y,1.0)*7.0; vec2 id = floor(g); vec2 f = fract(g)-0.5; float r = hh(id);
@@ -771,15 +818,42 @@ void main(){ vec2 uv=vUv;
    uv += (f-c)*drop*0.05*uRain;
  }
  if (uHaze > 0.0) { float band = smoothstep(0.36,0.47,uv.y)*smoothstep(0.66,0.53,uv.y); uv.x += sin(uv.y*240.0 + uTime*8.0)*0.0014*uHaze*band; uv.y += cos(uv.x*180.0 + uTime*6.0)*0.0007*uHaze*band; }
- vec3 c=texture2D(uScene,uv).rgb;
+ vec3 c = uAA > 0.5 ? fxaa(uv) : texture2D(uScene,uv).rgb;
+ vec2 dc0 = uv - vec2(0.5,0.55);
+ // aberration chromatique sur les bords à grande vitesse / nitro / choc
+ float ca = (uSpeed*0.5 + uNos*0.6 + uHit)*0.006*dot(dc0,dc0)*4.0;
+ if (ca > 0.0002) { c.r = texture2D(uScene, uv + dc0*ca).r; c.b = texture2D(uScene, uv - dc0*ca).b; }
  if (uBlur>0.0005) { vec2 dd=uv-vec2(0.5,0.55); vec2 dir=dd*uBlur*smoothstep(0.08,0.55,length(dd)); float j=hh(uv); vec3 acc=vec3(0.0); for(int i=0;i<8;i++){ acc+=texture2D(uScene,uv-dir*(float(i)+j)).rgb; } c=acc/8.0; }
  c += texture2D(uBloom,uv).rgb*uBloomAmt;
+ // soleil : visibilité estimée sur le bright-pass (le relief ou un immeuble le masque), rayons, halo, traînée et reflets d'objectif
+ if (uSun.z > 0.0) {
+   vec2 sp = uSun.xy, asp = vec2(uRes.x/uRes.y, 1.0);
+   float vis = dot(texture2D(uBloom, sp).rgb + texture2D(uBloom, sp+vec2(0.015,0.0)).rgb + texture2D(uBloom, sp-vec2(0.015,0.0)).rgb + texture2D(uBloom, sp+vec2(0.0,0.025)).rgb, vec3(0.083));
+   vis = smoothstep(0.04, 0.35, vis)*uSun.z;
+   if (vis > 0.001) {
+     vec3 tint = uSunTint;
+     if (uRays > 0.5) {
+       vec2 st = (sp - uv)/14.0; vec2 q = uv + st*hh(uv*uRes); float w = 1.0; vec3 acc = vec3(0.0);
+       for (int i=0;i<14;i++){ acc += texture2D(uBloom, q).rgb*w; w *= 0.9; q += st; }
+       c += acc*tint*0.075*vis;
+     }
+     float ds = length((uv-sp)*asp);
+     c += tint*(exp(-ds*7.0)*0.28 + exp(-ds*22.0)*0.25)*vis;
+     c += tint*exp(-abs(uv.y-sp.y)*90.0)*exp(-abs(uv.x-sp.x)*3.0)*0.1*vis;
+     vec2 ax = vec2(0.5) - sp;
+     for (int i=0;i<4;i++){ float k = 0.45 + float(i)*0.42; vec2 gp = sp + ax*k*1.6; float r = 0.025 + 0.022*float(i);
+       float gd = length((uv-gp)*asp); float ring = smoothstep(r, r*0.7, gd);
+       c += mix(vec3(0.35,0.7,1.0), vec3(1.0,0.6,0.25), fract(float(i)*0.37))*ring*0.035*vis; }
+   }
+ }
  vec2 dc = uv - vec2(0.5,0.55); float rr = length(dc*vec2(uRes.x/uRes.y,1.0)*0.75);
  if (uSpeed > 0.0) { float an = atan(dc.y, dc.x); float id = floor(an*48.0); float on = step(0.78, fract(sin(id*43.13)*91.7)); float mv = fract(rr*2.4 - uTime*4.0 + hh(vec2(id,1.0))); float st = on*smoothstep(0.28,0.62,rr)*smoothstep(0.0,0.25,mv)*smoothstep(0.55,0.25,mv); c += vec3(0.85,0.93,1.0)*st*0.2*uSpeed; }
  c = mix(c, c*vec3(0.82,1.0,1.3)+vec3(0.0,0.02,0.07), uNos*smoothstep(0.3,0.8,rr)*0.85);
  c = mix(c, vec3(1.0,0.32,0.18), uHit*smoothstep(0.25,0.8,rr)*0.55);
  float g = dot(c,vec3(0.299,0.587,0.114)); c = mix(vec3(g),c,uSat); c*=uTint;
- c = mix(c, c*c*(3.0-2.0*c), 0.25);
+ // étalonnage par ambiance : ombres teintées (lift), hautes lumières (gain), courbe en S (contraste)
+ c = clamp(uGain*(c + uLift*(1.0-c)), 0.0, 1.0);
+ c = mix(c, c*c*(3.0-2.0*c), uCon);
  float vg = smoothstep(1.05,0.3,length((uv-0.5)*vec2(1.25,1.0))); c *= mix(1.0,vg,uVig);
  c += (hh(uv*uRes+uTime)-0.5)*0.012;
  c = mix(c, vec3(1.0,0.97,0.9), uFlash);
@@ -973,7 +1047,7 @@ const R = {
     gl.uniform3fv(u.uCam, cam.eye);
     gl.uniform3fv(u.uSunDir, env.sunDir); gl.uniform3fv(u.uSunCol, env.sunCol); gl.uniform3fv(u.uSkyCol, env.sky);
     gl.uniform3fv(u.uHorCol, env.hor); gl.uniform3fv(u.uGndCol, env.gnd); gl.uniform3fv(u.uFogCol, env.fog);
-    gl.uniform3fv(u.uBakeCol, env.bake || C_ZERO);
+    gl.uniform3fv(u.uBakeCol, env.bake || C_ZERO); gl.uniform1f(u.uStudio, env.studio || 0);
     gl.uniform1f(u.uFogDen, env.fogDen); gl.uniform1f(u.uTime, env.time || 0); gl.uniform1f(u.uWind, this.detail ? (env.time || 0.001) * (env.rain ? 1.6 : 1) : 0); gl.uniform1f(u.uWet, env.wet || 0);
     gl.uniform1f(u.uNight, env.night ? 1 : 0); gl.uniform1f(u.uAlpha, 1); gl.uniform1f(u.uExpo, expo); gl.uniform1f(u.uDetail, this.detail);
     gl.uniform3fv(u.uLP, env.lp); gl.uniform3fv(u.uLC, env.lc);
@@ -1018,6 +1092,11 @@ const R = {
   },
   blendAlpha() { const gl = this.gl; gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); },
   blendAdd() { const gl = this.gl; gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false); },
+  // mélange à alpha constant (sol poli au-dessus du reflet), écriture de profondeur conservée
+  blendConst(a) { const gl = this.gl; gl.enable(gl.BLEND); gl.blendColor(0, 0, 0, a); gl.blendFunc(gl.CONSTANT_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA); gl.depthMask(true); },
+  // reflets sur route mouillée : ne s'affichent que DERRIÈRE une surface (la route), en addition douce
+  wetBegin(a) { const gl = this.gl; gl.enable(gl.BLEND); gl.blendColor(0, 0, 0, a); gl.blendFunc(gl.CONSTANT_ALPHA, gl.ONE); gl.depthMask(false); gl.depthFunc(gl.GREATER); },
+  wetEnd() { const gl = this.gl; gl.depthFunc(gl.LEQUAL); this.blendOff(); },
   blendOff() { const gl = this.gl; gl.disable(gl.BLEND); gl.depthMask(true); },
   endMain() { const gl = this.gl, AL = this.P.al; for (let k = 0; k < AL.length; k++) gl.disableVertexAttribArray(AL[k]); this.blendOff(); },
   lines(data, n, col) {
@@ -1028,6 +1107,18 @@ const R = {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.lineBuf); gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, n * 8), gl.DYNAMIC_DRAW);
     gl.enableVertexAttribArray(L.a.aP); gl.vertexAttribPointer(L.a.aP, 4, gl.FLOAT, false, 16, 0);
     gl.drawArrays(gl.LINES, 0, n * 2); gl.disableVertexAttribArray(L.a.aP); this.blendOff();
+  },
+  // position du soleil à l'écran (uv) + intensité, sans allocation
+  sunUV(amt) {
+    const P = this.sunP || (this.sunP = new Float32Array(3)), Tn = this.sunT || (this.sunT = new Float32Array(3)), e = this.env;
+    P[2] = 0; if (!amt || !e || e.night || e.rain) return;
+    const d = e.sunDir, m = this.vrot, pr = this.proj;
+    const vx = m[0] * d[0] + m[4] * d[1] + m[8] * d[2], vy = m[1] * d[0] + m[5] * d[1] + m[9] * d[2], vz = m[2] * d[0] + m[6] * d[1] + m[10] * d[2];
+    if (vz > -0.05) return;
+    const x = pr[0] * vx / -vz * 0.5 + 0.5, y = pr[5] * vy / -vz * 0.5 + 0.5;
+    const out = Math.max(0, Math.max(-x, x - 1, -y, y - 1));
+    P[0] = x; P[1] = y; P[2] = amt * Math.max(0, 1 - out * 4);
+    const sc = e.sunCol, mx = Math.max(sc[0], sc[1], sc[2], 0.001); Tn[0] = sc[0] / mx; Tn[1] = sc[1] / mx; Tn[2] = sc[2] / mx;
   },
   finish(fx) {
     const gl = this.gl;
@@ -1054,6 +1145,9 @@ const R = {
     gl.uniform1f(C.u.uSat, fx.sat || 1.1); gl.uniform3fv(C.u.uTint, fx.tint || C_ONE); gl.uniform1f(C.u.uFlash, fx.flash || 0);
     gl.uniform1f(C.u.uRain, fx.rain || 0); gl.uniform1f(C.u.uTime, fx.time || 0); gl.uniform2f(C.u.uRes, this.W, this.H);
     gl.uniform1f(C.u.uSpeed, fx.speed || 0); gl.uniform1f(C.u.uHaze, fx.haze || 0); gl.uniform1f(C.u.uHit, fx.hit || 0); gl.uniform1f(C.u.uNos, fx.nos || 0);
+    const gr = fx.grade || GRADE0;
+    gl.uniform1f(C.u.uAA, this.aa ? 1 : 0); gl.uniform3fv(C.u.uLift, gr.lift); gl.uniform3fv(C.u.uGain, gr.gain); gl.uniform1f(C.u.uCon, gr.con);
+    this.sunUV(useBloom ? (fx.flare || 0) : 0); gl.uniform3fv(C.u.uSun, this.sunP); gl.uniform3fv(C.u.uSunTint, this.sunT); gl.uniform1f(C.u.uRays, this.rays ? 1 : 0);
     quad(C);
     gl.activeTexture(gl.TEXTURE0);
     gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
@@ -1351,6 +1445,14 @@ function buildCarModel(styleName, extra = {}) {
   if (!S.ev && styleName !== 'hyper') mb.box(0, nose.ym - 0.18, hL - 0.005, W * 0.34, 0.09, 0.04, TRIM, 4);
   mb.box(0, nose.yb + 0.06, hL + 0.03, 0.52, 0.12, 0.02, [0.04, 0.04, 0.045], 0);
   mb.box(0, tail.ym - 0.32, -hL - 0.005, 0.52, 0.12, 0.02, [0.04, 0.04, 0.045], 0);
+  // plaques à la tunisienne : fond noir, caractères blancs (chiffres stylisés + mot central)
+  const glyphs = (y0, z0, dz) => {
+    for (const gx of [-0.205, -0.165, -0.125, 0.095, 0.135, 0.175, 0.215]) mb.box(gx, y0 + 0.025, z0, 0.026, 0.07, 0.008, [0.88, 0.88, 0.86], 0);
+    mb.box(-0.01, y0 + 0.04, z0, 0.11, 0.018, 0.008, [0.88, 0.88, 0.86], 0); mb.box(0.03, y0 + 0.058, z0, 0.016, 0.03, 0.008, [0.88, 0.88, 0.86], 0); mb.box(-0.05, y0 + 0.058, z0, 0.012, 0.022, 0.008, [0.88, 0.88, 0.86], 0);
+  };
+  glyphs(tail.ym - 0.32, -hL - 0.018, -1); glyphs(nose.yb + 0.06, hL + 0.043, 1);
+  // troisième feu stop en haut de la lunette
+  mb.box(0, S.roof - 0.045, zR + S.rs * 0.92, S.roofW * hW * 0.7, 0.035, 0.04, [1, 0.05, 0.03], 5);
   mb.box(0, S.bot - 0.02, hL - 0.12, W * 0.86, 0.04, 0.32, CARBON, 4);
   mb.box(0, S.bot - 0.01, -hL + 0.2, W * 0.7, 0.1, 0.4, CARBON, 4);
   for (let k = -2; k <= 2; k++) mb.box(k * 0.22, S.bot - 0.01, -hL + 0.15, 0.02, 0.14, 0.32, CARBON, 4);
@@ -1484,43 +1586,43 @@ const TRACKS = [
   {
     id: 'tunis', name: 'Tunis by Night', sub: 'Centre-ville • Nuit', theme: 'city', seed: 11,
     pts: [[0, -300, 2], [0, -40, 0], [0, 250, 4], [40, 410, 6], [160, 470, 8], [320, 460, 6], [420, 380, 4], [440, 250, 2], [380, 150, 0], [400, 40, 2], [520, -20, 6], [600, -150, 10], [560, -300, 8], [420, -380, 4], [250, -360, 2], [140, -420, 0], [40, -420, 1]],
-    env: { sky: [0.012, 0.016, 0.05], hor: [0.13, 0.08, 0.19], gnd: [0.03, 0.03, 0.04], fog: [0.09, 0.065, 0.14], fogDen: 0.0039, sunDir: nrm([0.35, 0.55, -0.4]), sunCol: [0.14, 0.16, 0.27], wet: 1, clouds: 0, night: true, bake: [2.6, 1.55, 0.75], sunSize: 0.0006 },
+    env: { sky: [0.012, 0.016, 0.05], hor: [0.13, 0.08, 0.19], gnd: [0.03, 0.03, 0.04], fog: [0.09, 0.065, 0.14], fogDen: 0.0039, sunDir: nrm([0.35, 0.55, -0.4]), sunCol: [0.14, 0.16, 0.27], wet: 1, clouds: 0, night: true, bake: [2.6, 1.55, 0.75], sunSize: 0.0006, grade: GR([0.0, 0.025, 0.06], [1.07, 0.99, 0.9], 0.32) },
     road: [0.095, 0.095, 0.105], cols: [[0.1, 0.1, 0.11], [0.085, 0.085, 0.095], [0.06, 0.06, 0.07], [0.3, 0.3, 0.3], [0.3, 0.3, 0.3], [0.3, 0.3, 0.3]],
   },
   {
     id: 'sahara', name: 'Sahara Sunset', sub: 'Désert • Coucher de soleil', theme: 'desert', seed: 23,
     pts: [[0, -500, 0], [0, 0, 4], [100, 350, 10], [350, 500, 16], [650, 420, 12], [800, 150, 6], [700, -50, 2], [850, -300, 8], [750, -600, 14], [450, -700, 10], [250, -600, 6], [100, -700, 2]],
-    env: { sky: [0.16, 0.24, 0.52], hor: [1.0, 0.55, 0.3], gnd: [0.5, 0.32, 0.2], fog: [0.9, 0.56, 0.38], fogDen: 0.0021, sunDir: nrm([-0.65, 0.1, 0.55]), sunCol: [1.5, 0.82, 0.42], wet: 0, clouds: 0.5, sunSize: 0.0028, haze: 1, dust: [0.86, 0.64, 0.42] },
+    env: { sky: [0.16, 0.24, 0.52], hor: [1.0, 0.55, 0.3], gnd: [0.5, 0.32, 0.2], fog: [0.9, 0.56, 0.38], fogDen: 0.0021, sunDir: nrm([-0.65, 0.1, 0.55]), sunCol: [1.5, 0.82, 0.42], wet: 0, clouds: 0.5, sunSize: 0.0028, haze: 1, dust: [0.86, 0.64, 0.42], sat: 1.02, grade: GR([0.02, 0.008, 0.012], [1.03, 0.98, 0.92], 0.3) },
     road: [0.21, 0.19, 0.18], cols: [[0.8, 0.56, 0.35], [0.76, 0.52, 0.32], [0.7, 0.47, 0.29], [0.62, 0.46, 0.31], [0.55, 0.33, 0.2], [0.6, 0.38, 0.24]],
   },
   {
     id: 'atlas', name: "Col de l'Atlas", sub: 'Montagne • Grand soleil', theme: 'mountain', seed: 37,
     pts: [[0, -200, 10], [0, 100, 20], [-80, 260, 32], [-20, 420, 45], [150, 480, 55], [300, 400, 48], [280, 250, 38], [420, 180, 30], [560, 260, 36], [680, 160, 42], [640, -40, 30], [500, -120, 22], [420, -300, 14], [250, -380, 8], [100, -330, 6]],
-    env: { sky: [0.18, 0.4, 0.85], hor: [0.68, 0.78, 0.92], gnd: [0.25, 0.3, 0.2], fog: [0.66, 0.75, 0.86], fogDen: 0.0023, sunDir: nrm([0.4, 0.75, 0.3]), sunCol: [1.25, 1.15, 1.0], wet: 0, clouds: 0.8, sunSize: 0.0012 },
+    env: { sky: [0.18, 0.4, 0.85], hor: [0.68, 0.78, 0.92], gnd: [0.25, 0.3, 0.2], fog: [0.66, 0.75, 0.86], fogDen: 0.0023, sunDir: nrm([0.4, 0.75, 0.3]), sunCol: [1.25, 1.15, 1.0], wet: 0, clouds: 0.8, sunSize: 0.0012, sat: 0.98, grade: GR([0.0, 0.012, 0.03], [1.02, 1.0, 0.97], 0.3) },
     road: [0.16, 0.16, 0.17], cols: [[0.25, 0.37, 0.15], [0.22, 0.33, 0.13], [0.2, 0.3, 0.12], [0.36, 0.33, 0.28], [0.42, 0.39, 0.35], [0.5, 0.48, 0.45]],
   },
   {
     id: 'corniche', name: 'Corniche Sidi Bou', sub: 'Bord de mer • Matin', theme: 'coast', seed: 51,
     pts: [[0, -400, 6], [0, -100, 10], [30, 200, 14], [150, 380, 18], [350, 420, 12], [520, 330, 8], [560, 150, 4], [480, 0, 3], [520, -180, 5], [640, -320, 8], [600, -480, 6], [420, -560, 4], [220, -520, 3], [80, -560, 4]],
-    env: { sky: [0.16, 0.4, 0.88], hor: [0.72, 0.84, 0.95], gnd: [0.3, 0.35, 0.35], fog: [0.72, 0.82, 0.93], fogDen: 0.0018, sunDir: nrm([-0.35, 0.55, -0.6]), sunCol: [1.18, 1.08, 0.94], wet: 0, clouds: 0.55, sunSize: 0.0013 },
+    env: { sky: [0.16, 0.4, 0.88], hor: [0.72, 0.84, 0.95], gnd: [0.3, 0.35, 0.35], fog: [0.72, 0.82, 0.93], fogDen: 0.0018, sunDir: nrm([-0.35, 0.55, -0.6]), sunCol: [1.18, 1.08, 0.94], wet: 0, clouds: 0.55, sunSize: 0.0013, grade: GR([0.0, 0.018, 0.035], [1.03, 1.01, 0.97], 0.26) },
     road: [0.15, 0.15, 0.16], cols: [[0.62, 0.6, 0.42], [0.55, 0.56, 0.36], [0.5, 0.5, 0.34], [0.6, 0.56, 0.45], [0.5, 0.45, 0.4], [0.55, 0.5, 0.45]],
   },
   {
     id: 'circuit', name: 'Circuit de Carthage', sub: 'Circuit pro • Après-midi', theme: 'circuit', seed: 63,
     pts: [[0, -350, 2], [0, 350, 2], [60, 460, 3], [200, 470, 4], [260, 400, 4], [200, 300, 3], [260, 180, 3], [420, 160, 4], [520, 240, 5], [620, 180, 5], [640, 20, 4], [540, -80, 3], [560, -220, 3], [480, -380, 2], [300, -430, 2], [150, -380, 2], [60, -460, 2]],
-    env: { sky: [0.18, 0.4, 0.86], hor: [0.7, 0.8, 0.92], gnd: [0.28, 0.32, 0.22], fog: [0.7, 0.78, 0.88], fogDen: 0.0019, sunDir: nrm([0.55, 0.6, 0.35]), sunCol: [1.3, 1.18, 1.0], wet: 0, clouds: 0.45, sunSize: 0.0012 },
+    env: { sky: [0.18, 0.4, 0.86], hor: [0.7, 0.8, 0.92], gnd: [0.28, 0.32, 0.22], fog: [0.7, 0.78, 0.88], fogDen: 0.0019, sunDir: nrm([0.55, 0.6, 0.35]), sunCol: [1.3, 1.18, 1.0], wet: 0, clouds: 0.45, sunSize: 0.0012, grade: GR([0.012, 0.01, 0.022], [1.03, 1.0, 0.95], 0.33) },
     road: [0.15, 0.15, 0.16], cols: [[0.27, 0.44, 0.16], [0.25, 0.41, 0.15], [0.22, 0.36, 0.14], [0.3, 0.42, 0.18], [0.45, 0.42, 0.38], [0.5, 0.48, 0.45]],
   },
   {
     id: 'port', name: 'Port de Radès', sub: 'Docks • Nuit', theme: 'port', seed: 77,
     pts: [[0, -300, 2], [0, 200, 2], [40, 262, 2], [300, 272, 2], [352, 232, 2], [362, -20, 2], [402, -62, 2], [600, -62, 2], [642, -102, 2], [642, -330, 2], [600, -372, 2], [60, -372, 2], [2, -332, 2]],
-    env: { sky: [0.012, 0.016, 0.045], hor: [0.1, 0.08, 0.14], gnd: [0.03, 0.03, 0.04], fog: [0.08, 0.065, 0.11], fogDen: 0.0034, sunDir: nrm([-0.3, 0.6, 0.4]), sunCol: [0.13, 0.15, 0.25], wet: 0.55, clouds: 0, night: true, bake: [1.9, 1.15, 0.58], sunSize: 0.0006 },
+    env: { sky: [0.012, 0.016, 0.045], hor: [0.1, 0.08, 0.14], gnd: [0.03, 0.03, 0.04], fog: [0.08, 0.065, 0.11], fogDen: 0.0034, sunDir: nrm([-0.3, 0.6, 0.4]), sunCol: [0.13, 0.15, 0.25], wet: 0.55, clouds: 0, night: true, bake: [1.9, 1.15, 0.58], sunSize: 0.0006, grade: GR([0.0, 0.035, 0.055], [1.08, 0.97, 0.84], 0.34) },
     road: [0.1, 0.1, 0.105], cols: [[0.26, 0.26, 0.25], [0.22, 0.22, 0.21], [0.2, 0.2, 0.2], [0.3, 0.3, 0.29], [0.3, 0.3, 0.3], [0.34, 0.33, 0.31]],
   },
   {
     id: 'aindraham', name: "Forêt d'Aïn Draham", sub: 'Forêt • Pluie et brouillard', theme: 'forest', seed: 91, weather: 'rain',
     pts: [[0, -250, 10], [-30, 0, 18], [20, 220, 26], [160, 330, 34], [320, 300, 30], [380, 150, 22], [300, 40, 16], [360, -120, 14], [520, -160, 20], [600, -300, 26], [480, -430, 18], [300, -400, 12], [160, -460, 8], [60, -400, 8]],
-    env: { sky: [0.3, 0.34, 0.38], hor: [0.5, 0.54, 0.56], gnd: [0.18, 0.22, 0.16], fog: [0.46, 0.5, 0.52], fogDen: 0.0041, sunDir: nrm([0.25, 0.85, 0.3]), sunCol: [0.62, 0.63, 0.62], wet: 1, clouds: 1.0, rain: true, sunSize: 0.00001 },
+    env: { sky: [0.3, 0.34, 0.38], hor: [0.5, 0.54, 0.56], gnd: [0.18, 0.22, 0.16], fog: [0.46, 0.5, 0.52], fogDen: 0.0041, sunDir: nrm([0.25, 0.85, 0.3]), sunCol: [0.62, 0.63, 0.62], wet: 1, clouds: 1.0, rain: true, sunSize: 0.00001, grade: GR([0.0, 0.018, 0.025], [0.97, 1.0, 1.02], 0.27) },
     road: [0.12, 0.12, 0.13], cols: [[0.2, 0.3, 0.12], [0.18, 0.27, 0.11], [0.15, 0.23, 0.1], [0.28, 0.24, 0.17], [0.36, 0.36, 0.33], [0.42, 0.42, 0.4]],
   }
 ];
@@ -1736,8 +1838,19 @@ function buildTrack(def, quality) {
         mb.quad(pos(i, side * (W + 4), 0.18), pos(j, side * (W + 4), 0.18), pos(j, side * (W + 4), 0.06), pos(i, side * (W + 4), 0.06), cc, 0);
       } else {
         const curb = Math.abs(kk[i]) > 0.007;
-        const c = curb ? ((i >> 1) % 2 ? [0.78, 0.08, 0.06] : [0.88, 0.88, 0.86]) : cols[3];
-        mb.quad(pos(i, side * W, 0), pos(j, side * W, 0), pos(j, side * (W + 1.2), curb ? 0.07 : -0.02), pos(i, side * (W + 1.2), curb ? 0.07 : -0.02), curb ? c : jit(c, r, 0.04), curb ? 0 : TMAT);
+        if (curb) {
+          // vibreur : bandes rouge/blanc d'1 m, profil bombé (bord intérieur, crête, bord extérieur)
+          const L3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+          const prf = [[0, 0], [0.55, 0.075], [1.2, 0.035]];
+          for (let k = 0; k < 2; k++) {
+            const c = (i * 2 + k) % 2 ? [0.74, 0.07, 0.05] : [0.8, 0.8, 0.78];
+            for (let q = 0; q < 2; q++) {
+              const a0 = pos(i, side * (W + prf[q][0]), prf[q][1]), a1 = pos(j, side * (W + prf[q][0]), prf[q][1]);
+              const b0 = pos(i, side * (W + prf[q + 1][0]), prf[q + 1][1]), b1 = pos(j, side * (W + prf[q + 1][0]), prf[q + 1][1]);
+              mb.quad(L3(a0, a1, k / 2), L3(a0, a1, (k + 1) / 2), L3(b0, b1, (k + 1) / 2), L3(b0, b1, k / 2), q ? V3.sc(c, 0.9) : c, 0);
+            }
+          }
+        } else mb.quad(pos(i, side * W, 0), pos(j, side * W, 0), pos(j, side * (W + 1.2), -0.02), pos(i, side * (W + 1.2), -0.02), jit(cols[3], r, 0.04), TMAT);
       }
       // terrain
       const pa = prof[side][i], pb = prof[side][j];
@@ -1856,7 +1969,18 @@ function buildTrack(def, quality) {
     if (front && !opts.noShop) {
       const fx = front * (hx + 0.08);
       const sc = r() < 0.5 ? [1, 0.75, 0.45] : [0.8, 0.9, 1];
-      mb.quad(P(fx, 0.5, -hz + 1.2), P(fx, 0.5, hz - 1.2), P(fx, 3.2, hz - 1.2), P(fx, 3.2, -hz + 1.2), V3.sc(sc, 0.3), 2);
+      // vitrine : vitres séparées par des montants, lumière plus forte en haut, store en toile au-dessus
+      const span = 2 * hz - 2.4, np = Math.max(1, Math.round(span / 2.6)), pw = span / np;
+      for (let k = 0; k < np; k++) {
+        const z0 = -hz + 1.2 + k * pw + 0.09, z1 = z0 + pw - 0.18;
+        mb.quad(P(fx, 0.5, z0), P(fx, 0.5, z1), P(fx, 3.1, z1), P(fx, 3.1, z0), V3.sc(sc, 0.1), 2, V3.sc(sc, 0.1), V3.sc(sc, 0.27), V3.sc(sc, 0.27));
+        const pm = P(front * (hx + 0.1), 0.4, -hz + 1.2 + k * pw); mb.box(pm[0], pm[1], pm[2], 0.12, 2.85, 0.18, [0.08, 0.08, 0.09], 4, yaw);
+      }
+      const pe = P(front * (hx + 0.1), 0.4, hz - 1.2); mb.box(pe[0], pe[1], pe[2], 0.12, 2.85, 0.18, [0.08, 0.08, 0.09], 4, yaw);
+      if (r() < 0.6) {
+        const aw = [[0.55, 0.1, 0.08], [0.1, 0.32, 0.55], [0.12, 0.38, 0.2], [0.6, 0.45, 0.15]][Math.floor(r() * 4)];
+        mb.quad(P(fx, 3.45, -hz + 1.1), P(fx, 3.45, hz - 1.1), P(front * (hx + 1.3), 2.95, hz - 1.1), P(front * (hx + 1.3), 2.95, -hz + 1.1), aw, 0);
+      }
       if (r() < 0.55) {
         const neon = [[1, 0.15, 0.55], [0.15, 0.9, 1], [0.3, 1, 0.35], [1, 0.55, 0.08], [0.65, 0.3, 1], [1, 0.9, 0.2]][Math.floor(r() * 6)];
         const sw = 3 + r() * Math.min(7, dAl - 4), sz = (r() - 0.5) * (dAl - sw - 2);
@@ -2304,24 +2428,53 @@ function simulateLap(T, vmax, acc, lat) {
 }
 
 /* ---------- le garage (fond du menu) ---------- */
+// Showroom « médina de nuit » : arcades en fer à cheval éclairées par l'arrière, sol poli (reflet réel de la voiture),
+// bandeaux lumineux au plafond. Palette : neutres sombres (60 %), plâtre chaud (30 %), ambre/bleu Sidi Bou en accent (10 %).
 function buildGarage() {
-  const mb = new MB();
-  const seg = 48;
+  const mb = new MB(), fl = new MB(), seg = 64, TAU = Math.PI * 2;
+  // plateau tournant (réfléchissant, dessiné avec le sol) + anneau ambre
   for (let s = 0; s < seg; s++) {
-    const a0 = s / seg * Math.PI * 2, a1 = (s + 1) / seg * Math.PI * 2;
-    mb.tri([0, 0, 0], [Math.cos(a0) * 4.2, 0, Math.sin(a0) * 4.2], [Math.cos(a1) * 4.2, 0, Math.sin(a1) * 4.2], [0.07, 0.07, 0.08], 18);
-    mb.quad([Math.cos(a0) * 4.2, 0, Math.sin(a0) * 4.2], [Math.cos(a1) * 4.2, 0, Math.sin(a1) * 4.2], [Math.cos(a1) * 4.45, 0.01, Math.sin(a1) * 4.45], [Math.cos(a0) * 4.45, 0.01, Math.sin(a0) * 4.45], [0.8, 0.3, 0.03], 2);
-    mb.quad([Math.cos(a0) * 4.45, -0.01, Math.sin(a0) * 4.45], [Math.cos(a1) * 4.45, -0.01, Math.sin(a1) * 4.45], [Math.cos(a1) * 40, -0.01, Math.sin(a1) * 40], [Math.cos(a0) * 40, -0.01, Math.sin(a0) * 40], [0.05, 0.05, 0.06], 3);
+    const a0 = s / seg * TAU, a1 = (s + 1) / seg * TAU, P = (r, a, y = 0) => [Math.cos(a) * r, y, Math.sin(a) * r];
+    fl.tri(P(0, 0, 0.005), P(4.2, a0, 0.005), P(4.2, a1, 0.005), [0.11, 0.11, 0.12], 4);
+    fl.quad(P(2.6, a0, 0.007), P(2.6, a1, 0.007), P(2.64, a1, 0.007), P(2.64, a0, 0.007), [0.3, 0.3, 0.32], 4);
+    mb.quad(P(4.2, a0, 0.012), P(4.2, a1, 0.012), P(4.38, a1, 0.012), P(4.38, a0, 0.012), [0.55, 0.22, 0.03], 2);
+    fl.quad(P(4.38, a0, 0), P(4.38, a1, 0), P(40, a1, 0), P(40, a0, 0), [0.045, 0.045, 0.05], 18, [0.045, 0.045, 0.05], [0.02, 0.02, 0.025], [0.02, 0.02, 0.025]);
   }
-  for (let k = 0; k < 14; k++) {
-    const a = k / 14 * Math.PI * 2, x = Math.cos(a) * 16, z = Math.sin(a) * 16, col = k % 2 ? [0.1, 0.8, 1] : [1, 0.45, 0.06];
-    mb.box(x, 0, z, 0.25, 7, 0.25, col, 2, -a);
-    mb.box(x * 1.05, 0, z * 1.05, 4, 9, 0.5, [0.06, 0.06, 0.07], 0, -a + Math.PI / 2);
+  // arcades en fer à cheval
+  const NA = 12, RA = 13, PL = [0.62, 0.58, 0.52], hw = 1.45, hs = 3.3, rr = 1.62;
+  for (let k = 0; k < NA; k++) {
+    const a = (k + 0.5) / NA * TAU, ca = Math.cos(a), sa = Math.sin(a);
+    const Wp = (t, y, rad) => [ca * rad - sa * t, y, sa * rad + ca * t];
+    const blue = k % 3 === 1, gl0 = blue ? [0.02, 0.06, 0.16] : [0.18, 0.07, 0.02], gl1 = blue ? [0.11, 0.26, 0.52] : [0.5, 0.27, 0.1];
+    // mur de la travée (plâtre) avec l'ouverture découpée : bandes autour de l'arc
+    const bw = Math.PI * RA / NA + 0.05, R1 = RA + 0.45;
+    mb.quad(Wp(-bw, 0, R1 + 0.02), Wp(bw, 0, R1 + 0.02), Wp(bw, 8.5, R1 + 0.02), Wp(-bw, 8.5, R1 + 0.02), V3.sc(PL, 0.5), 18, V3.sc(PL, 0.5), V3.sc(PL, 0.3), V3.sc(PL, 0.3));
+    // piliers
+    for (const sd of [-1, 1]) mb.box(...Wp(sd * (hw + 0.25), 0, RA + 0.2), 0.5, hs, 0.6, PL, 18, Math.PI / 2 - a);
+    // arc en fer à cheval (dépasse le demi-cercle : signature de l'architecture maghrébine)
+    const n = 16, A0 = -0.32, A1 = Math.PI + 0.32;
+    for (let q = 0; q < n; q++) {
+      const t0 = A0 + (A1 - A0) * q / n, t1 = A0 + (A1 - A0) * (q + 1) / n;
+      const i0 = [Math.cos(t0) * rr, hs - 0.3 + Math.sin(t0) * rr], i1 = [Math.cos(t1) * rr, hs - 0.3 + Math.sin(t1) * rr];
+      const o0 = [Math.cos(t0) * (rr + 0.42), hs - 0.3 + Math.sin(t0) * (rr + 0.42)], o1 = [Math.cos(t1) * (rr + 0.42), hs - 0.3 + Math.sin(t1) * (rr + 0.42)];
+      mb.quad(Wp(i0[0], i0[1], RA - 0.1), Wp(i1[0], i1[1], RA - 0.1), Wp(o1[0], o1[1], RA - 0.1), Wp(o0[0], o0[1], RA - 0.1), PL, 18);
+      mb.quad(Wp(i0[0], i0[1], RA - 0.1), Wp(i1[0], i1[1], RA - 0.1), Wp(i1[0], i1[1], R1), Wp(i0[0], i0[1], R1), V3.sc(PL, 0.7), 18);
+      // fond lumineux de l'arche (dégradé vertical)
+      mb.tri(Wp(0, hs - 0.3, R1 - 0.05), Wp(i0[0], i0[1], R1 - 0.05), Wp(i1[0], i1[1], R1 - 0.05), gl1, 2);
+    }
+    // bas de l'ouverture : rectangle lumineux, plus sombre au sol
+    const yb = hs - 0.3 + Math.sin(A0) * rr, xb = Math.cos(A0) * rr;
+    mb.quad(Wp(-xb, 0, R1 - 0.05), Wp(xb, 0, R1 - 0.05), Wp(xb, yb, R1 - 0.05), Wp(-xb, yb, R1 - 0.05), gl0, 2, gl0, gl1, gl1);
+    mb.tri(Wp(-xb, yb, R1 - 0.05), Wp(xb, yb, R1 - 0.05), Wp(0, hs - 0.3, R1 - 0.05), gl1, 2);
+    // seuil de l'arche
+    mb.box(...Wp(0, 0, RA + 0.05), hw * 2 + 1, 0.12, 0.9, V3.sc(PL, 0.8), 18, Math.PI / 2 - a);
   }
-  for (let k = 0; k < 4; k++) { const a = k / 4 * Math.PI * 2 + 0.4; mb.box(Math.cos(a) * 3, 7.5, Math.sin(a) * 3, 2.5, 0.1, 0.3, [1, 1, 1], 2, -a); }
-  const env = { sky: [0.01, 0.01, 0.015], hor: [0.04, 0.035, 0.05], gnd: [0.02, 0.02, 0.02], fog: [0.02, 0.02, 0.025], fogDen: 0.025, sunDir: nrm([0.3, 1, 0.2]), sunCol: [0.35, 0.35, 0.38], wet: 0, night: true, clouds: 0, bake: [0, 0, 0] };
-  const lights = [[3, 6, 3, 0.22, 0.21, 0.2], [-3, 6, -3, 0.22, 0.21, 0.2], [-3, 6, 3, 0.18, 0.18, 0.2], [3, 6, -3, 0.18, 0.18, 0.2], [8, 2, 0, 0.45, 0.18, 0.03], [-8, 2, 0, 0.03, 0.22, 0.45], [0, 2, 8, 0.14, 0.14, 0.17], [0, 2, -8, 0.14, 0.14, 0.17]];
-  return { mesh: R.upload(mb), env, lights };
+  // plafond sombre + bandeaux lumineux au-dessus du plateau
+  for (let s = 0; s < seg; s++) { const a0 = s / seg * TAU, a1 = (s + 1) / seg * TAU; mb.quad([Math.cos(a0) * 14, 9, Math.sin(a0) * 14], [Math.cos(a1) * 14, 9, Math.sin(a1) * 14], [0, 9, 0], [0, 9, 0], [0.025, 0.025, 0.03], 0); }
+  for (const z of [-1.6, 0, 1.6]) mb.box(0, 8.2, z, 7.5, 0.06, 0.55, [1, 0.97, 0.92], 2);
+  const env = { sky: [0.01, 0.01, 0.015], hor: [0.05, 0.035, 0.03], gnd: [0.02, 0.02, 0.02], fog: [0.02, 0.018, 0.02], fogDen: 0.018, sunDir: nrm([0.3, 1, 0.2]), sunCol: [0.35, 0.35, 0.38], wet: 0, night: true, clouds: 0, bake: [0, 0, 0], studio: 1, grade: GR([0.0, 0.006, 0.02], [1.03, 1.0, 0.97], 0.3) };
+  const lights = [[0, 6.5, 1.5, 0.26, 0.25, 0.24], [0, 6.5, -1.5, 0.26, 0.25, 0.24], [-4, 3, 4, 0.12, 0.12, 0.13], [4, 3, -4, 0.12, 0.12, 0.13], [9, 2.2, 3, 0.4, 0.17, 0.04], [-9, 2.2, -3, 0.4, 0.17, 0.04], [3, 2.2, 9, 0.05, 0.16, 0.42], [-3, 2.2, -9, 0.05, 0.16, 0.42]];
+  return { mesh: R.upload(mb), floor: R.upload(fl), env, lights };
 }
 
 'use strict';
@@ -2471,10 +2624,10 @@ const MUS = {
 const LANGS = {
   fr: {
     loading: 'Démarrage du moteur…', preparing: 'Préparation du circuit : {0}', webgl: 'Ton navigateur ne supporte pas WebGL. Essaie Chrome, Edge, Firefox ou Safari récent.',
-    tagline: 'Courses de rue · Police · Nitro', play: 'JOUER', career: 'CARRIÈRE', quick: 'COURSE RAPIDE', garage: 'GARAGE', options: 'OPTIONS', help: 'COMMENT JOUER',
+    tagline: 'Courses de rue à travers la Tunisie, de la médina au Sahara.', play: 'JOUER', career: 'CARRIÈRE', quick: 'COURSE RAPIDE', garage: 'GARAGE', options: 'OPTIONS', help: 'COMMENT JOUER',
     careerSub: '12 épreuves à conquérir', quickSub: 'Course, contre-la-montre ou poursuite', garageSub: 'Voitures, peinture, jantes, néons, tuning', optionsSub: 'Langue, son, graphismes, commandes', helpSub: 'Clavier, tactile, manette',
-    playNext: 'Épreuve {0} : {1}', playQuick: 'Course rapide · {0}', careerDone: 'Carrière terminée — tu es le roi !', careerStep: 'Épreuve {0} / {1}',
-    yourCar: 'Ta voiture · Classe {0}', back: '‹ RETOUR', paint: 'Peinture', rims: 'Jantes', neons: 'Néons', tuning: 'Tuning',
+    playNext: 'Épreuve {0} : {1}', playQuick: 'Course rapide : {0}', careerDone: 'Carrière terminée — tu es le roi !', careerStep: 'Épreuve {0} / {1}',
+    yourCar: 'Ta voiture, classe {0}', back: '‹ RETOUR', paint: 'Peinture', rims: 'Jantes', neons: 'Néons', tuning: 'Tuning',
     selected: 'Sélectionnée', inGarage: 'Dans ton garage', select: 'CHOISIR CETTE VOITURE', isSelected: 'SÉLECTIONNÉE', buy: 'ACHETER {0}', buyConfirm: 'Acheter la {0} pour {1} ?',
     preview: 'Aperçu — achète la voiture pour garder ce style.', previewRims: 'Aperçu — achète la voiture pour garder ces jantes.', buyFirst: 'Achète la voiture pour l’améliorer.', model: 'Modèle', color: 'Couleur', max: 'MAX', none: 'Aucun',
     stSpeed: 'Vitesse max', stAccel: 'Accélération', stHandling: 'Maniabilité', stNitro: 'Nitro',
@@ -2501,10 +2654,10 @@ const LANGS = {
   },
   en: {
     loading: 'Starting the engine…', preparing: 'Preparing track: {0}', webgl: 'Your browser does not support WebGL. Try a recent Chrome, Edge, Firefox or Safari.',
-    tagline: 'Street racing · Police · Nitro', play: 'PLAY', career: 'CAREER', quick: 'QUICK RACE', garage: 'GARAGE', options: 'OPTIONS', help: 'HOW TO PLAY',
+    tagline: 'Street racing across Tunisia, from the medina to the Sahara.', play: 'PLAY', career: 'CAREER', quick: 'QUICK RACE', garage: 'GARAGE', options: 'OPTIONS', help: 'HOW TO PLAY',
     careerSub: '12 events to conquer', quickSub: 'Race, time trial or police chase', garageSub: 'Cars, paint, rims, neons, tuning', optionsSub: 'Language, sound, graphics, controls', helpSub: 'Keyboard, touch, gamepad',
-    playNext: 'Event {0}: {1}', playQuick: 'Quick race · {0}', careerDone: 'Career complete — you are the king!', careerStep: 'Event {0} / {1}',
-    yourCar: 'Your car · Class {0}', back: '‹ BACK', paint: 'Paint', rims: 'Rims', neons: 'Neons', tuning: 'Tuning',
+    playNext: 'Event {0}: {1}', playQuick: 'Quick race: {0}', careerDone: 'Career complete — you are the king!', careerStep: 'Event {0} / {1}',
+    yourCar: 'Your car, class {0}', back: '‹ BACK', paint: 'Paint', rims: 'Rims', neons: 'Neons', tuning: 'Tuning',
     selected: 'Selected', inGarage: 'In your garage', select: 'SELECT THIS CAR', isSelected: 'SELECTED', buy: 'BUY {0}', buyConfirm: 'Buy the {0} for {1}?',
     preview: 'Preview — buy the car to keep this style.', previewRims: 'Preview — buy the car to keep these rims.', buyFirst: 'Buy the car to upgrade it.', model: 'Style', color: 'Color', max: 'MAX', none: 'None',
     stSpeed: 'Top speed', stAccel: 'Acceleration', stHandling: 'Handling', stNitro: 'Nitro',
@@ -2531,10 +2684,10 @@ const LANGS = {
   },
   ar: {
     loading: 'تشغيل المحرّك…', preparing: 'تجهيز الحلبة: {0}', webgl: 'متصفحك لا يدعم WebGL. جرّب نسخة حديثة من Chrome أو Edge أو Firefox أو Safari.',
-    tagline: 'سباقات الشوارع · الشرطة · النيترو', play: 'العب', career: 'المسيرة', quick: 'سباق سريع', garage: 'المرآب', options: 'الإعدادات', help: 'طريقة اللعب',
+    tagline: 'سباقات الشوارع عبر تونس، من المدينة العتيقة إلى الصحراء.', play: 'العب', career: 'المسيرة', quick: 'سباق سريع', garage: 'المرآب', options: 'الإعدادات', help: 'طريقة اللعب',
     careerSub: '12 تحدّياً بانتظارك', quickSub: 'سباق، ضد الساعة أو مطاردة', garageSub: 'سيارات، طلاء، جنوط، نيون، تعديل', optionsSub: 'اللغة، الصوت، الرسوم، التحكم', helpSub: 'لوحة المفاتيح، اللمس، الذراع',
-    playNext: 'التحدي {0}: {1}', playQuick: 'سباق سريع · {0}', careerDone: 'انتهت المسيرة — أنت ملك الطريق!', careerStep: 'التحدي {0} / {1}',
-    yourCar: 'سيارتك · الفئة {0}', back: 'رجوع ›', paint: 'الطلاء', rims: 'الجنوط', neons: 'النيون', tuning: 'التعديل',
+    playNext: 'التحدي {0}: {1}', playQuick: 'سباق سريع: {0}', careerDone: 'انتهت المسيرة — أنت ملك الطريق!', careerStep: 'التحدي {0} / {1}',
+    yourCar: 'سيارتك، الفئة {0}', back: 'رجوع ›', paint: 'الطلاء', rims: 'الجنوط', neons: 'النيون', tuning: 'التعديل',
     selected: 'مختارة', inGarage: 'في مرآبك', select: 'اختر هذه السيارة', isSelected: 'مختارة', buy: 'شراء {0}', buyConfirm: 'شراء {0} بسعر {1}؟',
     preview: 'معاينة — اشترِ السيارة للاحتفاظ بهذا الشكل.', previewRims: 'معاينة — اشترِ السيارة للاحتفاظ بهذه الجنوط.', buyFirst: 'اشترِ السيارة لتطويرها.', model: 'الشكل', color: 'اللون', max: 'الأقصى', none: 'بدون',
     stSpeed: 'السرعة القصوى', stAccel: 'التسارع', stHandling: 'التحكم', stNitro: 'النيترو',
@@ -3197,6 +3350,7 @@ function drawCar(c, M, far) {
   for (const w of m.wheels) { M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? -steer * 0.42 : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
 }
 const UNDER0 = [0.05, 0.05, 0.06], RIM0 = [0.78, 0.79, 0.82];
+const WETM = new Float32Array(16);
 function makeEnv(b, weather) {
   const e = Object.assign({}, b);
   e.expo = b.expo || (b.night ? 1.3 : 1.0);
@@ -3206,6 +3360,7 @@ function makeEnv(b, weather) {
     e.rain = true; e.wet = 1; e.clouds = 1.0; e.shadows = false; e.sunSize = 0.00001;
     e.sky = gray(b.sky, b.night ? 0.8 : 0.5, 0.65); e.hor = gray(b.hor, b.night ? 0.9 : 0.58, 0.65); e.fog = gray(b.fog, b.night ? 0.85 : 0.6, 0.7); e.gnd = gray(b.gnd, 0.7, 0.4);
     e.sunCol = b.sunCol.map(v => v * (b.night ? 0.8 : 0.42)); e.fogDen = b.fogDen * 1.45;
+    e.grade = GR([0.0, 0.018, 0.028], [0.97, 1.0, 1.03], 0.27);
   }
   return e;
 }
@@ -3240,9 +3395,18 @@ function renderWorld(dtv) {
     if (d > maxD * 0.85) continue;
     if ((dx * G.cam.fwd[0] + dz * G.cam.fwd[2]) < -12) continue;
     VIS[nVis++] = c;
-    if (G.camMode === 2 && c === p) continue;
-    drawCar(c, c.M, d > 70);
   }
+  if ((env.wet || 0) > 0.3 && R.detail) {
+    // route mouillée : chaque voiture proche est redessinée en miroir sous la chaussée (phares et feux compris)
+    R.wetBegin(0.13 * env.wet); // avant les voitures : elles recouvrent ensuite leur propre reflet
+    for (let k = 0; k < nVis; k++) {
+      const c = VIS[k]; if (c.camD > 60 || (G.camMode === 2 && c === p)) continue;
+      const M = c.M, MW = WETM; MW.set(M); MW[1] = -M[1]; MW[5] = -M[5]; MW[9] = -M[9]; MW[13] = 2 * c.y - M[13];
+      R.setPaint(c.paint); R.setBrake(c.brake ? 1 : 0); R.draw(c.model.body, MW);
+    }
+    R.wetEnd();
+  }
+  for (let k = 0; k < nVis; k++) { const c = VIS[k]; if (G.camMode === 2 && c === p) continue; drawCar(c, c.M, c.camD > 70); }
   R.blendAlpha(); R.setAlpha(env.night ? 0.75 : env.shadows ? 0.55 : 0.9);
   for (let k = 0; k < nVis; k++) { const c = VIS[k]; if (c.camD < 90) R.draw(c.model.shadow, c.M); }
   R.blendAdd();
@@ -3255,9 +3419,9 @@ function renderWorld(dtv) {
   G.smoke.draw(); G.glow.draw();
   if (env.rain && G.rainSys) { G.rainSys.update(dtv, G.cam.eye); G.rainSys.draw(env.night ? RAIN_N : RAIN_D); }
   const sf = clamp(p.v / p.st.vmax, 0, 1.3), FX = G.fx || (G.fx = {});
-  FX.bloom = env.night ? 1.0 : env.rain ? 0.6 : 0.3; FX.blur = clamp((sf - 0.55) * 0.016, 0, 0.009) + (p.nitroOn ? 0.009 : 0); FX.vig = 0.6; FX.sat = env.rain ? 0.95 : 1.1;
+  FX.bloom = env.night ? 1.0 : env.rain ? 0.6 : 0.3; FX.blur = clamp((sf - 0.55) * 0.016, 0, 0.009) + (p.nitroOn ? 0.009 : 0); FX.vig = 0.6; FX.sat = env.rain ? 0.95 : (env.sat || 1.1);
   FX.flash = G.flash; FX.rain = env.rain ? (G.camMode !== 2 ? 1 : 0.6) : 0; FX.time = G.time;
-  FX.speed = p.nitroOn ? 1 : clamp((sf - 0.8) * 3, 0, 0.6); FX.haze = env.haze || 0; FX.hit = G.hitFx || 0; FX.nos = p.nitroOn ? 1 : 0;
+  FX.grade = env.grade; FX.flare = 1; FX.speed = p.nitroOn ? 1 : clamp((sf - 0.8) * 3, 0, 0.6); FX.haze = env.haze || 0; FX.hit = G.hitFx || 0; FX.nos = p.nitroOn ? 1 : 0;
   R.finish(FX);
 }
 const RAIN_N = [0.62, 0.66, 0.75], RAIN_D = [0.78, 0.8, 0.86];
@@ -3267,7 +3431,7 @@ const GAR = { ang: 0.6, drag: false, spin: 0.25, zoom: 1, focus: 0 };
 // couleurs hexadécimales converties une seule fois (le garage tourne en continu derrière les menus)
 const RGB_CACHE = {};
 function rgbOf(h) { return h ? (RGB_CACHE[h] || (RGB_CACHE[h] = hexToRgb(h))) : null; }
-const GAR_FX = { bloom: 0.9, blur: 0, vig: 0.75, sat: 1.1, time: 0 };
+const GAR_FX = { bloom: 0.9, blur: 0, vig: 0.75, sat: 1.1, time: 0, grade: null, flare: 0 };
 function renderGarage(dt) {
   if (!GAR.scene) GAR.scene = buildGarage();
   const sc = GAR.scene, car = CARS.find(c => c.id === (UI.viewCar || SAVE.car)) || CARS[0], m = MODELS[car.style];
@@ -3296,16 +3460,20 @@ function renderGarage(dt) {
   R.setDyn(1);
   R.draw(sc.mesh);
   const M = M4.basisTo(GAR.M, 0, 0, 0, Math.sin(GAR.ang), 0, Math.cos(GAR.ang), 0, 1, 0);
+  // reflet réel : la voiture est redessinée en miroir sous le sol, puis le sol poli (semi-opaque) est posé par-dessus
+  const MR = GAR.MR || (GAR.MR = new Float32Array(16)); MR.set(M); MR[1] = -MR[1]; MR[5] = -MR[5]; MR[9] = -MR[9]; MR[13] = -MR[13];
   const neon = UI.viewNeon !== undefined ? UI.viewNeon : SAVE.neon[car.id];
   const rim = UI.viewRim || SAVE.rims[car.id] || {};
   const fake = GAR.fake;
   fake.model = m; fake.paint = rgbOf(UI.viewPaint || SAVE.paint[car.id] || '#d81e1e'); fake.under = rgbOf(neon); fake.rimC = rgbOf(rim.c);
   if (fake.key !== car.style || fake.rimS !== rim.s) { fake.key = car.style; fake.rimS = rim.s; fake.wm = null; }
+  if (R.detail) { drawCar(fake, MR); if (fake.under) { R.blendAdd(); R.setUnder(fake.under); R.draw(m.under, MR); } }
+  R.blendConst(R.detail ? 0.78 : 1); R.draw(sc.floor); R.blendOff();
   drawCar(fake, M);
   R.blendAlpha(); R.setAlpha(1); R.draw(m.shadow, M);
   if (fake.under) { R.blendAdd(); R.setUnder(fake.under); R.draw(m.under, M); }
   R.endMain();
-  GAR_FX.time = t; R.finish(GAR_FX);
+  GAR_FX.time = t; GAR_FX.grade = sc.env.grade; R.finish(GAR_FX);
 }
 
 'use strict';
@@ -3435,7 +3603,7 @@ const UI = {
     $('c-prog').innerHTML = `<span>${t('progress')}</span><div class="pb"><i style="transform:scaleX(${done / CAREER.length})"></i></div><span>${done} / ${CAREER.length}</span>`;
     $('c-list').innerHTML = CAREER.map((e, i) => {
       const isDone = SAVE.careerDone.includes(i), lock = i > SAVE.career, next = i === SAVE.career, tc = tierCars(e.tier)[0].cls;
-      const meta = modeName(e.mode) + ' · ' + TRACKS[e.track].name + (e.laps ? ' · ' + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? ' · ' + t('rainTag') : '');
+      const SEP = LANG === 'ar' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');
       return `<button class="ev ${isDone ? 'done' : ''} ${lock ? 'lock' : ''} ${next ? 'next' : ''}" data-i="${i}" ${lock ? 'aria-disabled="true"' : ''}><span class="num">${i + 1}</span><span class="st">${isDone ? t('done') : lock ? t('locked') : t('available')}</span><b>${tEvName(i)}</b><span class="meta">${meta}</span><small>${tEvDesc(i)}</small><div class="rw"><span>${t('advised')} <b class="cls ${tc} mini">${tc}</b></span><em>${money(isDone ? e.reward * 0.3 : e.reward)}</em></div></button>`;
     }).join('');
     $('c-list').querySelectorAll('button').forEach(b => b.onclick = () => { const i = +b.dataset.i; if (i > SAVE.career) return; this.startRace(evCfg(i)); });
@@ -3547,7 +3715,7 @@ const UI = {
     let evLine = '';
     if (ev !== null) evLine = res.success ? `<p class="okline">${res.firstWin ? t('r_evOk', tEvName(ev)) : t('r_evAgain')}</p>` : `<p class="failline">${t('r_evFail', tEvName(ev))}</p>`;
     const next = ev !== null && res.success && ev + 1 < CAREER.length;
-    $('res-body').innerHTML = `<div class="res-title ${cls}">${title}</div><div class="note">${modeName(res.mode)} · ${T.name}${res.record ? ` · <b class="rec">${t('r_record')}</b>` : ''}</div><div class="rcols"><div class="rcol1">${body}${evLine}</div><div class="rcol2">
+    $('res-body').innerHTML = `<div class="res-title ${cls}">${title}</div><div class="note">${modeName(res.mode)}, ${T.name}${res.record ? ` — <b class="rec">${t('r_record')}</b>` : ''}</div><div class="rcols"><div class="rcol1">${body}${evLine}</div><div class="rcol2">
       <div class="rgrid"><span>${t('r_reward')}</span><b>${money(res.reward)}</b><span>${t('r_style', res.style)}</span><b>${money(res.styleBonus)}</b><span>${t('r_gain')}</span><b class="tot">${money(res.total)}</b><span>${t('r_money')}</span><b>${money(SAVE.money)}</b></div>
       <div class="rbtns"><button id="r-menu">${t('r_menu')}</button><button id="r-garage">${t('r_garage')}</button><button id="r-again" class="${next ? '' : 'cta'}">${t('r_again')}</button>${next ? `<button id="r-next" class="cta">${t('r_next')}</button>` : ''}</div></div></div>`;
     $('results').classList.add('show'); MUS.muffle(true);
@@ -3647,9 +3815,9 @@ let PR = 1, DYN = 1;
 const FPS = { v: 60, acc: 0, n: 0 };
 function applySettings() {
   const s = SAVE.settings, dpr = window.devicePixelRatio || 1;
-  if (s.quality === 'high') { PR = Math.min(dpr, IS_TOUCH ? 1.5 : 1.75); R.post = true; R.bloom = true; G.drawMul = 1; R.detail = 1; R.shadows = true; R.shadowSize = IS_TOUCH ? 1024 : 2048; }
-  else if (s.quality === 'medium') { PR = Math.min(dpr, 1.25); R.post = true; R.bloom = true; G.drawMul = 0.85; R.detail = 1; R.shadows = true; R.shadowSize = 1024; }
-  else { PR = Math.min(dpr, 0.9); R.post = false; R.bloom = false; G.drawMul = 0.62; R.detail = 0; R.shadows = false; }
+  if (s.quality === 'high') { PR = Math.min(dpr, IS_TOUCH ? 1.5 : 1.75); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1; R.detail = 1; R.shadows = true; R.shadowSize = IS_TOUCH ? 1024 : 2048; }
+  else if (s.quality === 'medium') { PR = Math.min(dpr, 1.25); R.post = true; R.bloom = true; R.aa = true; R.rays = false; G.drawMul = 0.85; R.detail = 1; R.shadows = true; R.shadowSize = 1024; }
+  else { PR = Math.min(dpr, 0.9); R.post = false; R.bloom = false; R.aa = false; R.rays = false; G.drawMul = 0.62; R.detail = 0; R.shadows = false; }
   if (!s.dyn) DYN = 1;
   if (R.post && !R.fbo) R.makeFBOs();
   AU.setVol(s.sfx / 100); MUS.setVol(s.music / 100);

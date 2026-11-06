@@ -165,6 +165,7 @@ input[type=range]{width:100%;accent-color:var(--red);pointer-events:auto}
 .btn.red{background:var(--red);border-color:var(--red)}
 #mapview{position:fixed;inset:0;z-index:16;background:#2c6f96}
 #mapview canvas{width:100%;height:100%}
+#diag{position:fixed;left:50%;bottom:calc(10px + var(--sab));transform:translateX(-50%);z-index:50;background:rgba(160,10,30,.92);padding:8px 14px;border-radius:6px;font:600 13px var(--ft);max-width:90vw;pointer-events:none}
 #err{position:fixed;inset:0;z-index:30;background:#200;display:flex;align-items:center;justify-content:center;padding:30px;font:700 20px var(--ft);text-align:center}
 
 /* ===== TACTILE ===== */
@@ -290,7 +291,9 @@ input[type=range]{width:100%;accent-color:var(--red);pointer-events:auto}
 <div id="shop" class="hidden"><div id="shopBox"><div id="shopHead"><div><div class="fd" style="font-size:34px;line-height:.95;white-space:nowrap">ARMURERIE EL BARAKA</div><small>Paiement comptant, pas de questions.</small></div><div id="shopMoney"></div></div><div id="shopList"></div><div style="text-align:right;margin-top:12px"><button class="btn red" onclick="closeShop()">SORTIR (Échap)</button></div></div></div>
 <div id="mapview" class="hidden"><canvas id="bigmap"></canvas></div>
 <div id="err" class="hidden"></div>
+<div id="diag" class="hidden"></div>
 <script>
+window.addEventListener('error', function (e) { try { var d = document.getElementById('diag'); d.classList.remove('hidden'); d.insertAdjacentHTML('beforeend', '<div>Erreur : ' + String(e.message).replace(/</g, '&lt;') + '</div>'); } catch (x) {} });
 'use strict';
 /* =====================================================================
    BIBLE ARTISTIQUE — SEDDIK EN FORCE
@@ -559,7 +562,10 @@ class Geo {
 
 /* ---------- WebGL ---------- */
 const cv = document.getElementById('gl');
-const gl = cv.getContext('webgl2', { antialias: true, powerPreference: 'high-performance', alpha: false });
+let gl = null;
+try { gl = cv.getContext('webgl2', { antialias: true, powerPreference: 'high-performance', alpha: false, preserveDrawingBuffer: false }) || cv.getContext('webgl2', { alpha: false }); } catch (er) { gl = null; }
+function diag(t) { try { const d = document.getElementById('diag'); d.classList.remove('hidden'); d.insertAdjacentHTML('beforeend', '<div>' + String(t).replace(/</g, '&lt;') + '</div>'); clearTimeout(diag.t); diag.t = setTimeout(() => d.classList.add('hidden'), 9000); } catch (e) {} }
+function glInfo() { try { const x = gl.getExtension('WEBGL_debug_renderer_info'); return x ? gl.getParameter(x.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER); } catch (e) { return '?'; } }
 
 function mkMesh(arr) {
   const f = arr instanceof Float32Array ? arr : new Float32Array(arr);
@@ -733,6 +739,27 @@ void main(){
 }`;
 
 
+
+const FS_SAFE = `#version 300 es
+precision mediump float;
+in vec3 vW; in vec3 vN; in vec3 vC; in float vM; in vec2 vT; in vec4 vS; in vec3 vL;
+uniform vec3 uSunDir; uniform vec3 uSunCol; uniform vec3 uSkyCol; uniform vec3 uGndCol; uniform vec3 uFogCol; uniform vec3 uCam;
+uniform float uFogD; uniform float uNight; uniform float uRaw; uniform vec3 uTint; uniform float uLights; uniform float uBrake; uniform float uSiren;
+uniform sampler2D uAtlas;
+out vec4 oC;
+void main(){
+  vec3 N=normalize(vN); if(!gl_FrontFacing) N=-N;
+  int m=int(vM+.5); vec3 base=vC; vec3 em=vec3(0.);
+  if(m==4) base=vC*.95; else if(m==7) base=vec3(.05,.25,.33); else if(m==9||m==16) base=uTint*vC; else if(m==10) base=vec3(.05,.06,.07);
+  else if(m==11) { base=texture(uAtlas,vT).rgb; em=base*uNight*.4; } else if(m==19){ vec4 t=texture(uAtlas,vT); base=mix(uTint,t.rgb,t.a); }
+  else if(m==20){ base=vL.y>vC.x-.06?uTint:vec3(.05,.06,.07); } else if(m==8) em=vC*1.5; else if(m==14) em=vC*uNight*2.;
+  else if(m==15){ em=(vL.x>0.?vec3(1.,.1,.1):vec3(.1,.2,1.))*uSiren*2.; } else if(m==17) em=vC*uLights; else if(m==18) em=vC*(.2+uBrake);
+  vec3 c=base*base;
+  vec3 col=c*(uSunCol*max(dot(N,uSunDir),0.)+mix(uGndCol,uSkyCol,N.y*.5+.5))+em;
+  float d=length(vW-uCam); col=mix(col,uFogCol,clamp(1.-exp(-d*d*uFogD*uFogD),0.,1.));
+  col=col/(col+vec3(.8))*1.25;
+  oC=vec4(sqrt(clamp(col,0.,1.)),1.);
+}`;
 const VS_SHADOW = `#version 300 es
 layout(location=0) in vec3 aP; uniform mat4 uVP; uniform mat4 uModel; void main(){ gl_Position=uVP*uModel*vec4(aP,1.); }`;
 const FS_SHADOW = `#version 300 es
@@ -786,7 +813,9 @@ void main(){
 
 const R = {};
 function initGL() {
-  R.main = mkProg(VS_MAIN, FS_MAIN);
+  R.main = null;
+  if (!G.safe) { try { R.main = mkProg(VS_MAIN, FS_MAIN); } catch (er) { console.warn(er); diag('Shader principal refusé par ce téléphone, passage en mode compatibilité.'); } }
+  if (!R.main) { G.safe = true; R.main = mkProg(VS_MAIN, FS_SAFE); }
   R.shadow = mkProg(VS_SHADOW, FS_SHADOW);
   R.sky = mkProg(VS_SKY, FS_SKY);
   R.fx = mkProg(VS_FX, FS_FX);
@@ -853,8 +882,8 @@ function mkTex(w, h, hdr) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null); return { t, f, w, h };
 }
 function initPost() {
-  R.hdr = !!gl.getExtension('EXT_color_buffer_float'); gl.getExtension('OES_texture_float_linear');
-  R.bright = mkProg(VS_FS, FS_BRIGHT); R.blur = mkProg(VS_FS, FS_BLUR); R.post = mkProg(VS_FS, FS_POST);
+  R.hdr = !G.safe && !!gl.getExtension('EXT_color_buffer_float'); gl.getExtension('OES_texture_float_linear');
+  try { R.bright = mkProg(VS_FS, FS_BRIGHT); R.blur = mkProg(VS_FS, FS_BLUR); R.post = mkProg(VS_FS, FS_POST); } catch (er) { R.hdr = false; console.warn(er); }
 }
 function sizePost(w, h) {
   if (R.pw === w && R.ph === h) return; R.pw = w; R.ph = h;
@@ -3290,7 +3319,7 @@ function settingsHTML() {
   return '<h2>Paramètres</h2><div class="set"><label>Qualité graphique</label><div class="seg">' + q.map(k => '<button data-q="' + k + '" class="' + (G.qName === k ? 'on' : '') + '">' + QUAL[k].name + '</button>').join('') + '</div><p style="font-size:13px;opacity:.6;margin-top:6px">Haute et Ultra : ombres, bloom, effets cinéma. Basse : pour les petits téléphones.</p></div>'
     + '<div class="set"><label>Volume — <span id="vV">' + Math.round(AU.vol * 100) + '%</span></label><input type="range" id="vol" min="0" max="100" value="' + Math.round(AU.vol * 100) + '"></div>'
     + '<div class="set"><label>Sensibilité caméra — <span id="sV">' + G.sens.toFixed(1) + '</span></label><input type="range" id="sens" min="3" max="25" value="' + Math.round(G.sens * 10) + '"></div>'
-    + '<div class="set"><label>Options</label><div class="seg">' + [['vib', 'Vibration'], ['dynRes', 'Résolution auto'], ['showPerf', 'Afficher FPS']].map(o => '<button data-o="' + o[0] + '" class="' + (G[o[0]] !== false && !(o[0] === 'showPerf' && !G.showPerf) ? 'on' : '') + '">' + o[1] + '</button>').join('') + '</div></div>'
+    + '<div class="set"><label>Options</label><div class="seg">' + [['vib', 'Vibration'], ['dynRes', 'Résolution auto'], ['showPerf', 'Afficher FPS'], ['safeM', 'Compatibilité']].map(o => '<button data-o="' + o[0] + '" class="' + (o[0] === 'safeM' ? (G.safe ? 'on' : '') : (G[o[0]] !== false && !(o[0] === 'showPerf' && !G.showPerf) ? 'on' : '')) + '">' + o[1] + '</button>').join('') + '</div></div>'
     + '<div class="set"><label>Opacité des boutons tactiles — <span id="oV">' + Math.round((G.touchOp || .9) * 100) + '%</span></label><input type="range" id="top" min="30" max="100" value="' + Math.round((G.touchOp || .9) * 100) + '"></div>'
     + '<div class="set"><label>Heure de la journée</label><div class="seg">' + [['Matin', 8], ['Midi', 13], ['Coucher', 18.4], ['Nuit', 22.5]].map(h => '<button data-h="' + h[1] + '">' + h[0] + '</button>').join('') + '</div></div>';
 }
@@ -3298,7 +3327,7 @@ function bindSettings(root) {
   root.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { G.qName = b.dataset.q; G.q = QUAL[G.qName]; resize(); SAVE.save(); root.querySelectorAll('[data-q]').forEach(x => x.classList.toggle('on', x === b)); });
   root.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { G.hour = +b.dataset.h; G.hourSet = G.hour; });
   const v = root.querySelector('#vol'); if (v) v.oninput = () => { AU.vol = v.value / 100; if (AU.master) AU.master.gain.value = AU.vol; root.querySelector('#vV').textContent = v.value + '%'; SAVE.save(); };
-  root.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { const k = b.dataset.o; G[k] = k === 'showPerf' ? !G.showPerf : G[k] === false; b.classList.toggle('on', k === 'showPerf' ? G.showPerf : G[k] !== false); $('perf').classList.toggle('hidden', !G.showPerf); if (k === 'dynRes') adaptRes(); SAVE.save(); });
+  root.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { const k = b.dataset.o; if (k === 'safeM') { try { G.safe ? localStorage.removeItem('sef_safe') : localStorage.setItem('sef_safe', '1'); } catch (e) {} location.reload(); return; } G[k] = k === 'showPerf' ? !G.showPerf : G[k] === false; b.classList.toggle('on', k === 'showPerf' ? G.showPerf : G[k] !== false); $('perf').classList.toggle('hidden', !G.showPerf); if (k === 'dynRes') adaptRes(); SAVE.save(); });
   const op = root.querySelector('#top'); if (op) op.oninput = () => { G.touchOp = op.value / 100; $('touch').style.opacity = G.touchOp; root.querySelector('#oV').textContent = op.value + '%'; SAVE.save(); };
   const se = root.querySelector('#sens'); if (se) se.oninput = () => { G.sens = se.value / 10; root.querySelector('#sV').textContent = G.sens.toFixed(1); SAVE.save(); };
 }
@@ -3362,7 +3391,7 @@ function frame(now) {
     const shots = [[[150, 30, 330], [300, 22, 330], [230, 6, 300], [330, 10, 300]], [[396, 8, 330], [396, 14, 300], [396, 16, 250], [396, 22, 250]], [[620, 50, 60], [520, 70, 160], [480, 40, 90], [480, 40, 90]], [[700, 6, 200], [700, 9, 420], [640, 10, 300], [600, 12, 330]]][sh];
     C.x = lerp(shots[0][0], shots[1][0], a); C.y = lerp(shots[0][1], shots[1][1], a); C.z = lerp(shots[0][2], shots[1][2], a);
     C.tx = lerp(shots[2][0], shots[3][0], a); C.ty = lerp(shots[2][1], shots[3][1], a); C.tz = lerp(shots[2][2], shots[3][2], a); C.fov = .9;
-    renderScene(dt); return;
+    renderScene(dt); blackCheck(); return;
   }
   if (G.state === 'shop' || G.state === 'result') { updateCamera(0); G.dcN = 0; renderScene(dt); G.dc = G.dcN; return; }
   if (G.state === 'play' || G.state === 'over') {
@@ -3390,7 +3419,7 @@ function frame(now) {
     if (!pc) G.thr = 0;
   }
   updateCamera(dt);
-  G.dcN = 0; renderScene(dt); G.dc = G.dcN;
+  G.dcN = 0; renderScene(dt); G.dc = G.dcN; blackCheck();
   if (toastT > 0) { toastT -= dt; if (toastT <= 0) $('notif').classList.remove('show'); }
   hudT -= dt; if (hudT <= 0) { hudT = .1; hudUpdate(); }
   mmT -= dt; if (mmT <= 0) { mmT = .05; minimapUpdate(); }
@@ -3400,6 +3429,18 @@ const TIPS = ["Le <b>frein à main</b> (Espace) permet de prendre les virages en
   "Les <b>taxis jaunes</b> t'attendent sur l'avenue, près de la porte de la médina.", "Pour semer la police, sors de son champ de vision et attends que les étoiles clignotent.",
   "La nuit, les lampadaires et les néons des boutiques éclairent la ville.", "Appuie sur <b>R</b> en voiture pour couper ou relancer Radio Seddik FM.",
   "L'<b>Agence de Recouvrement</b> du Lac paie très bien… si la voiture arrive entière."];
+/* ---------- détection d'écran noir → mode compatibilité ---------- */
+let bcN = 0, bcStage = 0; const bcPix = new Uint8Array(4);
+function blackCheck() {
+  bcN++; if (bcN % 20 !== 0 || bcStage > 2 || !gl) return;
+  let lum = 0; const pts = [[.5, .3], [.25, .6], [.75, .6], [.5, .85]];
+  try { for (const [px, py] of pts) { gl.readPixels(Math.floor(cv.width * px), Math.floor(cv.height * py), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bcPix); lum += bcPix[0] + bcPix[1] + bcPix[2]; } } catch (e) { return; }
+  if (lum > 12) { if (bcN > 200) bcStage = 9; return; }
+  bcStage++;
+  if (bcStage === 1) { G.q = Object.assign({}, G.q, { post: false, shadows: false }); diag('Écran noir détecté : effets avancés désactivés.'); }
+  else if (bcStage === 2) { G.safe = true; try { localStorage.setItem('sef_safe', '1'); } catch (e) {} R.main = mkProg(VS_MAIN, FS_SAFE); G.q = Object.assign({}, QUAL.basse); resize(); diag('Mode compatibilité activé pour ce téléphone (' + glInfo() + ').'); }
+  else diag('Le rendu 3D ne fonctionne pas sur cet appareil (' + glInfo() + '). Envoie-moi cette ligne.');
+}
 function startGame() {
   AU.init(); $('fade').style.opacity = 1;
   setTimeout(() => {
@@ -3427,9 +3468,13 @@ function menuPanel(p) {
 }
 function boot() {
   if (!gl) { $('err').classList.remove('hidden'); $('err').textContent = "Ton appareil ne supporte pas WebGL2 : impossible de lancer SEDDIK EN FORCE."; return; }
+  try { G.safe = /[?&]safe/.test(location.search) || localStorage.getItem('sef_safe') === '1'; } catch (e) {}
+  if (/[?&]reset/.test(location.search)) { try { localStorage.removeItem('sef_safe'); G.safe = false; } catch (e) {} }
   SAVE.load(); G.sens = G.sens || 1; G.resScale = 1; $('perf').classList.toggle('hidden', !G.showPerf); G.stats = Object.assign({ missions: 0, stolen: 0, dist: 0, vmax: 0, busted: 0, time: 0, started: 0 }, G.stats || {});
   if (!G.qName || !QUAL[G.qName]) G.qName = (matchMedia('(pointer:coarse)').matches ? 'moyenne' : 'haute');
+  if (G.safe) G.qName = 'basse';
   G.q = QUAL[G.qName];
+  cv.addEventListener('webglcontextlost', ev => { ev.preventDefault(); diag('Contexte 3D perdu (mémoire du téléphone). Recharge la page ; si ça se répète, choisis la qualité Basse.'); }, false);
   $('ltip').innerHTML = 'Astuce : ' + pick(TIPS);
   const steps = [['Enseignes et visages', () => { buildAtlas(); initGL(); }], ['Véhicules et habitants', buildMeshes], ['Construction de Tunis', buildWorld], ['Carte de la ville', renderMapCanvas],
     ['Derniers réglages', () => { STARTS = MSTART(); G.player = newPlayer(); G.pickups = []; resize(); }]];

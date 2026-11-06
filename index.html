@@ -2177,7 +2177,7 @@ function gpHUD(p){const ground=p.alive&&!p.inPlane&&p.air<=0;
 GH.veh.addEventListener('click',humanVeh);GH.nade.addEventListener('click',()=>humanNade(false));GH.sw.addEventListener('click',nadeSwap);
 
 /* ===== main update ===== */
-function baseZoom(){return clamp(Math.sqrt(VW*VH)/960,.42,1.05)}
+function baseZoom(){return clamp(Math.sqrt(VW*VH)/1140,.36,.95)}
 function update(dt){matchT+=dt;
   if(!plane.done){plane.trav+=plane.sp*dt;plane.x=plane.sx+plane.dx*plane.trav;plane.y=plane.sy+plane.dy*plane.trav;
     for(const e of ents)if(e.inPlane&&e.bot&&plane.trav>=e.jumpS)jump(e);
@@ -2223,7 +2223,13 @@ function updateBullets(dt){const pl=player&&player.alive&&!player.inPlane&&playe
 function updateCam(dt){const bz=baseZoom();let tx,ty,zt;
   if(player.inPlane){tx=plane.x;ty=plane.y;zt=bz*.24}
   else{tx=player.x;ty=player.y;if(player.air>0)zt=bz*(.3+.7*(1-player.air));else{const w=curW(player);zt=bz*(w?1-(1-WEAP[w.type].z)*.7:1);if(!player.alive)zt=bz*.85;
-    const aiming=(sticks.aim.id!==null&&sticks.aim.mag>.2)||(isDesk&&mouse.active);if(aiming&&player.alive){const snp=w&&WEAP[w.type].cls==='sn',la=snp?Math.min(400,Math.min(VW,VH)*.44/zt):Math.min(170,Math.min(VW,VH)*.34/zt);tx+=Math.cos(player.angle)*la;ty+=Math.sin(player.angle)*la}}}
+    const aiming=(sticks.aim.id!==null&&sticks.aim.mag>.2)||(isDesk&&mouse.active);let lx=0,ly=0;if(aiming&&player.alive){const snp=w&&WEAP[w.type].cls==='sn',la=snp?Math.min(400,Math.min(VW,VH)*.44/zt):Math.min(170,Math.min(VW,VH)*.34/zt);lx=Math.cos(player.angle)*la;ly=Math.sin(player.angle)*la}
+    // v53 : la caméra anticipe le déplacement et s'éloigne si un ennemi est juste hors de l'écran
+    else if(player.alive&&dt>0){const vx=(player.x-(cam.px??player.x))/dt,vy=(player.y-(cam.py??player.y))/dt,sp=Math.hypot(vx,vy);if(sp>20){const m=Math.min(110,sp*.38)/sp;lx=vx*m;ly=vy*m}}
+    cam.lx=(cam.lx||0)+(lx-(cam.lx||0))*Math.min(1,dt*3);cam.ly=(cam.ly||0)+(ly-(cam.ly||0))*Math.min(1,dt*3);tx+=cam.lx;ty+=cam.ly;
+    if(player.alive){let nd=1e9;for(const e of ents){if(e===player||!e.alive||e.inPlane||e.air>0||(player.team&&e.team===player.team))continue;const d=Math.hypot(e.x-player.x,e.y-player.y);if(d<nd)nd=d}const half=Math.min(VW,VH)*.46/zt;if(nd>half&&nd<half*1.45)zt=Math.max(bz*.78,Math.min(zt,Math.min(VW,VH)*.46/nd))}
+    if(VH>VW*1.15&&player.alive)ty+=70/zt}
+  cam.px=player.x;cam.py=player.y}
   const k=1-Math.exp(-dt*(player.inPlane?5:9));cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;cam.z+=(zt-cam.z)*(1-Math.exp(-dt*2.5));cam.shake=Math.max(0,cam.shake-dt*2)}
 function drawWeather(){const wx=MAP.wx;
   if(wx==='sand'){ctx.fillStyle='rgba(214,172,104,.20)';ctx.fillRect(0,0,VW,VH);

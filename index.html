@@ -934,13 +934,13 @@ const SOLDIERS=[
   {id:'j_vert',n:'Maillot Vert Émeraude',d:'Maillot vert à bandes blanches, short blanc. Création originale.',jc:['#17803d','#f1efe8'],jp:'stripes',shorts:'#f1efe8',lv:5,base:'#17803d',hg:'braids',hc:'#16100c',pack:'#f1efe8',glove:'#d9a77b',cam:['#000','#000','#000']},
   {id:'j_noir',n:'Maillot Noir & Rouge',d:'Maillot noir à épaulettes rouges, short noir. Création originale.',jc:['#1b1b1e','#c8202b'],jp:'plain',shorts:'#111113',lv:6,base:'#1b1b1e',hg:'mohawk',hc:'#c8202b',pack:'#111113',glove:'#d9a77b',cam:['#000','#000','#000']}
 ];
-/* v43 : tous les personnages = Spartiate noir (casque corinthien, cuirasse, cape, glaive) ; seule la couleur de la combinaison change */
-(()=>{const PAL=[['rouge sang','#5e1c17'],['noir','#1c1a19'],['pourpre','#4e1a44'],['bleu nuit','#1a2a4c'],['vert forêt','#24402a'],['sable','#8a6e45'],['bordeaux','#6e1426'],['gris acier','#4a4e55'],['écarlate','#a3201f'],['bleu roi','#1f4b8f'],['olive','#4f5326'],['bronze','#7a4e22'],['violet','#4a2a78'],['turquoise','#16706e'],['orange brûlé','#a4471a'],['blanc','#d9d4c6'],['émeraude','#14603e'],['or','#a8862e'],['cuivre','#8a4626'],['ardoise','#2f3a44'],['prune','#5a2440'],['kaki','#6b6440'],['cramoisi','#7d0f1e'],['marine','#14203a'],['rouille','#7a3416'],['ivoire','#c9bd9c'],['jade','#2e6e58'],['améthyste','#62386e'],['charbon','#2a2826'],['acier bleu','#3a4c66']];
-  const ARM=['#3a3c41','#34363b','#403a36','#363b42','#3b3d38'];
+/* v52 : tous les personnages = opérateur tactique (gilet porte-plaques, maillot sombre, pantalon cargo, rangers) ; couleurs variées */
+(()=>{const PAL=[['Opérateur olive','#26282b','#4c5536','#5c5e57'],['Opérateur noir','#1d1f22','#2a2c2e','#4a4c4f'],['Opérateur sable','#3a3631','#8a7a5a','#8c8068'],['Opérateur forêt','#2b3324','#3f4a2e','#56603f'],['Opérateur urbain','#33363b','#5c6168','#62666c'],['Opérateur nuit','#1b2230','#262d3a','#3c4454'],['Opérateur coyote','#2d2a26','#7a6446','#7f6a4c'],['Opérateur ranger','#2f3a2a','#556147','#62704f'],['Opérateur ardoise','#2a2f36','#47505b','#58616c'],['Opérateur désert','#4a4236','#a08a64','#9a8766'],['Opérateur marine','#1c2638','#2c3a52','#3e4c66'],['Opérateur kaki','#35332a','#6b6440','#76704f'],['Opérateur graphite','#2b2b2b','#3c3c3c','#505050'],['Opérateur brousse','#30342a','#5f6a45','#6b7550'],['Opérateur terre','#33281f','#5e4a36','#6a5541'],['Opérateur toundra','#3a3d40','#7d8286','#81868a'],['Opérateur jungle','#22301f','#34482c','#4a5e3e'],['Opérateur acier','#262c33','#4b5662','#5a6570'],['Opérateur dune','#3d362c','#b39b72','#a8946f'],['Opérateur commando','#202420','#3b4436','#4d5848'],['Opérateur bordeaux','#2a1d1f','#4a2c30','#5a4044'],['Opérateur pierre','#38352f','#77705f','#7c7564'],['Opérateur lagune','#1f2c2e','#335055','#46646a'],['Opérateur charbon','#1a1a1a','#2f2f2f','#454545'],['Opérateur savane','#3a3426','#8a7b4a','#8d8056'],['Opérateur montagne','#2c3034','#55595c','#646a6e'],['Opérateur marais','#272b22','#4a5038','#5a6046'],['Opérateur aube','#30292a','#6a5552','#776362'],['Opérateur polaire','#3c4046','#9aa0a6','#8f969c']];
+  const HAIR=['#1b130d','#2a1d14','#120d0a','#3a281a','#22180f'],HG=['short','short','short','shaved','cap','short','bala','short'];
   {const o=SOLDIERS.findIndex(x=>x.id==='ombre');if(o>0)SOLDIERS.unshift(SOLDIERS.splice(o,1)[0])}
-  SOLDIERS.forEach((sk,i)=>{const [cn,col]=PAL[i%PAL.length],m=ARM[i%ARM.length];
-    for(const k of['jc','pat','blobs','top','fur','shorts2','acc'])delete sk[k];
-    Object.assign(sk,{ftr:1,sp:1,cuir:1,n:'Spartiate '+cn,d:'Casque corinthien noir à crinière, cuirasse musclée, glaive. Combinaison '+cn+'.',base:'#8a6a50',shorts:shade(col,.82),cape:col,leather:'#16110e',metal:m,metalHi:'#a9afb8',glove:'#16110e',ink:'#3a2a20',hg:'spartanN',hc:'#0d0b0a',pack:shade(col,.82),cam:['#000','#000','#000']})});
+  SOLDIERS.forEach((sk,i)=>{const [n,shirt,pants,rig]=PAL[i%PAL.length];
+    for(const k of['jc','pat','blobs','top','fur','shorts2','acc','ftr','sp','cuir','cape','leather','metal','metalHi','ink','shorts'])delete sk[k];
+    Object.assign(sk,{n,d:'Maillot tactique, gilet porte-plaques à poches, pantalon cargo et rangers.',base:shirt,pants,cam:[shade(shirt,.82),shade(shirt,1.22),shade(shirt,.94)],blobs:14,hg:HG[i%HG.length],hc:HG[i%HG.length]==='cap'?'#1d1f22':HAIR[i%HAIR.length],pack:rig,glove:'#2a2620'})});
 })();
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
 const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35'];
@@ -1279,7 +1279,7 @@ function genWorld(mid){
   // scatter
   const place=(n,rf,fn,gen,opt)=>{let c=0,t=0;while(c<n&&t<n*60){t++;const p=gen(),r=rf();if(!free(p[0],p[1],r,opt))continue;fn(p[0],p[1],r);c++}};
   place(MAP.v[0],()=>sr(34,44),(x,y,r)=>addTree(x,y,r,'palm'),()=>{const a=SR()*TAU,d=sr(LAKE.r+70,LAKE.r+330);return[LAKE.x+Math.cos(a)*d,LAKE.y+Math.sin(a)*d]});
-  place(MAP.v[1],()=>sr(32,42),(x,y,r)=>addTree(x,y,r,'palm'),()=>{const y=sr(150,WS-150);return[coastX(y)-sr(90,260),y]});
+  place(Math.round(MAP.v[1]*1.7),()=>sr(32,42),(x,y,r)=>addTree(x,y,r,'palm'),()=>{const y=sr(150,WS-150);return[coastX(y)-sr(90,260),y]});
   place(MAP.v[2],()=>sr(36,50),(x,y,r)=>addTree(x,y,r,'olive'),()=>[sr(100,WS-100),sr(100,WS-100)]);
   place(MAP.v[3],()=>sr(20,38),(x,y,r)=>addRock(x,y,r),()=>[sr(100,WS-100),sr(100,WS-100)]);
   place(MAP.v[4],()=>sr(24,32),(x,y,r)=>{bushes.push({x,y,r,c:SR()});occ.push({x,y,r:r*.5})},()=>[sr(100,WS-100),sr(100,WS-100)]);
@@ -1450,12 +1450,33 @@ function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.5:.8;
   // sea
   const sea=new Path2D();sea.moveTo(WS+20,-20);for(let y=-20;y<=WS+20;y+=20)sea.lineTo(coastX(y),y);sea.lineTo(WS+20,WS+20);sea.closePath();
   c.lineWidth=80;c.strokeStyle=MAP.shore;c.stroke(sea);
-  const sg=c.createLinearGradient(3000,0,WS,0);sg.addColorStop(0,MAP.sea[0]);sg.addColorStop(.3,MAP.sea[1]);sg.addColorStop(1,MAP.sea[2]);c.fillStyle=sg;c.fill(sea);
+  const sg=c.createLinearGradient(3080,0,WS,0);sg.addColorStop(0,'#6fe3d4');sg.addColorStop(.1,'#3fcfc8');sg.addColorStop(.3,'#1fb0bf');sg.addColorStop(.62,'#1586a6');sg.addColorStop(1,'#0e5f86');c.fillStyle=sg;c.fill(sea);
   {const Rs=mulberry32(612);c.save();c.clip(sea);
-    for(let i=0;i<80;i++){const y=Rs()*WS,x=coastX(y)+70+Rs()*420,r=30+Rs()*120,gr=c.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(10,46,44,.32)');gr.addColorStop(.7,'rgba(10,46,44,.12)');gr.addColorStop(1,'rgba(10,46,44,0)');c.fillStyle=gr;c.beginPath();c.ellipse(x,y,r,r*.62,Rs()*3,0,TAU);c.fill()}
+    for(let i=0;i<80;i++){const y=Rs()*WS,x=coastX(y)+70+Rs()*420,r=30+Rs()*120,gr=c.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(10,60,64,.16)');gr.addColorStop(.7,'rgba(10,60,64,.06)');gr.addColorStop(1,'rgba(10,46,44,0)');c.fillStyle=gr;c.beginPath();c.ellipse(x,y,r,r*.62,Rs()*3,0,TAU);c.fill()}
     c.lineCap='round';for(let i=0;i<1100;i++){const y=Rs()*WS,cx=coastX(y),x=cx+40+Rs()*Math.max(60,WS-cx),l=30+Rs()*90;c.strokeStyle=Rs()<.5?'rgba(255,255,255,.07)':'rgba(0,22,40,.08)';c.lineWidth=2+Rs()*2;c.beginPath();c.moveTo(x,y-l/2);c.quadraticCurveTo(x+(Rs()-.5)*10,y,x+(Rs()-.5)*4,y+l/2);c.stroke()}
     c.restore()}
   decoShore(c,sea);c.lineWidth=5;c.strokeStyle='rgba(255,255,255,.5)';c.stroke(sea);
+  {const Rk=mulberry32(5150),rock=(x,y,r,wet,light)=>{c.fillStyle='rgba(20,30,30,.28)';c.beginPath();c.ellipse(x+r*.35,y+r*.4,r*1.05,r*.8,.4,0,TAU);c.fill();
+      const g=c.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r*1.1);g.addColorStop(0,light?'#d6d0c4':'#5a5754');g.addColorStop(.55,light?'#a59e92':'#2f2d2b');g.addColorStop(1,light?'#6e675d':'#161514');c.fillStyle=g;c.beginPath();
+      for(let k=0;k<9;k++){const a=k/9*TAU,rr=r*(.78+Rk()*.3);k?c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr*.85):c.moveTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr*.85)}c.closePath();c.fill();
+      c.fillStyle=light?'rgba(255,255,255,.3)':'rgba(255,255,255,.12)';c.beginPath();c.ellipse(x-r*.3,y-r*.35,r*.35,r*.18,-.5,0,TAU);c.fill();
+      if(wet){c.strokeStyle='rgba(255,255,255,.45)';c.lineWidth=2.4;c.beginPath();c.ellipse(x,y,r*1.35,r*1.12,0,0,TAU);c.stroke();c.strokeStyle='rgba(255,255,255,.18)';c.lineWidth=5;c.beginPath();c.ellipse(x,y,r*1.7,r*1.4,0,0,TAU);c.stroke()}};
+    for(let y=160;y<WS-160;y+=34){if(Math.abs(y-PIER.y)<380||Rk()<.45)continue;const cx=coastX(y),n=1+Math.floor(Rk()*Rk()*7);for(let k=0;k<n;k++){const x=cx-70+Rk()*150,yy=y+(Rk()-.5)*30,r=k===0?9+Rk()*15:3+Rk()*8;rock(x,yy,r,x>coastX(yy)-4,false)}}
+    // enrochement du port (gros blocs clairs) de part et d'autre du quai
+    for(const [y0,y1] of[[PIER.y-340,PIER.y-40],[PIER.y+PIER.h+40,PIER.y+PIER.h+340]])for(let y=y0;y<y1;y+=11){const cx=coastX(y);for(let k=0;k<2;k++)rock(cx-8+Rk()*34,y+(Rk()-.5)*8,6+Rk()*9,true,true)}
+    // pontons et voiliers amarrés
+    const PX=PIER.x+PIER.w,boat=(x,y,a,L)=>{c.save();c.translate(x,y);c.rotate(a);const W=L*.32;c.fillStyle='rgba(0,40,60,.28)';c.beginPath();c.ellipse(4,6,L*.52,W*.6,0,0,TAU);c.fill();
+      c.beginPath();c.moveTo(-L/2,-W/2);c.lineTo(L*.18,-W/2);c.quadraticCurveTo(L*.5,-W*.2,L*.55,0);c.quadraticCurveTo(L*.5,W*.2,L*.18,W/2);c.lineTo(-L/2,W/2);c.closePath();const hg=c.createLinearGradient(0,-W/2,0,W/2);hg.addColorStop(0,'#ffffff');hg.addColorStop(1,'#cfd6dc');c.fillStyle=hg;c.fill();c.strokeStyle='rgba(40,50,60,.45)';c.lineWidth=1;c.stroke();
+      c.fillStyle='#b98b58';c.beginPath();c.moveTo(-L/2+3,-W/2+2.5);c.lineTo(L*.16,-W/2+2.5);c.quadraticCurveTo(L*.44,-W*.16,L*.47,0);c.quadraticCurveTo(L*.44,W*.16,L*.16,W/2-2.5);c.lineTo(-L/2+3,W/2-2.5);c.closePath();c.fill();
+      c.strokeStyle='rgba(90,60,30,.35)';c.lineWidth=.6;c.beginPath();for(let q=-W/2+5;q<W/2-3;q+=2.4){c.moveTo(-L/2+4,q);c.lineTo(L*.12,q)}c.stroke();
+      c.fillStyle='#f4f6f8';rrect(c,-L*.18,-W*.3,L*.3,W*.6,3);c.fill();c.fillStyle='#2b3a48';c.fillRect(-L*.12,-W*.22,L*.18,2);c.fillRect(-L*.12,W*.22-2,L*.18,2);
+      c.strokeStyle='#9aa3ab';c.lineWidth=1.6;c.beginPath();c.moveTo(L*.12,0);c.lineTo(-L*.42,0);c.stroke();c.fillStyle='#e9edf0';c.beginPath();c.arc(L*.12,0,2.6,0,TAU);c.fill();c.strokeStyle='rgba(255,255,255,.55)';c.lineWidth=.6;c.beginPath();c.moveTo(L*.12,0);c.lineTo(L*.5,0);c.moveTo(L*.12,0);c.lineTo(-L*.48,-W*.45);c.moveTo(L*.12,0);c.lineTo(-L*.48,W*.45);c.stroke();c.restore()};
+    const plank=(x,y,w,h)=>{c.fillStyle='rgba(0,30,40,.3)';c.fillRect(x+4,y+5,w,h);c.fillStyle='#9a7a52';c.fillRect(x,y,w,h);c.strokeStyle='rgba(60,40,20,.45)';c.lineWidth=1;c.beginPath();if(w>h)for(let q=x+6;q<x+w;q+=6){c.moveTo(q,y);c.lineTo(q,y+h)}else for(let q=y+6;q<y+h;q+=6){c.moveTo(x,q);c.lineTo(x+w,q)}c.stroke()};
+    for(const [dy,dir] of[[-150,-1],[PIER.h+150,1]]){const py=PIER.y+dy;plank(PIER.x+PIER.w*.35,Math.min(PIER.y+(dir<0?0:PIER.h),py),14,Math.abs(py-(PIER.y+(dir<0?0:PIER.h)))+(dir<0?0:14));plank(PIER.x+PIER.w*.35,py,PIER.w*1.4,14);
+      for(let k=0;k<9;k++){const bx=PIER.x+PIER.w*.45+k*38;boat(bx,py-34,-Math.PI/2,52+Rk()*14);boat(bx+8,py+48,Math.PI/2,48+Rk()*16)}}
+    for(let k=0;k<6;k++)boat(PX+20+k*34,PIER.y-28,-Math.PI/2,46+Rk()*12);
+    for(let k=0;k<6;k++)boat(PX+20+k*34,PIER.y+PIER.h+28,Math.PI/2,46+Rk()*12);
+    for(let k=0;k<4;k++)boat(PX+260+Rk()*500,PIER.y-500+Rk()*1000,Rk()*TAU,58+Rk()*18)}
   {const Rb=mulberry32(909);c.save();
     for(let y=140;y<WS-140;y+=18){const cx=coastX(y);if(Rb()<.55){c.fillStyle='rgba(255,255,255,'+(.35+Rb()*.35)+')';const r=2+Rb()*3;c.beginPath();c.ellipse(cx-6-Rb()*34,y+Rb()*10,r*1.8,r,0,0,TAU);c.fill()}
       if(Rb()<.28){c.fillStyle=['#e8d9c4','#d9a5a0','#f1e3b8'][Math.floor(Rb()*3)];c.beginPath();c.ellipse(cx-50-Rb()*90,y,3+Rb()*2,2+Rb()*1.5,Rb()*3,0,TAU);c.fill()}
@@ -2228,7 +2249,7 @@ function drawClouds(x0,y0,x1,y1){if(!CLOUD){CLOUD=document.createElement('canvas
     if(vis(LAKE.x,LAKE.y,LAKE.r)){ctx.fillStyle='rgba(255,255,240,.8)';for(let i=0;i<10;i++){const a=i*2.39996,d=LAKE.r*.85*Math.sqrt(((i*.618)%1)),x=LAKE.x+Math.cos(a)*d,y=LAKE.y+Math.sin(a)*d,tw=Math.sin(TIME*2.6+i*1.9);if(tw<.7)continue;const r=(tw-.7)*12;ctx.fillRect(x-r,y-.6,r*2,1.2);ctx.fillRect(x-.6,y-r*.6,1.2,r*1.2)}}}
   if(Q.hi&&x1>2900){ctx.fillStyle='rgba(255,255,240,.85)';for(let i=0;i<26;i++){const y=y0+((i*137.7)%(y1-y0+1)),cx=coastX(y)+40+((i*263.1)%Math.max(1,(x1-coastX(y)-40))),tw=Math.sin(TIME*3+i*1.7);if(tw<.75||cx>x1||cx<coastX(y)+30)continue;const r=(tw-.75)*10;ctx.fillRect(cx-r,y-.6,r*2,1.2);ctx.fillRect(cx-.6,y-r*.6,1.2,r*1.2)}}}
 function render(){const z=cam.z;{const pz=z/baseZoom();PK=.0021*pz;PTY=-.27*pz}const sh=reduceMotion?0:cam.shake*10;const ox=(Math.random()-.5)*sh,oy=(Math.random()-.5)*sh;
-  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#235f74';ctx.fillRect(0,0,VW,VH);
+  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0e5f86';ctx.fillRect(0,0,VW,VH);
   const vw=VW/z,vh=VH/z,x0=cam.x-vw/2,y0=cam.y-vh/2,x1=x0+vw,y1=y0+vh;V.x0=x0;V.y0=y0;V.x1=x1;V.y1=y1;
   ctx.setTransform(DPR*z,0,0,DPR*z,DPR*(VW/2-cam.x*z+ox),DPR*(VH/2-cam.y*z+oy));
   const gx0=clamp(x0,0,WS),gy0=clamp(y0,0,WS),gx1=clamp(x1,0,WS),gy1=clamp(y1,0,WS);
@@ -2452,7 +2473,7 @@ function realify(cv,o){o=o||{};const w=cv.width,h=cv.height,c=cv.getContext('2d'
     const j=i*4;d[j]=Math.min(255,d[j]*f);d[j+1]=Math.min(255,d[j+1]*f);d[j+2]=Math.min(255,d[j+2]*f)}
   c.putImageData(im,0,0);return cv}
 function buildSoldierSprites(){const R=mulberry32(9),K=6,S=56*K;
-  for(const sk of SOLDIERS){const cv2=mkCv(S,S),c=cv2.getContext('2d');c.translate(S/2,S/2);c.scale(K,K);drawTorso(c,sk,R);realify(cv2,sk.sp?{noise:.05,weave:.012,spec:.22,bump:2.6}:sk.ftr||sk.jc?{noise:.03,weave:.02}:{noise:.07,weave:.05});SPR[sk.id]=cv2;sk.legs=sk.sp?sk.base:sk.ftr||sk.jc?sk.shorts:shade(sk.base,.7);sk.arm=sk.ftr?sk.base:sk.jc?sk.jc[0]:shade(sk.base,.9)}
+  for(const sk of SOLDIERS){const cv2=mkCv(S,S),c=cv2.getContext('2d');c.translate(S/2,S/2);c.scale(K,K);drawTorso(c,sk,R);realify(cv2,sk.sp?{noise:.05,weave:.012,spec:.22,bump:2.6}:sk.ftr||sk.jc?{noise:.03,weave:.02}:{noise:.07,weave:.05});SPR[sk.id]=cv2;sk.legs=sk.pants||(sk.sp?sk.base:sk.ftr||sk.jc?sk.shorts:shade(sk.base,.7));sk.arm=sk.ftr?sk.base:sk.jc?sk.jc[0]:shade(sk.base,.9)}
   for(let l=1;l<=3;l++){const cv2=mkCv(S,S),c=cv2.getContext('2d');c.translate(S/2,S/2);c.scale(K,K);drawVest(c,l);realify(cv2,{noise:.06,weave:.06,bump:2.6});VSPR[l]=cv2}
   for(const k in WEAP){const W=WEAP[k],w=W.len+26,h=20,raw=mkCv(w*K,h*K),c=raw.getContext('2d');c.scale(K,K);c.translate(12,8);drawGunTop(c,k,0,0);realify(raw,{noise:.03,weave:0,spec:.3,bump:2,r:.08});GSPR[k]={cv:bakeOutline(raw,6),ox:12,oy:8,w,h}}
   HSPR.clear();initGfx()}

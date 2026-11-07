@@ -304,13 +304,17 @@ html[dir=rtl] #scr-main::before{background:linear-gradient(270deg,rgba(11,14,23,
 /* très petites hauteurs (téléphone 360 px en paysage) : tout le menu tient sans défilement */
 @media (max-height:400px){#scr-main{gap:8px;padding-top:52px;padding-bottom:10px}.logo.big{font-size:30px}.mainnav{gap:5px}.mainnav .nbtn{padding-block:7px 6px}.nbtn.play b{font-size:18px}}
 
+.toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;max-width:min(560px,92vw);padding:12px 18px;background:rgba(11,14,23,.94);border:1px solid var(--line);border-inline-start:3px solid var(--acc);color:var(--txt);font-size:14px;line-height:1.35;transition:opacity .5s}
+.toast.out{opacity:0}
+#errhelp{margin-top:4px;max-width:60ch;line-height:1.45}
+
 </style>
 </head>
 <body>
 <canvas id="gl"></canvas>
 
 <div id="loading" class="overlay show"><div class="logo big">SUPER<span>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر جود</b></div><div class="bar"><i></i></div><p id="loadtxt" data-i18n="loading">Démarrage du moteur…</p></div>
-<div id="err" class="overlay"><div class="box"><h2>Oups…</h2><p id="errtxt"></p></div></div>
+<div id="err" class="overlay"><div class="box"><h2>Oups…</h2><p id="errtxt"></p><p id="errhelp" class="note"></p><button id="err-retry" class="cta hidden">Réessayer</button></div></div>
 
 <div id="ui">
   <div id="topbar">
@@ -896,8 +900,11 @@ const R = {
   stats: { calls: 0, tris: 0 }, proj: new Float32Array(16), view: new Float32Array(16), vrot: new Float32Array(16), tmpM: new Float32Array(16),
   init(canvas) {
     this.canvas = canvas;
+    // plusieurs tentatives : certains pilotes Android refusent l'antialiasing ou le mode « haute performance »
     const opt = { antialias: true, alpha: false, depth: true, stencil: false, powerPreference: 'high-performance', preserveDrawingBuffer: false };
-    const gl = canvas.getContext('webgl', opt) || canvas.getContext('experimental-webgl', opt);
+    const tries = [['webgl', opt], ['webgl', { alpha: false, depth: true }], ['experimental-webgl', { alpha: false, depth: true }], ['webgl2', { alpha: false, depth: true }]];
+    let gl = null;
+    for (const [kind, o] of tries) { try { gl = canvas.getContext(kind, o); } catch (e) { gl = null; } if (gl) break; }
     if (!gl) return false;
     this.gl = gl;
     this.P = this.prog(SH_MAIN_V, SH_MAIN_F);
@@ -2623,7 +2630,7 @@ const MUS = {
    ===================================================================== */
 const LANGS = {
   fr: {
-    loading: 'Démarrage du moteur…', preparing: 'Préparation du circuit : {0}', webgl: 'Ton navigateur ne supporte pas WebGL. Essaie Chrome, Edge, Firefox ou Safari récent.',
+    loading: 'Démarrage du moteur…', preparing: 'Préparation du circuit : {0}', webgl: 'Le moteur 3D n’a pas pu démarrer : le navigateur a désactivé WebGL, souvent après un plantage graphique.', webglHelp: 'Ferme complètement Chrome (ou redémarre le téléphone), puis rouvre le jeu. Si tu l’as ouvert depuis Facebook, Messenger ou WhatsApp, ouvre le lien dans Chrome. Le jeu redémarrera en qualité basse.', retry: 'Réessayer', glLost: 'Le moteur graphique s’est réinitialisé. Redémarrage en qualité basse…', safeMode: 'Mode sans échec : qualité basse (le dernier lancement ne s’est pas terminé).',
     tagline: 'Courses de rue à travers la Tunisie, de la médina au Sahara.', play: 'JOUER', career: 'CARRIÈRE', quick: 'COURSE RAPIDE', garage: 'GARAGE', options: 'OPTIONS', help: 'COMMENT JOUER',
     careerSub: '12 épreuves à conquérir', quickSub: 'Course, contre-la-montre ou poursuite', garageSub: 'Voitures, peinture, jantes, néons, tuning', optionsSub: 'Langue, son, graphismes, commandes', helpSub: 'Clavier, tactile, manette',
     playNext: 'Épreuve {0} : {1}', playQuick: 'Course rapide : {0}', careerDone: 'Carrière terminée — tu es le roi !', careerStep: 'Épreuve {0} / {1}',
@@ -2653,7 +2660,7 @@ const LANGS = {
     r_evOk: '✓ Épreuve « {0} » réussie ! Épreuve suivante débloquée.', r_evAgain: 'Épreuve déjà réussie — récompense réduite.', r_evFail: 'Épreuve « {0} » ratée. Réessaie ou améliore ta voiture au garage.',
   },
   en: {
-    loading: 'Starting the engine…', preparing: 'Preparing track: {0}', webgl: 'Your browser does not support WebGL. Try a recent Chrome, Edge, Firefox or Safari.',
+    loading: 'Starting the engine…', preparing: 'Preparing track: {0}', webgl: 'The 3D engine could not start: the browser has disabled WebGL, often after a graphics crash.', webglHelp: 'Fully close Chrome (or restart the phone), then open the game again. If you opened it from Facebook, Messenger or WhatsApp, open the link in Chrome. The game will restart in low quality.', retry: 'Try again', glLost: 'The graphics engine was reset. Restarting in low quality…', safeMode: 'Safe mode: low quality (the last launch did not finish).',
     tagline: 'Street racing across Tunisia, from the medina to the Sahara.', play: 'PLAY', career: 'CAREER', quick: 'QUICK RACE', garage: 'GARAGE', options: 'OPTIONS', help: 'HOW TO PLAY',
     careerSub: '12 events to conquer', quickSub: 'Race, time trial or police chase', garageSub: 'Cars, paint, rims, neons, tuning', optionsSub: 'Language, sound, graphics, controls', helpSub: 'Keyboard, touch, gamepad',
     playNext: 'Event {0}: {1}', playQuick: 'Quick race: {0}', careerDone: 'Career complete — you are the king!', careerStep: 'Event {0} / {1}',
@@ -2683,7 +2690,7 @@ const LANGS = {
     r_evOk: '✓ Event “{0}” completed! Next event unlocked.', r_evAgain: 'Event already completed — reduced reward.', r_evFail: 'Event “{0}” failed. Try again or upgrade your car.',
   },
   ar: {
-    loading: 'تشغيل المحرّك…', preparing: 'تجهيز الحلبة: {0}', webgl: 'متصفحك لا يدعم WebGL. جرّب نسخة حديثة من Chrome أو Edge أو Firefox أو Safari.',
+    loading: 'تشغيل المحرّك…', preparing: 'تجهيز الحلبة: {0}', webgl: 'تعذّر تشغيل محرّك الرسوم: المتصفح عطّل WebGL، غالبًا بعد عطل في الرسوميات.', webglHelp: 'أغلق Chrome تمامًا (أو أعد تشغيل الهاتف) ثم افتح اللعبة من جديد. إذا فتحتها من فيسبوك أو ماسنجر أو واتساب، افتح الرابط في Chrome. ستعمل اللعبة بجودة منخفضة.', retry: 'إعادة المحاولة', glLost: 'أُعيد تشغيل محرّك الرسوم. إعادة التشغيل بجودة منخفضة…', safeMode: 'الوضع الآمن: جودة منخفضة (لم يكتمل التشغيل السابق).',
     tagline: 'سباقات الشوارع عبر تونس، من المدينة العتيقة إلى الصحراء.', play: 'العب', career: 'المسيرة', quick: 'سباق سريع', garage: 'المرآب', options: 'الإعدادات', help: 'طريقة اللعب',
     careerSub: '12 تحدّياً بانتظارك', quickSub: 'سباق، ضد الساعة أو مطاردة', garageSub: 'سيارات، طلاء، جنوط، نيون، تعديل', optionsSub: 'اللغة، الصوت، الرسوم، التحكم', helpSub: 'لوحة المفاتيح، اللمس، الذراع',
     playNext: 'التحدي {0}: {1}', playQuick: 'سباق سريع: {0}', careerDone: 'انتهت المسيرة — أنت ملك الطريق!', careerStep: 'التحدي {0} / {1}',
@@ -3646,6 +3653,7 @@ const UI = {
   },
   /* ----- course ----- */
   startRace(cfg) {
+    guardArm();
     if (cfg.tier === undefined) cfg.tier = (CARS.find(k => k.id === SAVE.car) || CARS[0]).tier;
     this.lastCfg = Object.assign({}, cfg);
     $('results').classList.remove('show'); $('pause').classList.remove('show');
@@ -3808,7 +3816,38 @@ function drawSpeedo(p) {
   ctx.fillStyle = '#fff'; ctx.font = SPF.big; ctx.fillText(NUMS[Math.min(519, kr)], cx, cy + S * 0.17);
   ctx.font = SPF.gear; ctx.fillStyle = nos ? PALETTE.nitro : PALETTE.accent2; ctx.fillText(typeof gear === 'number' ? NUMS[gear] : gear, cx, cy - S * 0.1);
 }
-function showErr(x) { $('errtxt').textContent = x; $('err').classList.add('show'); $('loading').classList.remove('show'); }
+function showErr(x, help) {
+  $('errtxt').textContent = x; $('errhelp').textContent = help || '';
+  const b = $('err-retry'); b.textContent = t('retry'); b.classList.toggle('hidden', !help); b.onclick = () => location.reload();
+  $('err').classList.add('show'); $('loading').classList.remove('show');
+}
+/* ---------- garde-fous du moteur graphique ----------
+   - si le lancement précédent ne s'est jamais terminé (gel, plantage GPU), on repart en qualité basse
+   - si le contexte WebGL est perdu, on passe en qualité basse et on recharge (évite que le navigateur bloque WebGL pour le site) */
+const BOOT_KEY = 'superjoud_boot';
+function bootGuardStart() {
+  let safe = false;
+  try { safe = localStorage.getItem(BOOT_KEY) === 'pending'; localStorage.setItem(BOOT_KEY, 'pending'); } catch (e) { }
+  if (safe && SAVE.settings.quality !== 'low') { SAVE.settings.quality = 'low'; saveGame(); return true; }
+  return false;
+}
+function toast(msg) {
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; document.body.appendChild(d);
+  setTimeout(() => d.classList.add('out'), 4200); setTimeout(() => d.remove(), 4800);
+}
+// pendant les 2 premières secondes d'une course aussi : un gel GPU au départ fera repartir en qualité basse
+function guardArm() { try { localStorage.setItem(BOOT_KEY, 'pending'); } catch (e) { } BOOT_FRAMES = 0; }
+function bootGuardOk() { try { localStorage.setItem(BOOT_KEY, 'ok'); } catch (e) { } }
+function glFailed() {
+  // le prochain lancement se fera directement en qualité basse
+  SAVE.settings.quality = 'low'; saveGame(); try { localStorage.setItem(BOOT_KEY, 'ok'); } catch (e) { }
+}
+function watchContext(cv) {
+  cv.addEventListener('webglcontextlost', e => {
+    e.preventDefault(); glFailed(); G.state = 'lost';
+    showErr(t('glLost')); setTimeout(() => location.reload(), 1800);
+  }, false);
+}
 
 /* ---------- réglages ---------- */
 let PR = 1, DYN = 1;
@@ -3922,8 +3961,11 @@ function bindInputs() {
 
 /* ---------- boucle principale + résolution dynamique ---------- */
 let LAST = 0;
+let BOOT_FRAMES = -1;
 function frame(now) {
+  if (G.state === 'lost') return;
   requestAnimationFrame(frame);
+  if (BOOT_FRAMES >= 0 && G.state !== 'loading' && ++BOOT_FRAMES > 30) { BOOT_FRAMES = -1; bootGuardOk(); }
   const raw = Math.max(0, (now - LAST) / 1000), dt = Math.min(0.05, raw); LAST = now;
   FPS.acc += raw; FPS.n++;
   if (FPS.acc >= 1) {
@@ -3940,7 +3982,11 @@ function frame(now) {
 }
 function boot() {
   loadGame(); LANG = SAVE.settings.lang || 'fr'; applyI18n();
-  if (!R.init($('gl'))) { showErr(t('webgl')); return; }
+  const safe = bootGuardStart();
+  let ok = false;
+  try { ok = R.init($('gl')); } catch (e) { console.error(e); glFailed(); showErr(t('webgl') + ' (' + e.message.slice(0, 160) + ')', t('webglHelp')); return; }
+  if (!ok) { glFailed(); showErr(t('webgl'), t('webglHelp')); return; }
+  watchContext($('gl'));
   try {
     applySettings();
     R.resize(PR);
@@ -3951,6 +3997,8 @@ function boot() {
   G.state = 'menu';
   UI.show('main');
   setTimeout(() => $('loading').classList.remove('show'), 350);
+  if (safe) setTimeout(() => toast(t('safeMode')), 900);
+  BOOT_FRAMES = 0;
   requestAnimationFrame(x => { LAST = x; frame(x); });
 }
 window.addEventListener('load', boot);

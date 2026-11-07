@@ -10,6 +10,8 @@
 ## Tout le reste est original et généré par le code
 - **Moteur 3D** : WebGL écrit à la main, sans bibliothèque.
 - **Voitures** : 10 modèles inventés (JOUD Sprint, Tozeur Rally, Medina RS, Kairouan S, Djerba Drift, Carthage GT, Atlas X, Sahara Turbo, Phénix E, Hannibal V12), plus le trafic, la police, le taxi, le louage et le camion. Aucune marque, aucun logo, aucune calandre de constructeur.
+- **Motos, 4x4, pick-up, camion, bus, rétro** : 9 véhicules inventés (Zitouna 125, Djebel 800, Raad 1000 RR, Chaambi 4x4, Kerkennah Pick-up, Medjerda Poids lourd, Bus TransTunis, Bizerte 74, Sfax Turbo 86).
+- **Pilotes** : 8 personnages inventés ; portraits SVG et modèles 3D générés par le code.
 - **Circuits** : 7 tracés inventés (Tunis, Sahara, Atlas, Corniche, Circuit, Port, Aïn Draham), décors procéduraux.
 - **Textures** : bruit procédural (grain, fbm, Worley) calculé au lancement.
 - **Sons et musique** : synthèse Web Audio en temps réel (moteur, pneus, nitro, sirène, pluie, musique).

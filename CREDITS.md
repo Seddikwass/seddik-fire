@@ -1,4 +1,4 @@
-# SUPER JOUD — Crédits
+# SUPER SEDDIK@JOUD — Crédits
 
 ## Polices (Google Fonts, licence SIL Open Font License 1.1)
 | Police | Auteur | Usage |

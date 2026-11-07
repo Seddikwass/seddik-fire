@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#07080b">
-<title>SUPER JOUD</title>
+<title>SUPER SEDDIK@JOUD</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -23,7 +23,8 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .hidden{display:none!important}
 /* ---------- logo ---------- */
 .logo{font-family:var(--fh);font-size:34px;letter-spacing:.02em;font-style:italic;line-height:.9;color:#fff;text-shadow:0 0 18px rgba(255,122,24,.35)}
-.logo span{display:block;color:var(--acc);font-size:1.45em;letter-spacing:.04em;-webkit-text-stroke:1px rgba(255,255,255,.15)}
+.logo span{display:block;color:var(--acc);font-size:1.12em;letter-spacing:.03em;white-space:nowrap;-webkit-text-stroke:1px rgba(255,255,255,.15)}
+.logo span i{font-style:inherit;color:#fff;font-size:.8em;margin:0 .03em;vertical-align:.06em;text-shadow:0 0 14px rgba(25,211,255,.55)}
 .logo.big{font-size:clamp(34px,6.4vw,74px)}
 /* ---------- overlays ---------- */
 .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50;background:rgba(3,4,7,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
@@ -334,14 +335,15 @@ html[lang=ar] .dcard b,html[lang=ar] .dhead h2,html[lang=ar] .drvchip b{font-fam
 @media (max-height:520px){.dhead svg{width:72px;height:72px}.dcard svg{width:40px;height:40px}.cats button{min-height:32px;padding:5px 9px;font-size:12px}.drvchip svg{width:38px;height:38px}}
 @media (max-height:420px){.carline .carinfo{display:none}}
 #drvpanel{height:max-content;align-self:flex-start}
+#err-test{display:block;margin:2px 0 6px;color:var(--cy);font-size:14px;line-height:1.4;text-decoration:underline}#err-test.hidden{display:none}
 
 </style>
 </head>
 <body>
 <canvas id="gl"></canvas>
 
-<div id="loading" class="overlay show"><div class="logo big">SUPER<span>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر جود</b></div><div class="bar"><i></i></div><p id="loadtxt" data-i18n="loading">Démarrage du moteur…</p></div>
-<div id="err" class="overlay"><div class="box"><h2>Oups…</h2><p id="errtxt"></p><p id="errhelp" class="note"></p><button id="err-retry" class="cta hidden">Réessayer</button></div></div>
+<div id="loading" class="overlay show"><div class="logo big">SUPER<span>SEDDIK<i>@</i>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر صدّيق@جود</b></div><div class="bar"><i></i></div><p id="loadtxt" data-i18n="loading">Démarrage du moteur…</p></div>
+<div id="err" class="overlay"><div class="box"><h2>Oups…</h2><p id="errtxt"></p><p id="errhelp" class="note"></p><a id="err-test" class="hidden" href="https://get.webgl.org/" target="_blank" rel="noopener"></a><button id="err-retry" class="cta hidden">Réessayer</button></div></div>
 
 <div id="ui">
   <div id="topbar">
@@ -351,7 +353,7 @@ html[lang=ar] .dcard b,html[lang=ar] .dhead h2,html[lang=ar] .drvchip b{font-fam
   </div>
 
   <section id="scr-main" class="screen">
-    <div class="hero"><div class="logo big">SUPER<span>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر جود</b></div><div class="tag" data-i18n="tagline">Courses de rue · Police · Nitro</div></div>
+    <div class="hero"><div class="logo big">SUPER<span>SEDDIK<i>@</i>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر صدّيق@جود</b></div><div class="tag" data-i18n="tagline">Courses de rue · Police · Nitro</div></div>
     <nav class="mainnav">
       <button id="m-play" class="nbtn play"><b><svg viewBox="0 0 24 24" class="ic"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg><span data-i18n="play">JOUER</span></b><small id="m-play-sub"></small></button>
       <button data-go="career" class="nbtn"><b data-i18n="career">CARRIÈRE</b><small id="m-career"></small></button>
@@ -451,7 +453,7 @@ html[lang=ar] .dcard b,html[lang=ar] .dhead h2,html[lang=ar] .drvchip b{font-fam
 <script>
 'use strict';
 /* =====================================================================
-   SUPER JOUD — moteur 3D WebGL autonome (aucune dépendance externe)
+   SUPER SEDDIK@JOUD — moteur 3D WebGL autonome (aucune dépendance externe)
    ===================================================================== */
 const STRIDE = 11; // pos3 norm3 col3 mat1 light1
 
@@ -620,6 +622,9 @@ uniform sampler2D uNoise; uniform sampler2D uShadow;
 ${GLSL_COMMON}
 float unpackD(vec4 c){ return dot(c, vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0)); }
 float shadowF(float ndl){
+#ifdef LITE
+  return 1.0;
+#endif
   if (uShOn < 0.5) return 1.0;
   vec3 p = vSh.xyz/vSh.w*0.5+0.5;
   if (p.x<0.002||p.x>0.998||p.y<0.002||p.y>0.998||p.z>1.0) return 1.0;
@@ -636,6 +641,9 @@ vec3 env(vec3 r){
   float t = clamp(r.y,-1.0,1.0);
   vec3 sky = lin(uSkyCol), hor = lin(uHorCol), gnd = lin(uGndCol);
   vec3 c = t>0.0 ? mix(hor,sky,pow(t,0.55)) : mix(hor*0.8,gnd*0.6,min(-t*4.0,1.0));
+#ifdef LITE
+  return c + lin(uSunCol)*pow(max(dot(r,uSunDir),0.0),24.0)*0.3;
+#endif
   float az = atan(r.z, r.x);
   float hs = 0.035 + 0.03*sin(az*5.0+1.3)*sin(az*11.0) + 0.02*sin(az*23.0+2.0);
   if (t < hs && t > -0.02) {
@@ -735,12 +743,14 @@ void main(){
     if (trans > 0.0) col += base*sun*trans*max(dot(-v,uSunDir),0.0)*sh*0.6 + base*sun*trans*0.15*max(-ndl0,0.0);
     vec3 h = normalize(uSunDir+v);
     vec3 sc = sun*pow(max(dot(n,h),0.0),shin)*spec*sh;
+#ifndef LITE
     for (int i=0;i<8;i++){
       vec3 L = uLP[i]-vW; float d2 = dot(L,L); vec3 l = L*inversesqrt(d2+0.0001);
       vec3 lc = uLC[i]*1.25/(1.0+d2*0.012);
       col += base*lc*max(dot(n,l),0.0)*uDyn;
       sc += lc*pow(max(dot(n,normalize(l+v)),0.0),shin)*spec*1.8;
     }
+#endif
     if (uHead > 0.0) {
       vec3 L = vW-uHeadPos; float d = length(L); vec3 l = L/max(d,0.001);
       float cone = smoothstep(0.80,0.95,dot(l,uHeadDir));
@@ -941,14 +951,12 @@ const R = {
     for (const [kind, o] of tries) { try { gl = canvas.getContext(kind, o); } catch (e) { gl = null; } if (gl) break; }
     if (!gl) return false;
     this.gl = gl;
-    this.P = this.prog(SH_MAIN_V, SH_MAIN_F);
+    // qualité basse : shader principal allégé (sans lumières dynamiques, ombres ni reflets complexes)
+    // les effets d'image et la carte d'ombre ne sont compilés que s'ils servent (moins de risque de plantage du pilote graphique)
+    this.lite = !!this.liteWanted; this.P = this.prog(SH_MAIN_V, (this.lite ? '#define LITE\n' : '') + SH_MAIN_F);
     this.S = this.prog(SH_SKY_V, SH_SKY_F);
-    this.D = this.prog(SH_DEPTH_V, SH_DEPTH_F);
     this.PP = this.prog(SH_PART_V, SH_PART_F);
     this.LN = this.prog(SH_LINE_V, SH_LINE_F);
-    this.QB = this.prog(SH_Q_V, SH_BRIGHT_F);
-    this.QL = this.prog(SH_Q_V, SH_BLUR_F);
-    this.QC = this.prog(SH_Q_V, SH_COMP_F);
     this.qbuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, this.qbuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const sk = [], SU = 24, SV = 12;
@@ -966,6 +974,16 @@ const R = {
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE);
     this.ident = M4.ident(); this.shMat = M4.ident();
     return true;
+  },
+  // programmes compilés à la demande
+  get D() { return this._D || (this._D = this.prog(SH_DEPTH_V, SH_DEPTH_F)); },
+  get QB() { return this._QB || (this._QB = this.prog(SH_Q_V, SH_BRIGHT_F)); },
+  get QL() { return this._QL || (this._QL = this.prog(SH_Q_V, SH_BLUR_F)); },
+  get QC() { return this._QC || (this._QC = this.prog(SH_Q_V, SH_COMP_F)); },
+  setLite(v) {
+    v = !!v; this.liteWanted = v; if (!this.gl || v === this.lite) return;
+    const old = this.P; this.P = this.prog(SH_MAIN_V, (v ? '#define LITE\n' : '') + SH_MAIN_F); this.lite = v;
+    if (old) this.gl.deleteProgram(old.p);
   },
   prog(vs, fs) {
     const gl = this.gl;
@@ -1758,18 +1776,21 @@ function finishModel(mb, o) {
   return o;
 }
 
-const MODELS = {};
-function buildAllModels() {
-  for (const k of Object.keys(STYLES)) MODELS[k] = buildCarModel(k);
-  MODELS.police = buildCarModel('sedan', { police: true });
-  MODELS.polgt = buildCarModel('gt', { police: true });
-  MODELS.taxi = buildCarModel('sedan', { taxi: true });
-  MODELS.van = buildVan();
-  MODELS.louage = buildVan([0.8, 0.08, 0.08]);
-  MODELS.truck = buildTruck();
-  MODELS.bus = buildBus();
-  for (const k of ['sport', 'trail', 'scoot']) MODELS['moto_' + k] = buildMoto(k);
-}
+// véhicules construits à la demande (au premier affichage) : démarrage plus léger, moins de mémoire graphique
+const MODEL_BUILDERS = {
+  police: () => buildCarModel('sedan', { police: true }), polgt: () => buildCarModel('gt', { police: true }), taxi: () => buildCarModel('sedan', { taxi: true }),
+  van: () => buildVan(), louage: () => buildVan([0.8, 0.08, 0.08]), truck: () => buildTruck(), bus: () => buildBus(),
+  moto_sport: () => buildMoto('sport'), moto_trail: () => buildMoto('trail'), moto_scoot: () => buildMoto('scoot'),
+};
+const MODELS_BUILT = {};
+const MODELS = new Proxy(MODELS_BUILT, {
+  get(t, k) {
+    if (typeof k !== 'string') return t[k];
+    if (!(k in t)) { const b = MODEL_BUILDERS[k] || (STYLES[k] ? () => buildCarModel(k) : null); if (b) t[k] = b(); }
+    return t[k];
+  },
+});
+function buildAllModels() { /* rien à construire d'avance : voir MODELS */ }
 
 'use strict';
 /* =====================================================================
@@ -1887,8 +1908,8 @@ function buildBus() {
    (assis au volant ou sur une moto, casque coloré en moto)
    ===================================================================== */
 const DRIVERS = [
-  { id: 'aziz', name: 'Aziz', price: 0, skin: '#c58c62', hair: 'short', hairC: '#1d1410', beard: 'stubble', suit: '#d81e1e', helmet: '#d81e1e', perk: 'speed' },
-  { id: 'rania', name: 'Rania', price: 0, skin: '#e0b48c', hair: 'long', hairC: '#2a1a12', suit: '#1e56d8', helmet: '#f2f2f2', perk: 'nitro' },
+  { id: 'aziz', name: 'Seddik', price: 0, skin: '#c58c62', hair: 'short', hairC: '#1d1410', beard: 'stubble', suit: '#d81e1e', helmet: '#d81e1e', perk: 'speed' },
+  { id: 'rania', name: 'Joud', price: 0, skin: '#e0b48c', hair: 'long', hairC: '#2a1a12', suit: '#1e56d8', helmet: '#f2f2f2', perk: 'nitro' },
   { id: 'skander', name: 'Skander', price: 6000, skin: '#a8714b', hair: 'cap', hairC: '#111111', capC: '#ffb020', suit: '#24262e', helmet: '#ffb020', perk: 'accel' },
   { id: 'yosra', name: 'Yosra', price: 9000, skin: '#8a5a3c', hair: 'bun', hairC: '#140d0a', suit: '#1fb84a', helmet: '#1fb84a', perk: 'grip' },
   { id: 'fares', name: 'Fares', price: 12000, skin: '#b97f55', hair: 'curly', hairC: '#20140e', beard: 'full', suit: '#6a2bd8', helmet: '#2b2d31', perk: 'tough' },
@@ -2058,6 +2079,8 @@ const FONT = {
   P: ['11110', '10001', '10001', '11110', '10000', '10000', '10000'], E: ['11111', '10000', '10000', '11110', '10000', '10000', '11111'],
   R: ['11110', '10001', '10001', '11110', '10100', '10010', '10001'], J: ['00111', '00010', '00010', '00010', '00010', '10010', '01100'],
   O: ['01110', '10001', '10001', '10001', '10001', '10001', '01110'], D: ['11100', '10010', '10001', '10001', '10001', '10010', '11100'],
+  I: ['01110', '00100', '00100', '00100', '00100', '00100', '01110'], K: ['10001', '10010', '10100', '11000', '10100', '10010', '10001'],
+  '@': ['01110', '10001', '10111', '10101', '10111', '10000', '01111'],
   ' ': ['00000', '00000', '00000', '00000', '00000', '00000', '00000'],
 };
 
@@ -2326,12 +2349,12 @@ function buildTrack(def, quality) {
     for (const sd of [-1, 1]) { const p = pos(0, sd * (W + 2.2)); mb.box(p[0], p[1], p[2], 0.9, 8.6, 0.9, [0.1, 0.1, 0.12], 4, hd[0]); }
     const b = pos(0, 0, 6.2); mb.box(b[0], b[1], b[2], 2 * W + 5.3, 2.4, 1.0, [0.06, 0.06, 0.08], 4, hd[0]);
     const lb = pos(0, 0, 6.05); mb.box(lb[0], lb[1], lb[2], 2 * W + 3, 0.12, 0.5, [1, 0.95, 0.85], 2, hd[0]);
-    const txt = 'SUPER JOUD', px0 = 0.25, tw = txt.length * 6 * px0;
+    const txt = 'SUPER SEDDIK@JOUD', px0 = Math.min(0.25, (2 * W + 3) / (txt.length * 6)), tw = txt.length * 6 * px0, yo = (0.25 - px0) * 3.5;
     for (const face of [-1, 1]) {
       for (let ci = 0; ci < txt.length; ci++) {
-        const g = FONT[txt[ci]];
+        const g = FONT[txt[ci]] || FONT[' '];
         for (let row = 0; row < 7; row++) for (let col = 0; col < 5; col++) if (g[row][col] === '1') {
-          const lat = (-tw / 2 + (ci * 6 + col + 0.5) * px0) * face, up = 6.4 + (6 - row) * px0 + 0.2;
+          const lat = (-tw / 2 + (ci * 6 + col + 0.5) * px0) * face, up = 6.4 + (6 - row) * px0 + 0.2 + yo;
           const p = [px[0] + rx[0] * lat - tx[0] * 0.53 * face, y0 + up, pz[0] + rz[0] * lat - tz[0] * 0.53 * face];
           mb.box(p[0], p[1], p[2], px0 * 0.92, px0 * 0.92, 0.08, [1, 0.5, 0.08], 2, hd[0]);
         }
@@ -2718,7 +2741,7 @@ function buildTrack(def, quality) {
       mb.quad(pos(i, g * (W + 8.5), 0), pos(j, g * (W + 8.5), 0), pos(j, g * (W + 8.5), 0.6), pos(i, g * (W + 8.5), 0.6), [0.5, 0.5, 0.5], 18);
       mb.quad(pos(i, g * (db + 0.5), 9.2), pos(j, g * (db + 0.5), 9.2), pos(j, g * (W + 7.5), 7.6), pos(i, g * (W + 7.5), 7.6), [0.9, 0.9, 0.9], 18);
       if ((i - G0) % 12 === 0) { const q = pos(i, g * (W + 19.6)); mb.box(q[0], q[1], q[2], 0.3, 9.2, 0.3, [0.7, 0.7, 0.72], 4, hd[i]); }
-      if ((i - G0) % 24 === 6) boardText(mb, i, g, W + 7.45, 7.9, 'SUPER JOUD', 0.13, [1, 0.5, 0.08], 2);
+      if ((i - G0) % 24 === 6) boardText(mb, i, g, W + 7.45, 7.9, 'SUPER SEDDIK@JOUD', 0.11, [1, 0.5, 0.08], 2);
     }
     // stands / garages
     for (let i = P0 + 2; i < P1 - 12; i += 12) {
@@ -2738,7 +2761,7 @@ function buildTrack(def, quality) {
       const side = (i / 22) % 2 ? 1 : -1; if (inPit(i, side) || inGs(i, side)) continue;
       const mb = ch(rk(i)), q = pos(i, side * (W + 5.35), 0.25), c = pal[Math.floor(r() * pal.length)];
       mb.box(q[0], q[1], q[2], 0.1, 1.25, 7.5, c, 0, hd[i]);
-      boardText(mb, i, side, W + 5.28, 0.55, 'SUPER JOUD', 0.1, [1, 1, 1], 0);
+      boardText(mb, i, side, W + 5.28, 0.55, 'SEDDIK@JOUD', 0.1, [1, 1, 1], 0);
     }
     for (let i = 0; i < N; i += 45) { if (Math.abs(kk[i]) < 0.006) continue; const side = kk[i] > 0 ? 1 : -1; if (inPit(i, side) || inGs(i, side)) continue; const q = pos(i, side * (W + 7.5)); ch(rk(i)).box(q[0], T.groundY(q[0], q[2]), q[2], 2, 2.4, 2.2, [0.95, 0.5, 0.1], 18, hd[i]); }
     for (let k = 0; k < 220; k++) {
@@ -3125,6 +3148,7 @@ const MUS = {
    ===================================================================== */
 const LANGS = {
   fr: {
+    webglTest: 'Tester la 3D de ce téléphone (get.webgl.org) : si le cube ne tourne pas, WebGL est bloqué par le navigateur.',
     drivers: 'Pilotes', driver: 'Pilote', driverNote: 'Le pilote apparaît au volant (ou sur la moto) et donne un petit bonus, quel que soit le véhicule.',
     cat_car: 'Voitures', cat_moto: 'Motos', cat_offroad: '4x4', cat_heavy: 'Poids lourds', cat_retro: 'Rétro',
     perkT_speed: 'Le rapide', perkT_nitro: 'Reine de la nitro', perkT_accel: 'Départ canon', perkT_grip: 'Trajectoires propres', perkT_tough: 'Le costaud', perkT_drift: 'Reine de la glisse', perkT_ghost: 'Le fantôme', perkT_money: 'Business',
@@ -3159,6 +3183,7 @@ const LANGS = {
     r_evOk: '✓ Épreuve « {0} » réussie ! Épreuve suivante débloquée.', r_evAgain: 'Épreuve déjà réussie — récompense réduite.', r_evFail: 'Épreuve « {0} » ratée. Réessaie ou améliore ta voiture au garage.',
   },
   en: {
+    webglTest: 'Test this phone’s 3D (get.webgl.org): if the cube does not spin, the browser is blocking WebGL.',
     drivers: 'Drivers', driver: 'Driver', driverNote: 'Your driver sits at the wheel (or on the bike) and gives a small bonus with any vehicle.',
     cat_car: 'Cars', cat_moto: 'Bikes', cat_offroad: '4x4', cat_heavy: 'Heavy', cat_retro: 'Retro',
     perkT_speed: 'The quick one', perkT_nitro: 'Nitro queen', perkT_accel: 'Rocket start', perkT_grip: 'Clean lines', perkT_tough: 'The heavyweight', perkT_drift: 'Drift queen', perkT_ghost: 'The ghost', perkT_money: 'Business',
@@ -3193,6 +3218,7 @@ const LANGS = {
     r_evOk: '✓ Event “{0}” completed! Next event unlocked.', r_evAgain: 'Event already completed — reduced reward.', r_evFail: 'Event “{0}” failed. Try again or upgrade your car.',
   },
   ar: {
+    webglTest: 'اختبر رسوميات الهاتف (get.webgl.org): إذا لم يدُر المكعّب فالمتصفح يحجب WebGL.',
     drivers: 'السائقون', driver: 'السائق', driverNote: 'يظهر السائق خلف المقود (أو على الدراجة) ويمنح مكافأة صغيرة مع أي مركبة.',
     cat_car: 'سيارات', cat_moto: 'دراجات نارية', cat_offroad: 'دفع رباعي', cat_heavy: 'مركبات ثقيلة', cat_retro: 'كلاسيكية',
     perkT_speed: 'السريع', perkT_nitro: 'ملكة النيترو', perkT_accel: 'انطلاقة صاروخية', perkT_grip: 'مسارات نظيفة', perkT_tough: 'القوي', perkT_drift: 'ملكة الانزلاق', perkT_ghost: 'الشبح', perkT_money: 'رجل أعمال',
@@ -3284,7 +3310,7 @@ function applyI18n() {
 
 'use strict';
 /* =====================================================================
-   ART BIBLE — SUPER JOUD
+   ART BIBLE — SUPER SEDDIK@JOUD
    Adjectifs : nerveux · nocturne · méditerranéen
    Réalisme stylisé : formes simples générées par code, belle lumière, palette maîtrisée.
    Formes : triangles et biseaux (vitesse) pour l'interface, carrosseries arrondies et basses.
@@ -3899,7 +3925,7 @@ function drawCar(c, M, far) {
   if (m.bike) R.draw(driverMesh(c.drv, m.bike), M); // pilote de moto : toujours visible
   if (far) { R.draw(m.far, M); return; }
   // de près : habitacle, pilote au volant et vitres transparentes
-  const inside = m.shell && !(c.camD > 45);
+  const inside = m.shell && R.detail && !(c.camD > 45);
   R.draw(inside ? m.shell : m.body, M);
   if (inside) R.draw(driverMesh(c.drv, 'car'), M4.mul(M, m.seatM, DRM));
   const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6);
@@ -4400,6 +4426,7 @@ function drawSpeedo(p) {
 function showErr(x, help) {
   $('errtxt').textContent = x; $('errhelp').textContent = help || '';
   const b = $('err-retry'); b.textContent = t('retry'); b.classList.toggle('hidden', !help); b.onclick = () => location.reload();
+  const lk = $('err-test'); lk.textContent = t('webglTest'); lk.classList.toggle('hidden', !help);
   $('err').classList.add('show'); $('loading').classList.remove('show');
 }
 /* ---------- garde-fous du moteur graphique ----------
@@ -4438,6 +4465,7 @@ function applySettings() {
   if (s.quality === 'high') { PR = Math.min(dpr, IS_TOUCH ? 1.5 : 1.75); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1; R.detail = 1; R.shadows = true; R.shadowSize = IS_TOUCH ? 1024 : 2048; }
   else if (s.quality === 'medium') { PR = Math.min(dpr, 1.25); R.post = true; R.bloom = true; R.aa = true; R.rays = false; G.drawMul = 0.85; R.detail = 1; R.shadows = true; R.shadowSize = 1024; }
   else { PR = Math.min(dpr, 0.9); R.post = false; R.bloom = false; R.aa = false; R.rays = false; G.drawMul = 0.62; R.detail = 0; R.shadows = false; }
+  R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;
   if (R.post && !R.fbo) R.makeFBOs();
   AU.setVol(s.sfx / 100); MUS.setVol(s.music / 100);
@@ -4565,6 +4593,7 @@ function boot() {
   loadGame(); LANG = SAVE.settings.lang || 'fr'; applyI18n();
   const safe = bootGuardStart();
   let ok = false;
+  R.liteWanted = SAVE.settings.quality === 'low';
   try { ok = R.init($('gl')); } catch (e) { console.error(e); glFailed(); showErr(t('webgl') + ' (' + e.message.slice(0, 160) + ')', t('webglHelp')); return; }
   if (!ok) { glFailed(); showErr(t('webgl'), t('webglHelp')); return; }
   watchContext($('gl'));
@@ -4583,6 +4612,7 @@ function boot() {
   requestAnimationFrame(x => { LAST = x; frame(x); });
 }
 window.addEventListener('load', boot);
+
 
 if('serviceWorker' in navigator)addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})});
 

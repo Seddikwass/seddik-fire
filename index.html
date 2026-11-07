@@ -1345,24 +1345,44 @@ function surfPatch(mb, RG, i0, i1, e0, e1, off, col, mat, zpush) {
 }
 
 /* ---------- petites primitives : barre entre deux points, sphère, disque face à +z ---------- */
-function bar(mb, a, b, ru, c, m, rv) {
+function bar(mb, a, b, ru, c, m, rv, sides = 8) {
+  // tube à section elliptique (8 faces) entre deux points : membres des pilotes, cadres, pare-buffles, échappements
   rv = rv || ru;
   let dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2]; const l = Math.hypot(dx, dy, dz) || 1; dx /= l; dy /= l; dz /= l;
   let ux = dz, uy = 0, uz = -dx; let ul = Math.hypot(ux, uy, uz); if (ul < 1e-3) { ux = 1; uy = 0; uz = 0; ul = 1; } ux /= ul; uz /= ul; uy /= ul;
   const vx = dy * uz - dz * uy, vy = dz * ux - dx * uz, vz = dx * uy - dy * ux;
-  const P = (p, su, sv) => [p[0] + ux * su * ru + vx * sv * rv, p[1] + uy * su * ru + vy * sv * rv, p[2] + uz * su * ru + vz * sv * rv];
-  const C = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
-  for (let k = 0; k < 4; k++) { const c0 = C[k], c1 = C[(k + 1) % 4]; mb.quad(P(a, c0[0], c0[1]), P(b, c0[0], c0[1]), P(b, c1[0], c1[1]), P(a, c1[0], c1[1]), c, m); }
-  mb.quad(P(b, 1, 1), P(b, -1, 1), P(b, -1, -1), P(b, 1, -1), c, m); mb.quad(P(a, 1, 1), P(a, 1, -1), P(a, -1, -1), P(a, -1, 1), c, m);
+  const P = (p, k) => { const t = k / sides * Math.PI * 2 + Math.PI / sides, cu = Math.cos(t) * ru, sv = Math.sin(t) * rv; return [p[0] + ux * cu + vx * sv, p[1] + uy * cu + vy * sv, p[2] + uz * cu + vz * sv]; };
+  for (let k = 0; k < sides; k++) mb.quad(P(a, k), P(b, k), P(b, k + 1), P(a, k + 1), c, m);
+  for (let k = 1; k < sides - 1; k++) { mb.tri(P(b, 0), P(b, k), P(b, k + 1), c, m); mb.tri(P(a, 0), P(a, k + 1), P(a, k), c, m); }
 }
-function sphere(mb, cx, cy, cz, r, c, m, la0 = -Math.PI / 2, la1 = Math.PI / 2, seg = 10, sy = 1, sz = 1) {
-  const nv = 6, P = (u, v) => { const a = u / seg * Math.PI * 2, b = la0 + (la1 - la0) * v / nv; return [cx + Math.cos(a) * Math.cos(b) * r, cy + Math.sin(b) * r * sy, cz + Math.sin(a) * Math.cos(b) * r * sz]; };
+function sphere(mb, cx, cy, cz, r, c, m, la0 = -Math.PI / 2, la1 = Math.PI / 2, seg = 14, sy = 1, sz = 1) {
+  const nv = 8, P = (u, v) => { const a = u / seg * Math.PI * 2, b = la0 + (la1 - la0) * v / nv; return [cx + Math.cos(a) * Math.cos(b) * r, cy + Math.sin(b) * r * sy, cz + Math.sin(a) * Math.cos(b) * r * sz]; };
   for (let v = 0; v < nv; v++) for (let u = 0; u < seg; u++) mb.quad(P(u, v), P(u + 1, v), P(u + 1, v + 1), P(u, v + 1), c, m);
 }
 function discZ(mb, cx, cy, z, r, c, m, seg = 14, dir = 1) {
   for (let k = 0; k < seg; k++) { const a0 = k / seg * Math.PI * 2, a1 = (k + 1) / seg * Math.PI * 2; mb.tri([cx, cy, z], [cx + Math.cos(a0) * r, cy + Math.sin(a0) * r, z], [cx + Math.cos(a1) * r, cy + Math.sin(a1) * r, z], c, m); }
   // tranche (épaisseur vers l'arrière)
   for (let k = 0; k < seg; k++) { const a0 = k / seg * Math.PI * 2, a1 = (k + 1) / seg * Math.PI * 2; mb.quad([cx + Math.cos(a0) * r, cy + Math.sin(a0) * r, z], [cx + Math.cos(a1) * r, cy + Math.sin(a1) * r, z], [cx + Math.cos(a1) * r, cy + Math.sin(a1) * r, z - 0.05 * dir], [cx + Math.cos(a0) * r, cy + Math.sin(a0) * r, z - 0.05 * dir], c, m); }
+}
+
+// disque dont la face regarde ±x (disques de frein, pignons de moto)
+function discX(mb, x, cy, cz, r, c, m, seg = 16, th = 0.01) {
+  for (let k = 0; k < seg; k++) { const a0 = k / seg * Math.PI * 2, a1 = (k + 1) / seg * Math.PI * 2;
+    for (const sx of [-1, 1]) mb.tri([x + sx * th, cy, cz], [x + sx * th, cy + Math.cos(a0) * r, cz + Math.sin(a0) * r], [x + sx * th, cy + Math.cos(a1) * r, cz + Math.sin(a1) * r], c, m);
+    mb.quad([x - th, cy + Math.cos(a0) * r, cz + Math.sin(a0) * r], [x + th, cy + Math.cos(a0) * r, cz + Math.sin(a0) * r], [x + th, cy + Math.cos(a1) * r, cz + Math.sin(a1) * r], [x - th, cy + Math.cos(a1) * r, cz + Math.sin(a1) * r], c, m); }
+}
+// lissage par sections « superellipse » le long de z : carénages de moto, cabines de camion, bus
+// secs : [{ z, yb, yt, w, x? }] ; ex : exposant (2 = rond, 6 = carré aux angles arrondis)
+function loftSE(secs, c, m, ex = 2.4, n = 16, capEnds = true) {
+  const mb = new MB();
+  const ring = s => { const pts = [], cy = (s.yb + s.yt) / 2, hy = (s.yt - s.yb) / 2, hx = s.w / 2;
+    for (let k = 0; k < n; k++) { const t = k / n * Math.PI * 2, ct = Math.cos(t), st = Math.sin(t);
+      pts.push([(s.x || 0) + Math.sign(ct) * Math.pow(Math.abs(ct), 2 / ex) * hx, cy + Math.sign(st) * Math.pow(Math.abs(st), 2 / ex) * hy, s.z]); }
+    return pts; };
+  const R = secs.map(ring);
+  for (let i = 0; i < R.length - 1; i++) for (let k = 0; k < n; k++) { const k2 = (k + 1) % n; mb.quad(R[i][k], R[i + 1][k], R[i + 1][k2], R[i][k2], c, m); }
+  if (capEnds) { capRing(mb, R[0], c, m); capRing(mb, R[R.length - 1], c, m); }
+  return mb.smooth(50);
 }
 
 /* ---------- roues ---------- */
@@ -1642,6 +1662,12 @@ function buildCarModel(styleName, extra = {}) {
   }
   if (extra.taxi) { mb.box(0, S.roof + 0.01, roofZ, 0.75, 0.2, 0.32, [1, 0.95, 0.75], 2); }
   const wx = hW * (1 + S.flare * 0.8) - 0.15;
+  // passages de roue sombres : on ne voit plus l'intérieur de la carrosserie au-dessus des pneus
+  for (const zc of [zr, zf]) for (const sx of [-1, 1]) for (let k = 0; k < 10; k++) {
+    const a0 = 0.1 + k / 10 * (Math.PI - 0.2), a1 = 0.1 + (k + 1) / 10 * (Math.PI - 0.2), rl = ra + 0.01;
+    const p = (x, a) => [x, r + Math.sin(a) * rl, zc + Math.cos(a) * rl];
+    mb.quad(p(sx * (wx - 0.3), a0), p(sx * (wx + 0.14), a0), p(sx * (wx + 0.14), a1), p(sx * (wx - 0.3), a1), [0.02, 0.02, 0.022], 0);
+  }
   const wheels = [[wx, r, zf, 1], [-wx, r, zf, 1], [wx, r, zr, 0], [-wx, r, zr, 0]];
   return finishModel(mb, { style: styleName, L, W, H: S.roof, wr: r, ww: 0.26 + S.flare * 0.6, wheels, exhaust, heads, roofY: S.roof, roofZ, tailY: tail.ym, rim: S.rim, interior, seat: [xS, yHip, zS - 0.1, sScale] });
 }
@@ -1669,19 +1695,47 @@ function buildVan(stripe) {
   return finishModel(mb, { style: 'van', L, W, H: 2.04, wr: r, ww: 0.27, wheels: [[wx, r, zf, 1], [-wx, r, zf, 1], [wx, r, zr, 0], [-wx, r, zr, 0]], exhaust: [[0.5, 0.3, -hL - 0.25]], heads: [[hW * 0.65, 0.72, hL + 0.05], [-hW * 0.65, 0.72, hL + 0.05]], roofY: 2.04, roofZ: 0, tailY: 0.9, rim: 'disc' });
 }
 function buildTruck() {
-  const L = 7.6, W = 2.45, hL = L / 2, hW = W / 2, r = 0.5, mb = new MB(), WHITE = [1, 1, 1];
-  mb.box(0, 0.55, hL - 1.15, W, 2.2, 2.3, WHITE, 1, 0, 1, 0.92);
-  mb.box(0, 1.65, hL - 0.08, W * 0.9, 0.95, 0.06, [0.05, 0.07, 0.09], 3);
-  mb.box(0, 0.6, -0.95, W * 1.02, 3.0, L - 2.6, [0.88, 0.88, 0.86], 18);
-  for (let k = 0; k < 9; k++) for (const sx of [-1, 1]) mb.box(sx * (W * 0.51 + 0.01), 0.6, -0.95 - (L - 2.6) / 2 + 0.3 + k * (L - 3.2) / 8, 0.03, 3.0, 0.06, [0.75, 0.75, 0.73], 0);
-  mb.box(0, 0.4, -0.2, W * 0.8, 0.3, L - 0.4, DARK, 0);
+  // camion porteur à cabine avancée : cabine aux arêtes arrondies, grande calandre, rétroviseurs sur bras,
+  // réservoir, caisse nervurée avec bandes réfléchissantes, portes arrière à crémones, roues jumelées
+  const L = 7.6, W = 2.45, hL = L / 2, hW = W / 2, r = 0.5, WHITE = [1, 1, 1], GL = [0.05, 0.07, 0.09], BLK = [0.04, 0.04, 0.045], CH = CHROME;
+  const zc0 = hL - 2.25, zc1 = hL - 0.02;
+  const mb = loftSE([{ z: zc0, yb: 0.95, yt: 3.3, w: W }, { z: zc0 + 0.1, yb: 0.92, yt: 3.36, w: W }, { z: zc1 - 0.12, yb: 0.92, yt: 3.34, w: W }, { z: zc1, yb: 1.0, yt: 3.22, w: W - 0.12 }], WHITE, 1, 7, 20);
+  mb.box(0, 3.36, zc0 + 1.0, W * 0.92, 0.42, 1.6, WHITE, 1, 0, 0.9, 0.7);
+  mb.box(0, 2.0, zc1 + 0.005, W * 0.86, 1.15, 0.03, GL, 3);
+  mb.box(0, 3.06, zc1 + 0.03, W * 0.9, 0.1, 0.18, BLK, 0);
+  for (const sx of [-1, 1]) mb.box(sx * (hW + 0.005), 2.05, zc1 - 0.75, 0.02, 0.85, 0.95, GL, 3);
+  mb.box(0, 1.08, zc1 + 0.012, W * 0.7, 0.8, 0.03, BLK, 0);
+  for (let k = 0; k < 5; k++) mb.box(0, 1.16 + k * 0.15, zc1 + 0.03, W * 0.66, 0.05, 0.02, CH, 4);
+  mb.box(0, 0.55, zc1 + 0.06, W * 1.0, 0.42, 0.22, [0.2, 0.2, 0.22], 4);
   for (const sx of [-1, 1]) {
-    mb.box(sx * hW * 0.7, 0.85, hL + 0.01, 0.4, 0.16, 0.04, [1, 0.98, 0.9], 15);
-    mb.box(sx * hW * 0.85, 0.75, -hL + 0.02, 0.3, 0.18, 0.04, [1, 0.06, 0.04], 5);
-    mb.box(sx * (hW * 1.02 + 0.03), 1.0, -0.95, 0.02, 0.5, L - 3.0, [0.8, 0.12, 0.08], 0);
+    mb.box(sx * hW * 0.72, 0.78, zc1 + 0.17, 0.42, 0.14, 0.02, [1, 0.98, 0.9], 15);
+    mb.box(sx * hW * 0.45, 0.66, zc1 + 0.17, 0.16, 0.08, 0.02, [1, 0.85, 0.5], 15);
+    bar(mb, [sx * hW, 2.5, zc1 - 0.2], [sx * (hW + 0.36), 2.55, zc1 - 0.05], 0.025, BLK, 0);
+    mb.box(sx * (hW + 0.4), 2.05, zc1 - 0.05, 0.08, 0.62, 0.22, BLK, 0);
+    mb.box(sx * (hW - 0.02), 0.4, zc1 - 1.3, 0.12, 0.08, 0.5, [0.25, 0.25, 0.27], 4); mb.box(sx * (hW - 0.02), 0.7, zc1 - 1.3, 0.12, 0.06, 0.5, [0.25, 0.25, 0.27], 4);
+    bar(mb, [sx * (hW - 0.28), 0.7, zc1 - 0.8], [sx * (hW - 0.28), 0.7, zc1 - 1.9], 0.26, [0.78, 0.79, 0.82], 4);
+    mb.box(sx * (hW - 0.15), r + 0.42, hL - 1.1, 0.35, 0.05, 1.2, BLK, 0);
   }
-  const wx = hW - 0.2;
-  return finishModel(mb, { style: 'truck', L, W, H: 3.6, wr: r, ww: 0.4, wheels: [[wx, r, hL - 1.1, 1], [-wx, r, hL - 1.1, 1], [wx, r, -hL + 1.4, 0], [-wx, r, -hL + 1.4, 0], [wx, r, -hL + 2.5, 0], [-wx, r, -hL + 2.5, 0]], exhaust: [], heads: [[hW * 0.7, 0.92, hL + 0.05], [-hW * 0.7, 0.92, hL + 0.05]], roofY: 3.6, roofZ: 0, tailY: 0.8, rim: 'disc' });
+  bar(mb, [-hW + 0.25, 1.0, zc0 - 0.12], [-hW + 0.25, 3.7, zc0 - 0.12], 0.07, CH, 4);
+  // châssis et caisse
+  mb.box(0, 0.62, -0.4, W * 0.62, 0.3, L - 1.2, BLK, 0);
+  const zb0 = -hL + 0.02, zb1 = zc0 - 0.2, zbm = (zb0 + zb1) / 2, lb = zb1 - zb0, BOX = [0.9, 0.9, 0.88];
+  mb.box(0, 0.95, zbm, W * 1.02, 2.75, lb, BOX, 18);
+  for (let k = 0; k <= 10; k++) for (const sx of [-1, 1]) mb.box(sx * (W * 0.51 + 0.012), 0.95, zb0 + 0.15 + k * (lb - 0.3) / 10, 0.035, 2.75, 0.07, [0.74, 0.74, 0.72], 4);
+  for (const sx of [-1, 1]) {
+    mb.box(sx * (W * 0.51 + 0.03), 3.62, zbm, 0.05, 0.08, lb, [0.6, 0.6, 0.6], 4); mb.box(sx * (W * 0.51 + 0.03), 0.95, zbm, 0.05, 0.08, lb, [0.6, 0.6, 0.6], 4);
+    for (let k = 0; k < 14; k++) mb.box(sx * (W * 0.51 + 0.045), 1.08, zb0 + 0.2 + k * (lb - 0.4) / 14, 0.012, 0.06, (lb - 0.4) / 28, k % 2 ? [0.95, 0.95, 0.95] : [0.85, 0.08, 0.06], 0);
+    for (let k = 0; k < 4; k++) mb.box(sx * (W * 0.51 + 0.05), 1.0, zb0 + 0.6 + k * (lb - 1.2) / 3, 0.02, 0.07, 0.1, [1, 0.6, 0.05], 2);
+    for (const yy of [0.45, 0.72]) bar(mb, [sx * (hW - 0.05), yy, -hL + 2.0], [sx * (hW - 0.05), yy, hL - 2.9], 0.025, [0.3, 0.3, 0.32], 4);
+    mb.box(sx * hW * 0.82, 0.62, -hL - 0.01, 0.26, 0.22, 0.04, [1, 0.06, 0.04], 5);
+    mb.box(sx * (hW - 0.15), r + 0.5, -hL + 1.95, 0.55, 0.05, 2.2, BLK, 0);
+    mb.box(sx * (hW - 0.15), 0.08, -hL + 0.75, 0.45, 0.5, 0.02, BLK, 0);
+  }
+  mb.box(0, 0.95, -hL - 0.012, 0.02, 2.7, 0.02, BLK, 0);
+  for (const xx of [-0.85, -0.3, 0.3, 0.85]) bar(mb, [xx, 1.05, -hL - 0.04], [xx, 3.55, -hL - 0.04], 0.018, [0.55, 0.55, 0.57], 4);
+  mb.box(0, 0.42, -hL - 0.05, W * 0.92, 0.12, 0.1, [0.3, 0.3, 0.32], 4);
+  const wx = hW - 0.25, wx2 = hW - 0.6;
+  return finishModel(mb, { style: 'truck', L, W, H: 3.85, wr: r, ww: 0.32, wheels: [[wx, r, hL - 1.1, 1], [-wx, r, hL - 1.1, 1], [wx, r, -hL + 1.4, 0], [-wx, r, -hL + 1.4, 0], [wx, r, -hL + 2.5, 0], [-wx, r, -hL + 2.5, 0], [wx2, r, -hL + 1.4, 0], [-wx2, r, -hL + 1.4, 0], [wx2, r, -hL + 2.5, 0], [-wx2, r, -hL + 2.5, 0]], exhaust: [[-hW + 0.25, 3.75, zc0 - 0.12]], heads: [[hW * 0.72, 0.85, hL + 0.1], [-hW * 0.72, 0.85, hL + 0.1]], roofY: 3.8, roofZ: 0, tailY: 0.7, rim: 'disc' });
 }
 
 function finishModel(mb, o) {
@@ -1721,93 +1775,110 @@ function buildAllModels() {
 /* =====================================================================
    Motos et bus (designs originaux, générés par code)
    Repère : +z vers l'avant, +y vers le haut, sol à y = 0, 1 unité = 1 m
+   Les carénages sont des « lofts » à sections superellipse lissées (formes arrondies, pas des boîtes)
    ===================================================================== */
 function buildMoto(kind) {
-  const mb = new MB(), P = [1, 1, 1], MET = [0.13, 0.13, 0.14], ALU = [0.62, 0.63, 0.66], BLK = [0.035, 0.035, 0.04], RED = [1, 0.05, 0.03];
-  const HEAD = [1, 0.97, 0.9];
+  const mb = new MB(), P = [1, 1, 1], MET = [0.12, 0.12, 0.13], ALU = [0.62, 0.63, 0.66], BLK = [0.035, 0.035, 0.04], RED = [1, 0.05, 0.03];
+  const HEAD = [1, 0.97, 0.9], GL = [0.05, 0.07, 0.09], DISC = [0.58, 0.58, 0.6], GOLD = [0.78, 0.62, 0.22], TI = [0.5, 0.5, 0.55];
+  const add = o => mb.append(o);
   let L, r, zf, zr, H, heads, exhaust, rim, ww;
+  const brakes = (z, rad, cal) => { for (const sx of [-1, 1]) { discX(mb, sx * 0.075, r, z, rad, DISC, 4, 18, 0.006); mb.box(sx * 0.085, r + rad * 0.35, z - rad * 0.75, 0.04, rad * 0.5, 0.1, cal, 0); } };
   if (kind === 'sport') {
-    // sportive : carénage intégral, réservoir bombé, coque arrière relevée
+    // sportive : carénage intégral, bulle, fourche inversée dorée, silencieux latéral, coque arrière effilée
     L = 2.08; r = 0.31; zf = 0.71; zr = -0.72; H = 1.18; rim = 'five'; ww = 0.17;
-    mb.box(0, 0.24, 0.02, 0.32, 0.36, 0.56, MET, 4);
-    for (const sx of [-1, 1]) bar(mb, [sx * 0.13, 0.66, 0.44], [sx * 0.13, 0.5, -0.24], 0.035, ALU, 4);
-    mb.box(0, 0.6, 0.1, 0.36, 0.24, 0.52, P, 1, 0, 0.72, 0.82);
-    mb.box(0, 0.46, 0.5, 0.42, 0.44, 0.42, P, 1, 0, 0.55, 0.62);
-    mb.box(0, 0.62, 0.78, 0.3, 0.2, 0.16, P, 1, 0, 0.62, 0.55);
-    mb.box(0, 0.18, 0.22, 0.4, 0.32, 0.6, P, 1, 0, 1, 0.85);
-    mb.quad([-0.12, 0.88, 0.66], [0.12, 0.88, 0.66], [0.1, 1.04, 0.5], [-0.1, 1.04, 0.5], [0.05, 0.07, 0.09], 3);
-    for (const sx of [-1, 1]) mb.box(sx * 0.07, 0.63, 0.855, 0.09, 0.05, 0.02, HEAD, 15);
-    mb.box(0, 0.79, -0.3, 0.28, 0.06, 0.42, BLK, 0);
-    mb.box(0, 0.78, -0.64, 0.22, 0.15, 0.36, P, 1, 0, 0.55, 0.7);
-    mb.box(0, 0.83, -0.82, 0.14, 0.04, 0.02, RED, 5);
-    bar(mb, [0.13, 0.3, -0.05], [0.15, 0.62, -0.72], 0.05, ALU, 4);
-    for (const sx of [-1, 1]) { bar(mb, [sx * 0.08, r, zf], [sx * 0.08, 0.93, 0.52], 0.024, [0.75, 0.62, 0.2], 4); bar(mb, [sx * 0.07, 0.9, 0.5], [sx * 0.3, 0.88, 0.46], 0.017, BLK, 0); }
-    for (const sx of [-1, 1]) bar(mb, [sx * 0.1, r + 0.02, zr], [sx * 0.11, 0.38, -0.1], 0.03, MET, 4);
-    mb.box(0, r + 0.27, zf + 0.02, 0.14, 0.03, 0.38, P, 1);
-    for (const sx of [-1, 1]) mb.box(sx * 0.2, 0.38, -0.25, 0.06, 0.02, 0.06, ALU, 4);
-    heads = [[0, 0.66, 0.88]]; exhaust = [[0.15, 0.62, -0.78]];
+    add(loftSE([{ z: 0.44, yb: 0.66, yt: 0.86, w: 0.32 }, { z: 0.3, yb: 0.6, yt: 0.99, w: 0.44 }, { z: 0.06, yb: 0.6, yt: 1.0, w: 0.46 }, { z: -0.1, yb: 0.62, yt: 0.9, w: 0.38 }, { z: -0.26, yb: 0.66, yt: 0.82, w: 0.3 }, { z: -0.46, yb: 0.7, yt: 0.87, w: 0.27 }, { z: -0.66, yb: 0.77, yt: 0.96, w: 0.22 }, { z: -0.88, yb: 0.87, yt: 0.97, w: 0.08 }], P, 1, 2.6));
+    add(loftSE([{ z: 0.94, yb: 0.73, yt: 0.8, w: 0.1 }, { z: 0.87, yb: 0.68, yt: 0.93, w: 0.3 }, { z: 0.66, yb: 0.66, yt: 1.02, w: 0.5 }, { z: 0.46, yb: 0.62, yt: 1.0, w: 0.58 }, { z: 0.34, yb: 0.3, yt: 0.96, w: 0.6 }, { z: 0.12, yb: 0.26, yt: 0.7, w: 0.54 }, { z: -0.06, yb: 0.3, yt: 0.52, w: 0.4 }], P, 1, 2.4));
+    add(loftSE([{ z: -0.05, yb: 0.8, yt: 0.9, w: 0.29 }, { z: -0.3, yb: 0.77, yt: 0.86, w: 0.29 }, { z: -0.52, yb: 0.81, yt: 0.89, w: 0.24 }], BLK, 0, 3));
+    add(loftSE([{ z: 0.7, yb: 0.99, yt: 1.03, w: 0.36 }, { z: 0.6, yb: 1.0, yt: 1.12, w: 0.34 }, { z: 0.48, yb: 1.03, yt: 1.18, w: 0.28 }], GL, 3, 2.2));
+    add(loftSE([{ z: 0.99, yb: 0.5, yt: 0.53, w: 0.13 }, { z: 0.76, yb: 0.63, yt: 0.66, w: 0.15 }, { z: 0.5, yb: 0.56, yt: 0.59, w: 0.13 }], P, 1, 2.2, 10));
+    for (const sx of [-1, 1]) mb.box(sx * 0.075, 0.76, 0.88, 0.1, 0.045, 0.05, HEAD, 15);
+    mb.box(0, 0.22, 0.04, 0.3, 0.38, 0.5, MET, 4); mb.box(0, 0.42, 0.28, 0.36, 0.22, 0.05, [0.08, 0.08, 0.085], 0);
+    for (const sx of [-1, 1]) bar(mb, [sx * 0.13, 0.7, 0.44], [sx * 0.13, 0.48, -0.22], 0.03, ALU, 4, 0.05);
+    bar(mb, [0.15, 0.3, -0.12], [0.2, 0.5, -0.66], 0.065, TI, 4); bar(mb, [0.2, 0.5, -0.66], [0.205, 0.52, -0.7], 0.045, BLK, 0);
+    for (const sx of [-1, 1]) { bar(mb, [sx * 0.08, r, zf], [sx * 0.08, 0.99, 0.5], 0.026, GOLD, 4); bar(mb, [sx * 0.07, 0.93, 0.49], [sx * 0.3, 0.9, 0.44], 0.016, BLK, 0); mb.box(sx * 0.32, 0.88, 0.43, 0.06, 0.04, 0.04, BLK, 0); }
+    for (const sx of [-1, 1]) { bar(mb, [sx * 0.22, 0.98, 0.62], [sx * 0.3, 1.05, 0.62], 0.012, BLK, 0); mb.box(sx * 0.32, 1.04, 0.62, 0.12, 0.06, 0.04, BLK, 0); }
+    brakes(zf, 0.2, GOLD); discX(mb, 0.085, r, zr, 0.14, DISC, 4, 14, 0.005);
+    for (const sx of [-1, 1]) bar(mb, [sx * 0.1, r, zr], [sx * 0.11, 0.38, -0.12], 0.035, MET, 4, 0.05);
+    bar(mb, [0.12, r + 0.02, zr], [0.12, 0.36, 0.08], 0.012, BLK, 0); discX(mb, 0.12, 0.36, 0.08, 0.06, BLK, 0, 10, 0.004);
+    mb.box(0, 0.58, -0.98, 0.18, 0.12, 0.012, BLK, 0); mb.box(0, 0.86, -0.885, 0.12, 0.035, 0.02, RED, 5);
+    bar(mb, [0, 0.72, -0.82], [0, 0.6, -0.98], 0.02, BLK, 0);
+    for (const sx of [-1, 1]) bar(mb, [sx * 0.15, 0.4, -0.2], [sx * 0.22, 0.4, -0.24], 0.012, ALU, 4);
+    heads = [[0, 0.78, 0.9]]; exhaust = [[0.205, 0.52, -0.72]];
   } else if (kind === 'trail') {
-    // trail aventure : haute, bec de canard, valises alu, pare-carter
-    L = 2.3; r = 0.37; zf = 0.78; zr = -0.74; H = 1.48; rim = 'ten'; ww = 0.15;
-    mb.box(0, 0.3, 0.02, 0.34, 0.38, 0.6, MET, 4);
-    mb.box(0, 0.24, 0.05, 0.36, 0.05, 0.62, ALU, 4);
-    mb.box(0, 0.72, 0.16, 0.44, 0.26, 0.52, P, 1, 0, 0.78, 0.88);
-    mb.box(0, 0.62, 0.86, 0.17, 0.05, 0.38, P, 1, 0, 0.8, 0.9);
-    mb.box(0, 0.78, 0.55, 0.3, 0.34, 0.22, P, 1, 0, 0.7, 0.75);
-    mb.quad([-0.14, 1.1, 0.58], [0.14, 1.1, 0.58], [0.12, 1.36, 0.46], [-0.12, 1.36, 0.46], [0.05, 0.07, 0.09], 3);
-    mb.box(0, 0.86, 0.67, 0.1, 0.13, 0.02, HEAD, 15); mb.box(0, 1.0, 0.65, 0.1, 0.07, 0.02, HEAD, 15);
-    mb.box(0, 0.9, -0.28, 0.3, 0.08, 0.56, BLK, 0);
-    mb.box(0, 0.9, -0.66, 0.24, 0.1, 0.3, P, 1, 0, 0.7, 0.8);
-    mb.box(0, 0.94, -0.82, 0.12, 0.04, 0.02, RED, 5);
-    for (const sx of [-1, 1]) { mb.box(sx * 0.31, 0.42, -0.52, 0.17, 0.38, 0.52, ALU, 4); mb.box(sx * 0.31, 0.79, -0.52, 0.18, 0.02, 0.53, BLK, 0); }
-    mb.box(0, 1.0, -0.86, 0.36, 0.26, 0.3, ALU, 4);
-    for (const sx of [-1, 1]) { bar(mb, [sx * 0.09, r, zf], [sx * 0.09, 1.12, 0.5], 0.028, [0.15, 0.15, 0.16], 4); bar(mb, [sx * 0.08, 1.12, 0.48], [sx * 0.4, 1.16, 0.42], 0.018, BLK, 0); }
-    for (const sx of [-1, 1]) bar(mb, [sx * 0.22, 0.32, 0.38], [sx * 0.24, 0.62, 0.3], 0.02, BLK, 4);
-    for (const sx of [-1, 1]) bar(mb, [sx * 0.11, r + 0.02, zr], [sx * 0.12, 0.42, -0.08], 0.03, MET, 4);
-    bar(mb, [0.16, 0.38, -0.05], [0.2, 0.76, -0.66], 0.055, ALU, 4);
-    heads = [[0, 0.92, 0.7]]; exhaust = [[0.2, 0.76, -0.7]];
+    // trail aventure : bec, double optique ronde, bulle haute, valises et top-case alu, pare-carters
+    L = 2.3; r = 0.37; zf = 0.8; zr = -0.75; H = 1.52; rim = 'ten'; ww = 0.15;
+    add(loftSE([{ z: 0.44, yb: 0.8, yt: 0.98, w: 0.34 }, { z: 0.3, yb: 0.66, yt: 1.08, w: 0.54 }, { z: 0.06, yb: 0.68, yt: 1.07, w: 0.5 }, { z: -0.1, yb: 0.8, yt: 0.99, w: 0.36 }], P, 1, 2.6));
+    add(loftSE([{ z: -0.02, yb: 0.94, yt: 1.03, w: 0.3 }, { z: -0.35, yb: 0.92, yt: 1.0, w: 0.33 }, { z: -0.62, yb: 0.95, yt: 1.04, w: 0.28 }], BLK, 0, 3));
+    add(loftSE([{ z: -0.55, yb: 0.88, yt: 0.96, w: 0.26 }, { z: -0.95, yb: 0.92, yt: 0.99, w: 0.2 }], P, 1, 3));
+    add(loftSE([{ z: 1.12, yb: 0.74, yt: 0.77, w: 0.13 }, { z: 0.86, yb: 0.81, yt: 0.85, w: 0.18 }, { z: 0.6, yb: 0.81, yt: 0.86, w: 0.18 }], P, 1, 2.2, 10));
+    add(loftSE([{ z: 0.79, yb: 0.95, yt: 1.14, w: 0.26 }, { z: 0.63, yb: 0.9, yt: 1.3, w: 0.42 }, { z: 0.46, yb: 0.92, yt: 1.27, w: 0.38 }], P, 1, 2.6));
+    add(loftSE([{ z: 0.66, yb: 1.27, yt: 1.31, w: 0.34 }, { z: 0.58, yb: 1.29, yt: 1.42, w: 0.33 }, { z: 0.5, yb: 1.32, yt: 1.56, w: 0.29 }], GL, 3, 2.2));
+    discZ(mb, 0, 1.0, 0.795, 0.058, HEAD, 15); discZ(mb, 0, 1.13, 0.79, 0.046, HEAD, 15);
+    mb.box(0, 0.3, 0.02, 0.32, 0.4, 0.58, MET, 4); mb.box(0, 0.24, 0.05, 0.36, 0.05, 0.64, ALU, 4);
+    for (const sx of [-1, 1]) {
+      add(loftSE([{ z: -0.26, yb: 0.42, yt: 0.84, w: 0.18, x: sx * 0.33 }, { z: -0.3, yb: 0.4, yt: 0.86, w: 0.2, x: sx * 0.34 }, { z: -0.76, yb: 0.4, yt: 0.86, w: 0.2, x: sx * 0.34 }, { z: -0.8, yb: 0.42, yt: 0.84, w: 0.18, x: sx * 0.33 }], ALU, 4, 7, 12));
+      bar(mb, [sx * 0.09, r, zf], [sx * 0.09, 1.15, 0.5], 0.03, [0.14, 0.14, 0.15], 4); bar(mb, [sx * 0.08, 1.15, 0.48], [sx * 0.42, 1.19, 0.42], 0.016, BLK, 0);
+      mb.box(sx * 0.44, 1.16, 0.46, 0.05, 0.08, 0.14, BLK, 0);
+      bar(mb, [sx * 0.2, 0.32, 0.38], [sx * 0.26, 0.6, 0.28], 0.02, BLK, 4); bar(mb, [sx * 0.26, 0.6, 0.28], [sx * 0.2, 0.8, 0.12], 0.02, BLK, 4);
+      bar(mb, [sx * 0.11, r + 0.02, zr], [sx * 0.12, 0.42, -0.08], 0.032, MET, 4, 0.05);
+      bar(mb, [sx * 0.24, 1.18, 0.56], [sx * 0.3, 1.3, 0.56], 0.012, BLK, 0); mb.box(sx * 0.31, 1.28, 0.56, 0.1, 0.06, 0.04, BLK, 0);
+    }
+    add(loftSE([{ z: -0.72, yb: 0.98, yt: 1.24, w: 0.34 }, { z: -0.76, yb: 0.96, yt: 1.27, w: 0.38 }, { z: -1.04, yb: 0.96, yt: 1.27, w: 0.38 }, { z: -1.07, yb: 0.98, yt: 1.24, w: 0.34 }], ALU, 4, 7, 12));
+    brakes(zf, 0.22, [0.15, 0.15, 0.16]); discX(mb, 0.085, r, zr, 0.15, DISC, 4, 14, 0.005);
+    bar(mb, [0.16, 0.38, -0.05], [0.21, 0.78, -0.62], 0.055, TI, 4); mb.box(0, 0.95, -0.99, 0.1, 0.04, 0.02, RED, 5);
+    heads = [[0, 1.06, 0.8]]; exhaust = [[0.21, 0.78, -0.66]];
   } else {
-    // scooter : tablier avant, plancher plat, coque arrière arrondie, top-case
+    // scooter : tablier galbé, plancher plat, coque arrière arrondie, phare rond au guidon, top-case
     L = 1.86; r = 0.23; zf = 0.62; zr = -0.6; H = 1.32; rim = 'disc'; ww = 0.13;
-    mb.box(0, 0.27, 0.46, 0.44, 0.72, 0.13, P, 1, 0, 0.8, 1);
-    mb.box(0, r + 0.12, zf, 0.16, 0.12, 0.34, P, 1, 0, 0.8, 0.9);
-    mb.box(0, 0.24, 0.02, 0.36, 0.06, 0.62, BLK, 0);
-    mb.box(0, 0.22, -0.42, 0.4, 0.48, 0.68, P, 1, 0, 0.86, 0.9);
-    mb.box(0, 0.7, -0.34, 0.31, 0.08, 0.6, BLK, 0);
-    bar(mb, [0, 0.42, 0.52], [0, 0.98, 0.44], 0.035, MET, 4);
-    mb.box(0, 0.96, 0.44, 0.52, 0.1, 0.16, P, 1, 0, 1, 0.9);
-    mb.box(0, 0.98, 0.53, 0.14, 0.06, 0.02, HEAD, 15);
-    for (const sx of [-1, 1]) bar(mb, [sx * 0.24, 1.02, 0.43], [sx * 0.34, 1.02, 0.41], 0.02, BLK, 0);
-    mb.box(0, 0.79, -0.75, 0.34, 0.26, 0.32, P, 1, 0, 0.9, 0.9);
-    mb.box(0, 0.5, -0.77, 0.18, 0.05, 0.02, RED, 5);
-    bar(mb, [0.13, r, -0.3], [0.15, r + 0.05, -0.72], 0.045, ALU, 4);
-    heads = [[0, 0.98, 0.55]]; exhaust = [[0.15, r + 0.05, -0.75]];
+    add(loftSE([{ z: 0.57, yb: 0.32, yt: 0.46, w: 0.34 }, { z: 0.52, yb: 0.3, yt: 1.0, w: 0.46 }, { z: 0.42, yb: 0.3, yt: 0.96, w: 0.42 }, { z: 0.36, yb: 0.32, yt: 0.6, w: 0.36 }], P, 1, 2.8));
+    add(loftSE([{ z: -0.02, yb: 0.3, yt: 0.62, w: 0.32 }, { z: -0.28, yb: 0.24, yt: 0.73, w: 0.42 }, { z: -0.64, yb: 0.28, yt: 0.75, w: 0.4 }, { z: -0.86, yb: 0.44, yt: 0.7, w: 0.22 }], P, 1, 2.6));
+    add(loftSE([{ z: -0.04, yb: 0.72, yt: 0.82, w: 0.3 }, { z: -0.4, yb: 0.74, yt: 0.85, w: 0.33 }, { z: -0.74, yb: 0.75, yt: 0.83, w: 0.27 }], BLK, 0, 3));
+    add(loftSE([{ z: 0.58, yb: 0.92, yt: 1.02, w: 0.18 }, { z: 0.47, yb: 0.9, yt: 1.07, w: 0.56 }, { z: 0.33, yb: 0.94, yt: 1.04, w: 0.42 }], P, 1, 2.4));
+    add(loftSE([{ z: 0.84, yb: 0.3, yt: 0.33, w: 0.12 }, { z: 0.66, yb: 0.42, yt: 0.46, w: 0.14 }, { z: 0.46, yb: 0.36, yt: 0.4, w: 0.13 }], P, 1, 2.2, 10));
+    add(loftSE([{ z: -0.62, yb: 0.8, yt: 1.02, w: 0.3 }, { z: -0.66, yb: 0.78, yt: 1.05, w: 0.34 }, { z: -0.92, yb: 0.78, yt: 1.05, w: 0.34 }, { z: -0.95, yb: 0.8, yt: 1.02, w: 0.3 }], P, 1, 4, 12));
+    mb.box(0, 0.24, 0.05, 0.36, 0.05, 0.6, BLK, 0);
+    bar(mb, [0, 0.4, 0.52], [0, 0.98, 0.44], 0.035, MET, 4);
+    discZ(mb, 0, 0.98, 0.585, 0.052, HEAD, 15);
+    for (const sx of [-1, 1]) { bar(mb, [sx * 0.25, 1.02, 0.42], [sx * 0.34, 1.02, 0.4], 0.02, BLK, 0); bar(mb, [sx * 0.2, 1.05, 0.44], [sx * 0.24, 1.2, 0.46], 0.01, ALU, 4); mb.box(sx * 0.25, 1.19, 0.46, 0.1, 0.06, 0.03, BLK, 0); }
+    discX(mb, 0.07, r, zf, 0.13, DISC, 4, 14, 0.005);
+    mb.box(0, 0.52, -0.865, 0.18, 0.05, 0.02, RED, 5);
+    bar(mb, [0.13, r, -0.3], [0.15, r + 0.06, -0.74], 0.045, ALU, 4);
+    heads = [[0, 0.98, 0.6]]; exhaust = [[0.15, r + 0.06, -0.76]];
   }
-  const o = finishModel(mb, { style: 'moto_' + kind, L, W: 0.82, H, wr: r, ww, wheels: [[0, r, zf, 1], [0, r, zr, 0]], exhaust, heads, roofY: H, roofZ: -0.2, tailY: 0.8, rim, bike: kind });
-  return o;
+  return finishModel(mb, { style: 'moto_' + kind, L, W: 0.82, H, wr: r, ww, wheels: [[0, r, zf, 1], [0, r, zr, 0]], exhaust, heads, roofY: H, roofZ: -0.2, tailY: 0.8, rim, bike: kind });
 }
 
 function buildBus() {
-  // bus urbain : grandes vitres latérales, girouette lumineuse, bande de couleur
-  const L = 10.2, W = 2.5, hL = L / 2, hW = W / 2, r = 0.5, mb = new MB(), WHITE = [1, 1, 1], GL = [0.05, 0.07, 0.09], STR = [0.75, 0.08, 0.06];
-  mb.box(0, 0.32, 0, W, 2.72, L, WHITE, 1, 0, 0.985, 0.995);
-  mb.box(0, 3.04, -0.4, W * 0.6, 0.22, 2.4, [0.82, 0.83, 0.85], 18);
+  // bus urbain : caisse aux arêtes arrondies, passages de roues, grandes vitres encadrées, rétroviseurs « oreilles »,
+  // girouette lumineuse, panneau publicitaire, grille moteur arrière, climatisation de toit
+  const L = 10.2, W = 2.5, hL = L / 2, hW = W / 2, r = 0.5, WHITE = [1, 1, 1], GL = [0.05, 0.07, 0.09], STR = [0.75, 0.08, 0.06], BLK = [0.035, 0.035, 0.04];
+  const mb = loftSE([{ z: -hL, yb: 0.36, yt: 3.0, w: W - 0.08 }, { z: -hL + 0.12, yb: 0.32, yt: 3.06, w: W }, { z: hL - 0.16, yb: 0.32, yt: 3.06, w: W }, { z: hL, yb: 0.36, yt: 2.98, w: W - 0.1 }], WHITE, 1, 9, 24);
+  mb.append(loftSE([{ z: -2.0, yb: 3.0, yt: 3.16, w: 1.5 }, { z: -1.85, yb: 3.0, yt: 3.28, w: 1.6 }, { z: 0.2, yb: 3.0, yt: 3.28, w: 1.6 }, { z: 0.35, yb: 3.0, yt: 3.16, w: 1.5 }], [0.82, 0.83, 0.85], 18, 6, 12));
+  const zf = hL - 2.0, zr = -hL + 2.6;
   for (const sx of [-1, 1]) {
-    mb.box(sx * (hW + 0.005), 1.34, -0.35, 0.02, 1.08, L - 2.6, GL, 3);
-    for (let k = 0; k <= 6; k++) mb.box(sx * (hW + 0.012), 1.32, -0.35 - (L - 2.6) / 2 + k * (L - 2.6) / 6, 0.02, 1.12, 0.09, TRIM, 0);
-    mb.box(sx * (hW + 0.008), 0.85, 0, 0.02, 0.2, L - 0.4, STR, 0);
-    mb.box(sx * hW * 0.72, 0.62, hL + 0.01, 0.34, 0.12, 0.03, [1, 0.98, 0.9], 15);
-    mb.box(sx * hW * 0.82, 0.75, -hL - 0.01, 0.2, 0.36, 0.03, [1, 0.06, 0.04], 5);
+    const x = sx * (hW + 0.004);
+    mb.box(x, 1.32, -0.45, 0.02, 1.12, L - 3.0, GL, 3);
+    for (let k = 0; k <= 7; k++) mb.box(sx * (hW + 0.012), 1.28, -0.45 - (L - 3.0) / 2 + k * (L - 3.0) / 7, 0.02, 1.2, 0.1, BLK, 0);
+    mb.box(sx * (hW + 0.01), 2.44, -0.45, 0.02, 0.06, L - 2.9, BLK, 0); mb.box(sx * (hW + 0.01), 1.26, -0.45, 0.02, 0.06, L - 2.9, BLK, 0);
+    mb.box(sx * (hW + 0.008), 0.86, 0.3, 0.02, 0.18, L - 1.0, STR, 0);
+    if (sx > 0) mb.box(x + 0.006, 0.42, -1.6, 0.02, 0.38, 3.2, [0.12, 0.42, 0.72], 0);
+    // passages de roues (arc sombre derrière la roue)
+    for (const zc of [zf, zr]) for (let k = 0; k < 10; k++) { const a0 = k / 10 * Math.PI, a1 = (k + 1) / 10 * Math.PI, rr = r + 0.13; mb.tri([x + sx * 0.004, r, zc], [x + sx * 0.004, r + Math.sin(a0) * rr, zc + Math.cos(a0) * rr], [x + sx * 0.004, r + Math.sin(a1) * rr, zc + Math.cos(a1) * rr], BLK, 0); }
+    mb.box(sx * hW * 0.74, 0.56, hL + 0.005, 0.36, 0.12, 0.03, [1, 0.98, 0.9], 15); mb.box(sx * hW * 0.5, 0.56, hL + 0.005, 0.12, 0.12, 0.03, [1, 0.6, 0.1], 2);
+    mb.box(sx * hW * 0.82, 0.7, -hL - 0.01, 0.2, 0.4, 0.03, [1, 0.06, 0.04], 5);
+    // rétroviseur en « oreille de lapin »
+    bar(mb, [sx * (hW - 0.15), 2.7, hL - 0.05], [sx * (hW + 0.18), 2.85, hL + 0.35], 0.022, BLK, 0); bar(mb, [sx * (hW + 0.18), 2.85, hL + 0.35], [sx * (hW + 0.22), 2.35, hL + 0.42], 0.022, BLK, 0);
+    mb.box(sx * (hW + 0.22), 1.95, hL + 0.42, 0.08, 0.42, 0.18, BLK, 0);
+    bar(mb, [sx * 0.15, 0.85, hL + 0.02], [sx * 0.85, 1.6, hL + 0.02], 0.012, BLK, 0);
   }
-  // portes côté trottoir (droite = -x)
-  for (const zc of [hL - 1.0, 0.2]) { mb.box(-hW - 0.01, 0.42, zc, 0.02, 2.3, 1.15, TRIM, 0); mb.box(-hW - 0.02, 0.5, zc, 0.02, 2.1, 1.0, GL, 3); }
-  mb.box(0, 1.0, hL + 0.006, W * 0.92, 1.6, 0.03, GL, 3);
-  mb.box(0, 2.66, hL + 0.012, W * 0.72, 0.24, 0.02, [1, 0.62, 0.12], 2);
-  mb.box(0, 1.9, -hL - 0.006, W * 0.8, 0.7, 0.03, GL, 3);
-  mb.box(0, 0.3, hL + 0.05, W * 1.0, 0.32, 0.12, DARK, 4); mb.box(0, 0.3, -hL - 0.05, W * 1.0, 0.32, 0.12, DARK, 4);
-  mb.box(0, 0.24, 0, W * 0.9, 0.12, L * 0.92, DARK, 0);
-  const wx = hW - 0.22, zf = hL - 2.0, zr = -hL + 2.6;
-  return finishModel(mb, { style: 'bus', L, W, H: 3.25, wr: r, ww: 0.36, wheels: [[wx, r, zf, 1], [-wx, r, zf, 1], [wx, r, zr, 0], [-wx, r, zr, 0]], exhaust: [[0.8, 0.3, -hL - 0.1]], heads: [[hW * 0.72, 0.68, hL + 0.05], [-hW * 0.72, 0.68, hL + 0.05]], roofY: 3.1, roofZ: 0, tailY: 1.0, rim: 'disc' });
+  for (const zc of [hL - 1.0, 0.2]) { mb.box(-hW - 0.012, 0.36, zc, 0.02, 2.36, 1.2, BLK, 0); mb.box(-hW - 0.02, 0.44, zc, 0.02, 2.2, 1.04, GL, 3); mb.box(-hW - 0.024, 0.44, zc, 0.02, 2.2, 0.03, BLK, 0); }
+  mb.box(0, 0.82, hL + 0.003, W * 0.9, 1.88, 0.03, GL, 3);
+  mb.box(0, 2.66, hL + 0.01, W * 0.78, 0.28, 0.02, BLK, 0); mb.box(0, 2.7, hL + 0.022, W * 0.7, 0.2, 0.01, [1, 0.62, 0.12], 2);
+  mb.box(0, 1.9, -hL - 0.006, W * 0.8, 0.8, 0.03, GL, 3);
+  mb.box(0, 0.62, -hL - 0.01, W * 0.62, 0.7, 0.02, BLK, 0); for (let k = 0; k < 6; k++) mb.box(0, 0.68 + k * 0.1, -hL - 0.02, W * 0.58, 0.03, 0.01, [0.3, 0.3, 0.32], 4);
+  mb.box(0, 0.26, hL + 0.05, W * 1.0, 0.3, 0.12, [0.15, 0.15, 0.16], 4); mb.box(0, 0.26, -hL - 0.05, W * 1.0, 0.3, 0.12, [0.15, 0.15, 0.16], 4);
+  const wx = hW - 0.16;
+  return finishModel(mb, { style: 'bus', L, W, H: 3.3, wr: r, ww: 0.36, wheels: [[wx, r, zf, 1], [-wx, r, zf, 1], [wx, r, zr, 0], [-wx, r, zr, 0]], exhaust: [[0.8, 0.3, -hL - 0.1]], heads: [[hW * 0.74, 0.62, hL + 0.05], [-hW * 0.74, 0.62, hL + 0.05]], roofY: 3.28, roofZ: 0, tailY: 1.0, rim: 'disc' });
 }
 
 'use strict';
@@ -1837,9 +1908,9 @@ const perkOf = id => PERKS[DRIVERS[drvIndex(id)].perk] || {};
 const POSES = {
   // hanche, épaules, tête, mains, genoux, pieds (repère du siège pour 'car', de la moto sinon)
   car: { hip: [0, 0, 0], sh: [0, 0.5, -0.1], head: [0, 0.69, -0.08], hands: [[0.16, 0.43, 0.37], [-0.16, 0.43, 0.37]], knees: [[0.11, 0.17, 0.42], [-0.11, 0.17, 0.42]], feet: [[0.11, -0.18, 0.62], [-0.11, -0.18, 0.62]], wheel: true },
-  sport: { hip: [0, 0.84, -0.27], sh: [0, 1.14, 0.08], head: [0, 1.24, 0.22], hands: [[0.24, 0.92, 0.46], [-0.24, 0.92, 0.46]], knees: [[0.21, 0.67, 0.05], [-0.21, 0.67, 0.05]], feet: [[0.2, 0.4, -0.25], [-0.2, 0.4, -0.25]], helmet: true },
-  trail: { hip: [0, 0.96, -0.22], sh: [0, 1.47, -0.12], head: [0, 1.64, -0.07], hands: [[0.38, 1.17, 0.4], [-0.38, 1.17, 0.4]], knees: [[0.22, 0.8, 0.14], [-0.22, 0.8, 0.14]], feet: [[0.19, 0.46, -0.05], [-0.19, 0.46, -0.05]], helmet: true },
-  scoot: { hip: [0, 0.77, -0.3], sh: [0, 1.29, -0.22], head: [0, 1.46, -0.18], hands: [[0.3, 1.03, 0.4], [-0.3, 1.03, 0.4]], knees: [[0.17, 0.8, 0.12], [-0.17, 0.8, 0.12]], feet: [[0.15, 0.31, 0.13], [-0.15, 0.31, 0.13]], helmet: true },
+  sport: { hip: [0, 0.92, -0.27], sh: [0, 1.2, 0.08], head: [0, 1.3, 0.22], hands: [[0.26, 0.92, 0.45], [-0.26, 0.92, 0.45]], knees: [[0.22, 0.72, 0.06], [-0.22, 0.72, 0.06]], feet: [[0.2, 0.4, -0.25], [-0.2, 0.4, -0.25]], helmet: true },
+  trail: { hip: [0, 1.05, -0.24], sh: [0, 1.56, -0.13], head: [0, 1.73, -0.08], hands: [[0.4, 1.19, 0.43], [-0.4, 1.19, 0.43]], knees: [[0.24, 0.9, 0.14], [-0.24, 0.9, 0.14]], feet: [[0.19, 0.46, -0.05], [-0.19, 0.46, -0.05]], helmet: true },
+  scoot: { hip: [0, 0.88, -0.32], sh: [0, 1.39, -0.24], head: [0, 1.56, -0.2], hands: [[0.32, 1.02, 0.41], [-0.32, 1.02, 0.41]], knees: [[0.18, 0.9, 0.12], [-0.18, 0.9, 0.12]], feet: [[0.15, 0.31, 0.13], [-0.15, 0.31, 0.13]], helmet: true },
 };
 const DRV_MESH = {};
 function driverMesh(idx, pose) {
@@ -2170,7 +2241,9 @@ function buildTrack(def, quality) {
     const shade = 0.92 + 0.08 * Math.sin(i * 0.37) * Math.sin(i * 0.071 + 1) + (r() - 0.5) * 0.03;
     const rc = V3.sc(road, shade);
     const cs = [-W, -W * 0.5, 0, W * 0.5, W];
-    for (let c = 0; c < 4; c++) { const cc = (c === 0 || c === 3) ? V3.sc(rc, 1.06) : rc; mb.quad(pos(i, cs[c]), pos(i, cs[c + 1]), pos(j, cs[c + 1]), pos(j, cs[c]), cc, 8); }
+    // usure : le centre de chaque voie (passage des roues, gomme) est plus sombre que près des lignes
+    const cs8 = [-W, -W * 0.75, -W * 0.5, -W * 0.25, 0, W * 0.25, W * 0.5, W * 0.75, W], kw = [1.07, 0.8, 1.0, 0.8, 0.97, 0.8, 1.0, 0.8, 1.07];
+    for (let c = 0; c < 8; c++) { const ca = V3.sc(rc, kw[c]), cb = V3.sc(rc, kw[c + 1]); mb.quad(pos(i, cs8[c]), pos(i, cs8[c + 1]), pos(j, cs8[c + 1]), pos(j, cs8[c]), ca, 8, cb, cb, ca); }
     const lm = [0.82, 0.82, 0.78];
     if (i % 6 < 2) for (const d of [-W * 0.5, 0, W * 0.5]) mb.quad(pos(i, d - 0.07, 0.025), pos(i, d + 0.07, 0.025), pos(j, d + 0.07, 0.025), pos(j, d - 0.07, 0.025), lm, 22);
     for (const sd of [-1, 1]) { const d = sd * (W - 0.4); mb.quad(pos(i, d - 0.09, 0.025), pos(i, d + 0.09, 0.025), pos(j, d + 0.09, 0.025), pos(j, d - 0.09, 0.025), lm, 22); }
@@ -2278,6 +2351,7 @@ function buildTrack(def, quality) {
   // décors par thème
   const placeOK = (x, z, rr) => T.roadDist(x, z, rr + W + 2) > rr + W + 1.5;
   const objAt = (i, side, off) => pos(i, side * off);
+  buildRoadside();
   if (theme === 'city') buildCity();
   if (theme === 'desert') buildDesert();
   if (theme === 'mountain') buildMountain();
@@ -2333,6 +2407,90 @@ function buildTrack(def, quality) {
     }
     if (h > 45) { const p = P(0, h, 0); mb.box(p[0], p[1], p[2], 0.5, 1.6, 0.5, [1, 0.1, 0.05], 2); }
     if (r() < 0.5) { const p = P((r() - 0.5) * hx, h, (r() - 0.5) * hz); mb.box(p[0], p[1], p[2], 3, 1.8, 3, V3.sc(c, 0.8), 0, yaw); }
+  }
+  // ---------- mobilier routier commun : chevrons et panneaux de virage, balises, bornes, mais aussi
+  // panneaux de distance et murs de pneus (circuit), passages piétons et feux (ville)
+  function buildRoadside() {
+    const night = !!def.env.night || def.weather === 'rain', POST = [0.2, 0.2, 0.22], WH = [0.9, 0.9, 0.88], BK = [0.03, 0.03, 0.035], RD = [0.78, 0.07, 0.05];
+    const REFL = night ? 2 : 0, reflC = night ? [0.55, 0.28, 0.05] : [1, 0.55, 0.1];
+    const bend = i => { const j = (i + 6) % N, dl = (px[j] - px[i]) * rx[i] + (pz[j] - pz[i]) * rz[i]; return dl; };
+    const at = (i, d, y) => pos(i, d, y);
+    // panneau plat face aux pilotes qui arrivent (plan formé par la normale latérale et la verticale)
+    const board = (mb, i, d, y, hw, hh, col, mat = 0, push = 0) => {
+      const c = at(i, d, y), ii = ((i % N) + N) % N, ax = rx[ii] * hw, az = rz[ii] * hw, ox = -tx[ii] * push, oz = -tz[ii] * push;
+      mb.quad([c[0] - ax + ox, c[1] - hh, c[2] - az + oz], [c[0] + ax + ox, c[1] - hh, c[2] + az + oz], [c[0] + ax + ox, c[1] + hh, c[2] + az + oz], [c[0] - ax + ox, c[1] + hh, c[2] - az + oz], col, mat);
+    };
+    const post = (mb, i, d, h, rad = 0.04, col = POST) => { const a = at(i, d, 0), b = at(i, d, h); bar(mb, a, b, rad, col, 4, rad, 6); };
+    // repérage des virages serrés (début, sommet, sens)
+    const sharp = []; let inC = false, s0 = 0;
+    for (let i = 0; i < N; i++) { const k = Math.abs(kk[i]) > 0.0085 && !inTun(i, 6); if (k && !inC) { inC = true; s0 = i; } if (!k && inC) { inC = false; if (i - s0 > 6) sharp.push([s0, i]); } }
+    const curbOff = theme === 'circuit' ? W + 5.5 : theme === 'city' ? W + 0.6 : W + 2.6;
+    for (const [a, b] of sharp) {
+      const mid = (a + b) >> 1, dl = bend(mid), side = dl > 0 ? -1 : 1;
+      // chevrons à l'extérieur du virage, tous les ~16 m
+      if (theme !== 'city') for (let i = a; i <= b; i += 8) {
+        const mb = ch(rk(i)), d = side * curbOff;
+        post(mb, i, d, 1.0); board(mb, i, d, 1.25, 0.34, 0.27, BK, 0, 0.02);
+        for (const yo of [0.1, -0.1]) {
+          const c = at(i, d, 1.25), ii = i % N, dir = -side, w = 0.07;
+          const p = (u, v) => [c[0] + rx[ii] * u * dir - tx[ii] * 0.035, c[1] + v, c[2] + rz[ii] * u * dir - tz[ii] * 0.035];
+          mb.quad(p(-0.16, yo * 1.9 + (yo > 0 ? 0 : 0)), p(-0.16 + w, yo * 1.9), p(0.12 + w, 0), p(0.12, 0), [0.98, 0.92, 0.2], 0);
+        }
+      }
+      // panneau de danger « virage » ~80 m avant
+      const iw = ((a - 40) % N + N) % N, mbw = ch(rk(iw)), dw = side * (curbOff + 0.3);
+      if (theme !== 'circuit') {
+        post(mbw, iw, dw, 2.0, 0.035);
+        const c = at(iw, dw, 2.15), ii = iw, T3 = (rad, col, push) => { const pt = k => { const an = Math.PI / 2 + k * Math.PI * 2 / 3; return [c[0] + rx[ii] * Math.cos(an) * rad - tx[ii] * push, c[1] + Math.sin(an) * rad, c[2] + rz[ii] * Math.cos(an) * rad - tz[ii] * push]; }; mbw.tri(pt(0), pt(1), pt(2), col, 0); };
+        T3(0.42, RD, 0.02); T3(0.3, WH, 0.03);
+        const q = (u0, v0, u1, v1) => { const p = (u, v) => [c[0] + rx[ii] * u - tx[ii] * 0.04, c[1] + v, c[2] + rz[ii] * u - tz[ii] * 0.04]; mbw.quad(p(u0 - 0.025, v0), p(u0 + 0.025, v0), p(u1 + 0.025, v1), p(u1 - 0.025, v1), BK, 0); };
+        q(-0.02 * side, -0.12, -0.02 * side, 0.0); q(-0.02 * side, 0.0, 0.08 * -side, 0.1);
+      } else {
+        // circuit : panneaux 300 / 200 / 100 m (barres) avant le freinage
+        for (let n = 3; n >= 1; n--) {
+          const ib = ((a - n * 50) % N + N) % N, mbb = ch(rk(ib)), db = side * (W + 4.2);
+          post(mbb, ib, db - 0.25 * side, 1.4, 0.03); post(mbb, ib, db + 0.25 * side, 1.4, 0.03);
+          board(mbb, ib, db, 1.2, 0.36, 0.42, [0.12, 0.32, 0.75], 0, 0.02);
+          for (let k = 0; k < n; k++) board(mbb, ib, db, 0.95 + k * 0.22, 0.3, 0.05, WH, 0, 0.03);
+        }
+        // murs de pneus sur l'extérieur
+        // mur de pneus continu (face avant nervurée + dessus), bien moins coûteux qu'un cylindre par pneu
+        for (let i = a; i <= b + 6; i += 1) {
+          const mb = ch(rk(i)), d0 = side * (W + 7.3), d1 = side * (W + 8.5), j = i + 1, cw = i % 4 === 0 ? [0.82, 0.82, 0.8] : [0.045, 0.045, 0.05];
+          for (let h = 0; h < 3; h++) mb.quad(pos(i, d0, h * 0.27), pos(j, d0, h * 0.27), pos(j, d0, h * 0.27 + 0.25), pos(i, d0, h * 0.27 + 0.25), h === 1 ? V3.sc(cw, 0.8) : cw, 0);
+          mb.quad(pos(i, d0, 0.79), pos(j, d0, 0.79), pos(j, d1, 0.79), pos(i, d1, 0.79), [0.03, 0.03, 0.035], 0);
+        }
+      }
+    }
+    // balises de bord de route (catadioptres) et bornes kilométriques
+    if (theme !== 'city' && theme !== 'circuit' && theme !== 'port') {
+      for (let i = 0; i < N; i += 13) {
+        if (inTun(i, 3)) continue;
+        for (const side of [-1, 1]) {
+          const mb = ch(rk(i)), d = side * (W + 1.75), a0 = at(i, d, 0);
+          mb.box(a0[0], a0[1], a0[2], 0.1, 0.95, 0.1, WH, 0, hd[i]); const a1 = at(i, d, 0.72); mb.box(a1[0], a1[1], a1[2], 0.105, 0.14, 0.105, BK, 0, hd[i]);
+          board(mb, i, d, 0.79, 0.03, 0.05, side > 0 ? reflC : (night ? [0.5, 0.5, 0.5] : WH), side > 0 ? REFL : (night ? 2 : 0), 0.055);
+        }
+        if (i % 247 < 13) {
+          const mb = ch(rk(i)), d = W + 2.4, c = at(i, d, 0);
+          mb.box(c[0], c[1], c[2], 0.45, 0.55, 0.16, WH, 18, hd[i]); const top = at(i, d, 0.55); mb.cyl(top[0], top[1], top[2], 0.225, 0.08, 10, RD, 0);
+        }
+      }
+    }
+    // ville : passages piétons et feux tricolores
+    if (theme === 'city') {
+      for (let i = 60; i < N - 20; i += 95) {
+        if (inTun(i, 8) || Math.abs(kk[i]) > 0.004) continue;
+        const mb = ch(rk(i));
+        for (let k = -6; k <= 6; k++) { const d0 = k * (W / 6.5) - 0.28, d1 = d0 + 0.56; mb.quad(pos(i, d0, 0.028), pos(i, d1, 0.028), pos(i + 2, d1, 0.028), pos(i + 2, d0, 0.028), [0.8, 0.8, 0.78], 22); }
+        for (const side of [-1, 1]) {
+          const d = side * (W + 0.7), p0 = at(i - 1, d, 0), p1 = at(i - 1, d, 3.4); bar(mb, p0, p1, 0.06, POST, 4, 0.06, 6);
+          const hcen = at(i - 1, d, 3.0); mb.box(hcen[0], hcen[1], hcen[2], 0.3, 0.95, 0.24, BK, 0, hd[i]);
+          const lit = (i + side) % 3, cols = [[1, 0.1, 0.05], [1, 0.6, 0.05], [0.1, 1, 0.35]];
+          for (let k = 0; k < 3; k++) board(mb, i - 1, d, 3.78 - k * 0.3, 0.09, 0.09, k === lit ? cols[k] : V3.sc(cols[k], 0.12), k === lit ? 2 : 0, 0.13);
+        }
+      }
+    }
   }
   function buildCity() {
     for (const side of [-1, 1]) {

@@ -2,5 +2,8 @@
   "appId": "com.seddikfire.jeu",
   "appName": "Seddik Fire",
   "webDir": "www",
-  "android": { "backgroundColor": "#0b0806" }
+  "android": { "backgroundColor": "#0b0806" },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "disable", "hidden": true, "style": "DARK" }
+  }
 }

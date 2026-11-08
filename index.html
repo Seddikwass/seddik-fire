@@ -974,7 +974,7 @@ const SOLDIERS=[
   const ORD=['wood','desert','multi','urban','night','jungle','coyote','wood','urban','desert','navy','multi','night','wood','coyote','snow','jungle','urban','desert','wood','night','multi','navy','jungle','coyote','desert','urban','wood','multi'];
   const HG=['h2','h1','helmet','h3','h2','boonie','h1','helmet','bala','h2','h3','cap'],seen={},RN=['','',' II',' III',' IV',' V'];
   SOLDIERS.forEach((sk,i)=>{const fk=ORD[i%ORD.length],[nm,base,cam,rig,pants,helm]=F[fk];seen[fk]=(seen[fk]||0)+1;const hg=HG[i%HG.length];
-    Object.assign(sk,{n:'Soldat '+nm+(RN[seen[fk]]||' '+seen[fk]),d:'Treillis camouflé '+nm.toLowerCase()+', casque, gilet porte-plaques, sac et radio.',base,cam,pants,pack:rig,blobs:34,pat:(fk==='urban'||fk==='navy'||fk==='snow')?'pix':undefined,hg,hc:hg==='bala'?'#1d1f22':hg==='cap'?shade(base,.8):hg==='boonie'?base:helm,glove:'#2a2620'})});
+    Object.assign(sk,{n:'Soldat '+nm+(RN[seen[fk]]??' '+seen[fk]),d:'Treillis camouflé '+nm.toLowerCase()+', casque, gilet porte-plaques, sac et radio.',base,cam,pants,pack:rig,blobs:34,pat:(fk==='urban'||fk==='navy'||fk==='snow')?'pix':undefined,hg,hc:hg==='bala'?'#1d1f22':hg==='cap'?shade(base,.8):hg==='boonie'?base:helm,glove:'#2a2620'})});
 })();
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
 const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35'];
@@ -1459,7 +1459,17 @@ function relief(c){if(MAP.gen==='city')return;const id=MAP.id,N=id==='sahara'?28
   g.putImageData(im,0,0);
   c.save();const land=new Path2D();land.moveTo(-20,-20);for(let y=-20;y<=WS+20;y+=20)land.lineTo(Math.min(WS+20,coastX(y)),y);land.lineTo(-20,WS+20);land.closePath();if(LAKE&&LAKE.r>10){land.moveTo(LAKE.x+LAKE.r+30,LAKE.y);land.arc(LAKE.x,LAKE.y,LAKE.r+30,0,TAU)}
   c.clip(land,'evenodd');c.globalCompositeOperation='soft-light';c.globalAlpha=id==='sahara'?.75:.9;c.imageSmoothingEnabled=true;c.drawImage(cv2,0,0,WS,WS);c.restore()}
+/* ===== cache du sol (IndexedDB) : la carte n'est dessinée qu'une fois par appareil ===== */
+const GC={m:new Map(),h:''};
+function gcHash(){if(GC.h)return GC.h;let h=2166136261;try{const src=buildGround.toString()+genWorld.toString()+(typeof decoCity==='function'?decoCity.toString():'')+(typeof gradeCanvas==='function'?gradeCanvas.toString():'');for(let i=0;i<src.length;i++){h^=src.charCodeAt(i);h=Math.imul(h,16777619)}}catch(e){}return GC.h=(h>>>0).toString(36)}
+function gKey(mid){const gs=stats.quality==='eco'?.55:stats.quality==='mid'?.72:.8;return mid+'|'+gs+'|'+gcHash()}
+function gcDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open('sf-ground',1);r.onupgradeneeded=()=>r.result.createObjectStore('g');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
+async function gcBundled(k){if(!adsNative())return null;try{const f=k.replace(/\|/g,'_');const r=await fetch('ground/'+f+'.webp');if(!r.ok)return null;const blob=await r.blob();let lamps=[];try{const j=await fetch('ground/'+f+'.json');if(j.ok)lamps=await j.json()}catch(e){}return {blob,lamps}}catch(e){return null}}
+async function gcLoad(mid){const k=gKey(mid);if(GC.m.has(k))return true;try{let v=null;try{const db=await gcDB();v=await new Promise(res=>{const q=db.transaction('g').objectStore('g').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})}catch(e){}if(!v||!v.blob)v=await gcBundled(k);if(!v||!v.blob)return false;const bmp=await createImageBitmap(v.blob);for(const [kk,o] of GC.m)if(kk!==k){try{o.bmp.close&&o.bmp.close()}catch(e){}GC.m.delete(kk)}GC.m.set(k,{bmp,lamps:v.lamps||[]});return true}catch(e){return false}}
+function gcSave(k,g,lamps){const L=lamps.map(o=>Object.assign({},o));setTimeout(()=>{try{if(!g.toBlob)return;g.toBlob(async blob=>{if(!blob)return;try{const db=await gcDB();const st=db.transaction('g','readwrite').objectStore('g');const ck=st.getAllKeys();ck.onsuccess=()=>{for(const kk of ck.result||[])if(!String(kk).endsWith('|'+gcHash()))st.delete(kk);st.put({blob,lamps:L},k)}}catch(e){}},'image/webp',.92)}catch(e){}},2500)}
+function gcBoot(){try{initGfx()}catch(e){}const M=MODES[stats.mode];const mid=(M&&M.map)||(MAPS[stats.map]?stats.map:'seddik');return Promise.race([gcLoad(mid),new Promise(r=>setTimeout(r,1500))])}
 function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mid'?.72:.8;
+  const gk=gKey(MAP.id),hit=GC.m.get(gk);if(hit){LAMPS=hit.lamps.map(o=>Object.assign({},o));ground=hit.bmp}else{
   const g=document.createElement('canvas');g.width=g.height=WS*GS;const c=g.getContext('2d');c.scale(GS,GS);
   const Rg=mulberry32(77);
   c.fillStyle=MAP.base;c.fillRect(0,0,WS,WS);
@@ -1545,8 +1555,8 @@ function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mi
     for(const d of b.doors){c.fillStyle='rgba(0,0,0,.12)';if(d.ny)c.fillRect(d.x-DW/2,d.y+(d.ny>0?6:-26),DW,20);else c.fillRect(d.x+(d.nx>0?6:-26),d.y-DW/2,20,DW)}}
   {const Rf=mulberry32(4242);for(const b of blds)decoFloor(c,b,Rf)}gradeGround(c);
   if(stats.quality==='eco'){const o=g.getContext('2d');o.save();o.setTransform(1,0,0,1,0,0);o.globalCompositeOperation='overlay';o.globalAlpha=.2;o.drawImage(g,0,0);o.restore()}else gradeCanvas(g);
-  ground=g;
-  thumb=document.createElement('canvas');thumb.width=thumb.height=480;const t=thumb.getContext('2d');t.drawImage(g,0,0,480,480);const s=480/WS;
+  ground=g;gcSave(gk,g,LAMPS)}
+  thumb=document.createElement('canvas');thumb.width=thumb.height=480;const t=thumb.getContext('2d');t.drawImage(ground,0,0,480,480);const s=480/WS;
   for(const tr of trees){t.fillStyle=tr.k==='palm'?'rgba(80,120,50,.75)':'rgba(95,110,60,.75)';t.beginPath();t.arc(tr.x*s,tr.y*s,tr.r*s*.8,0,TAU);t.fill()}
   for(const b of blds){t.fillStyle=STY[b.st].roof;t.fillRect(b.x*s,b.y*s,b.w*s,b.h*s);t.strokeStyle='rgba(0,0,0,.4)';t.lineWidth=1;t.strokeRect(b.x*s+.5,b.y*s+.5,b.w*s-1,b.h*s-1)}
   for(const o of solids)if(o.k==='cont'){t.fillStyle=o.col;t.fillRect(o.x*s,o.y*s,o.w*s,o.h*s)}
@@ -3090,7 +3100,7 @@ function buildMaps(){const box=$('#maps');box.innerHTML=Object.keys(MAPS).map(k=
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
 function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mode];return MAPS[(M&&M.map)||stats.map]}
 function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
-function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby')genWorld(id);markMap()}
+function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby'){const go=()=>{if(stats.map===id&&MAP.id!==id&&game.mode==='lobby'){genWorld(id);markMap()}};Promise.race([gcLoad(id),new Promise(r=>setTimeout(r,1200))]).then(go,go)}markMap()}
 const MPOOL=[
   {id:'kills',n:k=>'Éliminez '+k+' adversaires',g:[2,3,5],xp:[120,180,280],key:'kills'},
   {id:'games',n:k=>'Jouez '+k+' parties',g:[2,3],xp:[100,160],key:'games'},
@@ -3132,7 +3142,7 @@ let histArmed=false;
 function armBack(){try{if(!histArmed){history.pushState({sf:1},'');histArmed=true}}catch(e){}}
 addEventListener('popstate',()=>{histArmed=false;if(bigOpen){toggleMap();armBack();return}if(game.mode==='play'){setPause(true);armBack()}else if(game.mode==='paused'){setPause(false);armBack()}});
 function start(){resize();buildModes();buildCust();buildGunIcons();buildSoldierSprites();genWorld();buildSidearms();buildArmory();setSkin(skinI);sndLabel();fillStats();window.__sfReady=1;requestAnimationFrame(t=>{last=t;frame(t)});warmSprites();adsLater()}
-requestAnimationFrame(()=>setTimeout(start,30));
+requestAnimationFrame(()=>{gcBoot().then(()=>setTimeout(start,0),()=>setTimeout(start,0))});
 if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})});
 })();
 </script>

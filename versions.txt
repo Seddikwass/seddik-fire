@@ -1,0 +1,8 @@
+android/app/build.gradle:    compileSdk = rootProject.ext.compileSdkVersion
+android/app/build.gradle:        minSdkVersion rootProject.ext.minSdkVersion
+android/app/build.gradle:        targetSdkVersion rootProject.ext.targetSdkVersion
+android/app/build.gradle:        versionCode 2
+android/app/build.gradle:        versionName "1.0.0"
+android/variables.gradle:    minSdkVersion = 24
+android/variables.gradle:    compileSdkVersion = 36
+android/variables.gradle:    targetSdkVersion = 36

@@ -3,7 +3,15 @@ set -euo pipefail
 ROOT=$(pwd)
 # Version de Capacitor alignée sur celle demandée par le plugin AdMob
 ADMOB_VER=$(npm view @capacitor-community/admob version)
-PEER=$(npm view @capacitor-community/admob@$ADMOB_VER peerDependencies --json | python3 -c "import json,sys,re;d=json.load(sys.stdin);print(re.findall(r'\d+',d['@capacitor/core'])[0])")
+npm view @capacitor-community/admob@$ADMOB_VER --json > admob-meta.json
+PEER=$(python3 -c "
+import json,re
+d=json.load(open('admob-meta.json'))
+for k in ('peerDependencies','devDependencies','dependencies'):
+  v=(d.get(k) or {}).get('@capacitor/core')
+  if v:
+    print(re.findall(r'\d+',v)[0]);break
+else: print(7)")
 echo "admob=$ADMOB_VER capacitor-major=$PEER" | tee out/versions.txt
 cat > package.json <<P
 {"name":"seddik-fire","private":true,"version":"1.0.0"}

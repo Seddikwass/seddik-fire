@@ -24,7 +24,13 @@ npx cap sync android
 grep -E "compileSdk|targetSdk|minSdk" android/variables.gradle | tee -a out/versions.txt
 cd android
 chmod +x gradlew
-./gradlew --no-daemon bundleRelease assembleDebug
+sed -i 's/networkTimeout=[0-9]*/networkTimeout=180000/' gradle/wrapper/gradle-wrapper.properties
+ok=0
+for t in 1 2 3; do
+  if ./gradlew --no-daemon bundleRelease assembleDebug; then ok=1; break; fi
+  echo "Nouvel essai ($t)"; sleep 20
+done
+[ $ok = 1 ]
 cp app/build/outputs/bundle/release/app-release.aab "$ROOT/out/seddik-fire-unsigned.aab"
 cp app/build/outputs/apk/debug/app-debug.apk "$ROOT/out/seddik-fire-test.apk"
 echo BUILD_OK | tee -a "$ROOT/out/versions.txt"

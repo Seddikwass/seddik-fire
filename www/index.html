@@ -3002,7 +3002,7 @@ function finish(){const win=player.alive;ADS.xpUsed=false;game.mode='end';if(!MD
   $('#endEye').textContent=win?(stats.mode==='cup'?cupAdv():'Dernier debout'):'Partie terminée';
   $('#endMsg').textContent=win?'L’île est à vous, '+player.name+'.':player.killer===player?'Vous vous êtes éliminé vous-même.':player.killerName==='Zone rouge'?'Pris sous le bombardement de la zone rouge.':player.killer?'Tombé au combat face à '+player.killerName+'.':'Emporté par la tempête de feu.';
   $('#eKills').textContent=player.kills;$('#eDmg').textContent=Math.round(player.dmg);$('#eTime').textContent=fmtT(win?matchT:player.deathT);fillEnd(win);$('#endMiss').innerHTML=MP.map(x=>'<li>'+esc(x)+'</li>').join('');
-  $('#hud').hidden=true;$('#bigmap').hidden=true;bigOpen=false;$('#end').hidden=false;releaseWake();rankCount(rank);adsUI();
+  $('#hud').hidden=true;$('#bigmap').hidden=true;bigOpen=false;$('#end').hidden=false;releaseWake();rankCount(rank);adsLoad();adsUI();
   if(win){blip(523,.15,.06,'triangle');setTimeout(()=>blip(659,.15,.06,'triangle'),150);setTimeout(()=>blip(784,.3,.06,'triangle'),300)}}
 
 let wake=null;

@@ -1,0 +1,9 @@
+name: ping
+on: push
+permissions:
+  contents: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ok > ping.txt && echo "$(date)"

@@ -38,6 +38,10 @@ body{margin:0}
 [hidden]{display:none!important}
 html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--bone)}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.adbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin:8px 0 2px;border-radius:12px;border:1px solid rgba(255,197,77,.55);background:linear-gradient(180deg,rgba(255,197,77,.18),rgba(255,197,77,.06));color:#ffe3a3;font:700 15px/1 'Barlow Condensed',system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.adbtn b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#ffc54d;color:#1b1206;font-size:11px}.adbtn em{font-style:normal;color:#fff}
+.adbtn.sm{min-height:40px;font-size:13px;margin-top:8px}.adbtn[disabled]{opacity:.5}
+
 /* v59 : HUD plus discret pour une image plus dégagée */
 #hud .slot,#hud .vit{background:rgba(13,17,24,.52)}
 #hud .med{background:rgba(13,17,24,.45)}
@@ -745,6 +749,7 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
     </dl>
     <div class="go">
       <button id="play" class="cta">Jouer<small>Île de Seddik · classique</small></button>
+      <button id="adBonus" class="adbtn sm" hidden><b>▶</b> Pub : <em>+300 XP</em></button>
     </div>
   </div>
 </section>
@@ -827,6 +832,7 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
       <div class="xp-h"><span>Niveau <b id="eLvl">1</b></span><span class="g" id="eXpG"></span></div>
       <div class="xp"><i id="eXpFill"></i></div>
       <span class="xpt" id="eXpTxt">0 XP</span>
+      <button id="adXp" class="adbtn sm" hidden><b>▶</b> Regarder une pub · <em>XP ×2</em></button>
     </div>
     <ul id="endMiss" class="endmiss"></ul>
     <div class="row"><button id="again" class="cta">Rejouer</button><button id="toMenu" class="ghost">Menu</button></div>
@@ -2965,12 +2971,35 @@ function embTick(ts){const on=!reduceMotion&&(game.mode==='lobby'||game.mode==='
   requestAnimationFrame(embTick)}
 requestAnimationFrame(embTick);
 function rankCount(target){const el=$('#endRank');if(reduceMotion||target>=30){el.textContent='#'+target;return}let n=30;const st=()=>{n=Math.max(target,n-Math.max(1,Math.ceil((n-target)/5)));el.textContent='#'+n;if(n>target)setTimeout(st,45);else{el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}};st()}
-function finish(){const win=player.alive;game.mode='end';if(!MDcur.nostat){stats.games++;if(win)stats.wins++;stats.kills+=player.kills;stats.best=Math.max(stats.best,player.kills)}gpXp(win);const MP=metaProgress(win);saveStats();
+/* ===== Publicités récompensées (Google AdMob, appli Android uniquement) ===== */
+const ADS={ok:false,ready:false,loading:false,busy:false,plug:null,test:true,rew:'ca-app-pub-3940256099942544/5224354917',xpUsed:false};
+function adsNative(){const C=window.Capacitor;return !!(C&&C.isNativePlatform&&C.isNativePlatform())}
+async function adsInit(){if(!adsNative())return;try{const C=window.Capacitor;ADS.plug=(C.Plugins&&C.Plugins.AdMob)||(C.registerPlugin&&C.registerPlugin('AdMob'));if(!ADS.plug)return;
+  const cfg=window.SF_ADS||{};if(cfg.rewarded){ADS.rew=cfg.rewarded;ADS.test=!!cfg.test}
+  await ADS.plug.initialize({initializeForTesting:ADS.test});
+  try{const ci=await ADS.plug.requestConsentInfo();if(ci&&ci.isConsentFormAvailable&&ci.status==='REQUIRED')await ADS.plug.showConsentForm()}catch(e){}
+  ADS.ok=true;adsLoad()}catch(e){console.warn('ads init',e)}}
+async function adsLoad(){if(!ADS.ok||ADS.ready||ADS.loading)return;ADS.loading=true;try{await ADS.plug.prepareRewardVideoAd({adId:ADS.rew,isTesting:ADS.test});ADS.ready=true}catch(e){setTimeout(adsLoad,45000)}ADS.loading=false;adsUI()}
+async function adsShow(){if(!ADS.ready||ADS.busy)return false;ADS.busy=true;ADS.ready=false;adsUI();let got=false,h=null;
+  try{AC&&AC.suspend()}catch(e){}
+  try{h=await ADS.plug.addListener('onRewardedVideoAdReward',()=>{got=true})}catch(e){}
+  try{const r=await ADS.plug.showRewardVideoAd();if(r&&(r.amount!=null||r.type))got=true}catch(e){}
+  try{h&&h.remove&&h.remove()}catch(e){}
+  try{AC&&AC.resume()}catch(e){}
+  ADS.busy=false;setTimeout(adsLoad,500);adsUI();return got}
+function addXp(n){stats.prevLevel=stats.level||1;stats.xp=(stats.xp||0)+n;stats.level=xpLevel(stats.xp);stats.lvlFrom=levelXp(stats.level);stats.lvlTo=levelXp(stats.level+1);saveStats()}
+function adsUI(){const on=ADS.ok&&ADS.ready&&!ADS.busy;const a=$('#adXp'),b=$('#adBonus');
+  if(a)a.hidden=!(on&&game.mode==='end'&&!ADS.xpUsed&&(+stats.lastXp||0)>0);
+  if(b)b.hidden=!(on&&Date.now()-(+stats.adT||0)>8*60*1000)}
+tapOn($('#adXp'),async()=>{if(ADS.xpUsed)return;const g=Math.round(+stats.lastXp||0);if(!g)return;if(await adsShow()){ADS.xpUsed=true;addXp(g);stats.lastXp=g*2;saveStats();fillEnd(!!(player&&player.alive));toast('XP doublée : +'+g+' XP')}adsUI()});
+tapOn($('#adBonus'),async()=>{if(await adsShow()){stats.adT=Date.now();addXp(300);saveStats();try{fillXP();fillStats()}catch(e){}toast('+300 XP')}adsUI()});
+setInterval(adsUI,5000);
+function finish(){const win=player.alive;ADS.xpUsed=false;game.mode='end';if(!MDcur.nostat){stats.games++;if(win)stats.wins++;stats.kills+=player.kills;stats.best=Math.max(stats.best,player.kills)}gpXp(win);const MP=metaProgress(win);saveStats();
   const rank=win?1:player.rank;$('#endRank').textContent='#'+rank;$('#endRank').classList.toggle('win',win);
   $('#endEye').textContent=win?(stats.mode==='cup'?cupAdv():'Dernier debout'):'Partie terminée';
   $('#endMsg').textContent=win?'L’île est à vous, '+player.name+'.':player.killer===player?'Vous vous êtes éliminé vous-même.':player.killerName==='Zone rouge'?'Pris sous le bombardement de la zone rouge.':player.killer?'Tombé au combat face à '+player.killerName+'.':'Emporté par la tempête de feu.';
   $('#eKills').textContent=player.kills;$('#eDmg').textContent=Math.round(player.dmg);$('#eTime').textContent=fmtT(win?matchT:player.deathT);fillEnd(win);$('#endMiss').innerHTML=MP.map(x=>'<li>'+esc(x)+'</li>').join('');
-  $('#hud').hidden=true;$('#bigmap').hidden=true;bigOpen=false;$('#end').hidden=false;releaseWake();rankCount(rank);
+  $('#hud').hidden=true;$('#bigmap').hidden=true;bigOpen=false;$('#end').hidden=false;releaseWake();rankCount(rank);adsUI();
   if(win){blip(523,.15,.06,'triangle');setTimeout(()=>blip(659,.15,.06,'triangle'),150);setTimeout(()=>blip(784,.3,.06,'triangle'),300)}}
 
 let wake=null;
@@ -3098,9 +3127,9 @@ $('#missBtn').addEventListener('click',openMiss);$('#missClose').addEventListene
 let histArmed=false;
 function armBack(){try{if(!histArmed){history.pushState({sf:1},'');histArmed=true}}catch(e){}}
 addEventListener('popstate',()=>{histArmed=false;if(bigOpen){toggleMap();armBack();return}if(game.mode==='play'){setPause(true);armBack()}else if(game.mode==='paused'){setPause(false);armBack()}});
-function start(){resize();buildModes();buildCust();buildGunIcons();buildSoldierSprites();genWorld();buildSidearms();buildArmory();setSkin(skinI);sndLabel();fillStats();window.__sfReady=1;requestAnimationFrame(t=>{last=t;frame(t)});warmSprites()}
+function start(){resize();buildModes();buildCust();buildGunIcons();buildSoldierSprites();genWorld();buildSidearms();buildArmory();setSkin(skinI);sndLabel();fillStats();window.__sfReady=1;requestAnimationFrame(t=>{last=t;frame(t)});warmSprites();setTimeout(adsInit,1500)}
 requestAnimationFrame(()=>setTimeout(start,30));
-if('serviceWorker' in navigator)addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})});
+if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})});
 })();
 </script>
 

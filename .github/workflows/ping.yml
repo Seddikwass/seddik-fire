@@ -6,4 +6,8 @@ jobs:
   p:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ok > ping.txt && echo "$(date)"
+      - run: |
+          git init -q out && cd out
+          echo "runner ok $(date -u) sdk=$ANDROID_HOME java=$(java -version 2>&1|head -1) node=$(node -v)" > ping.txt
+          git add ping.txt && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm ping
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:refs/heads/ci-out

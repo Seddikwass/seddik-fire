@@ -55,6 +55,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .box .adbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:8px 0 2px;padding:11px 14px;font-family:var(--fh);font-size:16px;color:#fff;background:linear-gradient(90deg,#1c8f4a,#2fc46b);border:0;cursor:pointer;min-height:48px}
 .box .adbtn svg{width:22px;height:22px}.box .adbtn.done{background:#24402f;color:#9fe0b6;cursor:default}
 .native #btnFs{display:none}
+.plink{display:inline-block;padding:8px 14px;border:1px solid var(--line);color:var(--acc2);text-decoration:none;min-height:40px}
 .money{font-family:var(--fh);font-size:18px;padding:7px 16px;background:var(--pan);border:1px solid var(--line);clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);color:var(--acc2)}
 .icon{width:44px;height:44px;background:var(--pan);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}.icon svg{width:22px;height:22px}
 .screen{position:absolute;inset:0;display:none;padding:64px max(22px,env(safe-area-inset-left)) 22px;pointer-events:none}
@@ -4235,9 +4236,9 @@ function renderGarage(dt) {
    - vidéo récompensée « +1 000 $ » dans la barre du haut (toutes les 4 min, 15 par jour) ;
    - interstitiel à une pause naturelle : en quittant les résultats, 1 course sur 3, au plus toutes les 4 min.
    ===================================================================== */
-Object.assign(LANGS.fr, { adDouble: 'Doubler les gains : +{0}', adDoubled: 'Gains doublés : +{0}', adBonus: '+{0}', adBonusTitle: 'Regarder une courte vidéo pour gagner {0}', adThanks: 'Merci ! +{0}', adNone: 'Aucune vidéo disponible pour le moment, réessaie dans un instant.', adWait: 'Prochain bonus vidéo dans {0}', adDay: 'Bonus vidéo épuisés pour aujourd\'hui. Reviens demain !', adNoReward: 'Vidéo interrompue : pas de récompense.', o_ads: 'Publicités', o_adsPriv: 'Confidentialité des pubs', o_adsInfo: 'Les publicités financent le jeu. Tu choisis toujours de regarder une vidéo récompensée.' });
-Object.assign(LANGS.en, { adDouble: 'Double your winnings: +{0}', adDoubled: 'Winnings doubled: +{0}', adBonus: '+{0}', adBonusTitle: 'Watch a short video to earn {0}', adThanks: 'Thanks! +{0}', adNone: 'No video available right now, try again in a moment.', adWait: 'Next video bonus in {0}', adDay: 'No more video bonuses today. Come back tomorrow!', adNoReward: 'Video closed early: no reward.', o_ads: 'Ads', o_adsPriv: 'Ad privacy', o_adsInfo: 'Ads keep the game free. Rewarded videos are always your choice.' });
-Object.assign(LANGS.ar, { adDouble: 'ضاعف أرباحك: +{0}', adDoubled: 'تمت مضاعفة الأرباح: +{0}', adBonus: '+{0}', adBonusTitle: 'شاهد فيديو قصيرًا واربح {0}', adThanks: 'شكرًا! +{0}', adNone: 'لا يوجد فيديو متاح الآن، حاول بعد قليل.', adWait: 'المكافأة التالية بعد {0}', adDay: 'انتهت مكافآت الفيديو لليوم. عد غدًا!', adNoReward: 'أُغلق الفيديو مبكرًا: لا مكافأة.', o_ads: 'الإعلانات', o_adsPriv: 'خصوصية الإعلانات', o_adsInfo: 'الإعلانات تجعل اللعبة مجانية. مشاهدة الفيديو بمكافأة اختيارية دائمًا.' });
+Object.assign(LANGS.fr, { adDouble: 'Doubler les gains : +{0}', adDoubled: 'Gains doublés : +{0}', adBonus: '+{0}', adBonusTitle: 'Regarder une courte vidéo pour gagner {0}', adThanks: 'Merci ! +{0}', adNone: 'Aucune vidéo disponible pour le moment, réessaie dans un instant.', adWait: 'Prochain bonus vidéo dans {0}', adDay: 'Bonus vidéo épuisés pour aujourd\'hui. Reviens demain !', adNoReward: 'Vidéo interrompue : pas de récompense.', o_privacy: 'Confidentialité', o_privLink: 'Politique de confidentialité', o_ads: 'Publicités', o_adsPriv: 'Confidentialité des pubs', o_adsInfo: 'Les publicités financent le jeu. Tu choisis toujours de regarder une vidéo récompensée.' });
+Object.assign(LANGS.en, { adDouble: 'Double your winnings: +{0}', adDoubled: 'Winnings doubled: +{0}', adBonus: '+{0}', adBonusTitle: 'Watch a short video to earn {0}', adThanks: 'Thanks! +{0}', adNone: 'No video available right now, try again in a moment.', adWait: 'Next video bonus in {0}', adDay: 'No more video bonuses today. Come back tomorrow!', adNoReward: 'Video closed early: no reward.', o_privacy: 'Privacy', o_privLink: 'Privacy policy', o_ads: 'Ads', o_adsPriv: 'Ad privacy', o_adsInfo: 'Ads keep the game free. Rewarded videos are always your choice.' });
+Object.assign(LANGS.ar, { adDouble: 'ضاعف أرباحك: +{0}', adDoubled: 'تمت مضاعفة الأرباح: +{0}', adBonus: '+{0}', adBonusTitle: 'شاهد فيديو قصيرًا واربح {0}', adThanks: 'شكرًا! +{0}', adNone: 'لا يوجد فيديو متاح الآن، حاول بعد قليل.', adWait: 'المكافأة التالية بعد {0}', adDay: 'انتهت مكافآت الفيديو لليوم. عد غدًا!', adNoReward: 'أُغلق الفيديو مبكرًا: لا مكافأة.', o_privacy: 'الخصوصية', o_privLink: 'سياسة الخصوصية', o_ads: 'الإعلانات', o_adsPriv: 'خصوصية الإعلانات', o_adsInfo: 'الإعلانات تجعل اللعبة مجانية. مشاهدة الفيديو بمكافأة اختيارية دائمًا.' });
 
 const ADS = {
   on: false, ready: false, inter: false, busy: false, earned: false, cb: null, P: null, cfg: null, privacy: false,
@@ -4529,6 +4530,7 @@ const UI = {
       row(t('o_sens'), rng('sens', 50, 150)), row(t('o_opacity'), rng('opacity', 25, 100)),
       row(t('o_vibe'), seg('vibe', [[true, t('yes')], [false, t('no')]])),
       row(t('o_save'), `<div><button class="danger" id="o-reset">${t('o_reset')}</button></div>`),
+      row(t('o_privacy'), `<div><a class="plink" href="https://super-joud.onrender.com/privacy.html#${LANG}" target="_blank" rel="noopener">${t('o_privLink')}</a></div>`),
       ADS.on ? row(t('o_ads'), `<div>${ADS.privacy ? `<button id="o-adpriv">${t('o_adsPriv')}</button>` : ''}<p class="note">${t('o_adsInfo')}</p></div>`) : '',
       `<p class="note">${t('o_note')}</p>`,
     ].join('');

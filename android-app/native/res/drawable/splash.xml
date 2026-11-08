@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Écran de démarrage : fond sombre + logo centré (remplace les images splash.png du modèle Capacitor) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/sj_splash_bg" />
+    <item android:width="300dp" android:height="120dp" android:gravity="center">
+        <bitmap android:src="@drawable/splash_logo" android:gravity="fill" android:antialias="true" />
+    </item>
+</layer-list>

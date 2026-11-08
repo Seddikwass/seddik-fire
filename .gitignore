@@ -1,0 +1,5 @@
+android-app/node_modules/
+android-app/android/
+android-app/dist/
+android-app/www/index.html
+android-app/www/capacitor.js

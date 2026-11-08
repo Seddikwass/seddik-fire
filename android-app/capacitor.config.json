@@ -1,0 +1,11 @@
+{
+  "appId": "com.seddikjoud.superracing",
+  "appName": "SUPER SEDDIK@JOUD",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#07080b",
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

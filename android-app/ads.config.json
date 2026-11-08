@@ -1,0 +1,7 @@
+{
+  "_note": "Identifiants de TEST Google. A remplacer par les identifiants AdMob reels (appId, rewarded, interstitial) puis mettre test a false.",
+  "appId": "ca-app-pub-3940256099942544~3347511713",
+  "rewarded": "ca-app-pub-3940256099942544/5224354917",
+  "interstitial": "ca-app-pub-3940256099942544/1033173712",
+  "test": true
+}

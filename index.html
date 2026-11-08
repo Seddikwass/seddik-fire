@@ -50,6 +50,11 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 #topbar>*{pointer-events:auto}
 #topbar .brand{font-family:var(--fh);font-style:italic;font-size:18px;opacity:0;transition:opacity .2s}
 #topbar .brand b{color:var(--acc);margin-left:4px}
+.adbonus{display:flex;align-items:center;gap:6px;font-family:var(--fh);font-size:15px;padding:6px 12px;background:linear-gradient(90deg,#1c8f4a,#26b35f);color:#fff;border:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);cursor:pointer;min-height:36px}
+.adbonus svg{width:20px;height:20px}.adbonus.dim{filter:saturate(.25) brightness(.8)}
+.box .adbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:8px 0 2px;padding:11px 14px;font-family:var(--fh);font-size:16px;color:#fff;background:linear-gradient(90deg,#1c8f4a,#2fc46b);border:0;cursor:pointer;min-height:48px}
+.box .adbtn svg{width:22px;height:22px}.box .adbtn.done{background:#24402f;color:#9fe0b6;cursor:default}
+.native #btnFs{display:none}
 .money{font-family:var(--fh);font-size:18px;padding:7px 16px;background:var(--pan);border:1px solid var(--line);clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);color:var(--acc2)}
 .icon{width:44px;height:44px;background:var(--pan);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}.icon svg{width:22px;height:22px}
 .screen{position:absolute;inset:0;display:none;padding:64px max(22px,env(safe-area-inset-left)) 22px;pointer-events:none}
@@ -348,6 +353,7 @@ html[lang=ar] .dcard b,html[lang=ar] .dhead h2,html[lang=ar] .drvchip b{font-fam
 <div id="ui">
   <div id="topbar">
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
+    <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -4220,6 +4226,136 @@ function renderGarage(dt) {
 
 'use strict';
 /* =====================================================================
+   Publicités AdMob — uniquement dans l'application Android (Capacitor).
+   Sur le site web, ADS.on reste faux : aucune publicité, aucun bouton.
+   Identifiants : window.SJ_ADS (injecté à la compilation Android) ;
+   sinon identifiants de TEST officiels de Google (pubs marquées « Test Ad »).
+   Emplacements :
+   - vidéo récompensée « Doubler les gains » sur l'écran de résultats ;
+   - vidéo récompensée « +1 000 $ » dans la barre du haut (toutes les 4 min, 15 par jour) ;
+   - interstitiel à une pause naturelle : en quittant les résultats, 1 course sur 3, au plus toutes les 4 min.
+   ===================================================================== */
+Object.assign(LANGS.fr, { adDouble: 'Doubler les gains : +{0}', adDoubled: 'Gains doublés : +{0}', adBonus: '+{0}', adBonusTitle: 'Regarder une courte vidéo pour gagner {0}', adThanks: 'Merci ! +{0}', adNone: 'Aucune vidéo disponible pour le moment, réessaie dans un instant.', adWait: 'Prochain bonus vidéo dans {0}', adDay: 'Bonus vidéo épuisés pour aujourd\'hui. Reviens demain !', adNoReward: 'Vidéo interrompue : pas de récompense.', o_ads: 'Publicités', o_adsPriv: 'Confidentialité des pubs', o_adsInfo: 'Les publicités financent le jeu. Tu choisis toujours de regarder une vidéo récompensée.' });
+Object.assign(LANGS.en, { adDouble: 'Double your winnings: +{0}', adDoubled: 'Winnings doubled: +{0}', adBonus: '+{0}', adBonusTitle: 'Watch a short video to earn {0}', adThanks: 'Thanks! +{0}', adNone: 'No video available right now, try again in a moment.', adWait: 'Next video bonus in {0}', adDay: 'No more video bonuses today. Come back tomorrow!', adNoReward: 'Video closed early: no reward.', o_ads: 'Ads', o_adsPriv: 'Ad privacy', o_adsInfo: 'Ads keep the game free. Rewarded videos are always your choice.' });
+Object.assign(LANGS.ar, { adDouble: 'ضاعف أرباحك: +{0}', adDoubled: 'تمت مضاعفة الأرباح: +{0}', adBonus: '+{0}', adBonusTitle: 'شاهد فيديو قصيرًا واربح {0}', adThanks: 'شكرًا! +{0}', adNone: 'لا يوجد فيديو متاح الآن، حاول بعد قليل.', adWait: 'المكافأة التالية بعد {0}', adDay: 'انتهت مكافآت الفيديو لليوم. عد غدًا!', adNoReward: 'أُغلق الفيديو مبكرًا: لا مكافأة.', o_ads: 'الإعلانات', o_adsPriv: 'خصوصية الإعلانات', o_adsInfo: 'الإعلانات تجعل اللعبة مجانية. مشاهدة الفيديو بمكافأة اختيارية دائمًا.' });
+
+const ADS = {
+  on: false, ready: false, inter: false, busy: false, earned: false, cb: null, P: null, cfg: null, privacy: false,
+  races: 0, lastInter: 0, lastReward: 0,
+  BONUS: 1000, BONUS_CD: 4 * 60 * 1000, BONUS_MAX: 15,
+  native() { const C = window.Capacitor; return !!(C && C.isNativePlatform && C.isNativePlatform()); },
+  plugin(name) { const C = window.Capacitor; return C && ((C.Plugins && C.Plugins[name]) || (C.registerPlugin && C.registerPlugin(name))); },
+  async init() {
+    if (!this.native()) return;
+    document.body.classList.add('native');
+    this.backButton();
+    const P = this.plugin('AdMob'); if (!P) return;
+    this.P = P;
+    this.cfg = Object.assign({ test: true, rewarded: 'ca-app-pub-3940256099942544/5224354917', interstitial: 'ca-app-pub-3940256099942544/1033173712' }, window.SJ_ADS || {});
+    try {
+      await P.initialize({ initializeForTesting: !!this.cfg.test });
+      // consentement (RGPD / UMP) : le formulaire ne s'affiche que là où la loi l'exige
+      try {
+        const ci = await P.requestConsentInfo();
+        if (ci && ci.isConsentFormAvailable && ci.status === 'REQUIRED') await P.showConsentForm();
+        this.privacy = !!(ci && ci.isConsentFormAvailable) && typeof P.showPrivacyOptionsForm === 'function';
+      } catch (e) { }
+      P.addListener('onRewardedVideoAdReward', () => { this.earned = true; });
+      P.addListener('onRewardedVideoAdDismissed', () => this.closed(false));
+      P.addListener('onRewardedVideoAdFailedToShow', () => this.closed(true));
+      P.addListener('interstitialAdDismissed', () => this.interClosed());
+      P.addListener('interstitialAdFailedToShow', () => this.interClosed());
+      this.on = true;
+      this.load(); this.loadInter();
+      setInterval(() => this.refresh(), 1000);
+    } catch (e) { this.on = false; }
+    this.refresh();
+  },
+  async load() {
+    if (!this.on || this.loading) return; this.loading = true;
+    try { await this.P.prepareRewardVideoAd({ adId: this.cfg.rewarded, isTesting: !!this.cfg.test, immersiveMode: true }); this.ready = true; }
+    catch (e) { this.ready = false; setTimeout(() => this.load(), 45000); }
+    this.loading = false; this.refresh();
+  },
+  async loadInter() {
+    if (!this.on || this.loadingI) return; this.loadingI = true;
+    try { await this.P.prepareInterstitial({ adId: this.cfg.interstitial, isTesting: !!this.cfg.test, immersiveMode: true }); this.inter = true; }
+    catch (e) { this.inter = false; setTimeout(() => this.loadInter(), 90000); }
+    this.loadingI = false;
+  },
+  mute(on) { try { if (AU.ctx) { if (on) AU.ctx.suspend(); else AU.ctx.resume(); } } catch (e) { } },
+  // vidéo récompensée : cb(true) seulement si la vidéo a été regardée jusqu'au bout
+  show(cb) {
+    if (!this.on || this.busy) return false;
+    if (!this.ready) { toast(t('adNone')); this.load(); return false; }
+    this.busy = true; this.earned = false; this.cb = cb; this.ready = false; this.mute(true);
+    this.P.showRewardVideoAd().catch(() => this.closed(true));
+    return true;
+  },
+  closed(fail) {
+    if (!this.busy) return;
+    this.busy = false; this.mute(false);
+    const ok = this.earned && !fail, cb = this.cb; this.cb = null; this.earned = false;
+    if (ok) this.lastReward = Date.now(); else toast(t(fail ? 'adNone' : 'adNoReward'));
+    if (cb) cb(ok);
+    this.load(); this.refresh();
+  },
+  // interstitiel à une transition naturelle (en quittant l'écran de résultats), avec plafonnement
+  gate(next) {
+    const now = Date.now();
+    this.races++;
+    if (this.on && this.inter && !this.busy && this.races % 3 === 0 && now - this.lastInter > 240000 && now - this.lastReward > 90000) {
+      this.lastInter = now; this.inter = false; this.afterInter = next; this.mute(true);
+      this.P.showInterstitial().catch(() => this.interClosed());
+      return;
+    }
+    next();
+  },
+  interClosed() { this.mute(false); const n = this.afterInter; this.afterInter = null; this.loadInter(); if (n) n(); },
+  // bonus vidéo de la barre du haut
+  day() { const d = new Date(); return d.getFullYear() * 1000 + d.getMonth() * 40 + d.getDate(); },
+  bonusState() {
+    const a = SAVE.ads || (SAVE.ads = { day: 0, n: 0, last: 0 });
+    if (a.day !== this.day()) { a.day = this.day(); a.n = 0; }
+    if (a.n >= this.BONUS_MAX) return { ok: false, why: 'day' };
+    const wait = a.last + this.BONUS_CD - Date.now();
+    return wait > 0 ? { ok: false, why: 'wait', wait } : { ok: true };
+  },
+  bonus() {
+    const st = this.bonusState();
+    if (!st.ok) { toast(st.why === 'day' ? t('adDay') : t('adWait', fmtCd(st.wait))); return; }
+    this.show(ok => {
+      if (!ok) return;
+      const a = SAVE.ads; a.n++; a.last = Date.now();
+      SAVE.money += this.BONUS; saveGame(); UI.updMoney(); toast(t('adThanks', money(this.BONUS)));
+      AU.shot(1200, 0.08, 'sine', 0.06);
+    });
+  },
+  refresh() {
+    const b = $('ad-bonus'); if (!b) return;
+    b.classList.toggle('hidden', !this.on);
+    if (!this.on) return;
+    const st = this.bonusState();
+    b.classList.toggle('dim', !st.ok || !this.ready);
+    b.querySelector('b').textContent = st.ok ? t('adBonus', money(this.BONUS)) : st.why === 'wait' ? fmtCd(st.wait) : '—';
+    b.title = t('adBonusTitle', money(this.BONUS));
+  },
+  // bouton retour Android : pause en course, sinon retour au menu, sinon mise en arrière-plan
+  backButton() {
+    const App = this.plugin('App'); if (!App || !App.addListener) return;
+    App.addListener('backButton', () => {
+      if ($('results').classList.contains('show')) { UI.quit(); return; }
+      if (G.state === 'race' || G.state === 'countdown') { UI.pause(true); return; }
+      if (G.state === 'paused') { UI.pause(false); return; }
+      if (UI.screen && UI.screen !== 'main') { UI.show('main'); return; }
+      if (App.minimizeApp) App.minimizeApp();
+    });
+  },
+};
+function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+'use strict';
+/* =====================================================================
    Interface : menus, garage, HUD, options, sauvegarde, boucle principale
    ===================================================================== */
 const $ = id => document.getElementById(id);
@@ -4393,6 +4529,7 @@ const UI = {
       row(t('o_sens'), rng('sens', 50, 150)), row(t('o_opacity'), rng('opacity', 25, 100)),
       row(t('o_vibe'), seg('vibe', [[true, t('yes')], [false, t('no')]])),
       row(t('o_save'), `<div><button class="danger" id="o-reset">${t('o_reset')}</button></div>`),
+      ADS.on ? row(t('o_ads'), `<div>${ADS.privacy ? `<button id="o-adpriv">${t('o_adsPriv')}</button>` : ''}<p class="note">${t('o_adsInfo')}</p></div>`) : '',
       `<p class="note">${t('o_note')}</p>`,
     ].join('');
     $('o-panel').querySelectorAll('.seg').forEach(g => g.querySelectorAll('button').forEach(b => b.onclick = () => {
@@ -4401,6 +4538,7 @@ const UI = {
       saveGame(); applySettings(); if (k === 'lang') { LANG = s.lang; applyI18n(); } this.renderOptions(); AU.shot(800, 0.04, 'sine', 0.05);
     }));
     $('o-panel').querySelectorAll('input[type=range]').forEach(i => i.oninput = () => { s[i.dataset.k] = +i.value; saveGame(); applySettings(); });
+    if ($('o-adpriv')) $('o-adpriv').onclick = () => { try { ADS.P.showPrivacyOptionsForm().catch(() => { }); } catch (e) { } };
     $('o-reset').onclick = () => this.confirm(t('resetConfirm'), () => { const st = SAVE.settings; SAVE = defaultSave(); SAVE.settings = st; saveGame(); this.show('main'); });
   },
   renderHelp() {
@@ -4485,13 +4623,23 @@ const UI = {
     if (ev !== null) evLine = res.success ? `<p class="okline">${res.firstWin ? t('r_evOk', tEvName(ev)) : t('r_evAgain')}</p>` : `<p class="failline">${t('r_evFail', tEvName(ev))}</p>`;
     const next = ev !== null && res.success && ev + 1 < CAREER.length;
     $('res-body').innerHTML = `<div class="res-title ${cls}">${title}</div><div class="note">${modeName(res.mode)}, ${T.name}${res.record ? ` — <b class="rec">${t('r_record')}</b>` : ''}</div><div class="rcols"><div class="rcol1">${body}${evLine}</div><div class="rcol2">
-      <div class="rgrid"><span>${t('r_reward')}</span><b>${money(res.reward)}</b><span>${t('r_style', res.style)}</span><b>${money(res.styleBonus)}</b><span>${t('r_gain')}</span><b class="tot">${money(res.total)}</b><span>${t('r_money')}</span><b>${money(SAVE.money)}</b></div>
+      <div class="rgrid"><span>${t('r_reward')}</span><b>${money(res.reward)}</b><span>${t('r_style', res.style)}</span><b>${money(res.styleBonus)}</b><span>${t('r_gain')}</span><b class="tot">${money(res.total)}</b><span>${t('r_money')}</span><b id="r-money">${money(SAVE.money)}</b></div>
+      ${ADS.on && res.total > 0 ? `<button id="r-ad" class="adbtn"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg>${t('adDouble', money(res.total))}</button>` : ''}
       <div class="rbtns"><button id="r-menu">${t('r_menu')}</button><button id="r-garage">${t('r_garage')}</button><button id="r-again" class="${next ? '' : 'cta'}">${t('r_again')}</button>${next ? `<button id="r-next" class="cta">${t('r_next')}</button>` : ''}</div></div></div>`;
     $('results').classList.add('show'); MUS.muffle(true);
-    $('r-menu').onclick = () => this.quit();
-    $('r-garage').onclick = () => { this.quit(); this.show('garage'); };
-    $('r-again').onclick = () => this.startRace(Object.assign({}, this.lastCfg));
-    if ($('r-next')) $('r-next').onclick = () => this.startRace(evCfg(ev + 1));
+    // en quittant les résultats : éventuel interstitiel (1 course sur 3, application Android seulement)
+    $('r-menu').onclick = () => ADS.gate(() => this.quit());
+    $('r-garage').onclick = () => ADS.gate(() => { this.quit(); this.show('garage'); });
+    $('r-again').onclick = () => ADS.gate(() => this.startRace(Object.assign({}, this.lastCfg)));
+    if ($('r-next')) $('r-next').onclick = () => ADS.gate(() => this.startRace(evCfg(ev + 1)));
+    if ($('r-ad')) $('r-ad').onclick = () => {
+      const b = $('r-ad'); if (b.disabled) return;
+      ADS.show(ok => {
+        if (!ok) return;
+        SAVE.money += res.total; saveGame(); this.updMoney();
+        b.disabled = true; b.classList.add('done'); b.textContent = t('adDoubled', money(res.total)); $('r-money').textContent = money(SAVE.money);
+      });
+    };
     setTimeout(() => { const b = $('r-next') || $('r-again'); if (b) b.focus(); }, 50);
   },
 };
@@ -4713,6 +4861,7 @@ function bindInputs() {
   $('h-cam').onclick = () => { G.camMode = (G.camMode + 1) % 3; };
   $('rot-ok').onclick = () => { UI.rotOk = true; $('rotate').classList.remove('show'); };
   addEventListener('resize', () => { if (IS_TOUCH && innerWidth > innerHeight) $('rotate').classList.remove('show'); });
+  $('ad-bonus').onclick = () => ADS.bonus();
   $('btnFs').onclick = () => {
     try {
       const d = document.documentElement;
@@ -4763,6 +4912,7 @@ function boot() {
   setTimeout(() => $('loading').classList.remove('show'), 350);
   if (safe) setTimeout(() => toast(t('safeMode')), 900);
   BOOT_FRAMES = 0;
+  ADS.init();
   requestAnimationFrame(x => { LAST = x; frame(x); });
 }
 window.addEventListener('load', boot);

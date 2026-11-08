@@ -1,0 +1,6 @@
+{
+  "appId": "com.seddikfire.jeu",
+  "appName": "Seddik Fire",
+  "webDir": "www",
+  "android": { "backgroundColor": "#0b0806" }
+}

@@ -1,8 +1,8 @@
-name: Application Android
+name: SUPER SEDDIK@JOUD Android
 
 on:
   push:
-    branches: [android]
+    branches: [sj-android]
   workflow_dispatch:
 
 permissions:
@@ -44,7 +44,7 @@ jobs:
             bash android-app/build.sh
           } 2>&1 | tee build.log
 
-      - name: Publier le résultat dans la branche android-builds
+      - name: Publier le résultat dans la branche sj-android-builds
         if: always()
         run: |
           mkdir -p out
@@ -53,7 +53,7 @@ jobs:
           echo "statut=${{ steps.build.outcome }} checkout=${{ steps.checkout.outcome }} node=${{ steps.node.outcome }} compilation=${{ github.run_number }} commit=${{ github.sha }}" > out/STATUS.txt
           cd out
           git init -q
-          git checkout -q -b android-builds
+          git checkout -q -b sj-android-builds
           git add -A
           git -c user.name="build-bot" -c user.email="build-bot@users.noreply.github.com" commit -q -m "Compilation ${{ github.run_number }} : ${{ steps.build.outcome }}"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" android-builds
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" sj-android-builds

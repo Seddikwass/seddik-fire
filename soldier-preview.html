@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SEDDIK FIRE — Opérateurs 3D</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#101712;color:#edf3e9;font:15px system-ui,Arial}
+#ui{position:fixed;z-index:2;inset:14px 14px auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,a{border:1px solid #65745f;background:#253326;color:#f4f7f0;padding:10px 14px;border-radius:9px;text-decoration:none;cursor:pointer}
+button.active{background:#a6c18b;color:#132014;border-color:#d4e8c5}
+#title{position:fixed;z-index:2;left:16px;bottom:16px;background:#101712d9;border:1px solid #42513e;padding:12px 15px;border-radius:10px;max-width:min(440px,90vw)}
+#title strong{display:block;font-size:18px;margin-bottom:4px}#title span{color:#c2cdbb;font-size:13px}
+#back{position:fixed;right:14px;bottom:16px;z-index:2}
+</style></head><body>
+<div id="ui"><button class="active" data-v="woodland">WOODLAND</button><button data-v="black">BLACK OPS</button><button data-v="desert">DESERT</button><button data-v="urban">URBAN</button></div>
+<div id="title"><strong>SEDDIK FIRE — Opérateur 3D</strong><span>Modèle 3D procédural · Faites glisser pour tourner · Molette pour zoomer</span></div>
+<a id="back" href="/">Retour au jeu</a>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aa99a);scene.fog=new THREE.Fog(0x9aa99a,9,25);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,100);camera.position.set(3.6,2.7,5.6);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.shadowMap.enabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1.05,0);controls.enableDamping=true;controls.minDistance=2.6;controls.maxDistance=9;
+scene.add(new THREE.HemisphereLight(0xeaf2ff,0x394333,2.1));const sun=new THREE.DirectionalLight(0xffedcf,3);sun.position.set(4,7,5);sun.castShadow=true;scene.add(sun);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.MeshStandardMaterial({color:0x465743,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;floor.receiveShadow=true;scene.add(floor);const grid=new THREE.GridHelper(40,40,0x839078,0x63715c);grid.position.y=-.03;scene.add(grid);
+let actor;
+const mats={woodland:[0x4e6342,0x34412e,0x9b8060],black:[0x242a2c,0x101416,0x687078],desert:[0xb49a69,0x756346,0xc3ad84],urban:[0x687078,0x343b43,0x9aa0a3]};
+function build(v){if(actor)scene.remove(actor);actor=new THREE.Group();const [cloth,dark,skin]=mats[v];const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.86});
+const body=mat(cloth),trim=mat(dark),face=mat(skin),metal=mat(0x252b2a);
+function part(g,geo,m,x,y,z,rx=0,ry=0,rz=0){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.castShadow=true;o.receiveShadow=true;g.add(o);return o}
+const box=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
+part(actor,box(.62,.76,.34),body,0,1.34,0);part(actor,box(.5,.16,.37),trim,0,1.78,0);
+part(actor,new THREE.SphereGeometry(.22,20,16),face,0,2.02,0);
+part(actor,new THREE.SphereGeometry(.245,20,12,0,Math.PI*2,0,Math.PI*.58),trim,0,2.12,0);
+part(actor,box(.48,.12,.36),trim,0,2.02,.02);
+for(const s of [-1,1]){part(actor,box(.22,.65,.24),body,s*.43,1.35,0,0,0,s*-.12);part(actor,box(.2,.18,.22),trim,s*.47,1.02,.02);part(actor,box(.25,.78,.27),body,s*.17,.72,0);part(actor,box(.27,.18,.3),trim,s*.17,.25,.03);part(actor,box(.2,.68,.22),body,s*.43,1.34,.02,0,0,s*-.1);part(actor,box(.19,.22,.2),face,s*.43,1.0,.02)}
+// tactical vest, pouches, backpack and rifle silhouette
+part(actor,box(.67,.48,.12),trim,0,1.43,.22);for(let i=-1;i<=1;i++)part(actor,box(.14,.18,.08),body,i*.2,1.38,.31);
+part(actor,box(.36,.55,.2),trim,0,1.42,-.25);
+const rifle=part(actor,box(.11,.95,.1),metal,.58,1.23,.28,0,0,-.22);part(actor,box(.14,.35,.14),metal,.49,.93,.25,0,0,-.22);
+actor.position.y=0;scene.add(actor);
+}
+build('woodland');document.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');build(b.dataset.v)}));
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function tick(){requestAnimationFrame(tick);controls.update();renderer.render(scene,camera)}tick();
+</script></body></html>

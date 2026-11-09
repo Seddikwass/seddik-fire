@@ -3178,10 +3178,14 @@ function render3DWorld(){
     const key=MAP.id+'|'+blds.length+'|'+trees.length+'|'+solids.length;
     if(SF3D.staticKey!==key||SF3D.terrainSource!==ground)sf3dBuild();
     sf3dSyncActors();
-    const T=SF3D.THREE,p=player,ang=p.angle||0;
-    const target=new T.Vector3(p.x,12,p.y);
-    const dist=250,height=190;
-    const desired=new T.Vector3(p.x-Math.cos(ang)*dist,height,p.y-Math.sin(ang)*dist);
+    const T=SF3D.THREE,p=player;
+    // During the aircraft phase the player stays at the aircraft origin;
+    // follow the live camera position instead of the not-yet-landed soldier.
+    const focusX=p.inPlane?cam.x:p.x,focusZ=p.inPlane?cam.y:p.y;
+    const ang=p.inPlane?(plane&&plane.ang||0):(p.angle||0);
+    const target=new T.Vector3(focusX,p.inPlane?0:(p.air>0?42:12),focusZ);
+    const dist=p.inPlane?560:(p.air>0?330:250),height=p.inPlane?470:(p.air>0?280:190);
+    const desired=new T.Vector3(focusX-Math.cos(ang)*dist,height,focusZ-Math.sin(ang)*dist);
     SF3D.camera.position.lerp(desired,.14);SF3D.camera.lookAt(target);
     SF3D.renderer.render(SF3D.scene,SF3D.camera);
     cv.style.opacity='0';document.getElementById('sf3d').style.opacity='1';

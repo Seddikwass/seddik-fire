@@ -3069,7 +3069,7 @@ function releaseWake(){try{if(wake)wake.release()}catch(e){}wake=null}
 /* ===== SEDDIK FIRE 3D GAME RENDERER =====
    Three.js scene driven by the existing simulation coordinates.
    The 2D simulation remains authoritative for movement, weapons and collisions. */
-const SF3D={ready:false,loading:false,failed:false,renderer:null,scene:null,camera:null,world:null,terrain:null,terrainSource:null,staticKey:'',staticMeshes:[],actors:new Map(),lastResize:0};
+const SF3D={ready:false,loading:false,failed:false,error:'',renderer:null,scene:null,camera:null,world:null,terrain:null,terrainSource:null,staticKey:'',staticMeshes:[],actors:new Map(),lastResize:0};
 async function sf3dBoot(){
   if(SF3D.ready||SF3D.loading||SF3D.failed)return;
   SF3D.loading=true;
@@ -3090,7 +3090,7 @@ async function sf3dBoot(){
     const world=new THREE.Group();scene.add(world);
     SF3D.renderer=renderer;SF3D.scene=scene;SF3D.camera=camera;SF3D.world=world;
     SF3D.ready=true;SF3D.loading=false;SF3D.resize();
-  }catch(e){SF3D.loading=false;SF3D.failed=true;console.error('Seddik Fire 3D init:',e)}
+  }catch(e){SF3D.loading=false;SF3D.failed=true;SF3D.error=String(e&&e.message||e);sf3dShowError('Initialisation WebGL : '+SF3D.error);console.error('Seddik Fire 3D init:',e)}
 }
 SF3D.resize=function(){if(!SF3D.ready)return;const w=window.innerWidth,h=window.innerHeight;SF3D.renderer.setSize(w,h,false);SF3D.camera.aspect=w/h;SF3D.camera.updateProjectionMatrix()};
 function sf3dMat(color,rough=.9){return new SF3D.THREE.MeshStandardMaterial({color,roughness:rough})}
@@ -3166,19 +3166,27 @@ function sf3dSyncActors(){
     g.visible=true;g.position.set(player.x,0,player.y);g.rotation.y=-player.angle;
   }
 }
+function sf3dShowError(message){
+  let panel=document.getElementById('sf3d-error');
+  if(!panel){panel=document.createElement('div');panel.id='sf3d-error';panel.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:99999;padding:12px 14px;background:#211b18;color:#fff;border:1px solid #e28b42;border-radius:8px;font:12px/1.45 system-ui;white-space:normal;overflow-wrap:anywhere;box-shadow:0 4px 24px #0009';document.body.appendChild(panel)}
+  panel.textContent='Affichage 3D indisponible — '+message;
+}
 function render3DWorld(){
   if(game.mode!=='play'||!player){document.getElementById('sf3d').style.opacity='0';cv.style.opacity='1';return}
-  if(!SF3D.ready){cv.style.opacity='1';sf3dBoot();return}
-  const key=MAP.id+'|'+blds.length+'|'+trees.length+'|'+solids.length;
-  if(SF3D.staticKey!==key||SF3D.terrainSource!==ground)sf3dBuild();
-  cv.style.opacity='0';document.getElementById('sf3d').style.opacity='1';
-  sf3dSyncActors();
-  const T=SF3D.THREE,p=player,ang=p.angle||0;
-  const target=new T.Vector3(p.x,12,p.y);
-  const dist=250,height=190;
-  const desired=new T.Vector3(p.x-Math.cos(ang)*dist,height,p.y-Math.sin(ang)*dist);
-  SF3D.camera.position.lerp(desired,.14);SF3D.camera.lookAt(target);
-  SF3D.renderer.render(SF3D.scene,SF3D.camera);
+  if(!SF3D.ready){cv.style.opacity='1';if(SF3D.failed)sf3dShowError(SF3D.error||'WebGL non disponible');else sf3dBoot();return}
+  try{
+    const key=MAP.id+'|'+blds.length+'|'+trees.length+'|'+solids.length;
+    if(SF3D.staticKey!==key||SF3D.terrainSource!==ground)sf3dBuild();
+    sf3dSyncActors();
+    const T=SF3D.THREE,p=player,ang=p.angle||0;
+    const target=new T.Vector3(p.x,12,p.y);
+    const dist=250,height=190;
+    const desired=new T.Vector3(p.x-Math.cos(ang)*dist,height,p.y-Math.sin(ang)*dist);
+    SF3D.camera.position.lerp(desired,.14);SF3D.camera.lookAt(target);
+    SF3D.renderer.render(SF3D.scene,SF3D.camera);
+    cv.style.opacity='0';document.getElementById('sf3d').style.opacity='1';
+    const panel=document.getElementById('sf3d-error');if(panel)panel.remove();
+  }catch(e){cv.style.opacity='1';document.getElementById('sf3d').style.opacity='0';sf3dShowError('Scène : '+String(e&&e.message||e));console.error('Seddik Fire 3D scene:',e)}
 }
 
 /* ===== loop ===== */

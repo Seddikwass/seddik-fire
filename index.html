@@ -3105,7 +3105,9 @@ function sf3dBuild(){
   SF3D.staticMeshes=[];
   if(SF3D.terrain){SF3D.world.remove(SF3D.terrain);SF3D.terrain.geometry.dispose();SF3D.terrain.material.map?.dispose()}
   const tex=new T.CanvasTexture(ground);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=4;
-  const mat=new T.MeshStandardMaterial({map:tex,roughness:1});
+  // Use the painted ground image for subtle surface relief as well as color.
+  // A restrained bump keeps sand, dirt and paths readable without hurting mobile performance.
+  const mat=new T.MeshStandardMaterial({map:tex,bumpMap:tex,bumpScale:2.1,roughness:.96,metalness:0});
   const terrain=new T.Mesh(new T.PlaneGeometry(WS,WS),mat);terrain.rotation.x=-Math.PI/2;terrain.position.set(WS/2,-3,WS/2);terrain.receiveShadow=true;SF3D.world.add(terrain);SF3D.terrain=terrain;SF3D.terrainSource=ground;
   const add=m=>{SF3D.world.add(m);SF3D.staticMeshes.push(m)};
   // Building volumes and their roof slabs create real height and cover.
@@ -3116,7 +3118,7 @@ function sf3dBuild(){
     const roofColor=(STY[b.st]&&STY[b.st].roof)||'#887b69';
     const roof=sf3dAddBox(SF3D.world,x,h,z,b.w+8,5,b.h+8,roofColor);SF3D.staticMeshes.push(roof);
     // Front facade: recessed windows, blue-grey glass and a visible entrance.
-    const glass=sf3dMat('#78939a',.38),frame=sf3dMat('#d0c4a8'),door=sf3dMat('#514337');
+    const glass=new T.MeshStandardMaterial({color:'#78939a',roughness:.24,metalness:.18,transparent:true,opacity:.88}),frame=sf3dMat('#d0c4a8'),door=sf3dMat('#514337');
     const count=Math.max(1,Math.min(4,Math.floor(b.w/34)));
     for(let j=0;j<count;j++){
       const wx=b.x+(j+1)*b.w/(count+1);
@@ -3155,6 +3157,12 @@ function sf3dBuild(){
     tank.position.set(x+b.w*.22,h+12,z-b.h*.18);tank.castShadow=true;SF3D.world.add(tank);SF3D.staticMeshes.push(tank);
     const tankCap=sf3dAddBox(SF3D.world,tank.position.x,h+18,tank.position.z,15,2,15,'#4c5653');SF3D.staticMeshes.push(tankCap);
     const trim=sf3dAddBox(SF3D.world,x,h+3,z,b.w+12,2,b.h+12,roofColor);SF3D.staticMeshes.push(trim);
+    // Roof edge coping and small service details break up the flat block silhouette.
+    for(const side of [-1,1]){
+      const parapet=sf3dAddBox(SF3D.world,x,h+7,z+side*(b.h/2+3),b.w+8,3,3,'#a99b80');SF3D.staticMeshes.push(parapet);
+      const sideTrim=sf3dAddBox(SF3D.world,x+side*(b.w/2+3),h+7,z,3,3,b.h+8,'#a99b80');SF3D.staticMeshes.push(sideTrim);
+    }
+    const roofVent=sf3dAddBox(SF3D.world,x-b.w*.24,h+8,z+b.h*.2,10,8,10,'#666c67');SF3D.staticMeshes.push(roofVent);
   }
   for(const c of solids){
     if(c.k==='wall'||c.k==='crate'||c.k==='cont'||c.k==='pcar'){
@@ -3228,7 +3236,7 @@ function sf3dActor(e){
   const dark=sf3dMat(0x30332b),skin=sf3dMat(0xb98d6b),gear=sf3dMat(isPlayer?0x4b5942:0x41483b);
   const metal=sf3dMat(0x252a29,.55);g.userData.limbs=[];
   const mesh=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;g.add(m);return m};
-  const limb=(a,b,r1,r2,mat)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=new T.Vector3().subVectors(B,A);const m=new T.Mesh(new T.CylinderGeometry(r2,r1,d.length(),7),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());m.castShadow=true;g.add(m);g.userData.limbs.push(m);return m};
+  const limb=(a,b,r1,r2,mat)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=new T.Vector3().subVectors(B,A);const m=new T.Mesh(new T.CylinderGeometry(r2,r1,d.length(),7),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());m.castShadow=true;g.add(m);g.userData.limbs.push({mesh:m,base:m.quaternion.clone(),phase:g.userData.limbs.length});return m};
   // boots and articulated legs
   for(const side of [-1,1]){
     const x=side*4.2;
@@ -3332,7 +3340,7 @@ function sf3dSyncActors(){
   const seen=new Set();
   for(const e of ents){if(!e.alive||e.inPlane||e.air>0||e.veh)continue;seen.add(e);
     let g=SF3D.actors.get(e);if(!g){g=sf3dActor(e);SF3D.actors.set(e,g);SF3D.world.add(g)}
-    g.visible=true;const moving=Math.hypot(e.vx||0,e.vy||0)>8,phase=TIME*10+(e.id||0);g.position.set(e.x,moving?Math.abs(Math.sin(phase))*.9:0,e.y);g.rotation.y=-e.angle;g.rotation.z=Math.sin(phase)*(moving?.035:.008);if(g.userData.limbs){g.userData.limbs.forEach((m,i)=>{m.rotation.x=moving?Math.sin(phase+(i%2)*Math.PI)*.48:Math.sin(TIME*1.5+i)*.015})}
+    g.visible=true;const moving=Math.hypot(e.vx||0,e.vy||0)>8,phase=TIME*10+(e.id||0);g.position.set(e.x,moving?Math.abs(Math.sin(phase))*.9:0,e.y);g.rotation.y=-e.angle;g.rotation.z=Math.sin(phase)*(moving?.025:.006);if(g.userData.limbs){g.userData.limbs.forEach((part,i)=>{const swing=moving?Math.sin(phase+(i%2)*Math.PI)*.24:Math.sin(TIME*1.5+i)*.008;part.mesh.quaternion.copy(part.base).multiply(new SF3D.THREE.Quaternion().setFromAxisAngle(new SF3D.THREE.Vector3(0,0,1),swing))})}
   }
   for(const [e,g] of SF3D.actors){if(!seen.has(e)){g.visible=false}}
   if(!SF3D.vehicleActors)SF3D.vehicleActors=new Map();

@@ -3096,6 +3096,24 @@ async function sf3dBoot(){
 }
 SF3D.resize=function(){if(!SF3D.ready)return;const w=window.innerWidth,h=window.innerHeight;SF3D.renderer.setSize(w,h,false);SF3D.camera.aspect=w/h;SF3D.camera.updateProjectionMatrix()};
 function sf3dMat(color,rough=.9){return new SF3D.THREE.MeshStandardMaterial({color,roughness:rough})}
+const SF3D_CAMO_CACHE=new Map();
+function sf3dCamo(base){
+  const key=String(base);if(SF3D_CAMO_CACHE.has(key))return SF3D_CAMO_CACHE.get(key);
+  const T=SF3D.THREE,canvas=document.createElement('canvas');canvas.width=canvas.height=128;
+  const ctx=canvas.getContext('2d'),hex=Number(base).toString(16).padStart(6,'0');
+  const rgb=[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];
+  const tint=(f)=>'#'+rgb.map(v=>Math.max(0,Math.min(255,Math.round(v*f))).toString(16).padStart(2,'0')).join('');
+  ctx.fillStyle=tint(.92);ctx.fillRect(0,0,128,128);
+  // Small, irregular woodland patches and fine grain break up the plastic look.
+  for(let i=0;i<115;i++){
+    const x=Math.random()*128,y=Math.random()*128,rx=2+Math.random()*11,ry=2+Math.random()*7;
+    ctx.fillStyle=[tint(.62),tint(.78),tint(1.12),'#77704d'][i%4];
+    ctx.beginPath();ctx.ellipse(x,y,rx,ry,Math.random()*Math.PI,0,Math.PI*2);ctx.fill();
+  }
+  for(let i=0;i<520;i++){ctx.fillStyle=i%2?'rgba(20,25,17,.12)':'rgba(230,218,177,.10)';ctx.fillRect(Math.random()*128,Math.random()*128,1,1)}
+  const tex=new T.CanvasTexture(canvas);tex.colorSpace=T.SRGBColorSpace;tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.repeat.set(2,2);tex.anisotropy=2;
+  const mat=new T.MeshStandardMaterial({map:tex,roughness:.98});SF3D_CAMO_CACHE.set(key,mat);return mat;
+}
 function sf3dAddBox(parent,x,y,z,w,h,d,color){
   const T=SF3D.THREE,m=new T.Mesh(new T.BoxGeometry(Math.max(2,w),Math.max(2,h),Math.max(2,d)),sf3dMat(color));
   m.position.set(x,y+h/2,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
@@ -3244,8 +3262,8 @@ function sf3dActor(e){
   const T=SF3D.THREE,g=new T.Group();
   const isPlayer=e===player;
   const friendly=!!(e.team&&player&&e.team===player.team);
-  const cloth=sf3dMat(isPlayer?0x756b4c:(friendly?0x536b58:0x62513b));
-  const dark=sf3dMat(0x30332b),skin=sf3dMat(0xb98d6b),gear=sf3dMat(isPlayer?0x4b5942:0x41483b);
+  const cloth=sf3dCamo(isPlayer?0x756b4c:(friendly?0x536b58:0x62513b));
+  const dark=sf3dMat(0x30332b),skin=sf3dMat(0xb98d6b),gear=sf3dCamo(isPlayer?0x4b5942:0x41483b);
   const metal=sf3dMat(0x252a29,.55);g.userData.limbs=[];
   const mesh=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;g.add(m);return m};
   const limb=(a,b,r1,r2,mat)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=new T.Vector3().subVectors(B,A);const m=new T.Mesh(new T.CylinderGeometry(r2,r1,d.length(),7),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());m.castShadow=true;g.add(m);g.userData.limbs.push({mesh:m,base:m.quaternion.clone(),phase:g.userData.limbs.length});return m};

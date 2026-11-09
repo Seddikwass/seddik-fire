@@ -653,6 +653,17 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
   #lobby .ltop-r .ghost.sm{font-size:10px;padding:6px 7px}
   #lobby .card{padding:11px}
 }
+
+/* SEDDIK FIRE — mobile lobby: keep the play button in document flow.
+   The sticky footer previously covered the last mode chips on short phone screens. */
+@media (max-width:760px){
+  #lobby{overflow-y:auto!important;overscroll-behavior-y:contain}
+  #lobby .lob{min-height:100%;height:auto;padding-bottom:calc(18px + var(--ib))}
+  #lobby .go{position:static!important;bottom:auto;z-index:auto;padding:12px 0 4px!important;
+    background:transparent!important;border-top:0!important}
+  #lobby #play{width:100%;min-height:76px}
+}
+
 </style>
 </head>
 <body>

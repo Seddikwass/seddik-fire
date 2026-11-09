@@ -3179,9 +3179,9 @@ function sf3dActor(e){
   const friendly=!!(e.team&&player&&e.team===player.team);
   const cloth=sf3dMat(isPlayer?0x756b4c:(friendly?0x536b58:0x62513b));
   const dark=sf3dMat(0x30332b),skin=sf3dMat(0xb98d6b),gear=sf3dMat(isPlayer?0x4b5942:0x41483b);
-  const metal=sf3dMat(0x252a29,.55);
+  const metal=sf3dMat(0x252a29,.55);g.userData.limbs=[];
   const mesh=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;g.add(m);return m};
-  const limb=(a,b,r1,r2,mat)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=new T.Vector3().subVectors(B,A);const m=new T.Mesh(new T.CylinderGeometry(r2,r1,d.length(),7),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());m.castShadow=true;g.add(m);return m};
+  const limb=(a,b,r1,r2,mat)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=new T.Vector3().subVectors(B,A);const m=new T.Mesh(new T.CylinderGeometry(r2,r1,d.length(),7),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());m.castShadow=true;g.add(m);g.userData.limbs.push(m);return m};
   // boots and articulated legs
   for(const side of [-1,1]){
     const x=side*4.2;
@@ -3243,7 +3243,7 @@ function sf3dSyncActors(){
   const seen=new Set();
   for(const e of ents){if(!e.alive||e.inPlane||e.air>0||e.veh)continue;seen.add(e);
     let g=SF3D.actors.get(e);if(!g){g=sf3dActor(e);SF3D.actors.set(e,g);SF3D.world.add(g)}
-    g.visible=true;g.position.set(e.x,Math.sin(TIME*9+(e.id||0))*(Math.hypot(e.vx||0,e.vy||0)>8?2.2:.35),e.y);g.rotation.y=-e.angle;g.rotation.z=Math.sin(TIME*8+(e.id||0))*(Math.hypot(e.vx||0,e.vy||0)>8?.035:.008);
+    g.visible=true;const moving=Math.hypot(e.vx||0,e.vy||0)>8,phase=TIME*10+(e.id||0);g.position.set(e.x,moving?Math.abs(Math.sin(phase))*.9:0,e.y);g.rotation.y=-e.angle;g.rotation.z=Math.sin(phase)*(moving?.035:.008);if(g.userData.limbs){g.userData.limbs.forEach((m,i)=>{m.rotation.x=moving?Math.sin(phase+(i%2)*Math.PI)*.48:Math.sin(TIME*1.5+i)*.015})}
   }
   for(const [e,g] of SF3D.actors){if(!seen.has(e)){g.visible=false}}
   if(!SF3D.vehicleActors)SF3D.vehicleActors=new Map();
@@ -3253,6 +3253,19 @@ function sf3dSyncActors(){
   if(player&&player.alive&&!player.inPlane&&player.air<=0&&!player.veh){
     let g=SF3D.actors.get(player);if(!g){g=sf3dActor(player);SF3D.actors.set(player,g);SF3D.world.add(g)}
     g.visible=true;g.position.set(player.x,0,player.y);g.rotation.y=-player.angle;
+  }
+}
+function sf3dSyncTracers(){
+  const T=SF3D.THREE;if(!SF3D.tracerMeshes)SF3D.tracerMeshes=[];
+  for(const m of SF3D.tracerMeshes)SF3D.world.remove(m);SF3D.tracerMeshes=[];
+  const mat=new T.MeshBasicMaterial({color:0xffd58a,transparent:true,opacity:.82});
+  for(let i=Math.max(0,bullets.length-70);i<bullets.length;i++){
+    const b=bullets[i],dx=b.x-b.px, dz=b.y-b.py, len=Math.hypot(dx,dz);
+    if(!len||len>100)continue;
+    const m=new T.Mesh(new T.CylinderGeometry(.65,.65,len,5),mat);
+    m.position.set((b.x+b.px)/2,23,(b.y+b.py)/2);
+    m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),new T.Vector3(dx,0,dz).normalize());
+    SF3D.world.add(m);SF3D.tracerMeshes.push(m);
   }
 }
 function sf3dSyncExplosions(){
@@ -3292,7 +3305,7 @@ function render3DWorld(){
   try{
     const key=MAP.id+'|'+blds.length+'|'+trees.length+'|'+solids.length;
     if(SF3D.staticKey!==key||SF3D.terrainSource!==ground)sf3dBuild();
-    sf3dSyncActors();sf3dSyncExplosions();
+    sf3dSyncActors();sf3dSyncTracers();sf3dSyncExplosions();
     const T=SF3D.THREE,p=player;
     // During the aircraft phase the player stays at the aircraft origin;
     // follow the live camera position instead of the not-yet-landed soldier.

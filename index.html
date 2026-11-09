@@ -3172,7 +3172,7 @@ function sf3dShowError(message){
   panel.textContent='Affichage 3D indisponible — '+message;
 }
 function render3DWorld(){
-  if(game.mode!=='play'||!player){document.getElementById('sf3d').style.opacity='0';cv.style.opacity='1';return}
+  if((game.mode!=='play'&&game.mode!=='paused')||!player){document.getElementById('sf3d').style.opacity='0';cv.style.opacity='1';return}
   if(!SF3D.ready){cv.style.opacity='1';if(SF3D.failed)sf3dShowError(SF3D.error||'WebGL non disponible');else sf3dBoot();return}
   try{
     const key=MAP.id+'|'+blds.length+'|'+trees.length+'|'+solids.length;
@@ -3184,7 +3184,7 @@ function render3DWorld(){
     const focusX=p.inPlane?cam.x:p.x,focusZ=p.inPlane?cam.y:p.y;
     const ang=p.inPlane?(plane&&plane.ang||0):(p.angle||0);
     const target=new T.Vector3(focusX,p.inPlane?0:(p.air>0?42:12),focusZ);
-    const dist=p.inPlane?560:(p.air>0?330:250),height=p.inPlane?470:(p.air>0?280:190);
+    const dist=p.inPlane?760:(p.air>0?390:270),height=p.inPlane?620:(p.air>0?330:205);
     const desired=new T.Vector3(focusX-Math.cos(ang)*dist,height,focusZ-Math.sin(ang)*dist);
     SF3D.camera.position.lerp(desired,.14);SF3D.camera.lookAt(target);
     SF3D.renderer.render(SF3D.scene,SF3D.camera);

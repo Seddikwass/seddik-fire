@@ -3147,12 +3147,49 @@ function sf3dBuild(){
 function sf3dBox(x,z,w,d,h,color){return sf3dAddBox(SF3D.world,x,0,z,w,h,d,color)}
 function sf3dActor(e){
   const T=SF3D.THREE,g=new T.Group();
-  const tone=e===player?0xc5a77b:(e.team&&player&&e.team===player.team?0x477f9e:0x8a7652);
-  const body=new T.Mesh(new T.CapsuleGeometry(7,15,4,7),sf3dMat(tone));body.position.y=16;body.castShadow=true;g.add(body);
-  const head=new T.Mesh(new T.SphereGeometry(5.2,8,6),sf3dMat(0xc69a75));head.position.y=30;head.castShadow=true;g.add(head);
-  const helmet=new T.Mesh(new T.SphereGeometry(5.8,8,5,0,Math.PI*2,0,Math.PI*.55),sf3dMat(0x465342));helmet.position.y=32;g.add(helmet);
-  const gun=sf3dAddBox(g,10,20,0,20,2.5,3,0x292b29);gun.position.set(9,21,0);g.add(gun);
-  g.traverse(o=>{if(o.isMesh)o.castShadow=true});return g;
+  const isPlayer=e===player;
+  const friendly=!!(e.team&&player&&e.team===player.team);
+  const cloth=sf3dMat(isPlayer?0x756b4c:(friendly?0x536b58:0x62513b));
+  const dark=sf3dMat(0x30332b),skin=sf3dMat(0xb98d6b),gear=sf3dMat(isPlayer?0x4b5942:0x41483b);
+  const metal=sf3dMat(0x252a29,.55);
+  const mesh=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;g.add(m);return m};
+  const limb=(a,b,r1,r2,mat)=>{const A=new T.Vector3(...a),B=new T.Vector3(...b),d=new T.Vector3().subVectors(B,A);const m=new T.Mesh(new T.CylinderGeometry(r2,r1,d.length(),7),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());m.castShadow=true;g.add(m);return m};
+  // boots and articulated legs
+  for(const side of [-1,1]){
+    const x=side*4.2;
+    mesh(new T.BoxGeometry(7,5,11),dark,x,3,2);
+    limb([x,5,0],[x*1.05,14,0],3.5,4,cloth);
+    limb([x*1.05,14,0],[x,22,0],4,4.5,cloth);
+    mesh(new T.BoxGeometry(8,3,7),gear,x,13,0);
+  }
+  // torso, tactical vest, shoulder plates
+  mesh(new T.CapsuleGeometry(7.5,13,4,8),cloth,0,26,0);
+  mesh(new T.BoxGeometry(15,13,8),gear,0,27,1);
+  mesh(new T.BoxGeometry(10,10,2),dark,0,27,5.2);
+  for(let j=0;j<3;j++)mesh(new T.BoxGeometry(3.4,5,2),sf3dMat(0x887d55),-4+j*4,24,5.1);
+  for(const side of [-1,1]){
+    limb([side*7,31,0],[side*10,23,2],3.6,3.1,cloth);
+    limb([side*10,23,2],[side*8,19,6],3,2.4,cloth);
+    mesh(new T.SphereGeometry(2.7,7,5),skin,side*8,18,6);
+    mesh(new T.SphereGeometry(4,7,5),gear,side*7,32,0);
+  }
+  // head, helmet shell, brim, goggles
+  mesh(new T.SphereGeometry(5,9,7),skin,0,39,0);
+  mesh(new T.SphereGeometry(5.8,9,6,0,Math.PI*2,0,Math.PI*.58),gear,0,42,0);
+  mesh(new T.CylinderGeometry(6.1,6.1,1.2,10),dark,0,40.2,0);
+  mesh(new T.BoxGeometry(7,2,1.5),dark,0,39,4.7);
+  // backpack and radio
+  mesh(new T.BoxGeometry(9,13,5),gear,0,27,-6.2);
+  mesh(new T.BoxGeometry(4,8,4),dark,5,30,-5);
+  limb([5,32,-5],[7,41,-5],.6,.4,dark);
+  // rifle, stock, barrel and sight carried in front
+  mesh(new T.BoxGeometry(3,3,13),dark,8,22,3);
+  mesh(new T.BoxGeometry(2.2,2.2,17),metal,8,23,11);
+  mesh(new T.BoxGeometry(1.4,1.4,7),metal,8,23,21);
+  mesh(new T.BoxGeometry(2,5,3),dark,8,19,7);
+  mesh(new T.BoxGeometry(2,2,3),dark,8,25,11);
+  g.scale.setScalar(1.12);
+  return g;
 }
 function sf3dSyncActors(){
   const seen=new Set();

@@ -3243,7 +3243,7 @@ function sf3dSyncActors(){
   const seen=new Set();
   for(const e of ents){if(!e.alive||e.inPlane||e.air>0||e.veh)continue;seen.add(e);
     let g=SF3D.actors.get(e);if(!g){g=sf3dActor(e);SF3D.actors.set(e,g);SF3D.world.add(g)}
-    g.visible=true;g.position.set(e.x,0,e.y);g.rotation.y=-e.angle;
+    g.visible=true;g.position.set(e.x,Math.sin(TIME*9+(e.id||0))*(Math.hypot(e.vx||0,e.vy||0)>8?2.2:.35),e.y);g.rotation.y=-e.angle;g.rotation.z=Math.sin(TIME*8+(e.id||0))*(Math.hypot(e.vx||0,e.vy||0)>8?.035:.008);
   }
   for(const [e,g] of SF3D.actors){if(!seen.has(e)){g.visible=false}}
   if(!SF3D.vehicleActors)SF3D.vehicleActors=new Map();
@@ -3253,6 +3253,21 @@ function sf3dSyncActors(){
   if(player&&player.alive&&!player.inPlane&&player.air<=0&&!player.veh){
     let g=SF3D.actors.get(player);if(!g){g=sf3dActor(player);SF3D.actors.set(player,g);SF3D.world.add(g)}
     g.visible=true;g.position.set(player.x,0,player.y);g.rotation.y=-player.angle;
+  }
+}
+function sf3dSyncExplosions(){
+  const T=SF3D.THREE;if(!SF3D.boomActors)SF3D.boomActors=[];
+  for(const g of SF3D.boomActors)SF3D.world.remove(g);SF3D.boomActors=[];
+  for(const b of fxBooms){const age=matchT-b.t;if(age<0||age>1.15)continue;
+    const g=new T.Group();g.position.set(b.x,2,b.y);
+    const k=Math.max(.01,1-age/1.15),radius=b.r*(.45+age*2.5);
+    const ring=new T.Mesh(new T.TorusGeometry(Math.max(4,radius*.58),Math.max(2,b.r*.045),6,20),new T.MeshBasicMaterial({color:0xff8b32,transparent:true,opacity:k*.8}));
+    ring.rotation.x=Math.PI/2;ring.position.y=5+age*18;ring.scale.setScalar(1+age*1.4);g.add(ring);
+    const flame=new T.Mesh(new T.SphereGeometry(Math.max(5,b.r*.28),8,6),new T.MeshBasicMaterial({color:0xffa044,transparent:true,opacity:k*.55}));
+    flame.position.y=10+age*24;flame.scale.set(1,1.2+age*2,1);g.add(flame);
+    const smoke=new T.Mesh(new T.SphereGeometry(Math.max(8,b.r*.34),7,5),new T.MeshStandardMaterial({color:0x514b43,transparent:true,opacity:k*.32,roughness:1}));
+    smoke.position.y=25+age*65;smoke.scale.set(1+age,1.2+age*1.8,1+age);g.add(smoke);
+    SF3D.world.add(g);SF3D.boomActors.push(g);
   }
 }
 function sf3dInstallControl(){
@@ -3277,7 +3292,7 @@ function render3DWorld(){
   try{
     const key=MAP.id+'|'+blds.length+'|'+trees.length+'|'+solids.length;
     if(SF3D.staticKey!==key||SF3D.terrainSource!==ground)sf3dBuild();
-    sf3dSyncActors();
+    sf3dSyncActors();sf3dSyncExplosions();
     const T=SF3D.THREE,p=player;
     // During the aircraft phase the player stays at the aircraft origin;
     // follow the live camera position instead of the not-yet-landed soldier.

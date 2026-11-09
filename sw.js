@@ -1,5 +1,5 @@
 /* Seddik Fire — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'seddik-fire-v65';
+const VERSION = 'seddik-fire-v66';
 const FONTS = 'seddik-fire-fonts';
 const CORE = [
   './',
@@ -45,18 +45,24 @@ self.addEventListener('fetch', (event) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // Pages : ouverture instantanée depuis le cache, mise à jour en arrière-plan
-  // (le serveur gratuit peut mettre longtemps à se réveiller). Sans cache : réseau.
+  // Navigation réseau d'abord : les téléphones reçoivent la version publiée.
+  // Si Render est endormi ou hors ligne, repli rapide sur la copie locale.
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(VERSION);
       const hit = (await cache.match(req, { ignoreSearch: true })) || (await cache.match('./index.html'));
-      const net = fetch(req).then((res) => {
-        if (res.ok) cache.put(req, res.clone());
-        return res;
-      });
-      if (hit) { event.waitUntil(net.catch(() => {})); return hit; }
-      return net.catch(() => caches.match('./index.html'));
+      try {
+        const net = await Promise.race([
+          fetch(req),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('network timeout')), 7000))
+        ]);
+        if (net && net.ok) {
+          cache.put('./index.html', net.clone()).catch(() => {});
+          return net;
+        }
+      } catch (_) {}
+      if (hit) return hit;
+      return caches.match('./index.html');
     })());
     return;
   }

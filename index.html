@@ -3084,8 +3084,10 @@ async function sf3dBoot(){
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
     const scene=new THREE.Scene();scene.background=new THREE.Color(0x87b8cf);scene.fog=new THREE.Fog(0x9bb9b4,1050,4700);
-    scene.add(new THREE.HemisphereLight(0xd9edff,0x6a583e,2.0));
-    const sun=new THREE.DirectionalLight(0xffe0b0,2.3);sun.position.set(-900,1500,-700);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+    scene.add(new THREE.HemisphereLight(0xd9edff,0x62513a,1.85));
+    const sun=new THREE.DirectionalLight(0xffe4c2,2.15);sun.position.set(-900,1500,-700);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-1150;sun.shadow.camera.right=1150;sun.shadow.camera.top=1150;sun.shadow.camera.bottom=-1150;sun.shadow.bias=-.00018;sun.shadow.normalBias=.025;scene.add(sun);
+    // A gentle sky fill softens harsh black shadows on mobile screens.
+    const fill=new THREE.DirectionalLight(0xb8d4e8,.42);fill.position.set(700,520,850);scene.add(fill);
     const camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,.5,6500);
     const world=new THREE.Group();scene.add(world);
     SF3D.renderer=renderer;SF3D.scene=scene;SF3D.camera=camera;SF3D.world=world;
@@ -3104,7 +3106,7 @@ function sf3dBuild(){
   for(const m of SF3D.staticMeshes)SF3D.world.remove(m);
   SF3D.staticMeshes=[];
   if(SF3D.terrain){SF3D.world.remove(SF3D.terrain);SF3D.terrain.geometry.dispose();SF3D.terrain.material.map?.dispose()}
-  const tex=new T.CanvasTexture(ground);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=4;
+  const tex=new T.CanvasTexture(ground);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=Math.min(8,SF3D.renderer.capabilities.getMaxAnisotropy());
   // Use the painted ground image for subtle surface relief as well as color.
   // A restrained bump keeps sand, dirt and paths readable without hurting mobile performance.
   const mat=new T.MeshStandardMaterial({map:tex,bumpMap:tex,bumpScale:2.1,roughness:.96,metalness:0});
@@ -3170,7 +3172,17 @@ function sf3dBuild(){
       const col=c.col||(STY[c.st]&&STY[c.st].wall)|| (c.k==='wall'?'#8b8172':'#796747');
       const mesh=sf3dAddBox(SF3D.world,c.x+(c.w||0)/2,0,c.y+(c.h||0)/2,c.w||c.r*2,hh,c.h||c.r*2,col);SF3D.staticMeshes.push(mesh);
     }else if(c.k==='rock'){
-      const mesh=new T.Mesh(new T.DodecahedronGeometry(Math.max(8,c.r||20),1),sf3dMat(c.col||'#777568'));mesh.position.set(c.x,Math.max(5,c.r*.35),c.y);mesh.scale.y=.65;mesh.castShadow=true;SF3D.world.add(mesh);SF3D.staticMeshes.push(mesh);
+      // Main boulder plus smaller fractured stones and a muted ground contact skirt.
+      const radius=Math.max(8,c.r||20),stoneMat=sf3dMat(c.col||'#777568'),baseMat=sf3dMat('#655f50');
+      const skirt=new T.Mesh(new T.CylinderGeometry(radius*1.18,radius*1.28,3,9),baseMat);
+      skirt.position.set(c.x,1.5,c.y);skirt.scale.z=.82;skirt.receiveShadow=true;SF3D.world.add(skirt);SF3D.staticMeshes.push(skirt);
+      const mesh=new T.Mesh(new T.DodecahedronGeometry(radius,1),stoneMat);
+      mesh.position.set(c.x,Math.max(5,radius*.34),c.y);mesh.rotation.set(.12,(c.x+c.y)*.001,.08);mesh.scale.set(1,.68,.88);mesh.castShadow=true;mesh.receiveShadow=true;SF3D.world.add(mesh);SF3D.staticMeshes.push(mesh);
+      for(let n=0;n<3;n++){
+        const a=n*2.094+(c.x*.01),rr=radius*(.66+n*.07),small=new T.Mesh(new T.DodecahedronGeometry(radius*(.22+n*.025),0),sf3dMat(n===1?'#898779':'#6f7064'));
+        small.position.set(c.x+Math.cos(a)*rr,Math.max(3,radius*.12),c.y+Math.sin(a)*rr);
+        small.rotation.set(n*.3,a,n*.18);small.scale.y=.72;small.castShadow=true;SF3D.world.add(small);SF3D.staticMeshes.push(small);
+      }
     }
   }
   for(const t of trees){
@@ -3331,8 +3343,21 @@ function sf3dVehicle(v){
     }
     box(v.L*.46,13,v.W*.66,glass,-v.L*.02,32,0);
     box(5,3,v.W*.9,dark,v.L*.25,40,0);
-    if(v.type==='tout'){box(v.L*.35,5,v.W*.8,paint,-v.L*.25,31,0);box(4,8,4,metal,v.L*.39,29,0)}
-    else{for(const z of [-v.W*.35,v.W*.35])box(3,22,3,dark,-v.L*.2,40,z)}
+    // Mirrors, door seams, handles and roof rails add readable vehicle scale.
+    for(const z of [-v.W*.48,v.W*.48]){
+      box(5,3,5,metal,v.L*.12,31,z);
+      box(1.2,8,1.2,dark,-v.L*.08,21,z*.91);
+      box(2.2,2,1.5,metal,-v.L*.05,22,z*1.01);
+      box(2,2,1.5,dark,v.L*.12,23,z*1.01);
+    }
+    box(v.L*.54,2,2,metal,-v.L*.02,42,-v.W*.3);
+    box(v.L*.54,2,2,metal,-v.L*.02,42,v.W*.3);
+    if(v.type==='tout'){
+      box(v.L*.35,5,v.W*.8,paint,-v.L*.25,31,0);box(4,8,4,metal,v.L*.39,29,0);
+      // Spare wheel and rear cargo detail.
+      const spare=new T.Mesh(new T.CylinderGeometry(8,8,4,12),dark);spare.rotation.z=Math.PI/2;spare.position.set(-v.L*.49,24,0);g.add(spare);
+      box(v.L*.22,4,v.W*.56,dark,-v.L*.2,28,0);
+    }else{for(const z of [-v.W*.35,v.W*.35])box(3,22,3,dark,-v.L*.2,40,z)}
   }
   g.userData.baseY=0;return g;
 }

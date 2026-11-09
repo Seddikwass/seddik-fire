@@ -38,18 +38,51 @@ function roadLine(x,z,w,d){add(world,new THREE.BoxGeometry(w,.035,d),road,x,.04,
 function palm(x,z,s=1){const trunk=add(world,new THREE.CylinderGeometry(.12*s,.2*s,2.5*s,7),mat(0x76563a),x,1.25*s,z);trunk.rotation.z=.08;for(let i=0;i<7;i++){const a=i*Math.PI*2/7,leaf=add(world,new THREE.ConeGeometry(.24*s,2.3*s,5),mat(0x3d7041),x+Math.cos(a)*.8*s,2.45*s,z+Math.sin(a)*.8*s);leaf.rotation.z=Math.PI/2;leaf.rotation.y=-a}}
 function pine(x,z,s=1){add(world,new THREE.CylinderGeometry(.13*s,.2*s,1.3*s,7),mat(0x69513a),x,.65*s,z);for(let i=0;i<3;i++)add(world,new THREE.ConeGeometry(1.05*s,1.8*s,7),mat(i%2?0x365d3b:0x416b40),x,(1.25+i*.72)*s,z)}
 function islandBase(color=0x71834c){add(world,new THREE.CylinderGeometry(21,23,1.3,64),mat(color),0,-.65,0);add(world,new THREE.CylinderGeometry(23.4,23.4,.5,64),sand,0,-1.35,0);add(world,new THREE.CylinderGeometry(80,80,1.1,64),water,0,-2.25,0)}
+function vehicle(x,z,color=0x384b43,rot=0){
+ const g=new THREE.Group();world.add(g);g.position.set(x,0,z);g.rotation.y=rot;
+ const body=mat(color,.55),tire=mat(0x171a1a),rim=mat(0x89918d,.45),win=mat(0x273b45,.25);
+ add(g,new THREE.BoxGeometry(1.35,.48,2.65),body,0,.63,0);
+ add(g,new THREE.BoxGeometry(1.18,.48,1.25),body,0,1.03,-.12);
+ add(g,new THREE.BoxGeometry(1.02,.30,.035),win,0,1.10,.52);
+ add(g,new THREE.BoxGeometry(.92,.28,.035),win,0,1.10,-.75);
+ for(const side of [-1,1])for(const end of [-1,1]){
+  add(g,new THREE.CylinderGeometry(.24,.24,.16,16),tire,side*.69,.35,end*.82).rotation.z=Math.PI/2;
+  add(g,new THREE.CylinderGeometry(.12,.12,.17,12),rim,side*.69,.35,end*.82).rotation.z=Math.PI/2;
+ }
+ add(g,new THREE.BoxGeometry(.25,.14,.05),mat(0xf1e3ad),-.43,.62,1.34);
+ add(g,new THREE.BoxGeometry(.25,.14,.05),mat(0xb53d2c),.43,.62,1.34);
+}
+function streetLight(x,z){
+ const pole=mat(0x3d4545,.55),lamp=mat(0xffe8b2,.3);
+ add(world,new THREE.CylinderGeometry(.045,.065,3.8,8),pole,x,1.9,z);
+ const arm=add(world,new THREE.BoxGeometry(.85,.07,.07),pole,x+.35,3.75,z);arm.rotation.z=-.12;
+ add(world,new THREE.BoxGeometry(.36,.12,.24),lamp,x+.7,3.68,z);
+}
+function bridge(x,z,length=12,rot=0){
+ const g=new THREE.Group();world.add(g);g.position.set(x,0,z);g.rotation.y=rot;
+ add(g,new THREE.BoxGeometry(4,.38,length),mat(0x777b78),0,.35,0);
+ for(const side of [-1,1]){
+  add(g,new THREE.BoxGeometry(.18,.65,length),mat(0x59635f),side*1.95,.78,0);
+  for(let k=-length/2+1;k<length/2;k+=2.5)add(g,new THREE.BoxGeometry(.12,.65,.12),mat(0x48514d),side*1.95,.9,k);
+ }
+ for(let k=-length/2+2;k<length/2;k+=4)add(g,new THREE.BoxGeometry(.12,.12,.12),mat(0xd2cbb2),0,.57,k);
+}
+function pier(x,z,length=8){
+ add(world,new THREE.BoxGeometry(3,.35,length),mat(0x786b56),x,.12,z);
+ for(let i=-1;i<=1;i++)for(const end of [-1,1])add(world,new THREE.CylinderGeometry(.13,.13,.9,8),mat(0x5b4d3c),x+i*1.2,.0,z+end*(length/2-.5));
+}
 function makeIsland(){islandBase();roadLine(0,0,2,31);roadLine(-9,0,18,1.6);roadLine(9,1,15,1.6);
  for(let i=0;i<8;i++){const a=i*Math.PI/4,x=Math.cos(a)*15,z=Math.sin(a)*15;building(x,z,3.2,3,2.7+i%3*.45,'medina');palm(x+2,z+2,.8)}
  for(let i=0;i<6;i++){const x=-10+(i%3)*4,z=-7+Math.floor(i/3)*5;building(x,z,3.2,3.4,3.5,'house')}
  // small harbor and pier
  add(world,new THREE.BoxGeometry(8,.35,2),mat(0x776c58),-16,.05,-4);for(let i=0;i<3;i++)add(world,new THREE.BoxGeometry(1,.55,1),mat(0x8b7659),-19+i*2,.3,-4);
- for(let i=0;i<18;i++){const a=i*2.4;const x=Math.cos(a)*18,z=Math.sin(a)*18;if(i%2)palm(x,z,.75);else pine(x,z,.8)}
+ for(let i=0;i<18;i++){const a=i*2.4;const x=Math.cos(a)*18,z=Math.sin(a)*18;if(i%2)palm(x,z,.75);else pine(x,z,.8)}\n pier(-16,-4,9);vehicle(-8,4,0x485a4b,.2);vehicle(9,-7,0x9caa9a,-.6);bridge(4,14,9,0);
 }
 function makeCity(){add(world,new THREE.BoxGeometry(65,.6,65),grass,0,-.35,0);for(let i=-2;i<=2;i++){roadLine(i*12,0,2,65);roadLine(0,i*12,65,2)}
  for(let x=-2;x<=2;x++)for(let z=-2;z<=2;z++){const X=x*12,Z=z*12;if(Math.abs(x)===2&&Math.abs(z)===2){building(X,Z,7,7,12+Math.abs(x+z)*2,'tower')}else if(x===0&&z===0){add(world,new THREE.BoxGeometry(8,.3,8),mat(0x55734a),X,.1,Z);for(let j=0;j<5;j++)palm(X-3+j*1.5,Z-2,.7)}else{building(X,Z,7,7,4+((x*x+z*z)%3)*1.7,(x===1&&z===-1)?'shop':'house')}}}
- for(let i=0;i<12;i++){const x=-28+(i%6)*11,z=25+Math.floor(i/6)*7;add(world,new THREE.BoxGeometry(2,.8,4),mat(0x59636a),x,.45,z)}}
+ for(let i=0;i<12;i++){const x=-28+(i%6)*11,z=25+Math.floor(i/6)*7;add(world,new THREE.BoxGeometry(2,.8,4),mat(0x59636a),x,.45,z)}\n for(const [x,z] of [[-24,-24],[-12,-24],[12,-24],[24,-24],[-24,24],[0,24],[24,24]])streetLight(x,z);\n vehicle(-15,5,0x26394a,Math.PI/2);vehicle(14,-13,0xd0c9b7,0);bridge(0,17,9,0)}
 function makeForest(){add(world,new THREE.BoxGeometry(65,.7,65),mat(0x536e3e),0,-.4,0);add(world,new THREE.CylinderGeometry(8,9,.5,48),mat(0x3d91a0),7,-.02,4);roadLine(0,0,2,60);for(let i=0;i<85;i++){const x=Math.sin(i*73.2)*29,z=Math.cos(i*29.7)*29;if(Math.hypot(x,z)>11)pine(x,z,.7+(i%4)*.12)}for(let i=0;i<8;i++)building(-10+(i%4)*6,-9+Math.floor(i/4)*18,3,3,3,'house')}
-function makeDesert(){add(world,new THREE.BoxGeometry(65,.7,65),sand,0,-.4,0);for(let i=0;i<8;i++){const d=add(world,new THREE.SphereGeometry(1,24,12),mat(i%2?0xd5b777:0xc9a96f),Math.sin(i*4)*22,-.3,Math.cos(i*3)*22);d.scale.set(8,1.4,4);d.rotation.y=i*.7}roadLine(0,0,2,60);for(let i=0;i<8;i++){building(-12+(i%4)*8,-10+Math.floor(i/4)*17,4,4,3,'medina');if(i%2===0)palm(-12+(i%4)*8+2,-7+Math.floor(i/4)*17,.8)}add(world,new THREE.CylinderGeometry(3,3,.2,32),mat(0x278b85),9,.05,8)}
+function makeDesert(){add(world,new THREE.BoxGeometry(65,.7,65),sand,0,-.4,0);for(let i=0;i<8;i++){const d=add(world,new THREE.SphereGeometry(1,24,12),mat(i%2?0xd5b777:0xc9a96f),Math.sin(i*4)*22,-.3,Math.cos(i*3)*22);d.scale.set(8,1.4,4);d.rotation.y=i*.7}roadLine(0,0,2,60);for(let i=0;i<8;i++){building(-12+(i%4)*8,-10+Math.floor(i/4)*17,4,4,3,'medina');if(i%2===0)palm(-12+(i%4)*8+2,-7+Math.floor(i/4)*17,.8)}add(world,new THREE.CylinderGeometry(3,3,.2,32),mat(0x278b85),9,.05,8);vehicle(-8,15,0x8e7952,.7)}
 const builders={island:makeIsland,city:makeCity,forest:makeForest,desert:makeDesert};
 function setMap(k){clear();builders[k]();controls.target.set(0,0,0);document.querySelectorAll('[data-map]').forEach(b=>b.classList.toggle('active',b.dataset.map===k));const names={island:'Île de Seddik',city:'Grande Ville',forest:'Forêt profonde',desert:'Sahara'};document.querySelector('#info b').textContent='SEDDIK FIRE — '+names[k];}
 document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.map)));setMap('island');

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SEDDIK FIRE — Îles et villes 3D</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#13201d;color:#f2f5ed;font:14px system-ui,Arial}canvas{display:block}
+#bar{position:fixed;z-index:2;top:12px;left:12px;right:12px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+button,a{border:1px solid #64745e;background:#26362b;color:#f4f7ef;padding:9px 12px;border-radius:9px;text-decoration:none;font-weight:650;cursor:pointer}
+button.active{background:#b8c99c;color:#172019}
+#info{position:fixed;left:12px;bottom:12px;z-index:2;background:#101a16e8;border:1px solid #5b6b53;border-radius:12px;padding:12px 14px;max-width:min(440px,calc(100vw - 24px))}
+#info b{display:block;font-size:17px;margin-bottom:4px}#info span{color:#c5d0c0;font-size:12px}
+#back{position:fixed;right:12px;bottom:12px;z-index:3}
+@media(max-width:600px){button,a{font-size:12px;padding:8px 9px}#info{bottom:58px}}
+</style></head><body>
+<div id="bar"><button class="active" data-map="island">ÎLE DE SEDDIK</button><button data-map="city">GRANDE VILLE</button><button data-map="forest">FORÊT</button><button data-map="desert">SAHARA</button></div>
+<div id="info"><b>SEDDIK FIRE — Environnements 3D</b><span>Explorez les environnements en 3D. Faites glisser pour tourner, pincez ou utilisez la molette pour zoomer. Aperçu de conception : les cartes du jeu principal ne sont pas remplacées.</span></div>
+<a id="back" href="/">RETOUR AU JEU</a>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9db5bd);scene.fog=new THREE.Fog(0x9db5bd,35,95);
+const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,300);camera.position.set(27,23,30);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,0,0);controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.48;controls.minDistance=10;controls.maxDistance=85;
+scene.add(new THREE.HemisphereLight(0xe8f4ff,0x46503a,2));const sun=new THREE.DirectionalLight(0xffe6bd,3);sun.position.set(-25,40,20);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
+const mat=(c,r=.9)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
+const water=mat(0x247e99,.3),sand=mat(0xd4c092),grass=mat(0x71834c),road=mat(0x343a3b),line=mat(0xe6dfc4),concrete=mat(0x9b9b8e),glass= new THREE.MeshStandardMaterial({color:0x526e79,roughness:.28,metalness:.35}),roof=mat(0x9b7656),white=mat(0xd0c9b7);
+let world=new THREE.Group();scene.add(world);
+function add(parent,g,m,x,y,z){const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+function clear(){scene.remove(world);world=new THREE.Group();scene.add(world)}
+function building(x,z,w,d,h,type='house'){
+ const g=new THREE.Group();world.add(g);let wall=type==='tower'?glass:type==='medina'?mat(0xc9b38b):type==='shop'?mat(0xc2bcae):concrete;
+ add(g,new THREE.BoxGeometry(w,h,d),wall,x,h/2,z);
+ add(g,new THREE.BoxGeometry(w*1.04,.22,d*1.04),type==='tower'?mat(0x414c51):roof,x,h+.11,z);
+ if(type==='tower'){for(let y=1.5;y<h-1;y+=2.2){add(g,new THREE.BoxGeometry(w+.02,.045,d+.02),mat(0x9baeb1),x,y,z)}}
+ else{for(let y=1.1;y<h-0.4;y+=1.35)for(let xx=-w/2+.55;xx<w/2-.25;xx+=1.25){add(g,new THREE.BoxGeometry(.42,.58,.055),type==='medina'?mat(0x52606a):glass,x+xx,y,z+d/2+.035)}}
+ if(type==='shop')add(g,new THREE.BoxGeometry(w*.72,.28,.08),mat(0x38566a),x,h*.55,z+d/2+.06);
+}
+function roadLine(x,z,w,d){add(world,new THREE.BoxGeometry(w,.035,d),road,x,.04,z);if(w>d){for(let a=-w/2+1;a<w/2-1;a+=3)add(world,new THREE.BoxGeometry(1,.04,.12),line,x+a,.07,z)}else{for(let a=-d/2+1;a<d/2-1;a+=3)add(world,new THREE.BoxGeometry(.12,.04,1),line,x,.07,z+a)}}
+function palm(x,z,s=1){const trunk=add(world,new THREE.CylinderGeometry(.12*s,.2*s,2.5*s,7),mat(0x76563a),x,1.25*s,z);trunk.rotation.z=.08;for(let i=0;i<7;i++){const a=i*Math.PI*2/7,leaf=add(world,new THREE.ConeGeometry(.24*s,2.3*s,5),mat(0x3d7041),x+Math.cos(a)*.8*s,2.45*s,z+Math.sin(a)*.8*s);leaf.rotation.z=Math.PI/2;leaf.rotation.y=-a}}
+function pine(x,z,s=1){add(world,new THREE.CylinderGeometry(.13*s,.2*s,1.3*s,7),mat(0x69513a),x,.65*s,z);for(let i=0;i<3;i++)add(world,new THREE.ConeGeometry(1.05*s,1.8*s,7),mat(i%2?0x365d3b:0x416b40),x,(1.25+i*.72)*s,z)}
+function islandBase(color=0x71834c){add(world,new THREE.CylinderGeometry(21,23,1.3,64),mat(color),0,-.65,0);add(world,new THREE.CylinderGeometry(23.4,23.4,.5,64),sand,0,-1.35,0);add(world,new THREE.CylinderGeometry(80,80,1.1,64),water,0,-2.25,0)}
+function makeIsland(){islandBase();roadLine(0,0,2,31);roadLine(-9,0,18,1.6);roadLine(9,1,15,1.6);
+ for(let i=0;i<8;i++){const a=i*Math.PI/4,x=Math.cos(a)*15,z=Math.sin(a)*15;building(x,z,3.2,3,2.7+i%3*.45,'medina');palm(x+2,z+2,.8)}
+ for(let i=0;i<6;i++){const x=-10+(i%3)*4,z=-7+Math.floor(i/3)*5;building(x,z,3.2,3.4,3.5,'house')}
+ // small harbor and pier
+ add(world,new THREE.BoxGeometry(8,.35,2),mat(0x776c58),-16,.05,-4);for(let i=0;i<3;i++)add(world,new THREE.BoxGeometry(1,.55,1),mat(0x8b7659),-19+i*2,.3,-4);
+ for(let i=0;i<18;i++){const a=i*2.4;const x=Math.cos(a)*18,z=Math.sin(a)*18;if(i%2)palm(x,z,.75);else pine(x,z,.8)}
+}
+function makeCity(){add(world,new THREE.BoxGeometry(65,.6,65),grass,0,-.35,0);for(let i=-2;i<=2;i++){roadLine(i*12,0,2,65);roadLine(0,i*12,65,2)}
+ for(let x=-2;x<=2;x++)for(let z=-2;z<=2;z++){const X=x*12,Z=z*12;if(Math.abs(x)===2&&Math.abs(z)===2){building(X,Z,7,7,12+Math.abs(x+z)*2,'tower')}else if(x===0&&z===0){add(world,new THREE.BoxGeometry(8,.3,8),mat(0x55734a),X,.1,Z);for(let j=0;j<5;j++)palm(X-3+j*1.5,Z-2,.7)}else{building(X,Z,7,7,4+((x*x+z*z)%3)*1.7,(x===1&&z===-1)?'shop':'house')}}}
+ for(let i=0;i<12;i++){const x=-28+(i%6)*11,z=25+Math.floor(i/6)*7;add(world,new THREE.BoxGeometry(2,.8,4),mat(0x59636a),x,.45,z)}}
+function makeForest(){add(world,new THREE.BoxGeometry(65,.7,65),mat(0x536e3e),0,-.4,0);add(world,new THREE.CylinderGeometry(8,9,.5,48),mat(0x3d91a0),7,-.02,4);roadLine(0,0,2,60);for(let i=0;i<85;i++){const x=Math.sin(i*73.2)*29,z=Math.cos(i*29.7)*29;if(Math.hypot(x,z)>11)pine(x,z,.7+(i%4)*.12)}for(let i=0;i<8;i++)building(-10+(i%4)*6,-9+Math.floor(i/4)*18,3,3,3,'house')}
+function makeDesert(){add(world,new THREE.BoxGeometry(65,.7,65),sand,0,-.4,0);for(let i=0;i<8;i++){const d=add(world,new THREE.SphereGeometry(1,24,12),mat(i%2?0xd5b777:0xc9a96f),Math.sin(i*4)*22,-.3,Math.cos(i*3)*22);d.scale.set(8,1.4,4);d.rotation.y=i*.7}roadLine(0,0,2,60);for(let i=0;i<8;i++){building(-12+(i%4)*8,-10+Math.floor(i/4)*17,4,4,3,'medina');if(i%2===0)palm(-12+(i%4)*8+2,-7+Math.floor(i/4)*17,.8)}add(world,new THREE.CylinderGeometry(3,3,.2,32),mat(0x278b85),9,.05,8)}
+const builders={island:makeIsland,city:makeCity,forest:makeForest,desert:makeDesert};
+function setMap(k){clear();builders[k]();controls.target.set(0,0,0);document.querySelectorAll('[data-map]').forEach(b=>b.classList.toggle('active',b.dataset.map===k));const names={island:'Île de Seddik',city:'Grande Ville',forest:'Forêt profonde',desert:'Sahara'};document.querySelector('#info b').textContent='SEDDIK FIRE — '+names[k];}
+document.querySelectorAll('[data-map]').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.map)));setMap('island');
+function tick(){requestAnimationFrame(tick);controls.update();renderer.render(scene,camera)}tick();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script></body></html>

@@ -3174,6 +3174,8 @@ function sf3dInstallControl(){
   b.addEventListener('click',()=>{SF3D.user3D=!SF3D.user3D;b.textContent=SF3D.user3D?'3D : ACTIVÉ':'2D : ACTIVÉ';if(!SF3D.user3D){document.getElementById('sf3d').style.opacity='0';cv.style.opacity='1'}else if(SF3D.ready){document.getElementById('sf3d').style.opacity='1';cv.style.opacity='0'}else sf3dBoot()});
   document.body.appendChild(b);
 }
+// Install the visible 2D/3D control immediately, independently of the game loop.
+sf3dInstallControl();
 function sf3dShowError(message){
   let panel=document.getElementById('sf3d-error');
   if(!panel){panel=document.createElement('div');panel.id='sf3d-error';panel.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:99999;padding:12px 14px;background:#211b18;color:#fff;border:1px solid #e28b42;border-radius:8px;font:12px/1.45 system-ui;white-space:normal;overflow-wrap:anywhere;box-shadow:0 4px 24px #0009';document.body.appendChild(panel)}

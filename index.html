@@ -3083,7 +3083,7 @@ async function sf3dBoot(){
     renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
-    const scene=new THREE.Scene();scene.background=new THREE.Color(0x87b8cf);scene.fog=new THREE.Fog(0x9bb9b4,900,4300);
+    const scene=new THREE.Scene();scene.background=new THREE.Color(0x87b8cf);scene.fog=new THREE.Fog(0x9bb9b4,1050,4700);
     scene.add(new THREE.HemisphereLight(0xd9edff,0x6a583e,2.0));
     const sun=new THREE.DirectionalLight(0xffe0b0,2.3);sun.position.set(-900,1500,-700);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
     const camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,.5,6500);
@@ -3188,19 +3188,28 @@ function sf3dBuild(){
           crown.position.y=30+tier*19;crown.rotation.y=tier*.45;crown.castShadow=true;g.add(crown);
         }
       }else{
-        // Three overlapping irregular crowns give broadleaf trees a natural silhouette.
-        for(let k=0;k<3;k++){
-          const crown=new T.Mesh(new T.IcosahedronGeometry(radius*(k===0?.72:.56),1),sf3dMat(k===1?'#568747':k===2?'#3d7139':foliage));
-          crown.position.set((k-1)*radius*.38,27+(k===1?radius*.22:0),(k===2?radius*.3:-radius*.16));
-          crown.scale.set(1,.82+(k*.04),.92);crown.rotation.y=k*1.7;crown.castShadow=true;g.add(crown);
-        }
-        for(let k=0;k<3;k++){
-          const branch=new T.Mesh(new T.CylinderGeometry(2,3,Math.max(12,radius*.7),5),sf3dMat('#62452b'));
-          branch.position.set((k-1)*radius*.25,24,0);branch.rotation.z=(k-1)*-.32;g.add(branch);
+        // Layered, asymmetrical leaf masses replace the toy-like single-ball canopy.
+        const leafTones=['#477b3c','#568747','#3d7139','#65934a','#355f32'];
+        const clusters=[
+          [-.48,.08,-.18,.56],[-.05,.28,.12,.68],[.43,.04,-.12,.58],
+          [-.28,.42,.35,.48],[.32,.38,.28,.50],[.02,-.02,-.42,.46],
+          [-.56,-.12,.28,.39],[.57,-.08,.32,.42]
+        ];
+        clusters.forEach((p,k)=>{
+          const crown=new T.Mesh(new T.IcosahedronGeometry(radius*p[3],1),sf3dMat(leafTones[k%leafTones.length]));
+          crown.position.set(p[0]*radius,27+p[1]*radius,p[2]*radius);
+          crown.scale.set(.92+(k%3)*.09,.76+(k%2)*.13,.9+(k%4)*.035);
+          crown.rotation.set(k*.17,k*1.31,k*.11);crown.castShadow=true;g.add(crown);
+        });
+        // Visible branching under the canopy adds depth at ground level.
+        for(let k=0;k<4;k++){
+          const a=k*Math.PI/2+.4,branch=new T.Mesh(new T.CylinderGeometry(1.5,2.6,Math.max(18,radius*.82),6),sf3dMat('#62452b'));
+          branch.position.set(Math.cos(a)*radius*.18,25,Math.sin(a)*radius*.18);
+          branch.rotation.z=Math.cos(a)*-.28;branch.rotation.x=Math.sin(a)*.28;g.add(branch);
         }
       }
     }
-    g.scale.setScalar(t.k==='palm'?.62:.56);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});add(g);
+    g.scale.setScalar(t.k==='palm'?.58:(t.k==='pine'?.50:.46));g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});add(g);
   }
   // The lake is rendered as a reflective blue surface above the terrain.
   const lake=new T.Mesh(new T.CircleGeometry(LAKE.r,48),new T.MeshStandardMaterial({color:0x2c91ad,roughness:.2,metalness:.08}));
@@ -3253,10 +3262,27 @@ function sf3dActor(e){
   mesh(new T.SphereGeometry(5.8,9,6,0,Math.PI*2,0,Math.PI*.58),gear,0,42,0);
   mesh(new T.CylinderGeometry(6.1,6.1,1.2,10),dark,0,40.2,0);
   mesh(new T.BoxGeometry(7,2,1.5),dark,0,39,4.7);
-  // backpack and radio
+  // Face details, helmet fittings and layered tactical webbing.
+  mesh(new T.BoxGeometry(5.8,1.4,1.2),dark,0,40,4.4);
+  for(const side of [-1,1]){
+    mesh(new T.SphereGeometry(.8,7,5),sf3dMat(0x171d1c),side*2.1,39.5,5.05);
+    mesh(new T.BoxGeometry(2.5,2.8,1.5),sf3dMat(0x343b35),side*5.2,35,4.7);
+    mesh(new T.BoxGeometry(2.4,5.2,1.5),sf3dMat(0x8b7953),side*2.6,27,6.4);
+    mesh(new T.BoxGeometry(2.8,1.4,1.8),dark,side*6.2,24,6.1);
+  }
+  mesh(new T.BoxGeometry(1.8,14,1.5),sf3dMat(0x9a895e),-4.3,28,5.8,-.12);
+  mesh(new T.BoxGeometry(1.8,14,1.5),sf3dMat(0x9a895e),4.3,28,5.8,.12);
+  mesh(new T.BoxGeometry(8,2,2),dark,0,20,5.6);
+  // Backpack with padded side pockets, top flap, straps and radio antenna.
   mesh(new T.BoxGeometry(9,13,5),gear,0,27,-6.2);
+  mesh(new T.BoxGeometry(7,3,5.5),sf3dMat(0x626b4d),0,34,-6.1);
+  for(const side of [-1,1]){
+    mesh(new T.BoxGeometry(3,8,4),sf3dMat(0x626b4d),side*5.2,27,-6.1);
+    mesh(new T.BoxGeometry(2,7,1.2),dark,side*4.7,28,-3.4);
+  }
   mesh(new T.BoxGeometry(4,8,4),dark,5,30,-5);
   limb([5,32,-5],[7,41,-5],.6,.4,dark);
+  mesh(new T.SphereGeometry(1.3,7,5),sf3dMat(0x333b31),7,41,-5);
   // rifle, stock, barrel and sight carried in front
   // Detailed compact assault rifle: receiver, handguard, barrel, muzzle, magazine, grip and optic
   mesh(new T.BoxGeometry(3.4,3.5,15),dark,8,22,5);

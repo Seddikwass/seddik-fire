@@ -1,45 +1,121 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SEDDIK FIRE — Opérateurs 3D</title>
+<title>SEDDIK FIRE — Soldat tactique 3D</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#101712;color:#edf3e9;font:15px system-ui,Arial}
-#ui{position:fixed;z-index:2;inset:14px 14px auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button,a{border:1px solid #65745f;background:#253326;color:#f4f7f0;padding:10px 14px;border-radius:9px;text-decoration:none;cursor:pointer}
-button.active{background:#a6c18b;color:#132014;border-color:#d4e8c5}
-#title{position:fixed;z-index:2;left:16px;bottom:16px;background:#101712d9;border:1px solid #42513e;padding:12px 15px;border-radius:10px;max-width:min(440px,90vw)}
-#title strong{display:block;font-size:18px;margin-bottom:4px}#title span{color:#c2cdbb;font-size:13px}
-#back{position:fixed;right:14px;bottom:16px;z-index:2}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111914;color:#edf4e9;font:14px system-ui,Arial}
+canvas{display:block}#top{position:fixed;z-index:3;inset:12px 12px auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+button,a{border:1px solid #60705c;background:#202d24;color:#f4f7f0;padding:9px 12px;border-radius:9px;text-decoration:none;cursor:pointer;font-weight:650}
+button.active{background:#b3c99b;color:#172018;border-color:#e0efce}
+#panel{position:fixed;z-index:2;left:14px;bottom:14px;max-width:min(440px,calc(100vw - 28px));background:#101811e8;border:1px solid #52614c;padding:13px 15px;border-radius:12px}
+#panel strong{display:block;font-size:18px;margin-bottom:4px}#panel span{color:#c3cfbd;font-size:12px}
+#right{position:fixed;z-index:3;right:12px;top:12px;display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;max-width:48vw}
+#back{position:fixed;right:14px;bottom:14px;z-index:3}
+@media(max-width:560px){#top{max-width:54vw}button,a{padding:8px 9px;font-size:12px}#right{top:92px;max-width:100vw;left:12px;right:12px;justify-content:flex-start}#panel{bottom:60px}}
 </style></head><body>
-<div id="ui"><button class="active" data-v="woodland">WOODLAND</button><button data-v="black">BLACK OPS</button><button data-v="desert">DESERT</button><button data-v="urban">URBAN</button></div>
-<div id="title"><strong>SEDDIK FIRE — Opérateur 3D</strong><span>Modèle 3D procédural · Faites glisser pour tourner · Molette pour zoomer</span></div>
-<a id="back" href="/">Retour au jeu</a>
+<div id="top"><button class="active" data-v="woodland">WOODLAND</button><button data-v="black">BLACK OPS</button><button data-v="desert">DÉSERT</button><button data-v="urban">URBAIN</button></div>
+<div id="right"><button data-a="idle" class="active">IMMOBILE</button><button data-a="walk">MARCHE</button><button data-a="run">COURSE</button><button data-a="aim">VISÉE</button><button data-a="reload">RECHARGEMENT</button></div>
+<div id="panel"><strong>SEDDIK FIRE — Opérateur tactique 3D</strong><span>Équipement détaillé · articulations animées · marche, course, visée et rechargement. Glissez pour tourner, pincez ou utilisez la molette pour zoomer.</span></div>
+<a id="back" href="/">RETOUR AU JEU</a>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aa99a);scene.fog=new THREE.Fog(0x9aa99a,9,25);
-const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,100);camera.position.set(3.6,2.7,5.6);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.shadowMap.enabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.appendChild(renderer.domElement);
-const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1.05,0);controls.enableDamping=true;controls.minDistance=2.6;controls.maxDistance=9;
-scene.add(new THREE.HemisphereLight(0xeaf2ff,0x394333,2.1));const sun=new THREE.DirectionalLight(0xffedcf,3);sun.position.set(4,7,5);sun.castShadow=true;scene.add(sun);
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.MeshStandardMaterial({color:0x465743,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;floor.receiveShadow=true;scene.add(floor);const grid=new THREE.GridHelper(40,40,0x839078,0x63715c);grid.position.y=-.03;scene.add(grid);
-let actor;
-const mats={woodland:[0x4e6342,0x34412e,0x9b8060],black:[0x242a2c,0x101416,0x687078],desert:[0xb49a69,0x756346,0xc3ad84],urban:[0x687078,0x343b43,0x9aa0a3]};
-function build(v){if(actor)scene.remove(actor);actor=new THREE.Group();const [cloth,dark,skin]=mats[v];const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.86});
-const body=mat(cloth),trim=mat(dark),face=mat(skin),metal=mat(0x252b2a);
-function part(g,geo,m,x,y,z,rx=0,ry=0,rz=0){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.castShadow=true;o.receiveShadow=true;g.add(o);return o}
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aa99a);scene.fog=new THREE.Fog(0x9aa99a,10,26);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,100);camera.position.set(3.4,2.65,5.7);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1.05,0);controls.enableDamping=true;controls.minDistance=2.6;controls.maxDistance=8;
+scene.add(new THREE.HemisphereLight(0xeaf2ff,0x35402f,2));const sun=new THREE.DirectionalLight(0xffedcf,3.1);sun.position.set(4,8,5);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const fill=new THREE.DirectionalLight(0xb5c9df,1.1);fill.position.set(-4,3,-4);scene.add(fill);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(50,50),new THREE.MeshStandardMaterial({color:0x485744,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.045;ground.receiveShadow=true;scene.add(ground);
+const grid=new THREE.GridHelper(50,50,0x87937b,0x65725d);grid.position.y=-.035;scene.add(grid);
+const palettes={woodland:[0x536746,0x35442f,0x9b8060,0x20251e],black:[0x292f32,0x111619,0x70777a,0x171b1d],desert:[0xb8a071,0x796746,0xc5ad87,0x51432e],urban:[0x6d7880,0x3b444b,0xabb0b0,0x24292d]};
+let actor=null,rig={},pose='idle',variant='woodland',phase=0;
+const mat=(c,r=.82,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
 const box=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
-part(actor,box(.62,.76,.34),body,0,1.34,0);part(actor,box(.5,.16,.37),trim,0,1.78,0);
-part(actor,new THREE.SphereGeometry(.22,20,16),face,0,2.02,0);
-part(actor,new THREE.SphereGeometry(.245,20,12,0,Math.PI*2,0,Math.PI*.58),trim,0,2.12,0);
-part(actor,box(.48,.12,.36),trim,0,2.02,.02);
-for(const s of [-1,1]){part(actor,box(.22,.65,.24),body,s*.43,1.35,0,0,0,s*-.12);part(actor,box(.2,.18,.22),trim,s*.47,1.02,.02);part(actor,box(.25,.78,.27),body,s*.17,.72,0);part(actor,box(.27,.18,.3),trim,s*.17,.25,.03);part(actor,box(.2,.68,.22),body,s*.43,1.34,.02,0,0,s*-.1);part(actor,box(.19,.22,.2),face,s*.43,1.0,.02)}
-// tactical vest, pouches, backpack and rifle silhouette
-part(actor,box(.67,.48,.12),trim,0,1.43,.22);for(let i=-1;i<=1;i++)part(actor,box(.14,.18,.08),body,i*.2,1.38,.31);
-part(actor,box(.36,.55,.2),trim,0,1.42,-.25);
-const rifle=part(actor,box(.11,.95,.1),metal,.58,1.23,.28,0,0,-.22);part(actor,box(.14,.35,.14),metal,.49,.93,.25,0,0,-.22);
-actor.position.y=0;scene.add(actor);
+function mesh(parent,g,m,x=0,y=0,z=0){const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+function joint(parent,x,y,z){const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);return g}
+function capsule(parent,m,x,y,z,r,len){return mesh(parent,new THREE.CapsuleGeometry(r,len,5,10),m,x,y,z)}
+function build(v){
+ if(actor)scene.remove(actor);rig={};actor=new THREE.Group();scene.add(actor);
+ const [clothC,darkC,gearC,bootC]=palettes[v],cloth=mat(clothC),cloth2=mat(new THREE.Color(clothC).multiplyScalar(.78)),dark=mat(darkC),gear=mat(gearC),rubber=mat(bootC),skin=mat(0x987052),metal=mat(0x30383a,.38,.72),black=mat(0x111619,.45,.25),lens=mat(0x263d3d,.18,.45),web=mat(new THREE.Color(gearC).multiplyScalar(.78));
+ // Legs articulated at hips and knees
+ for(const side of [-1,1]){
+  const hip=joint(actor,side*.17,.91,0);rig['hip'+side]=hip;
+  capsule(hip,cloth,0,-.24,0,.115,.30);
+  const knee=joint(hip,0,-.48,0);rig['knee'+side]=knee;
+  capsule(knee,cloth2,0,-.19,0,.095,.25);
+  mesh(knee,box(.20,.16,.12),dark,0,-.08,.075);
+  const boot=joint(knee,0,-.39,.045);rig['foot'+side]=boot;
+  mesh(boot,box(.22,.14,.36),rubber,0,-.015,.105);
+  mesh(boot,box(.225,.045,.20),dark,0,-.085,.12);
+  mesh(boot,box(.17,.08,.06),gear,0,.045,-.035);
+ }
+ // torso group and neck
+ const torso=joint(actor,0,1.12,0);rig.torso=torso;
+ mesh(torso,new THREE.CapsuleGeometry(.255,.43,6,12),cloth,0,.23,0);
+ mesh(torso,box(.49,.42,.30),cloth,0,.28,0);
+ // neck and head
+ mesh(torso,new THREE.CylinderGeometry(.075,.085,.12,12),skin,0,.56,0);
+ const head=joint(torso,0,.70,0);rig.head=head;
+ mesh(head,new THREE.SphereGeometry(.155,20,16),skin,0,.02,0);
+ // balaclava lower face, helmet shell, rim and visor/night optics
+ mesh(head,new THREE.SphereGeometry(.159,16,10,0,Math.PI*2,.40,Math.PI*.6),dark,0,.025,.004);
+ mesh(head,new THREE.SphereGeometry(.18,20,12,0,Math.PI*2,0,Math.PI*.52),gear,0,.105,0);
+ mesh(head,box(.37,.035,.28),dark,0,.075,.015);
+ mesh(head,box(.22,.045,.035),black,0,-.005,.145);
+ mesh(head,box(.16,.045,.018),lens,0,-.006,.166);
+ // helmet rails, headset and NVG bracket
+ for(const side of [-1,1]){mesh(head,box(.035,.10,.10),dark,side*.16,.025,0);mesh(head,new THREE.CylinderGeometry(.035,.035,.035,12),black,side*.17,-.025,.02,Math.PI/2);mesh(head,box(.018,.10,.025),black,side*.12,.16,.14)}
+ const nvg=joint(head,0,.035,.19);rig.nvg=nvg;mesh(nvg,box(.12,.035,.045),black,0,0,0);for(const x of [-.035,.035])mesh(nvg,new THREE.CylinderGeometry(.022,.022,.045,12),lens,x,-.045,.015);
+ // Plate carrier, front/back plates, straps and modular pouches
+ mesh(torso,box(.52,.43,.095),dark,0,.25,.18);mesh(torso,box(.48,.39,.035),web,0,.25,.235);
+ for(const side of [-1,1]){mesh(torso,box(.075,.49,.07),gear,side*.205,.25,.14);mesh(torso,box(.11,.28,.10),dark,side*.275,.20,.02);mesh(torso,box(.06,.34,.045),web,side*.19,.28,.25)}
+ for(let i=-1;i<=1;i++){const pouch=mesh(torso,box(.125,.14,.075),gear,i*.15,.12,.29);mesh(torso,box(.11,.018,.012),dark,i*.15,.19,.33);mesh(torso,box(.025,.035,.015),dark,i*.15,.11,.333)}
+ mesh(torso,box(.54,.075,.34),dark,0,-.015,0);mesh(torso,box(.12,.07,.025),gear,0,-.015,.19);
+ // shoulder pads, arm joints, elbow pads and gloves
+ for(const side of [-1,1]){
+  const shoulder=joint(torso,side*.31,.42,0);rig['shoulder'+side]=shoulder;
+  mesh(shoulder,new THREE.SphereGeometry(.13,14,12),gear,0,-.03,0);
+  capsule(shoulder,cloth,0,-.20,0,.09,.25);
+  const elbow=joint(shoulder,0,-.39,0);rig['elbow'+side]=elbow;
+  mesh(elbow,box(.19,.12,.18),dark,0,0,0);
+  capsule(elbow,cloth2,0,-.18,0,.075,.20);
+  mesh(elbow,new THREE.SphereGeometry(.075,12,10),rubber,0,-.35,.015);
+  mesh(elbow,box(.14,.09,.12),dark,0,-.36,.03);
+  mesh(elbow,box(.13,.12,.12),black,0,-.43,.02);
+  // radio on left shoulder
+  if(side===-1){mesh(shoulder,box(.10,.17,.07),dark,-.13,-.03,-.02);mesh(shoulder,box(.012,.12,.012),black,-.13,.07,-.02)}
+ }
+ // Backpack and hydration tube
+ mesh(actor,box(.39,.55,.22),dark,0,1.38,-.235);mesh(actor,box(.30,.20,.08),gear,0,1.52,-.37);
+ for(const side of [-1,1])mesh(actor,box(.09,.31,.12),web,side*.22,1.35,-.24);
+ const tube=mesh(actor,new THREE.TorusGeometry(.12,.012,6,18,Math.PI),black,-.22,1.54,-.10);tube.rotation.z=Math.PI/2;
+ // Rifle held across chest: receiver, stock, barrel, handguard, optic, magazine, muzzle
+ const weapon=joint(actor,.28,1.18,.34);rig.weapon=weapon;weapon.rotation.z=-.08;
+ mesh(weapon,box(.12,.13,.60),metal,0,0,0);mesh(weapon,box(.10,.12,.34),dark,0,-.01,-.40);
+ mesh(weapon,box(.055,.055,.52),black,0,.015,.49);mesh(weapon,box(.15,.17,.20),dark,0,-.13,-.02);
+ mesh(weapon,box(.09,.16,.12),rubber,0,-.14,-.25);
+ mesh(weapon,box(.07,.045,.14),black,0,.11,.02);mesh(weapon,box(.10,.055,.12),metal,0,.13,.10);
+ mesh(weapon,box(.07,.07,.10),lens,0,.19,.08);mesh(weapon,box(.09,.04,.12),dark,0,.16,.08);
+ mesh(weapon,box(.035,.045,.10),metal,0,.02,.77);
+ // Sling, utility belt, holster, thigh pouches
+ const sling=mesh(actor,new THREE.TorusGeometry(.27,.012,6,40,Math.PI*1.1),web,0,1.25,.10);sling.rotation.z=.8;
+ for(const side of [-1,1]){mesh(actor,box(.12,.17,.12),dark,side*.22,.77,.03);mesh(actor,box(.12,.22,.10),gear,side*.20,.60,.06)}
+ actor.position.y=0;
 }
-build('woodland');document.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');build(b.dataset.v)}));
+build(variant);
+function setPose(p){pose=p;document.querySelectorAll('[data-a]').forEach(b=>b.classList.toggle('active',b.dataset.a===p))}
+document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{variant=b.dataset.v;document.querySelectorAll('[data-v]').forEach(x=>x.classList.toggle('active',x===b));build(variant)}));
+document.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>setPose(b.dataset.a)));
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);phase+=dt;const t=phase;
+ const moving=pose==='walk'||pose==='run',speed=pose==='run'?10:pose==='walk'?5:0,amp=pose==='run'?.72:.34;
+ for(const side of [-1,1]){const p=t*speed;rig['hip'+side].rotation.x=moving?Math.sin(p+ (side===1?Math.PI:0))*amp:0;rig['knee'+side].rotation.x=moving?Math.max(0,Math.sin(p+(side===1?Math.PI:0)))*.8:0;rig['foot'+side].rotation.x=moving?-rig['knee'+side].rotation.x*.45:0;rig['shoulder'+side].rotation.x=pose==='aim'?-1.05:moving?-Math.sin(p+(side===1?Math.PI:0))*amp*.65:pose==='reload'?(side===1?-1.0:-.5):-.12;rig['elbow'+side].rotation.x=pose==='aim'?-1.0:pose==='reload'?(side===1?-.7:-1.5):-.12}
+ rig.torso.position.y=1.12+(moving?Math.abs(Math.sin(t*speed*2))*(pose==='run'?.055:.025):0);rig.torso.rotation.z=moving?Math.sin(t*speed)*.035:pose==='aim'?.03:0;
+ rig.head.rotation.y=pose==='aim'?.05:Math.sin(t*.45)*.025;
+ rig.weapon.rotation.x=pose==='aim'?-.08:pose==='reload'?Math.sin(t*5)*.035:0;rig.weapon.rotation.z=pose==='reload'?-.35:pose==='aim'?-.02:-.08;
+ rig.nvg.rotation.x=pose==='aim'?.04:0;
+ actor.position.y=moving?Math.abs(Math.sin(t*speed*2))*(pose==='run'?.045:.02):0;
+ controls.update();renderer.render(scene,camera)}
+animate();
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
-function tick(){requestAnimationFrame(tick);controls.update();renderer.render(scene,camera)}tick();
 </script></body></html>

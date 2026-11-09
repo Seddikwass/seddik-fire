@@ -3219,6 +3219,26 @@ function sf3dActor(e){
   g.scale.setScalar(1.12);
   return g;
 }
+function sf3dVehicle(v){
+  const T=SF3D.THREE,g=new T.Group();
+  const paint=sf3dMat(v.type==='buggy'?'#c18437':'#536548'),dark=sf3dMat('#202522'),glass=sf3dMat('#526c72',.3),metal=sf3dMat('#85877c');
+  const box=(w,h,d,mat,x,y,z)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;g.add(m);return m};
+  if(v.type==='moto'){
+    const wheel=(z)=>{const m=new T.Mesh(new T.CylinderGeometry(8,8,5,12),dark);m.rotation.z=Math.PI/2;m.position.set(0,8,z);g.add(m)};
+    wheel(-v.L*.35);wheel(v.L*.35);box(12,9,22,paint,0,17,0);box(9,13,12,dark,0,23,-3);box(3,3,19,metal,0,28,13);
+  }else{
+    for(const x of [-v.L*.32,v.L*.32])for(const z of [-v.W*.56,v.W*.56]){
+      const w=new T.Mesh(new T.CylinderGeometry(v.type==='buggy'?9:10,v.type==='buggy'?9:10,7,12),dark);w.rotation.z=Math.PI/2;w.position.set(x,10,z);g.add(w);
+      const hub=new T.Mesh(new T.CylinderGeometry(3,3,7.5,8),metal);hub.rotation.z=Math.PI/2;hub.position.copy(w.position);g.add(hub);
+    }
+    box(v.L*.88,13,v.W*.85,paint,0,20,0);
+    box(v.L*.46,13,v.W*.66,glass,-v.L*.02,32,0);
+    box(5,3,v.W*.9,dark,v.L*.25,40,0);
+    if(v.type==='tout'){box(v.L*.35,5,v.W*.8,paint,-v.L*.25,31,0);box(4,8,4,metal,v.L*.39,29,0)}
+    else{for(const z of [-v.W*.35,v.W*.35])box(3,22,3,dark,-v.L*.2,40,z)}
+  }
+  g.userData.baseY=0;return g;
+}
 function sf3dSyncActors(){
   const seen=new Set();
   for(const e of ents){if(!e.alive||e.inPlane||e.air>0||e.veh)continue;seen.add(e);
@@ -3226,6 +3246,10 @@ function sf3dSyncActors(){
     g.visible=true;g.position.set(e.x,0,e.y);g.rotation.y=-e.angle;
   }
   for(const [e,g] of SF3D.actors){if(!seen.has(e)){g.visible=false}}
+  if(!SF3D.vehicleActors)SF3D.vehicleActors=new Map();
+  const seenVehicles=new Set();
+  for(const v of vehs){if(!v.alive)continue;seenVehicles.add(v);let g=SF3D.vehicleActors.get(v);if(!g){g=sf3dVehicle(v);SF3D.vehicleActors.set(v,g);SF3D.world.add(g)}g.visible=true;g.position.set(v.x,0,v.y);g.rotation.y=-v.a;}
+  for(const [v,g] of SF3D.vehicleActors)if(!seenVehicles.has(v))g.visible=false;
   if(player&&player.alive&&!player.inPlane&&player.air<=0&&!player.veh){
     let g=SF3D.actors.get(player);if(!g){g=sf3dActor(player);SF3D.actors.set(player,g);SF3D.world.add(g)}
     g.visible=true;g.position.set(player.x,0,player.y);g.rotation.y=-player.angle;

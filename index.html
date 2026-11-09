@@ -3115,6 +3115,18 @@ function sf3dBuild(){
     add(sf3dBox(x,b.y,b.w,b.h,h,wallColor));
     const roofColor=(STY[b.st]&&STY[b.st].roof)||'#887b69';
     const roof=sf3dAddBox(SF3D.world,x,h,z,b.w+8,5,b.h+8,roofColor);SF3D.staticMeshes.push(roof);
+    // Front facade: recessed windows, blue-grey glass and a visible entrance.
+    const glass=sf3dMat('#78939a',.38),frame=sf3dMat('#d0c4a8'),door=sf3dMat('#514337');
+    const count=Math.max(1,Math.min(4,Math.floor(b.w/34)));
+    for(let j=0;j<count;j++){
+      const wx=b.x+(j+1)*b.w/(count+1);
+      const wy=Math.min(h*.67,Math.max(13,h*.48));
+      const pane=sf3dAddBox(SF3D.world,wx,wy,z+b.h/2+1.2,Math.min(13,b.w/(count+1)*.48),Math.min(15,h*.32),2,'#78939a');
+      pane.material=glass;SF3D.staticMeshes.push(pane);
+      const sill=sf3dAddBox(SF3D.world,wx,wy-2,z+b.h/2+2.5,Math.min(16,b.w/(count+1)*.55),2,3,'#d0c4a8');sill.material=frame;SF3D.staticMeshes.push(sill);
+    }
+    const entry=sf3dAddBox(SF3D.world,x,1,z+b.h/2+1.5,Math.min(15,b.w*.22),Math.min(22,h*.7),3,'#514337');entry.material=door;SF3D.staticMeshes.push(entry);
+    const trim=sf3dAddBox(SF3D.world,x,h+3,z,b.w+12,2,b.h+12,roofColor);SF3D.staticMeshes.push(trim);
   }
   for(const c of solids){
     if(c.k==='wall'||c.k==='crate'||c.k==='cont'||c.k==='pcar'){
@@ -3133,9 +3145,25 @@ function sf3dBuild(){
       for(let j=0;j<6;j++){const leaf=new T.Mesh(new T.ConeGeometry(5,Math.max(24,t.r*1.5),5),sf3dMat('#568642'));leaf.position.set(Math.cos(j*Math.PI/3)*t.r*.55,38,Math.sin(j*Math.PI/3)*t.r*.55);leaf.rotation.z=-.9;leaf.rotation.x=Math.cos(j*Math.PI/3)*.7;g.add(leaf)}
     }else{
       const radius=Math.max(14,t.r*(t.k==='pine'?.82:.95));
-      const crown=new T.Mesh(t.k==='pine'?new T.ConeGeometry(radius,Math.max(40,t.r*2.3),7):new T.SphereGeometry(radius,7,6),sf3dMat(t.k==='pine'?'#315b35':'#477b3c'));
-      crown.position.y=t.k==='pine'?48:31;crown.castShadow=true;g.add(crown);
-      if(t.k==='pine'){const c2=new T.Mesh(new T.ConeGeometry(radius*.72,radius*1.4,7),sf3dMat('#3d7040'));c2.position.y=66;g.add(c2)}
+      const foliage=t.k==='pine'?'#315b35':'#477b3c';
+      if(t.k==='pine'){
+        for(let tier=0;tier<3;tier++){
+          const rr=radius*(1-tier*.2),hh=Math.max(30,t.r*(1.15-tier*.12));
+          const crown=new T.Mesh(new T.ConeGeometry(rr,hh,7),sf3dMat(tier===1?'#3d7040':foliage));
+          crown.position.y=30+tier*19;crown.rotation.y=tier*.45;crown.castShadow=true;g.add(crown);
+        }
+      }else{
+        // Three overlapping irregular crowns give broadleaf trees a natural silhouette.
+        for(let k=0;k<3;k++){
+          const crown=new T.Mesh(new T.IcosahedronGeometry(radius*(k===0?.72:.56),1),sf3dMat(k===1?'#568747':k===2?'#3d7139':foliage));
+          crown.position.set((k-1)*radius*.38,27+(k===1?radius*.22:0),(k===2?radius*.3:-radius*.16));
+          crown.scale.set(1,.82+(k*.04),.92);crown.rotation.y=k*1.7;crown.castShadow=true;g.add(crown);
+        }
+        for(let k=0;k<3;k++){
+          const branch=new T.Mesh(new T.CylinderGeometry(2,3,Math.max(12,radius*.7),5),sf3dMat('#62452b'));
+          branch.position.set((k-1)*radius*.25,24,0);branch.rotation.z=(k-1)*-.32;g.add(branch);
+        }
+      }
     }
     g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});add(g);
   }

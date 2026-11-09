@@ -3150,6 +3150,10 @@ function sf3dBuild(){
       const fan=new T.Mesh(new T.CylinderGeometry(4,4,1.5,10),sf3dMat('#424a48'));
       fan.position.set(ac.position.x,h+9,z);SF3D.world.add(fan);SF3D.staticMeshes.push(fan);
     }
+    // Rooftop water tank and small service structures make city blocks less box-like.
+    const tank=new T.Mesh(new T.CylinderGeometry(7,7,12,10),sf3dMat('#777f7b'));
+    tank.position.set(x+b.w*.22,h+12,z-b.h*.18);tank.castShadow=true;SF3D.world.add(tank);SF3D.staticMeshes.push(tank);
+    const tankCap=sf3dAddBox(SF3D.world,tank.position.x,h+18,tank.position.z,15,2,15,'#4c5653');SF3D.staticMeshes.push(tankCap);
     const trim=sf3dAddBox(SF3D.world,x,h+3,z,b.w+12,2,b.h+12,roofColor);SF3D.staticMeshes.push(trim);
   }
   for(const c of solids){
@@ -3199,8 +3203,11 @@ function sf3dBuild(){
     g.scale.setScalar(t.k==='palm'?.62:.56);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});add(g);
   }
   // The lake is rendered as a reflective blue surface above the terrain.
-  const lake=new T.Mesh(new T.CircleGeometry(LAKE.r,48),new T.MeshStandardMaterial({color:0x2c91ad,roughness:.22,metalness:.12}));
+  const lake=new T.Mesh(new T.CircleGeometry(LAKE.r,48),new T.MeshStandardMaterial({color:0x2c91ad,roughness:.2,metalness:.08}));
   lake.rotation.x=-Math.PI/2;lake.position.set(LAKE.x,-1,LAKE.y);add(lake);
+  // A shallow pale shoreline lip gives the water a natural transition into sand.
+  const shore=new T.Mesh(new T.RingGeometry(LAKE.r*.96,LAKE.r*1.12,48),new T.MeshStandardMaterial({color:0xc6ad78,roughness:1,side:T.DoubleSide}));
+  shore.rotation.x=-Math.PI/2;shore.position.set(LAKE.x,-1.4,LAKE.y);add(shore);
   SF3D.staticKey=MAP.id+'|'+blds.length+'|'+trees.length+'|'+solids.length;
 }
 function sf3dBox(x,z,w,d,h,color){return sf3dAddBox(SF3D.world,x,0,z,w,h,d,color)}
@@ -3226,6 +3233,15 @@ function sf3dActor(e){
   mesh(new T.BoxGeometry(15,13,8),gear,0,27,1);
   mesh(new T.BoxGeometry(10,10,2),dark,0,27,5.2);
   for(let j=0;j<3;j++)mesh(new T.BoxGeometry(3.4,5,2),sf3dMat(0x887d55),-4+j*4,24,5.1);
+  // Field gear: utility pouches, radio, shoulder patch and reinforced knee pads.
+  for(let side of [-1,1]){
+    mesh(new T.BoxGeometry(4.2,5.5,3.2),sf3dMat(0x756b4c),side*6.2,27,5.6);
+    mesh(new T.BoxGeometry(4.5,3.5,2.8),dark,side*4.2,12,4.2);
+    mesh(new T.BoxGeometry(2.2,3.2,1.2),sf3dMat(0x9a8b62),side*7.4,33,2.2);
+    mesh(new T.BoxGeometry(3.5,2.2,2.5),dark,side*7.5,18,7.2);
+  }
+  mesh(new T.BoxGeometry(5,3,1.4),sf3dMat(0xb8a46b),0,34,5.4);
+  mesh(new T.BoxGeometry(5,2,1.2),dark,0,20,5.5);
   for(const side of [-1,1]){
     limb([side*7,31,0],[side*10,23,2],3.6,3.1,cloth);
     limb([side*10,23,2],[side*8,19,6],3,2.4,cloth);
@@ -3270,6 +3286,15 @@ function sf3dVehicle(v){
       const hub=new T.Mesh(new T.CylinderGeometry(3,3,7.5,8),metal);hub.rotation.z=Math.PI/2;hub.position.copy(w.position);g.add(hub);
     }
     box(v.L*.88,13,v.W*.85,paint,0,20,0);
+    // Wheel arches, front grille, bumpers, headlamps and tail lamps.
+    box(v.L*.94,3,v.W*.92,dark,v.L*.02,13,v.W*.48);
+    box(v.L*.94,3,v.W*.92,metal,-v.L*.42,15,0);
+    for(const z of [-v.W*.31,v.W*.31]){
+      box(7,4,3,metal,v.L*.43,24,z);
+      box(5,3,2,sf3dMat('#f0d99a'),v.L*.455,25,z);
+      box(4,3,2,sf3dMat('#b84b38'),-v.L*.46,22,z);
+      box(3,8,3,dark,v.L*.28,12,z);
+    }
     box(v.L*.46,13,v.W*.66,glass,-v.L*.02,32,0);
     box(5,3,v.W*.9,dark,v.L*.25,40,0);
     if(v.type==='tout'){box(v.L*.35,5,v.W*.8,paint,-v.L*.25,31,0);box(4,8,4,metal,v.L*.39,29,0)}

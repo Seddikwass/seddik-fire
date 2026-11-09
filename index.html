@@ -3069,9 +3069,10 @@ function releaseWake(){try{if(wake)wake.release()}catch(e){}wake=null}
 /* ===== SEDDIK FIRE 3D GAME RENDERER =====
    Three.js scene driven by the existing simulation coordinates.
    The 2D simulation remains authoritative for movement, weapons and collisions. */
-const SF3D={ready:false,failed:false,renderer:null,scene:null,camera:null,world:null,terrain:null,terrainSource:null,staticKey:'',staticMeshes:[],actors:new Map(),lastResize:0};
+const SF3D={ready:false,loading:false,failed:false,renderer:null,scene:null,camera:null,world:null,terrain:null,terrainSource:null,staticKey:'',staticMeshes:[],actors:new Map(),lastResize:0};
 async function sf3dBoot(){
-  if(SF3D.ready||SF3D.failed)return;
+  if(SF3D.ready||SF3D.loading||SF3D.failed)return;
+  SF3D.loading=true;
   try{
     const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js');
     SF3D.THREE=THREE;
@@ -3088,8 +3089,8 @@ async function sf3dBoot(){
     const camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,.5,6500);
     const world=new THREE.Group();scene.add(world);
     SF3D.renderer=renderer;SF3D.scene=scene;SF3D.camera=camera;SF3D.world=world;
-    SF3D.ready=true;SF3D.resize();
-  }catch(e){SF3D.failed=true;console.error('Seddik Fire 3D init:',e)}
+    SF3D.ready=true;SF3D.loading=false;SF3D.resize();
+  }catch(e){SF3D.loading=false;SF3D.failed=true;console.error('Seddik Fire 3D init:',e)}
 }
 SF3D.resize=function(){if(!SF3D.ready)return;const w=window.innerWidth,h=window.innerHeight;SF3D.renderer.setSize(w,h,false);SF3D.camera.aspect=w/h;SF3D.camera.updateProjectionMatrix()};
 function sf3dMat(color,rough=.9){return new SF3D.THREE.MeshStandardMaterial({color,roughness:rough})}

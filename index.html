@@ -3165,7 +3165,7 @@ function sf3dBuild(){
         }
       }
     }
-    g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});add(g);
+    g.scale.setScalar(t.k==='palm'?.62:.56);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});add(g);
   }
   // The lake is rendered as a reflective blue surface above the terrain.
   const lake=new T.Mesh(new T.CircleGeometry(LAKE.r,48),new T.MeshStandardMaterial({color:0x2c91ad,roughness:.22,metalness:.12}));
@@ -3216,7 +3216,7 @@ function sf3dActor(e){
   mesh(new T.BoxGeometry(1.4,1.4,7),metal,8,23,21);
   mesh(new T.BoxGeometry(2,5,3),dark,8,19,7);
   mesh(new T.BoxGeometry(2,2,3),dark,8,25,11);
-  g.scale.setScalar(1.12);
+  g.scale.setScalar(1.38);
   return g;
 }
 function sf3dVehicle(v){
@@ -3325,7 +3325,7 @@ function render3DWorld(){
     const focusX=p.inPlane?cam.x:p.x,focusZ=p.inPlane?cam.y:p.y;
     const ang=p.inPlane?(plane&&plane.ang||0):(p.angle||0);
     const target=new T.Vector3(focusX,p.inPlane?0:(p.air>0?42:12),focusZ);
-    const dist=p.inPlane?760:(p.air>0?390:270),height=p.inPlane?620:(p.air>0?330:205);
+    const dist=p.inPlane?760:(p.air>0?420:300),height=p.inPlane?620:(p.air>0?350:220);
     const desired=new T.Vector3(focusX-Math.cos(ang)*dist,height,focusZ-Math.sin(ang)*dist);
     SF3D.camera.position.lerp(desired,.14);SF3D.camera.lookAt(target);
     SF3D.renderer.render(SF3D.scene,SF3D.camera);

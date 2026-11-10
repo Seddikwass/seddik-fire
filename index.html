@@ -2709,6 +2709,29 @@ function buildTrack(def, quality) {
         const p = P(front * (hx + 0.25), 3.7, sz); mb.box(p[0], p[1], p[2], 0.3, 0.9, sw, neon, 2, yaw);
       }
     }
+    // façades urbaines plus crédibles : balcons en béton, garde-corps métalliques et climatiseurs
+    if (h > 12) {
+      for (let fy = 6.2; fy < h - 2.5; fy += 7.2) {
+        if (r() > 0.34) continue;
+        const span = Math.min(4.2, Math.max(2.8, hz * 1.15));
+        const slab = P(front * (hx + 0.55), fy, 0);
+        mb.box(slab[0], slab[1], slab[2], 1.05, 0.14, span, [0.48, 0.47, 0.44], 18, yaw);
+        const railY = fy + 0.58, railX = front * (hx + 1.02), metal = [0.12, 0.14, 0.16];
+        bar(mb, P(railX, railY, -span / 2), P(railX, railY, span / 2), 0.035, metal, 4, 0.035, 6);
+        bar(mb, P(railX, fy + 0.12, -span / 2), P(railX, fy + 0.12, span / 2), 0.028, metal, 4, 0.028, 6);
+        for (let q = 0; q <= 4; q++) {
+          const zz = -span / 2 + q * span / 4;
+          bar(mb, P(railX, fy + 0.12, zz), P(railX, railY, zz), 0.022, metal, 4, 0.022, 6);
+        }
+        for (const zz of [-span / 2, span / 2]) bar(mb, P(front * (hx + 0.12), fy + 0.12, zz), P(railX, railY, zz), 0.025, metal, 4, 0.025, 6);
+      }
+      if (r() < 0.42) {
+        const ac = P(front * (hx + 0.22), 4.0 + r() * Math.max(1, h - 6), (r() - 0.5) * hz);
+        mb.box(ac[0], ac[1], ac[2], 0.38, 0.42, 0.72, [0.58, 0.6, 0.62], 18, yaw);
+        const grille = P(front * (hx + 0.43), ac[1], (r() - 0.5) * hz);
+        mb.box(grille[0], grille[1], grille[2], 0.025, 0.2, 0.42, [0.16, 0.17, 0.18], 4, yaw);
+      }
+    }
     if (h > 45) { const p = P(0, h, 0); mb.box(p[0], p[1], p[2], 0.5, 1.6, 0.5, [1, 0.1, 0.05], 2); }
     if (r() < 0.5) { const p = P((r() - 0.5) * hx, h, (r() - 0.5) * hz); mb.box(p[0], p[1], p[2], 3, 1.8, 3, V3.sc(c, 0.8), 0, yaw); }
   }

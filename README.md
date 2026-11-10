@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Version 1.35 — finitions tactiques et identité des soldats
+
+- Remplacement des pseudonymes fantaisie des adversaires par des prénoms tunisiens et indicatifs d'unités crédibles.
+- Ajout de détails de finition sur les chaussures tactiques : renfort avant, laçage et œillets, visibles en haute qualité.
+- Cache du service worker incrémenté pour forcer le chargement de cette version sur mobile.
+
+
 ## Version 1.34 — détails d'équipement des soldats
 
 - Ajout de poches utilitaires latérales, coutures de fixation, sangles et boucles sur les gilets tactiques.

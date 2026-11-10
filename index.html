@@ -3579,7 +3579,22 @@ function drawTorso(c,sk,R){if(sk.jc){drawJerseyTorso(c,sk);return}if(sk.ftr){dra
   c.strokeStyle=OUTL;c.lineWidth=1.5;c.beginPath();c.ellipse(0,0,10,15,0,0,TAU);c.stroke();
   // shoulder straps
   c.strokeStyle=shade(pk,.7);c.lineWidth=2;c.beginPath();c.moveTo(-6,-8.5);c.lineTo(3,-12.4);c.moveTo(-6,8.5);c.lineTo(3,12.4);c.stroke();
-  c.strokeStyle='rgba(255,255,255,.12)';c.lineWidth=.6;c.beginPath();c.moveTo(-5.6,-8.9);c.lineTo(2.8,-12.6);c.stroke()}
+  c.strokeStyle='rgba(255,255,255,.12)';c.lineWidth=.6;c.beginPath();c.moveTo(-5.6,-8.9);c.lineTo(2.8,-12.6);c.stroke();
+  /* v134 — détails d'équipement de terrain : poches, sangles et boucles MOLLE. */
+  c.save();
+  for(const side of[-1,1]){
+    const px=side<0?-8.7:7.1;
+    c.fillStyle=shade(pk,.72);rrect(c,px,-5.5,3.2,7.2,.8);c.fill();
+    c.strokeStyle='rgba(8,10,8,.72)';c.lineWidth=.55;c.stroke();
+    c.fillStyle='rgba(235,225,196,.34)';c.fillRect(px+.45,-4.8,2.3,.55);
+    c.fillStyle='#272a24';rrect(c,px+.8,1.8,1.8,2.2,.45);c.fill();
+    c.fillStyle='rgba(220,210,180,.42)';c.fillRect(px+1.1,2.1,1.2,.45);
+  }
+  c.strokeStyle='rgba(15,18,14,.68)';c.lineWidth=.7;c.beginPath();
+  c.moveTo(-4.8,-8.6);c.lineTo(-4.8,8.6);c.moveTo(5.8,-8.6);c.lineTo(5.8,8.6);c.stroke();
+  c.fillStyle='#a88b53';rrect(c,-1.5,-10.3,3,1.4,.4);c.fill();
+  c.fillStyle='rgba(245,236,210,.3)';c.fillRect(-1,-10,2,.3);
+  c.restore()}
 function drawVest(c,l){const col=VEST_BODY[l];c.lineJoin='round';
   if(l===3)for(const s of[-1,1]){c.fillStyle=shade(col,1.35);c.beginPath();c.ellipse(-.5,s*12.3,5.4,3.6,0,0,TAU);c.fill();c.strokeStyle=OUTL;c.lineWidth=.9;c.stroke()}
   c.fillStyle=col;rrect(c,-7.4,-11.2,15.6,22.4,l===1?5:3.4);c.fill();c.strokeStyle=OUTL;c.lineWidth=1.1;c.stroke();

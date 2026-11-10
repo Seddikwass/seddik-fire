@@ -1,5 +1,11 @@
 # Seddik Fire
 
+## Version 1.34 — détails d'équipement des soldats
+
+- Ajout de poches utilitaires latérales, coutures de fixation, sangles et boucles sur les gilets tactiques.
+- Détails intégrés au sprite du soldat pour rester visibles pendant les déplacements et les combats.
+
+
 ## Version 1.33 — ajustement du quartier de pêche du Cap Bon
 
 - Déplacement du petit port de pêche vers une zone côtière libre pour éviter le chevauchement avec le port principal.

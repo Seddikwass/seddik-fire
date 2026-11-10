@@ -1022,9 +1022,11 @@ document.addEventListener('pointerdown',ev=>{
   if(!target||target.disabled||target.getAttribute('aria-disabled')==='true')return;
   ev.preventDefault();
   try{target.focus({preventScroll:true})}catch(_){try{target.focus()}catch(__){}}
+  target.__sfBridgeClicking=true;
   try{target.click()}catch(err){console.error('Activation du bouton:',err)}
+  finally{target.__sfBridgeClicking=false}
 },{capture:true,passive:false});
-function tapOn(el,fn){if(!el)return;let pd=0;el.addEventListener('pointerdown',ev=>{if(ev.pointerType==='mouse'&&ev.button!==0)return;if(ev.pointerType!=='mouse')ev.preventDefault();pd=performance.now();try{fn(ev)}catch(e){console.error(e)}});el.addEventListener('click',ev=>{if(performance.now()-pd<900)return;fn(ev)});el.addEventListener('contextmenu',ev=>ev.preventDefault())}
+function tapOn(el,fn){if(!el)return;let pd=0;el.addEventListener('pointerdown',ev=>{if(ev.pointerType==='mouse'&&ev.button!==0)return;if(ev.pointerType!=='mouse')ev.preventDefault();pd=performance.now();try{fn(ev)}catch(e){console.error(e)}});el.addEventListener('click',ev=>{if(el.__sfBridgeClicking||performance.now()-pd<900)return;fn(ev)});el.addEventListener('contextmenu',ev=>ev.preventDefault())}
 const cv=$('#game'),ctx=cv.getContext('2d');
 const mini=$('#mini'),mctx=mini.getContext('2d');
 const bigcv=$('#bigcv'),bctx=bigcv.getContext('2d');

@@ -2031,7 +2031,7 @@ const perkOf = id => PERKS[DRIVERS[drvIndex(id)].perk] || {};
 /* ---------- modèle 3D ---------- */
 const POSES = {
   // hanche, épaules, tête, mains, genoux, pieds (repère du siège pour 'car', de la moto sinon)
-  car: { hip: [0, 0, 0], sh: [0, 0.5, -0.1], head: [0, 0.69, -0.08], hands: [[0.16, 0.43, 0.37], [-0.16, 0.43, 0.37]], knees: [[0.11, 0.17, 0.42], [-0.11, 0.17, 0.42]], feet: [[0.11, -0.18, 0.62], [-0.11, -0.18, 0.62]], wheel: true },
+  car: { hip: [0, 0, 0], sh: [0, 0.5, -0.1], head: [0, 0.69, -0.08], hands: [[0.16, 0.43, 0.37], [-0.16, 0.43, 0.37]], knees: [[0.11, 0.17, 0.42], [-0.11, 0.17, 0.42]], feet: [[0.11, -0.18, 0.62], [-0.11, -0.18, 0.62]], wheel: true, helmet: true },
   sport: { hip: [0, 0.92, -0.27], sh: [0, 1.2, 0.08], head: [0, 1.3, 0.22], hands: [[0.26, 0.92, 0.45], [-0.26, 0.92, 0.45]], knees: [[0.22, 0.72, 0.06], [-0.22, 0.72, 0.06]], feet: [[0.2, 0.4, -0.25], [-0.2, 0.4, -0.25]], helmet: true },
   trail: { hip: [0, 1.05, -0.24], sh: [0, 1.56, -0.13], head: [0, 1.73, -0.08], hands: [[0.4, 1.19, 0.43], [-0.4, 1.19, 0.43]], knees: [[0.24, 0.9, 0.14], [-0.24, 0.9, 0.14]], feet: [[0.19, 0.46, -0.05], [-0.19, 0.46, -0.05]], helmet: true },
   scoot: { hip: [0, 0.88, -0.32], sh: [0, 1.39, -0.24], head: [0, 1.56, -0.2], hands: [[0.32, 1.02, 0.41], [-0.32, 1.02, 0.41]], knees: [[0.18, 0.9, 0.12], [-0.18, 0.9, 0.12]], feet: [[0.15, 0.31, 0.13], [-0.15, 0.31, 0.13]], helmet: true },
@@ -2046,11 +2046,32 @@ function driverMesh(idx, pose) {
   // torse (combinaison) et bande claire sur la poitrine
   bar(mb, P.hip, P.sh, 0.16, suit, 0, 0.105);
   bar(mb, add(P.hip, [0, 0.2, 0.0]), add(P.sh, [0, -0.08, 0.004]), 0.165, V3.sc(suit, 1.35), 0, 0.02);
+  // combinaison FIA : col, renforts d'épaules, harnais 4 points et boucle centrale
+  sphere(mb, 0, P.sh[1] - 0.025, P.sh[2], 0.09, V3.sc(suit, 0.72), 0, -Math.PI / 2, Math.PI / 2, 8);
+  for (const sx of [-1, 1]) {
+    const shoulder = add(P.sh, [sx * 0.18, -0.015, 0.005]);
+    const beltTop = add(P.sh, [sx * 0.075, -0.055, 0.075]);
+    const beltLow = add(P.hip, [sx * 0.055, 0.08, 0.075]);
+    bar(mb, shoulder, add(P.sh, [sx * 0.24, -0.12, 0.005]), 0.058, V3.sc(suit, 0.72), 4);
+    bar(mb, beltTop, beltLow, 0.022, [0.78, 0.79, 0.82], 4);
+    bar(mb, add(P.sh, [sx * 0.15, -0.03, 0.012]), add(P.hip, [sx * 0.12, 0.1, 0.012]), 0.018, [0.08, 0.09, 0.11], 4);
+    mb.box(sx * 0.2, P.sh[1] - 0.1, P.sh[2] + 0.012, 0.07, 0.075, 0.012, [0.84, 0.86, 0.9], 4);
+  }
+  mb.box(0, P.hip[1] + 0.16, P.hip[2] + 0.09, 0.075, 0.075, 0.025, [0.72, 0.75, 0.8], 4);
   const hc = P.head;
   bar(mb, P.sh, add(hc, [0, -0.1, -0.01]), 0.045, skin, 0);
   if (P.helmet) {
-    sphere(mb, hc[0], hc[1], hc[2], 0.142, helm, 4, -Math.PI / 2, Math.PI / 2, 12);
-    mb.box(hc[0], hc[1] - 0.045, hc[2] + 0.1, 0.2, 0.085, 0.07, [0.03, 0.04, 0.06], 4);
+    // casque intégral de compétition : coque, visière fumée, joint, aérations et marquages
+    sphere(mb, hc[0], hc[1], hc[2], 0.142, helm, 4, -Math.PI / 2, Math.PI / 2, 16);
+    mb.box(hc[0], hc[1] - 0.045, hc[2] + 0.1, 0.2, 0.085, 0.07, [0.018, 0.025, 0.035], 4);
+    mb.box(hc[0], hc[1] - 0.006, hc[2] + 0.132, 0.178, 0.043, 0.012, [0.11, 0.19, 0.25], 15);
+    mb.box(hc[0], hc[1] + 0.119, hc[2] + 0.025, 0.026, 0.008, 0.12, [0.92, 0.94, 0.98], 4);
+    for (const sx of [-1, 1]) {
+      mb.box(sx * 0.126 + hc[0], hc[1] - 0.015, hc[2] + 0.015, 0.012, 0.052, 0.035, [0.16, 0.17, 0.19], 4);
+      sphere(mb, sx * 0.132 + hc[0], hc[1] - 0.025, hc[2] + 0.035, 0.012, [0.72, 0.74, 0.78], 4, -Math.PI / 2, Math.PI / 2, 6);
+      mb.box(sx * 0.055 + hc[0], hc[1] + 0.128, hc[2] + 0.01, 0.018, 0.012, 0.05, [0.92, 0.94, 0.98], 4);
+    }
+    mb.box(hc[0], hc[1] - 0.112, hc[2] + 0.07, 0.12, 0.018, 0.04, [0.025, 0.03, 0.04], 4);
   } else {
     sphere(mb, hc[0], hc[1], hc[2], 0.105, skin, 0, -Math.PI / 2, Math.PI / 2, 10, 1.08);
     const cap = (r, la0, dz = -0.008, dy = 0.012, c = hair) => sphere(mb, hc[0], hc[1] + dy, hc[2] + dz, r, c, 0, la0, Math.PI / 2, 10, 1.04);
@@ -2067,9 +2088,15 @@ function driverMesh(idx, pose) {
   for (let k = 0; k < 2; k++) {
     const sx = k ? -1 : 1, s0 = add(P.sh, [sx * 0.19, -0.04, 0]), h = P.hands[k];
     const e = [(s0[0] + h[0]) / 2 * 1.18, Math.min(s0[1], h[1]) - 0.08, (s0[2] + h[2]) / 2];
-    bar(mb, s0, e, 0.05, suit, 0); bar(mb, e, h, 0.044, suit, 0); sphere(mb, h[0], h[1], h[2], 0.046, glove, 0, -Math.PI / 2, Math.PI / 2, 6);
+    bar(mb, s0, e, 0.05, suit, 0); bar(mb, e, h, 0.044, suit, 0);
+    sphere(mb, e[0], e[1], e[2], 0.057, V3.sc(suit, 0.72), 4, -Math.PI / 2, Math.PI / 2, 8);
+    mb.box(h[0], h[1], h[2] - 0.018, 0.09, 0.035, 0.075, [0.12, 0.13, 0.15], 4);
+    sphere(mb, h[0], h[1], h[2], 0.046, glove, 0, -Math.PI / 2, Math.PI / 2, 8);
     const hp = add(P.hip, [sx * 0.1, 0.02, 0]), kn = P.knees[k], ft = P.feet[k];
-    bar(mb, hp, kn, 0.075, pants, 0); bar(mb, kn, ft, 0.055, pants, 0); mb.box(ft[0], ft[1] - 0.04, ft[2] + 0.04, 0.1, 0.09, 0.2, boot, 0);
+    bar(mb, hp, kn, 0.075, pants, 0); bar(mb, kn, ft, 0.055, pants, 0);
+    sphere(mb, kn[0], kn[1], kn[2], 0.068, V3.sc(suit, 0.72), 4, -Math.PI / 2, Math.PI / 2, 8);
+    mb.box(ft[0], ft[1] - 0.04, ft[2] + 0.04, 0.1, 0.09, 0.2, boot, 0);
+    mb.box(ft[0], ft[1] - 0.087, ft[2] + 0.075, 0.105, 0.018, 0.17, [0.16, 0.16, 0.17], 4);
   }
   if (P.wheel) {
     // volant incliné face au pilote + colonne

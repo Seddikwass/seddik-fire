@@ -2889,6 +2889,40 @@ function drawRoofDetail(b){
       ctx.fillStyle='#d8ddd8';ctx.beginPath();ctx.arc(ax+aw-3,ay+ah/2,2,0,TAU);ctx.fill();
     }
   }
+  /* v97: military and harbour rooftop identity — radar, antennae, vents and safety paint */
+  if((b.st==='mil'||b.st==='port')&&b.w>=100&&b.h>=85){
+    const mx=b.x+b.w*(.28+rnd(71)*.42),my=b.y+b.h*(.28+rnd(72)*.38);
+    if(b.st==='mil'){
+      /* raised concrete radar plinth with rotating dish silhouette */
+      ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(mx-25,my-18,54,42);
+      ctx.fillStyle='#737a78';ctx.fillRect(mx-28,my-22,54,42);
+      ctx.fillStyle='#aeb5ad';ctx.fillRect(mx-24,my-19,46,34);
+      ctx.strokeStyle='#56615f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(mx,my-3,16,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
+      ctx.fillStyle='#626e70';ctx.beginPath();ctx.ellipse(mx,my-5,17,6,-.22,0,TAU);ctx.fill();
+      ctx.strokeStyle='#e1c66d';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(mx,my-5);ctx.lineTo(mx+2,my-35);ctx.lineTo(mx+9,my-45);ctx.stroke();
+      ctx.fillStyle='#e1c66d';ctx.beginPath();ctx.arc(mx+9,my-45,2.4,0,TAU);ctx.fill();
+      /* rooftop ventilation housings and service markings */
+      for(let q=0;q<3;q++){
+        const vx=b.x+b.w*(.18+q*.12),vy=b.y+b.h*.76;
+        ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(vx+2,vy+3,22,15);
+        ctx.fillStyle='#68716e';ctx.fillRect(vx,vy,22,15);
+        ctx.strokeStyle='#c1c5b9';ctx.lineWidth=1;ctx.strokeRect(vx+.5,vy+.5,21,14);
+        ctx.strokeStyle='rgba(35,43,42,.8)';for(let z=0;z<4;z++){ctx.beginPath();ctx.moveTo(vx+4+z*5,vy+3);ctx.lineTo(vx+4+z*5,vy+12);ctx.stroke()}
+      }
+      ctx.strokeStyle='rgba(224,190,91,.65)';ctx.lineWidth=2;ctx.setLineDash([9,7]);ctx.strokeRect(b.x+9,b.y+9,b.w-18,b.h-18);ctx.setLineDash([]);
+    }else{
+      /* port service roof: exhaust stacks and painted loading lanes */
+      for(let q=0;q<4;q++){
+        const vx=b.x+24+q*(b.w-58)/3,vy=b.y+b.h*(.28+(q%2)*.3);
+        ctx.fillStyle='rgba(0,0,0,.24)';ctx.beginPath();ctx.ellipse(vx+3,vy+5,9,6,0,0,TAU);ctx.fill();
+        ctx.fillStyle='#59666a';ctx.fillRect(vx-7,vy-10,14,17);
+        ctx.fillStyle='#b4b9b4';ctx.fillRect(vx-9,vy-12,18,4);
+        ctx.strokeStyle='rgba(235,224,190,.5)';ctx.lineWidth=1;ctx.strokeRect(vx-7.5,vy-9.5,15,16);
+      }
+      ctx.strokeStyle='rgba(240,198,91,.55)';ctx.lineWidth=3;ctx.setLineDash([13,9]);
+      ctx.beginPath();ctx.moveTo(b.x+18,b.y+b.h*.82);ctx.lineTo(b.x+b.w-18,b.y+b.h*.82);ctx.stroke();ctx.setLineDash([]);
+    }
+  }
   ctx.restore();
 }
 function drawRoof(b){const S=STY[b.st];ctx.globalAlpha=b.al;ctx.fillStyle=S.roof;ctx.fillRect(b.x-3,b.y-3,b.w+6,b.h+6);roofTex(b);ctx.globalAlpha=b.al;if(Q.hi){const gr=ctx.createLinearGradient(b.x,b.y,b.x+b.w,b.y+b.h);gr.addColorStop(0,'rgba(255,248,225,.13)');gr.addColorStop(.55,'rgba(255,248,225,0)');gr.addColorStop(1,'rgba(20,12,4,.17)');ctx.fillStyle=gr;ctx.fillRect(b.x-3,b.y-3,b.w+6,b.h+6)}ctx.fillStyle='rgba(255,250,235,.16)';ctx.fillRect(b.x-3,b.y-3,b.w+6,4);ctx.fillRect(b.x-3,b.y-3,4,b.h+6);ctx.fillStyle='rgba(40,25,10,.16)';ctx.fillRect(b.x-3,b.y+b.h-1,b.w+6,4);ctx.fillRect(b.x+b.w-1,b.y-3,4,b.h+6);if(!b.st.startsWith('house')&&b.st!=='cabin'){ctx.fillStyle='rgba(40,28,14,.16)';ctx.fillRect(b.x+3,b.y+3,b.w-6,5);ctx.fillRect(b.x+3,b.y+8,5,b.h-11);ctx.fillStyle='rgba(255,252,240,.12)';ctx.fillRect(b.x+3,b.y+b.h-7,b.w-6,3);ctx.fillRect(b.x+b.w-7,b.y+8,3,b.h-15)}

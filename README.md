@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Version 1.33 — ajustement du quartier de pêche du Cap Bon
+
+- Déplacement du petit port de pêche vers une zone côtière libre pour éviter le chevauchement avec le port principal.
+
+
 ## Version 1.32 — soldats IA et silhouettes d'îles
 
 - Les adversaires IA choisissent désormais uniquement des silhouettes de soldats de terrain (treillis, casque et équipement), en excluant les combattants fantaisie.

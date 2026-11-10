@@ -1676,6 +1676,18 @@ function buildCarModel(styleName, extra = {}) {
       nd.box(hx, hy - 0.095, hL + 0.025, 0.19, 0.012, 0.012, [0.72, 0.88, 1], 15);
     }
   }
+  // essuie-glaces réalistes posés au pied du pare-brise, avec pivots et lames caoutchouc
+  {
+    const zw = zF - fs * 0.16, pw = G.prof(zw), wy = pw.top + 0.018;
+    for (const sx of [-1, 1]) {
+      const wx0 = sx * hW * 0.22;
+      nd.box(wx0, wy, zw, 0.62, 0.018, 0.035, [0.035, 0.038, 0.043], 4, 0, 0.92, 0.7);
+      nd.box(wx0 + sx * 0.03, wy + 0.012, zw - 0.018, 0.58, 0.009, 0.012, [0.2, 0.21, 0.22], 4);
+      nd.box(wx0 - sx * 0.29, wy + 0.012, zw + 0.006, 0.045, 0.028, 0.045, CHROME, 4);
+    }
+    // buses de lave-glace discrets sur le capot
+    for (const sx of [-1, 1]) nd.box(sx * 0.19, pw.top + 0.012, zw + 0.12, 0.035, 0.012, 0.025, [0.16, 0.17, 0.18], 4);
+  }
   // calandre, prise d'air basse, plaques à la tunisienne
   const fh = NF.top - NF.bot;
   mb.box(0, NF.bot + 0.04, hL - 0.012, Math.min(W * (S.ev ? 0.42 : 0.6), NF.hw * 1.7), Math.max(0.09, fh * 0.36), 0.04, TRIM, 0);

@@ -808,7 +808,7 @@ void main(){
     col += sc;
   }
   col = mix(col, fogC, clamp(fogF,0.0,1.0));
-  float sceneLift = uNight > 0.5 ? 1.85 : (uWet > 0.5 ? 1.55 : 1.38);
+  float sceneLift = uNight > 0.5 ? 2.08 : (uWet > 0.5 ? 1.62 : 1.38);
   gl_FragColor = vec4(outc(col, uExpo * sceneLift), uGlass > 0.5 ? ga : 1.0);
 }`;
 

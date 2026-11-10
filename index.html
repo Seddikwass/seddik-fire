@@ -3867,8 +3867,6 @@ const CAREER = [
   { name: 'Évasion maximale', mode: 'chase', track: 7, tier: 3, heat: 4, diff: 4, reward: 60000, desc: 'Échappe à une poursuite renforcée dans les rues de Tunis.' },
   { name: 'Le mur de l’Atlas', mode: 'race', track: 2, laps: 4, opp: 7, tier: 4, diff: 5, reward: 68000, desc: 'Enchaîne les épingles de montagne face aux pilotes experts.' },
   { name: 'Chrono des dunes', mode: 'tt', track: 8, laps: 3, tier: 4, diff: 6, reward: 76000, desc: 'Trois tours dans le Sahara : maîtrise la vitesse et les trajectoires.' },
-  { name: 'Grand Prix nocturne', mode: 'race', track: 4, laps: 5, opp: 7, tier: 4, diff: 7, reward: 85000, desc: 'Cinq tours sur le circuit professionnel, de nuit et sans erreur.' },
-  { name: 'La police ne lâche rien', mode: 'chase', track: 9, tier: 4, heat: 5, diff: 8, reward: 95000, desc: 'Survis à la poursuite la plus intense le long de la corniche.' },
   { name: 'Nuit de Hammamet — demi-finale', mode: 'race', track: 10, laps: 4, opp: 7, tier: 4, diff: 7, reward: 98000, desc: 'Demi-finale côtière sur le tracé nocturne de Yasmine Hammamet, sous les lumières de la marina.' },
   { name: 'Cap Blanc — super pole', mode: 'tt', track: 11, laps: 3, tier: 4, diff: 8, reward: 105000, desc: 'Super pole chronométrée sur la côte de Bizerte : une seule trajectoire parfaite.' },
   { name: 'Rallye de Kairouan — finale régionale', mode: 'race', track: 12, laps: 5, opp: 7, tier: 4, diff: 9, reward: 125000, desc: 'Finale régionale exigeante autour des remparts et de la médina.' },
@@ -4729,7 +4727,7 @@ let SAVE = defaultSave();
 function loadGame() {
   try {
     const s = localStorage.getItem(SAVE_KEY); if (!s) return;
-    const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {};
+    const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {}; const oldDone = Array.isArray(SAVE.careerDone) ? SAVE.careerDone : []; SAVE.careerDone = [...new Set([...oldDone.filter(i => Number.isInteger(i) && i >= 0 && i < 16), ...oldDone.filter(i => Number.isInteger(i) && i >= 20 && i < 24).map(i => i - 4)])]; SAVE.career = clamp(Number(SAVE.career) || 0, 0, 20);
     const st = Object.assign(defaultSettings(), o.settings || {}); if (o.settings && o.settings.vol !== undefined && o.settings.sfx === undefined) st.sfx = o.settings.vol; SAVE.settings = st;
   } catch (e) { }
 }

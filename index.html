@@ -3034,6 +3034,33 @@ function drawSFAtmosphere(){
   if(SF_GRAIN_PATTERN){ctx.globalAlpha=.12;ctx.fillStyle=SF_GRAIN_PATTERN;ctx.fillRect(0,0,VW,VH)}
   ctx.restore();
 }
+/* v128 — repères paysagers régionaux : palmeraies de Djerba et vergers du Cap Bon. */
+function drawRegionalLandmarks(x0,y0,x1,y1){
+ if(!Q.hi||LOWD)return;
+ const inside=(x,y,r=90)=>x+r>=x0&&x-r<=x1&&y+r>=y0&&y-r<=y1;
+ const hash=(a,b)=>{let n=(Math.imul(a|0,374761393)+Math.imul(b|0,668265263)+Math.imul(MAP.seed|0,1442695041))|0;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295};
+ if(MAP.id==='djerba'){
+  for(let gx=360;gx<WS-180;gx+=210)for(let gy=260;gy<WS-180;gy+=190){
+   const h=hash(gx,gy);if(h<.26)continue;const x=gx+(hash(gx+11,gy-7)-.5)*110,y=gy+(hash(gx-13,gy+9)-.5)*90;
+   if(!inside(x,y,34)||isWater(x,y)||nearRoad(x,y,28)||bldAt(x,y))continue;
+   const sway=Math.sin(TIME*.45+h*8)*1.8,scale=.78+h*.55;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+   ctx.fillStyle='rgba(32,35,22,.2)';ctx.beginPath();ctx.ellipse(8,10,25,12,.25,0,TAU);ctx.fill();
+   ctx.strokeStyle='#745536';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(0,7);ctx.quadraticCurveTo(3,-4,sway,-17);ctx.stroke();
+   ctx.strokeStyle='#9c7544';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,4);ctx.lineTo(sway,-16);ctx.stroke();
+   for(let k=0;k<9;k++){const a=k*TAU/9+h*.8,len=19+(k%3)*2.5,ex=sway+Math.cos(a)*len,ey=-17+Math.sin(a)*len*.68;ctx.strokeStyle=k%2?'#526f3c':'#718b49';ctx.lineWidth=3.4;ctx.beginPath();ctx.moveTo(sway,-17);ctx.quadraticCurveTo(sway+Math.cos(a)*len*.55,-17+Math.sin(a)*len*.4-3,ex,ey);ctx.stroke();ctx.strokeStyle='rgba(211,202,137,.4)';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(sway,-17);ctx.lineTo(ex,ey);ctx.stroke()}
+   ctx.fillStyle='#a77b46';ctx.beginPath();ctx.arc(sway,-17,3.2,0,TAU);ctx.fill();ctx.restore();
+  }
+  for(let i=0;i<12;i++){const x=540+(i*317)%2580,y=430+(i*487)%2600;if(!inside(x,y,42)||isWater(x,y)||nearRoad(x,y,18)||bldAt(x,y))continue;const w=22+(i%3)*5,h=17+(i%2)*4;
+   ctx.save();ctx.translate(x,y);ctx.fillStyle='rgba(38,40,32,.2)';ctx.fillRect(-w/2+5,-h/2+6,w,h);ctx.fillStyle='#e6e1d1';ctx.fillRect(-w/2,-h/2,w,h);ctx.fillStyle='#fffaf0';ctx.fillRect(-w/2+2,-h/2+2,w-4,h-4);ctx.fillStyle='#b5a68b';ctx.beginPath();ctx.ellipse(0,-h/2,w*.29,5,0,Math.PI,TAU);ctx.fill();ctx.fillStyle='#9b7c59';ctx.fillRect(-2,h/2-7,4,7);ctx.fillStyle='#b7c9c9';ctx.fillRect(-w/2+4,-h/2+5,4,4);ctx.restore();
+  }
+ }else if(MAP.id==='capbon'){
+  for(let row=0;row<14;row++)for(let col=0;col<15;col++){const gx=420+col*176+(row%2)*72,gy=370+row*188,h=hash(gx,gy);if(h<.18)continue;const x=gx+(h-.5)*38,y=gy+(hash(gx+9,gy-3)-.5)*30;
+   if(!inside(x,y,26)||isWater(x,y)||nearRoad(x,y,20)||bldAt(x,y))continue;const r=9+h*4;ctx.fillStyle='rgba(30,39,23,.18)';ctx.beginPath();ctx.ellipse(x+5,y+7,r*1.35,r*.8,.15,0,TAU);ctx.fill();ctx.fillStyle=h>.66?'#426b38':'#557b3e';ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.fillStyle='rgba(154,183,95,.52)';ctx.beginPath();ctx.arc(x-3,y-3,r*.62,0,TAU);ctx.fill();for(let f=0;f<3;f++){const a=f*2.1+h*4,fx=x+Math.cos(a)*r*.48,fy=y+Math.sin(a)*r*.42;ctx.fillStyle=f===1?'#e8a83f':'#d7a13b';ctx.beginPath();ctx.arc(fx,fy,1.5,0,TAU);ctx.fill()}ctx.strokeStyle='rgba(75,58,37,.7)';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x,y+r*.35);ctx.lineTo(x+1,y+r+3);ctx.stroke();
+  }
+  const lx=coastX(690)-115,ly=690;if(inside(lx,ly,70)&&!isWater(lx,ly)){ctx.save();ctx.translate(lx,ly);ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(6,9,25,14,0,0,TAU);ctx.fill();ctx.fillStyle='#d8d4c5';ctx.beginPath();ctx.moveTo(-13,20);ctx.lineTo(-9,-16);ctx.lineTo(9,-16);ctx.lineTo(13,20);ctx.closePath();ctx.fill();ctx.fillStyle='#b94b39';ctx.fillRect(-10,-8,20,5);ctx.fillStyle='#f7e8bf';ctx.fillRect(-8,-20,16,8);ctx.fillStyle='#e8c46b';ctx.beginPath();ctx.arc(0,-16,4,0,TAU);ctx.fill();ctx.restore()}
+ }
+}
+
 function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;{const pz=z/baseZoom();PK=.0021*pz;PTY=-.27*pz}const sh=reduceMotion?0:cam.shake*10;const ox=(Math.random()-.5)*sh,oy=(Math.random()-.5)*sh;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0e5f86';ctx.fillRect(0,0,VW,VH);
   const vw=VW/z,vh=VH/z,x0=cam.x-vw/2,y0=cam.y-vh/2,x1=x0+vw,y1=y0+vh;V.x0=x0;V.y0=y0;V.x1=x1;V.y1=y1;
@@ -3041,6 +3068,7 @@ function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;
   const gx0=clamp(x0,0,WS),gy0=clamp(y0,0,WS),gx1=clamp(x1,0,WS),gy1=clamp(y1,0,WS);
   if(gx1>gx0&&gy1>gy0)ctx.drawImage(ground,gx0*GS,gy0*GS,(gx1-gx0)*GS,(gy1-gy0)*GS,gx0,gy0,gx1-gx0,gy1-gy0);
    draw2DSurfaceDetail(x0,y0,x1,y1);
+   drawRegionalLandmarks(x0,y0,x1,y1);
    drawCoastalBoats(x0,y0,x1,y1);drawCityTrafficSignals(x0,y0,x1,y1);
   // waves
   ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=3;ctx.beginPath();const off=(TIME*24)%140;

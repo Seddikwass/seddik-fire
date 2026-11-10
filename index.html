@@ -458,6 +458,10 @@ html[lang=ar] .dcard b,html[lang=ar] .dhead h2,html[lang=ar] .drvchip b{font-fam
 <div id="rotate" class="overlay"><div class="rotic"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 40a24 24 0 0 0 20 16M52 24A24 24 0 0 0 36 8" fill="none" stroke="#ff7a18" stroke-width="3"/></svg></div><p data-i18n="rotate">Tourne ton téléphone en mode paysage pour mieux jouer.</p><button id="rot-ok" data-i18n="rotateOk">Continuer quand même</button></div>
 
 <script>
+// garde-fou de démarrage : évite qu'une référence globale 'night' bloque l'initialisation.
+var night = false;
+window.__GAME_BOOT_NIGHT_FALLBACK__ = true;
+
 'use strict';
 /* =====================================================================
    SUPER SEDDIK & JOUD — moteur 3D WebGL autonome (aucune dépendance externe)

@@ -2866,7 +2866,26 @@ function drawWalls(b,sc,ty){const S=STY[b.st],h=b.fh||FH,B=[[b.x,b.y],[b.x+b.w,b
     if(!Q.hi)continue;
     if(b.st==='glass'){ctx.fillStyle='rgba(140,180,210,.55)';quad(.01,.99,.06,.97);ctx.strokeStyle='rgba(30,40,50,.45)';ctx.lineWidth=1;for(let t=14/L;t<1;t+=14/L){const a=P(t,.06),c2=P(t,.97);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(c2[0],c2[1]);ctx.stroke()}continue}
     const step=b.st==='tower'?26:46,nw=Math.floor(L/step),wc=winCol(b);
-    for(let f=0;f<fl;f++){const v0=(f+.36)/fl,v1=(f+.74)/fl;for(let k=0;k<nw;k++){const t=(k+.5)/nw;if(dts.some(q=>Math.abs(q-t)<(DW/2+10)/L))continue;const dw=7/L;ctx.fillStyle='rgba(0,0,0,.4)';quad(t-dw-1/L,t+dw+1/L,v0-.04,v1+.04);ctx.fillStyle=wc;quad(t-dw,t+dw,v0,v1);ctx.fillStyle='rgba(255,255,255,.22)';quad(t-dw,t+dw,v1-.08,v1)}}
+    for(let f=0;f<fl;f++){const v0=(f+.36)/fl,v1=(f+.74)/fl;for(let k=0;k<nw;k++){const t=(k+.5)/nw;if(dts.some(q=>Math.abs(q-t)<(DW/2+10)/L))continue;const dw=7/L;ctx.fillStyle='rgba(0,0,0,.4)';quad(t-dw-1/L,t+dw+1/L,v0-.04,v1+.04);ctx.fillStyle=wc;quad(t-dw,t+dw,v0,v1);ctx.fillStyle='rgba(255,255,255,.22)';quad(t-dw,t+dw,v1-.08,v1);
+      /* v108: deep window reveals, lintels, stone sills and Mediterranean shutters */
+      const wa=P(t-dw-.006,v0-.045),wb=P(t+dw+.006,v0-.045),wc2=P(t+dw+.006,v1+.045),wd=P(t-dw-.006,v1+.045);
+      ctx.strokeStyle='rgba(18,16,13,.62)';ctx.lineWidth=1.35;ctx.beginPath();ctx.moveTo(wa[0],wa[1]);ctx.lineTo(wb[0],wb[1]);ctx.lineTo(wc2[0],wc2[1]);ctx.lineTo(wd[0],wd[1]);ctx.closePath();ctx.stroke();
+      ctx.strokeStyle='rgba(242,226,194,.48)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(wd[0],wd[1]);ctx.lineTo(wc2[0],wc2[1]);ctx.stroke();
+      const mid=P(t,v0),mid2=P(t,v1);ctx.strokeStyle='rgba(16,25,30,.48)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(mid[0],mid[1]);ctx.lineTo(mid2[0],mid2[1]);ctx.stroke();
+      if(['med','ksar','house','house2','res','hut'].includes(b.st)){
+        const shutter= P(t-dw-.018,v0),shutter2=P(t-dw-.018,v1);
+        ctx.strokeStyle='rgba(75,57,39,.82)';ctx.lineWidth=Math.max(1,2/L*46);ctx.beginPath();ctx.moveTo(shutter[0],shutter[1]);ctx.lineTo(shutter2[0],shutter2[1]);ctx.stroke();
+        const sill=P(t+dw+.025,v1+.018),sill2=P(t-dw-.025,v1+.018);
+        ctx.strokeStyle='rgba(235,219,187,.58)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(sill[0],sill[1]);ctx.lineTo(sill2[0],sill2[1]);ctx.stroke();
+      }
+      if((b.st==='mil'||b.st==='port'||b.st==='shop')&&((Math.floor(t*L/step)+f)%4===1)){
+        const ac=P(t,v1+.065),ac2=P(t,v1+.15),aw=4.5;
+        ctx.fillStyle='rgba(8,13,15,.38)';ctx.fillRect(ac[0]-aw+1,ac[1]+2,aw*2,Math.max(3,Math.abs(ac2[1]-ac[1])));
+        ctx.fillStyle='#aeb8b5';ctx.fillRect(ac[0]-aw,ac[1],aw*2,Math.max(3,Math.abs(ac2[1]-ac[1])));
+        ctx.strokeStyle='rgba(35,47,48,.8)';ctx.lineWidth=.7;ctx.strokeRect(ac[0]-aw,ac[1],aw*2,Math.max(3,Math.abs(ac2[1]-ac[1])));
+        ctx.strokeStyle='rgba(45,57,58,.7)';for(let vent=1;vent<4;vent++){ctx.beginPath();ctx.moveTo(ac[0]-aw+vent*aw*.5,ac[1]+1);ctx.lineTo(ac[0]-aw+vent*aw*.5,ac[1]+Math.max(3,Math.abs(ac2[1]-ac[1]))-1);ctx.stroke()}
+      }
+    }}
     // v70: relief discret des façades (joints, usure et variations de matière)
     if(Q.hi&&b.st!=='glass'&&b.st!=='tower'){
       const rows=Math.max(2,Math.min(6,fl+1));

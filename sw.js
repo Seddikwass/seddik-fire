@@ -1,5 +1,5 @@
 /* Seddik Fire — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'seddik-fire-v90';
+const VERSION = 'seddik-fire-v91';
 const FONTS = 'seddik-fire-fonts';
 const CORE = [
   './',

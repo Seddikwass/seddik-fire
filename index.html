@@ -2509,7 +2509,7 @@ cv.addEventListener('pointerdown',ev=>{initAudio();
   try{cv.setPointerCapture(ev.pointerId)}catch(e){}});
 cv.addEventListener('pointermove',ev=>{if(ev.pointerType==='mouse'){mouse.sx=ev.clientX;mouse.sy=ev.clientY;mouse.active=true;return}
   for(const k in sticks){const s=sticks[k];if(s.id!==ev.pointerId)continue;let dx=ev.clientX-s.ox,dy=ev.clientY-s.oy;const d=Math.hypot(dx,dy);if(d>STICK_R){s.ox=ev.clientX-dx/d*STICK_R;s.oy=ev.clientY-dy/d*STICK_R;dx=dx/d*STICK_R;dy=dy/d*STICK_R}
-    s.x=ev.clientX;s.y=ev.clientY;s.mag=Math.min(1,Math.hypot(dx,dy)/STICK_R);const q=Math.hypot(dx,dy)||1;s.dx=dx/q*s.mag;s.dy=dy/q*s.mag}});
+    s.x=ev.clientX;s.y=ev.clientY;const raw=Math.min(1,Math.hypot(dx,dy)/STICK_R),dead=.065;s.mag=raw<=dead?0:(raw-dead)/(1-dead);const q=Math.hypot(dx,dy)||1;s.dx=dx/q*s.mag;s.dy=dy/q*s.mag}});
 function releasePtr(ev){if(ev.pointerType==='mouse'){if(ev.button===0)mouse.down=false;return}for(const k in sticks){const s=sticks[k];if(s.id===ev.pointerId){if(k==='aim'&&GP.arm&&game.mode==='play')gpAimRelease(s);else if(k==='aim'&&performance.now()-s.t0<200&&s.mag<.3)tapFire=true;s.id=null;s.mag=0;s.dx=s.dy=0}}}
 cv.addEventListener('pointerup',releasePtr);cv.addEventListener('pointercancel',releasePtr);cv.addEventListener('lostpointercapture',releasePtr);
 function resetSticks(){for(const k in sticks){const s=sticks[k];s.id=null;s.mag=0;s.dx=s.dy=0}}

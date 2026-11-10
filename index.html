@@ -206,19 +206,19 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 #h-tt{position:absolute;top:max(14px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);margin-top:48px;font-family:var(--fb);font-weight:700;font-size:15px;color:#fff;background:rgba(0,0,0,.4);padding:4px 12px}
 /* tactile */
 #touch{position:absolute;inset:0;pointer-events:none}
-#touch button{pointer-events:auto;position:absolute;background:rgba(15,16,22,.42);border:2px solid rgba(255,255,255,.24);color:#fff;font-family:var(--fh);font-size:15px;touch-action:none;border-radius:16px;opacity:var(--touch-op,.75);display:flex;align-items:center;justify-content:center;-webkit-touch-callout:none}
-#touch button svg{width:42%;height:42%}
-#touch button.on{background:rgba(255,122,24,.52);border-color:var(--acc);box-shadow:0 0 0 2px rgba(255,122,24,.16),0 8px 24px rgba(0,0,0,.3)}
-#touch button:active{transform:scale(.94);filter:brightness(1.22)}
+#touch button{pointer-events:auto;position:absolute;background:linear-gradient(145deg,rgba(28,31,40,.78),rgba(8,10,15,.62));border:1.5px solid rgba(255,255,255,.34);color:#fff;font-family:var(--fh);font-size:15px;touch-action:none;touch-action: manipulation;border-radius:22px;opacity:var(--touch-op,.82);display:flex;align-items:center;justify-content:center;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;transition:background .08s,border-color .08s,box-shadow .08s,filter .08s}
+#touch button svg{width:48%;height:48%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+#touch button.on{background:linear-gradient(145deg,rgba(255,139,47,.92),rgba(205,74,12,.82));border-color:#ffd0a6;box-shadow:0 0 0 3px rgba(255,122,24,.22),0 8px 24px rgba(0,0,0,.38);filter:brightness(1.12)}
+#touch button:active{transform:scale(.96);filter:brightness(1.2)}
 #touch button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media(hover:none){#touch button{backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);box-shadow:0 5px 18px rgba(0,0,0,.24)}}
-#touch .tl button{bottom:max(22px,env(safe-area-inset-bottom));width:min(17vw,110px);height:min(17vw,110px);font-size:30px}
+#touch .tl button{bottom:max(22px,env(safe-area-inset-bottom));width:clamp(76px,18vw,116px);height:clamp(76px,18vw,116px);font-size:32px;border-radius:50%;border-width:2px}
 #touch [data-t=left]{left:max(18px,env(safe-area-inset-left))}
-#touch [data-t=right]{left:calc(max(18px,env(safe-area-inset-left)) + min(17vw,110px) + 14px)}
-#touch [data-t=gas]{right:max(18px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));width:min(15vw,96px);height:min(26vw,150px)}
-#touch [data-t=brake]{right:calc(max(18px,env(safe-area-inset-right)) + min(15vw,96px) + 12px);bottom:max(22px,env(safe-area-inset-bottom));width:min(14vw,88px);height:min(14vw,88px)}
-#touch [data-t=nitro]{right:calc(max(18px,env(safe-area-inset-right)) + min(15vw,96px) + 12px);bottom:calc(max(22px,env(safe-area-inset-bottom)) + min(14vw,88px) + 12px);width:min(14vw,88px);height:min(10vw,62px);color:#9ef;border-color:rgba(25,211,255,.5)}
-#touch [data-t=hand]{right:max(18px,env(safe-area-inset-right));bottom:calc(max(22px,env(safe-area-inset-bottom)) + min(26vw,150px) + 12px);width:min(15vw,96px);height:min(10vw,62px);font-size:11px}
+#touch [data-t=right]{left:calc(max(18px,env(safe-area-inset-left)) + clamp(76px,18vw,116px) + 12px)}
+#touch [data-t=gas]{right:max(18px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));width:clamp(72px,17vw,104px);height:clamp(112px,29vw,164px);border-radius:24px}
+#touch [data-t=brake]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(72px,17vw,104px) + 12px);bottom:max(22px,env(safe-area-inset-bottom));width:clamp(66px,15vw,92px);height:clamp(66px,15vw,92px);border-radius:50%}
+#touch [data-t=nitro]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(72px,17vw,104px) + 12px);bottom:calc(max(22px,env(safe-area-inset-bottom)) + clamp(66px,15vw,92px) + 12px);width:clamp(66px,15vw,92px);height:clamp(48px,10vw,64px);color:#9ef;border-color:rgba(25,211,255,.62);border-radius:16px}
+#touch [data-t=hand]{right:max(18px,env(safe-area-inset-right));bottom:calc(max(22px,env(safe-area-inset-bottom)) + clamp(112px,29vw,164px) + 12px);width:clamp(72px,17vw,104px);height:clamp(48px,10vw,64px);font-size:12px;border-radius:16px}
 body.touch .hud-br{bottom:auto;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));transform:scale(.5);transform-origin:top right}
 body.touch #minimap{width:104px;height:104px;top:auto;right:auto;left:max(18px,env(safe-area-inset-left));bottom:calc(max(22px,env(safe-area-inset-bottom)) + min(17vw,110px) + 14px)}
 body.touch .hud-bl{bottom:auto;top:calc(max(14px,env(safe-area-inset-top)) + 54px);transform:scale(.7);transform-origin:top left}
@@ -937,7 +937,7 @@ void main(){ vec2 uv=vUv;
  c = clamp(uGain*(c + uLift*(1.0-c)), 0.0, 1.0);
  c = mix(c, c*c*(3.0-2.0*c), uCon);
  float vg = smoothstep(1.05,0.3,length((uv-0.5)*vec2(1.25,1.0))); c *= mix(1.0,vg,uVig);
- c += (hh(uv*uRes+uTime)-0.5)*0.012;
+ c += (hh(uv*uRes+uTime)-0.5)*0.0065;
  c = mix(c, vec3(1.0,0.97,0.9), uFlash);
  gl_FragColor=vec4(c,1.0); }`;
 
@@ -4000,7 +4000,7 @@ function readInput(dt) {
   } catch (e) { }
   if (TOUCH.axOn) analog = clamp(TOUCH.ax * (SAVE.settings.sens || 100) / 100, -1, 1);
   if (analog !== null) G.steer = analog;
-  else { const rate = st === 0 ? 7 : (Math.sign(st) !== Math.sign(G.steer) && G.steer !== 0 ? 10 : 4.2); G.steer += clamp(st - G.steer, -rate * dt, rate * dt); }
+  else { const rate = st === 0 ? 8.5 : (Math.sign(st) !== Math.sign(G.steer) && G.steer !== 0 ? 11.5 : 5.4); G.steer += clamp(st - G.steer, -rate * dt, rate * dt); }
   const o = G.inpO || (G.inpO = {}); o.gas = gas; o.brake = brake; o.steer = G.steer; o.hand = hand; o.nitro = nitro; o.rev = 0; o.hold = false; return o;
 }
 

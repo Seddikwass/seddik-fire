@@ -1815,6 +1815,15 @@ function buildCarModel(styleName, extra = {}) {
     interior.box(sx * xS, yHip, zS - 0.27, 0.44, 0.6 * sScale, 0.1, SEATC, 0, 0, 0.9, 1);
     interior.box(sx * xS, yHip + 0.6 * sScale, zS - 0.28, 0.22, 0.13 * sScale, 0.09, SEATC, 0);
   }
+  // ceintures trois points : sangle textile, ancrage supérieur et boucle métallique pour chaque siège
+  for (const sx of [-1, 1]) {
+    const bx = sx * xS;
+    const beltTop = [bx + sx * 0.14, yHip + 0.53 * sScale, zS - 0.31];
+    const beltLow = [bx - sx * 0.13, yHip + 0.07, zS + 0.12];
+    bar(interior, beltTop, beltLow, 0.022, [0.12, 0.105, 0.085], 4, 0.012, 6);
+    interior.box(bx - sx * 0.11, yHip + 0.105, zS + 0.1, 0.075, 0.025, 0.055, [0.62, 0.63, 0.64], 4);
+    interior.box(bx + sx * 0.13, yHip + 0.045, zS + 0.16, 0.035, 0.035, 0.045, [0.72, 0.12, 0.08], 4);
+  }
   if (S.doors === 4 && zS - zA > 0.75) interior.box(0, yHip - 0.05, zS - 0.85, iw * 1.8, 0.5 * sScale, 0.3, SEATC, 0);
   // planche de bord sculptée, combiné d'instruments et console centrale
   const dashY = yBelt - 0.12, dashZ = zBk + 0.015, dashW = Math.max(0.72, iw * 1.85);

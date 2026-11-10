@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Version 1.32 — soldats IA et silhouettes d'îles
+
+- Les adversaires IA choisissent désormais uniquement des silhouettes de soldats de terrain (treillis, casque et équipement), en excluant les combattants fantaisie.
+- Djerba et le Cap Bon ont des lignes de côte distinctes, avec des baies et des avancées de terrain propres à chaque carte.
+- Les repères régionaux et les nouveaux quartiers restent déterministes d'une partie à l'autre.
+
+
 ## Version 1.31 — soldats et identités régionales
 
 - Silhouette des opérateurs tactiques enrichie : antenne radio, épaulières renforcées et insigne tunisien visible.

@@ -1254,7 +1254,8 @@ const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a','#8e44ad','#dcdcdc','#1
 const lvOK=n=>typeof n==='string'?(stats.cupBest|0)>=+n.slice(1):(stats.level||1)>=n||(stats.cupBest|0)>=50;
 const lvTxt=n=>typeof n==='string'?'Parcours étape '+n.slice(1):'Niv. '+n;
 const WARRIORS=()=>SOLDIERS.filter(s=>s.sp);
-function botSkin(){return pick(SOLDIERS)}
+/* v132 — l'IA utilise des silhouettes de soldats modernes, pas les skins fantaisie. */
+function botSkin(){const field=SOLDIERS.filter(sk=>!sk.ftr&&!sk.sp&&!sk.jc);return pick(field.length?field:SOLDIERS)}
 function soldierById(id){return SOLDIERS.find(x=>x.id===id)||SOLDIERS[1]}
 const AMMO={'9mm':{n:'9 mm',stack:30,cap:180},'45':{n:'.45',stack:21,cap:105},'556':{n:'5,56 mm',stack:30,cap:180},'762':{n:'7,62 mm',stack:30,cap:150},'12g':{n:'Cal. 12',stack:10,cap:40},'mag':{n:'.300',stack:5,cap:20}};
 const MEDS={bandage:{n:'Bandage',t:2.6,max:10},medkit:{n:'Trousse de soins',t:6,max:3},drink:{n:'Boisson énergisante',t:3,max:5}};
@@ -1428,7 +1429,7 @@ const STY={
   cabin:{floor:'#9c7b52',wall:'#7a5a38',edge:'#4a3420',roof:'#6b4e30',roof2:'#55391f',door:'#3a2418'},
   hut:{floor:'#b99d6b',wall:'#8e6b3d',edge:'#5a4122',roof:'#b48d50',roof2:'#916d36',door:'#2c6db3'}
 };
-function coastX(y){return 3160+90*Math.sin(y/310)+45*Math.sin(y/97+1.3)+30*Math.sin(y/53)}
+function coastX(y){if(MAP&&MAP.id==='djerba')return 3020+170*Math.sin(y/440)+75*Math.sin(y/130+.7)+45*Math.sin(y/67);if(MAP&&MAP.id==='capbon')return 3090+110*Math.sin(y/280)+90*Math.sin(y/155+2)+22*Math.sin(y/49);return 3160+90*Math.sin(y/310)+45*Math.sin(y/97+1.3)+30*Math.sin(y/53)}
 function isWater(x,y){if(x>PIER.x&&x<PIER.x+PIER.w&&y>PIER.y&&y<PIER.y+PIER.h)return false;return x>coastX(y)||dd2(x,y,LAKE.x,LAKE.y)<LAKE.r*LAKE.r}
 function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=clamp(t,0,1);return Math.hypot(px-ax-dx*t,py-ay-dy*t)}
 function nearRoad(x,y,m){for(const rd of roads)for(let i=0;i<rd.length-1;i++)if(segDist(x,y,rd[i][0],rd[i][1],rd[i+1][0],rd[i+1][1])<m)return true;return false}

@@ -2879,6 +2879,31 @@ function buildTrack(def, quality) {
         }
       }
     }
+    // Identité tunisienne sur les circuits non urbains : panneaux-drapeaux visibles
+    // depuis la piste, avec poteau et emblème simplifié en géométrie 3D.
+    if (theme !== 'city') {
+      for (let i = 36; i < N; i += 188) {
+        if (inTun(i, 8)) continue;
+        for (const side of [-1, 1]) {
+          const mb = ch(rk(i)), d = side * (W + 4.6), base = at(i, d, 0);
+          post(mb, i, d, 3.25, 0.045, POST);
+          board(mb, i, d, 2.85, 0.76, 0.43, [0.86, 0.035, 0.075], 2, 0.055);
+          const P = (u, v) => at(i, d + u, 2.85 + v);
+          const center = P(0, 0), radius = 0.205, white = [0.97, 0.96, 0.92], red = [0.86, 0.035, 0.075];
+          for (let q = 0; q < 18; q++) {
+            const a0 = q / 18 * Math.PI * 2, a1 = (q + 1) / 18 * Math.PI * 2;
+            mb.tri(center, P(Math.cos(a0) * radius, Math.sin(a0) * radius), P(Math.cos(a1) * radius, Math.sin(a1) * radius), white, 2);
+          }
+          const cc = P(0.055, 0.012), rr = 0.15;
+          for (let q = 0; q < 18; q++) {
+            const a0 = q / 18 * Math.PI * 2, a1 = (q + 1) / 18 * Math.PI * 2;
+            mb.tri(cc, P(0.055 + Math.cos(a0) * rr, 0.012 + Math.sin(a0) * rr), P(0.055 + Math.cos(a1) * rr, 0.012 + Math.sin(a1) * rr), red, 2);
+          }
+          const star = P(-0.04, 0.01), tip = P(-0.04, 0.105), left = P(-0.12, -0.045), right = P(0.045, -0.045);
+          mb.tri(star, tip, left, red, 2); mb.tri(star, left, right, red, 2); mb.tri(star, right, tip, red, 2);
+        }
+      }
+    }
   }
   function buildCity() {
     for (const side of [-1, 1]) {

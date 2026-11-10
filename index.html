@@ -2636,7 +2636,28 @@ function drawFace(b){const S=STY[b.st];ctx.globalAlpha=b.al;const y=b.y+b.h+3,x=
   const g=ctx.createLinearGradient(0,y,0,y+FH);g.addColorStop(0,shade(S.wall,.72));g.addColorStop(1,shade(S.wall,.5));ctx.fillStyle=g;ctx.fillRect(x,y,w,FH);
   ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(x,y,w,2);ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(x,y+FH,w,4);
   const win=b.st==='med'||b.st==='ksar'||b.st==='hut'?'#2c6db3':b.st==='farm'||b.st==='cabin'?'#3a2418':b.st==='tower'||b.st==='glass'?'#7fa3c4':b.st==='shop'?'#3c5a74':b.st.startsWith('house')?'#3b5878':'#2b3238';
-  for(let wx=x+20;wx<x+w-24;wx+=46){let door=false;for(const d of b.doors)if(d.ny>0&&Math.abs(d.x-(wx+6))<DW/2+8)door=true;if(door)continue;ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(wx-1,y+4,14,9);ctx.fillStyle=win;ctx.fillRect(wx,y+5,12,7);ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(wx,y+5,12,1.5)}
+  for(let wx=x+20;wx<x+w-24;wx+=46){let door=false;for(const d of b.doors)if(d.ny>0&&Math.abs(d.x-(wx+6))<DW/2+8)door=true;if(door)continue;ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(wx-1,y+4,14,9);ctx.fillStyle=win;ctx.fillRect(wx,y+5,12,7);ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(wx,y+5,12,1.5);
+    /* v89: Mediterranean façade joinery — deep reveals, sills and shutters */
+    if(Q.hi){
+      ctx.fillStyle='rgba(18,17,14,.5)';ctx.fillRect(wx-2,y+3,2,12);ctx.fillRect(wx+12,y+3,2,12);
+      ctx.fillStyle='rgba(226,213,183,.58)';ctx.fillRect(wx-2,y+13,16,2);
+      ctx.fillStyle=b.st==='med'||b.st==='ksar'?'#78664b':'#5b5548';
+      ctx.fillRect(wx-4,y+4,3,9);ctx.fillRect(wx+13,y+4,3,9);
+      ctx.fillStyle='rgba(225,210,177,.28)';ctx.fillRect(wx-3,y+4,1,8);ctx.fillRect(wx+13,y+4,1,8);
+      ctx.strokeStyle='rgba(22,18,13,.42)';ctx.lineWidth=.65;ctx.beginPath();ctx.moveTo(wx+6,y+5);ctx.lineTo(wx+6,y+12);ctx.stroke();
+    }
+  }
+  if(Q.hi){
+    // Plaster corner bands and subtle weathering below the roofline
+    ctx.fillStyle='rgba(255,239,207,.13)';ctx.fillRect(x+3,y+1,2,Math.max(8,FH-2));ctx.fillRect(x+w-5,y+1,2,Math.max(8,FH-2));
+    ctx.fillStyle='rgba(24,20,15,.12)';ctx.fillRect(x+5,y+FH-3,w-10,2);
+    if(b.st==='shop'||b.st==='market'){
+      ctx.fillStyle='rgba(25,22,18,.28)';ctx.fillRect(x+8,y+15,w-16,3);
+      for(let sx=x+10;sx<x+w-12;sx+=12){ctx.fillStyle=((sx-x)/12|0)%2?'#e8dfc9':'#b74a32';ctx.beginPath();ctx.moveTo(sx,y+18);ctx.lineTo(Math.min(sx+12,x+w-8),y+18);ctx.lineTo(Math.min(sx+10,x+w-8),y+24);ctx.lineTo(sx+2,y+24);ctx.closePath();ctx.fill()}
+    }
+    // Fine, deterministic plaster hairline cracks
+    if(b.w>65&&b.st!=='glass'){ctx.strokeStyle='rgba(46,37,27,.2)';ctx.lineWidth=.65;ctx.beginPath();ctx.moveTo(x+w*.76,y+FH*.32);ctx.lineTo(x+w*.735,y+FH*.48);ctx.lineTo(x+w*.75,y+FH*.58);ctx.stroke()}
+  }
   if(FH>=40){for(let wy=y+20;wy<y+FH-10;wy+=14)for(let wx=x+20;wx<x+w-24;wx+=46){ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(wx-1,wy-1,14,9);ctx.fillStyle=b.st==='glass'?'#9cc2dc':'#7fa3c4';ctx.fillRect(wx,wy,12,7);ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(wx,wy,12,1.5)}}
   for(const d of b.doors)if(d.ny>0){ctx.fillStyle='rgba(15,10,6,.75)';ctx.fillRect(d.x-DW/2+4,y+FH-Math.min(FH,22),DW-8,Math.min(FH,22))}
   ctx.globalAlpha=1}

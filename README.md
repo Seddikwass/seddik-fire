@@ -1,5 +1,14 @@
 # Seddik Fire
 
+## Version 1.37 — progression renforcée sur 50 étapes
+
+- Les 50 étapes conservent leurs cartes régionales tunisiennes et leurs noms de lieux.
+- Progression rééquilibrée : les premières missions commencent avec 12 combattants, puis l'effectif augmente graduellement jusqu'à 30.
+- Difficulté IA renforcée et graduelle, avec plafond de compétence adapté aux étapes avancées.
+- Tempête plus exigeante au fil du parcours.
+- Indicateur de menace croissant ajouté aux données de chaque étape.
+
+
 ## Version 1.36 — soldat moderne par défaut
 
 - Le profil initial d'une nouvelle installation sélectionne désormais le Raider moderne, équipé d'un casque balistique et d'un gilet porte-plaques, plutôt qu'un personnage stylisé.

@@ -1481,6 +1481,11 @@ function hubMB(r, w) {
     mb.box(sx * (hw - 0.08), r * 0.18, -r * 0.42, 0.06, r * 0.36, r * 0.22, [0.78, 0.08, 0.06], 0);
     mb.box(sx * (hw - 0.065), r * 0.48, -r * 0.18, 0.07, r * 0.25, r * 0.3, [0.78, 0.08, 0.055], 4);
     sphere(mb, sx * (hw - 0.055), 0, 0, 0.035, [0.72, 0.73, 0.76], 4, -Math.PI / 2, Math.PI / 2, 8);
+    // cinq écrous métalliques individuels autour du moyeu, visibles sur chaque face
+    for (let n = 0; n < 5; n++) {
+      const a = n / 5 * Math.PI * 2 + Math.PI / 2;
+      sphere(mb, sx * (hw - 0.052), Math.cos(a) * r * 0.29, Math.sin(a) * r * 0.29, 0.018, [0.82, 0.84, 0.87], 4, -Math.PI / 2, Math.PI / 2, 6);
+    }
   }
   return mb;
 }

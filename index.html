@@ -667,6 +667,15 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
   #lobby #play{width:100%;min-height:76px}
 }
 
+
+/* v119 — soldat de secours HTML/SVG, indépendant du canvas */
+.stage{position:relative;isolation:isolate}
+#lobbySoldierFallback{position:absolute;z-index:3;left:50%;top:48%;width:min(72%,230px);height:88%;transform:translate(-50%,-50%);display:grid;place-items:center;pointer-events:none;filter:drop-shadow(0 15px 18px rgba(0,0,0,.65))}
+#lobbySoldierFallback svg{display:block;width:100%;height:100%;overflow:visible}
+#skinCv{position:relative;z-index:1}
+.stage::after{z-index:2}
+@media(max-width:760px){#lobbySoldierFallback{width:min(74%,210px);height:86%;top:47%}}
+
 </style>
 </head>
 <body>
@@ -747,6 +756,36 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
       <div class="stage">
         <button id="skinPrev" class="arrow" aria-label="Soldat précédent">‹</button>
         <canvas id="skinCv" aria-label="Aperçu du soldat"></canvas>
+        <div id="lobbySoldierFallback" aria-hidden="true">
+          <svg viewBox="0 0 220 260" role="presentation" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sfVest" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#788568"/><stop offset=".55" stop-color="#3e4a3b"/><stop offset="1" stop-color="#202a24"/></linearGradient>
+              <linearGradient id="sfHelmet" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#9ba582"/><stop offset="1" stop-color="#303b30"/></linearGradient>
+              <linearGradient id="sfCloth" x1="0" x2="1"><stop stop-color="#66745b"/><stop offset="1" stop-color="#252f27"/></linearGradient>
+              <filter id="sfShadow" x="-40%" y="-30%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+            </defs>
+            <ellipse cx="110" cy="244" rx="58" ry="9" fill="#000" opacity=".65" filter="url(#sfShadow)"/>
+            <path d="M83 151 76 218 68 236 96 238 108 170 114 170 126 238 154 236 145 216 137 151Z" fill="#293229" stroke="#111a14" stroke-width="4"/>
+            <path d="m70 229 29 1-3 15H62Zm56 1 29-1 9 16h-34Z" fill="#151c19" stroke="#879078" stroke-width="2"/>
+            <path d="m73 75-22 17-13 66 17 9 24-49 5-33Zm74 0 22 17 13 66-17 9-24-49-5-33Z" fill="url(#sfCloth)" stroke="#18231b" stroke-width="4"/>
+            <path d="m51 151 14 5-5 18-17-5Zm118 0-14 5 5 18 17-5Z" fill="#1a211b"/>
+            <path d="M80 65 68 89l9 70q33 17 66 0l9-70-12-24Z" fill="#313c31" stroke="#141d17" stroke-width="5"/>
+            <path d="m81 76 29 8 29-8 7 77q-36 15-72 0Z" fill="url(#sfVest)" stroke="#9aa184" stroke-opacity=".65" stroke-width="2"/>
+            <path d="m91 87 19 5 19-5 5 61H86Z" fill="#29352c" stroke="#a5a889" stroke-opacity=".5" stroke-width="2"/>
+            <path d="M88 100h17v23H88zm27 0h17v23h-17z" fill="#1c261f" stroke="#899275" stroke-width="2"/>
+            <path d="M91 105h11v5H91zm27 0h11v5h-11z" fill="#a0a27b"/>
+            <path d="M101 58h18v20h-18Z" fill="#9b6d51"/>
+            <path d="M87 42q2-27 23-27t23 27l-5 25q-18 13-36 0Z" fill="#bb8967" stroke="#533e32" stroke-width="3"/>
+            <path d="M80 43q0-34 30-36 31 2 31 36l-9 2-5-18q-17-9-34 0l-5 18Z" fill="url(#sfHelmet)" stroke="#17221a" stroke-width="4"/>
+            <path d="M78 43q32-8 64 0l-4 8q-28-5-56 0Z" fill="#202a22" stroke="#a0a887" stroke-width="2"/>
+            <path d="M91 53q19 7 38 0" fill="none" stroke="#3a3029" stroke-width="3"/>
+            <path d="m147 91 8 4-6 75-10-2Z" fill="#171d19" stroke="#899078" stroke-width="2"/>
+            <path d="m143 111 17 2 3 7-20-1Z" fill="#59634e"/>
+            <path d="m148 164 9 2-2 24-10-1Z" fill="#171d19"/>
+            <path d="m76 92-11 47m79-47 11 47" stroke="#a2a789" stroke-width="4" opacity=".75"/>
+            <path d="M94 154h32" stroke="#d0bd8b" stroke-width="3" opacity=".8"/>
+          </svg>
+        </div>
         <button id="skinNext" class="arrow" aria-label="Soldat suivant">›</button>
       </div>
       <div class="pc-name"><span class="lbl">Votre personnage · <span id="skinIdx">2 / 7</span></span><b id="skinName">Forêt</b><span id="skinDesc"></span></div>

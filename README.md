@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Version 1.36 — soldat moderne par défaut
+
+- Le profil initial d'une nouvelle installation sélectionne désormais le Raider moderne, équipé d'un casque balistique et d'un gilet porte-plaques, plutôt qu'un personnage stylisé.
+- Les choix de personnages déjà enregistrés restent conservés pour ne pas écraser la sélection du joueur.
+- Cache mobile incrémenté vers v136.
+
+
 ## Version 1.35 — finitions tactiques et identité des soldats
 
 - Remplacement des pseudonymes fantaisie des adversaires par des prénoms tunisiens et indicatifs d'unités crédibles.

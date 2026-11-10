@@ -2505,7 +2505,13 @@ function draw2DSurfaceDetail(x0,y0,x1,y1){
     const f=noise(gx,gy,step),f2=noise(gx+19,gy-31,step*.5),px=gx+f*step,py=gy+f2*step;
     if(px<0||py<0||px>WS||py>WS||isWater(px,py)||f<.19)continue;
     const r=1+f2*2.8;
-    if(city){
+    const beachX=coastX(py);
+    if(px>beachX-175&&px<beachX-5){
+      ctx.globalAlpha=.13+f*.12;ctx.fillStyle=f>.55?'#e8d5ad':'#625b4a';
+      ctx.beginPath();ctx.ellipse(px,py,r*(1.4+f2),r*(.65+f2*.35),f*TAU,0,TAU);ctx.fill();
+      if(f2>.72){ctx.globalAlpha=.2;ctx.strokeStyle='#fff0d0';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(px+2,py-1,1.8,Math.PI*1.05,Math.PI*1.8);ctx.stroke()}
+      if(f>.91){ctx.globalAlpha=.17;ctx.strokeStyle='#536b42';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(px-2,py+2);ctx.quadraticCurveTo(px,py-2,px+3,py-3);ctx.stroke()}
+    }else if(city){
       /* Fine asphalt grain, worn aggregate and occasional hairline cracks. */
       ctx.globalAlpha=.045+f*.045;ctx.fillStyle=f>.52?'#f0e5cf':'#171b20';
       ctx.beginPath();ctx.ellipse(px,py,r*2.4,r*.55,f2*TAU,0,TAU);ctx.fill();
@@ -2711,6 +2717,21 @@ function drawFace(b){const S=STY[b.st];ctx.globalAlpha=b.al;const y=b.y+b.h+3,x=
     }
     // Fine, deterministic plaster hairline cracks
     if(b.w>65&&b.st!=='glass'){ctx.strokeStyle='rgba(46,37,27,.2)';ctx.lineWidth=.65;ctx.beginPath();ctx.moveTo(x+w*.76,y+FH*.32);ctx.lineTo(x+w*.735,y+FH*.48);ctx.lineTo(x+w*.75,y+FH*.58);ctx.stroke()}
+  }
+  /* v93: projecting Mediterranean balconies with iron rails and supports */
+  if(Q.hi&&FH>=30&&['med','ksar','house','house2','res','shop'].includes(b.st)){
+    const count=Math.max(1,Math.floor(w/112));
+    for(let bi=0;bi<count;bi++){
+      const bx=x+24+bi*((w-48)/Math.max(1,count)),bw=Math.min(27,Math.max(18,(w-42)/count*.62)),by=y+Math.min(FH-9,20);
+      ctx.fillStyle='rgba(15,13,10,.25)';ctx.fillRect(bx-3,by+4,bw+6,3);
+      ctx.fillStyle='#b9aa8c';ctx.fillRect(bx-4,by,bw+8,2.2);
+      ctx.fillStyle='rgba(30,34,32,.92)';ctx.fillRect(bx-3,by-5,bw+6,1.4);
+      ctx.strokeStyle='rgba(35,39,36,.9)';ctx.lineWidth=1.05;
+      ctx.beginPath();ctx.moveTo(bx-3,by-5);ctx.lineTo(bx-3,by+1);ctx.moveTo(bx+bw+3,by-5);ctx.lineTo(bx+bw+3,by+1);
+      for(let rail=1;rail<=5;rail++){const rx=bx-3+(bw+6)*rail/6;ctx.moveTo(rx,by-5);ctx.lineTo(rx,by+1)}
+      ctx.stroke();
+      ctx.strokeStyle='rgba(235,225,201,.28)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(bx-2,by-4);ctx.lineTo(bx+bw+2,by-4);ctx.stroke();
+    }
   }
   if(FH>=40){for(let wy=y+20;wy<y+FH-10;wy+=14)for(let wx=x+20;wx<x+w-24;wx+=46){ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(wx-1,wy-1,14,9);ctx.fillStyle=b.st==='glass'?'#9cc2dc':'#7fa3c4';ctx.fillRect(wx,wy,12,7);ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(wx,wy,12,1.5)}}
   for(const d of b.doors)if(d.ny>0){ctx.fillStyle='rgba(15,10,6,.75)';ctx.fillRect(d.x-DW/2+4,y+FH-Math.min(FH,22),DW-8,Math.min(FH,22))}
@@ -3075,6 +3096,25 @@ function drawBody(c,e){const sk=e.sk||SOLDIERS[1],w=curW(e),Wp=w?WEAP[w.type]:nu
   if(Wp&&e.fireCd>0){const kick=clamp((Wp.rate-e.fireCd)/Math.max(.01,Wp.rate),0,1);const pulse=Math.sin(kick*Math.PI);c.translate((Wp.cls==='sg'||Wp.cls==='sn'?-3.1:-1.7)*pulse,-.55*pulse);c.rotate(-.035*pulse)}
   if(sk.cape)drawCape(c,sk,ws,e.walkPh||0,e._turn||0);
   c.drawImage(torsoSpr(sk),-28,-28,56,56);
+  /* v93: chest rig, ballistic webbing, utility pouches and stitched seams */
+  if(Q.hi&&!sk.ftr&&!sk.jc&&!sk.sp){
+    c.save();
+    c.strokeStyle='rgba(15,18,15,.82)';c.lineWidth=2.1;c.lineCap='round';
+    c.beginPath();c.moveTo(-9,-13);c.lineTo(-6,-5);c.moveTo(9,-13);c.lineTo(6,-5);c.stroke();
+    const rig=c.createLinearGradient(-7,-5,7,8);rig.addColorStop(0,shade(sk.base,1.18));rig.addColorStop(.52,shade(sk.base,.92));rig.addColorStop(1,shade(sk.base,.62));
+    c.fillStyle='rgba(0,0,0,.3)';rrect(c,-8,-5,16,12,2.4);c.fill();
+    c.fillStyle=rig;rrect(c,-7.2,-6,14.4,10.5,2);c.fill();
+    c.strokeStyle='rgba(8,12,9,.7)';c.lineWidth=.7;c.stroke();
+    for(const px of[-4.7,0,4.7]){
+      c.fillStyle=shade(sk.base,.7);rrect(c,px-1.8,-4.4,3.6,6.5,1);c.fill();
+      c.strokeStyle='rgba(230,222,193,.28)';c.lineWidth=.55;c.beginPath();c.moveTo(px-1.1,-3.2);c.lineTo(px+1.1,-3.2);c.stroke();
+      c.fillStyle='#252b25';rrect(c,px-.7,-1.3,1.4,1.2,.4);c.fill();
+    }
+    c.fillStyle='#b6a16b';rrect(c,-1.3,5.1,2.6,1.8,.5);c.fill();
+    c.strokeStyle='rgba(230,224,204,.2)';c.lineWidth=.65;c.beginPath();c.moveTo(-6.4,3.5);c.lineTo(6.4,3.5);c.stroke();
+    c.restore();
+  }
+
   /* v87: layered shoulder armor, reinforced elbow pads and tactical webbing */
   if(!sk.ftr&&!sk.jc){
     for(const side of[-1,1]){

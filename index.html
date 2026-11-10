@@ -675,6 +675,12 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
 #skinCv{position:relative;z-index:1}
 .stage::after{z-index:2}
 @media(max-width:760px){#lobbySoldierFallback{width:min(74%,210px);height:86%;top:47%}}
+/* v120 — animation vivante et relief du personnage */
+#lobbySoldierFallback{filter:drop-shadow(0 13px 13px rgba(0,0,0,.72)) drop-shadow(0 0 9px rgba(255,112,48,.13));transform-origin:50% 76%;animation:sfSoldierIdle 3.8s ease-in-out infinite}
+#lobbySoldierFallback svg{overflow:visible}
+#lobbySoldierFallback svg path{vector-effect:non-scaling-stroke}
+@keyframes sfSoldierIdle{0%,100%{translate:0 0;scale:1}50%{translate:0 -2px;scale:1.006}}
+@media(prefers-reduced-motion:reduce){#lobbySoldierFallback{animation:none}}
 
 </style>
 </head>
@@ -784,6 +790,24 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
             <path d="m148 164 9 2-2 24-10-1Z" fill="#171d19"/>
             <path d="m76 92-11 47m79-47 11 47" stroke="#a2a789" stroke-width="4" opacity=".75"/>
             <path d="M94 154h32" stroke="#d0bd8b" stroke-width="3" opacity=".8"/>
+            <!-- v120: détails tactiques haute définition -->
+            <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m78 84 17 8 15 4 15-4 17-8" stroke="#b0b99a" stroke-width="2" opacity=".8"/>
+              <path d="m83 91-5 57m64-57 5 57" stroke="#141d17" stroke-width="3" opacity=".8"/>
+              <path d="M88 128h18v17H88zM114 128h18v17h-18z" fill="#414b3b" stroke="#9da586" stroke-width="2"/>
+              <path d="M92 132h10m-10 5h10m17-5h10m-10 5h10" stroke="#c2bd91" stroke-width="1" opacity=".7"/>
+              <path d="m72 103-8 35m84-35 8 35" stroke="#c2c7a7" stroke-width="1.4" opacity=".65"/>
+              <path d="m82 161 15 3m26 0 15-3" stroke="#0e1511" stroke-width="3"/>
+              <path d="m83 181 14 1-2 8-14-1zm40 1 14-1 2 8-14 1z" fill="#4b5745" stroke="#87947a" stroke-width="2"/>
+              <path d="m80 195 15 1m30-1 15-1" stroke="#9ca68a" stroke-width="2" opacity=".7"/>
+            </g>
+            <g id="sf-rifle" stroke-linejoin="round">
+              <path d="m145 100 7-2 7 4-2 7-7 2-4-4Z" fill="#202722" stroke="#a0a889" stroke-width="1.5"/>
+              <path d="m151 106 7 2 10 42-5 2-12-39Z" fill="#303a31" stroke="#111a14" stroke-width="2"/>
+              <path d="m161 146 7 1 4 27-7 2-5-24Z" fill="#202820" stroke="#929b7d" stroke-width="1.5"/>
+              <path d="m166 150 9 1 2 4-9 1Z" fill="#a0a889"/>
+              <path d="m153 111 3-2 4 13-3 1Z" fill="#b7ad83"/>
+            </g>
           </svg>
         </div>
         <button id="skinNext" class="arrow" aria-label="Soldat suivant">›</button>

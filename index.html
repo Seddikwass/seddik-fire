@@ -3413,8 +3413,8 @@ function sf3dPoseActor(g,e){
   const reload=e.reloadT>0?Math.sin((1-e.reloadT/Math.max(.01,e.reloadTot||1))*Math.PI):0;
   const using=e.using?Math.sin(TIME*7)*.08:0;
   const bob=moving?Math.abs(Math.sin(phase))*(.65+Math.min(.45,speed*.001)):Math.sin(TIME*1.8+(e.id||0))*.12;
-  const airborne=(e.air||0)>0;g.position.set(e.x,airborne?24+(e.air||0)*105:bob,e.y);g.rotation.y=-(e.angle||0);if(g.userData.parachute)g.userData.parachute.visible=airborne;
-  g.rotation.z=Math.sin(phase)*(moving?.025:.006)-fire*.012;
+  const airborne=(e.air||0)>0;g.position.set(e.x+(airborne?Math.sin(TIME*1.25+(e.id||0))*(e.vx||0)*.012:0),airborne?24+(e.air||0)*105:bob,e.y+(airborne?Math.cos(TIME*1.1+(e.id||0))*(e.vy||0)*.012:0));g.rotation.y=-(e.angle||0);if(g.userData.parachute){g.userData.parachute.visible=airborne;g.userData.parachute.rotation.x=airborne?Math.sin(TIME*1.7+(e.id||0))*.055:0;g.userData.parachute.rotation.z=airborne?Math.cos(TIME*1.35+(e.id||0))*.07:0;}
+  g.rotation.z=airborne?Math.sin(TIME*1.4+(e.id||0))*.035:Math.sin(phase)*(moving?.025:.006)-fire*.012;
   if(g.userData.limbs){
     const axis=new SF3D.THREE.Vector3(0,0,1),q=new SF3D.THREE.Quaternion();
     g.userData.limbs.forEach((part,i)=>{

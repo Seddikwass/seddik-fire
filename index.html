@@ -2902,6 +2902,41 @@ function drawGunTop(c,t,x,y){const W=WEAP[t],L=W.len,f=W.furn,cl=W.cls,wood=!!W.
    c.fillStyle='rgba(235,225,195,.28)';c.fillRect(x+rx+rl*.08,y-2.1,1.1,.55);c.fillRect(x+hx+hw*.22,y-2.35,1,.55);
    c.strokeStyle='rgba(0,0,0,.55)';c.lineWidth=.45;c.beginPath();c.moveTo(x+rx+rl*.56,y-1.9);c.lineTo(x+rx+rl*.56,y+1.8);c.moveTo(x+bx+2,y-1.2);c.lineTo(x+bx+2,y+1.2);c.stroke();
    if(cl==='ar'||cl==='smg'||cl==='sn'||cl==='dmr'){c.fillStyle='rgba(180,190,180,.22)';c.fillRect(x+rx+rl*.48,y-2.6,Math.max(1,rl*.08),.55)}
+   /* v88: crisp weapon hardware visible at normal gameplay zoom */
+   c.save();
+   // Ejection port, bolt carrier and charging handle
+   if(cl!=='p'){
+     c.fillStyle='rgba(8,10,11,.82)';rrect(c,x+rx+rl*.52,y-.95,Math.max(3,rl*.22),1.9,.65);c.fill();
+     c.fillStyle='rgba(174,181,174,.72)';c.fillRect(x+rx+rl*.55,y-.48,Math.max(2,rl*.15),.55);
+     c.fillStyle='#171a1b';rrect(c,x+rx+rl*.78,y-2.65,2.6,1.3,.5);c.fill();
+     c.fillStyle='rgba(210,215,202,.62)';c.fillRect(x+rx+rl*.8,y-2.5,1.8,.4);
+   }
+   // Raised Picatinny rail teeth and mounting feet
+   if(t==='m4'||t==='m16'||t==='ak'||t==='mp5'||cl==='sn'||cl==='dmr'){
+     c.fillStyle='#171a1a';c.fillRect(x+rx+rl*.18,y-3.25,Math.max(5,rl*.56),.85);
+     c.fillStyle='rgba(196,201,188,.68)';
+     for(let z=0;z<Math.max(3,Math.floor(rl*.16));z++)c.fillRect(x+rx+rl*.2+z*1.65,y-3.35, .72,.95);
+   }
+   // Handguard cooling slots and metal collar
+   if(cl==='ar'||cl==='smg'||cl==='sg'||t==='m4'||t==='m16'){
+     c.strokeStyle='rgba(7,9,10,.8)';c.lineWidth=.65;
+     for(let z=0;z<5;z++){const px=x+hx+hw*(.12+z*.15);c.beginPath();c.moveTo(px,y-1.65);c.lineTo(px+.8,y+1.65);c.stroke()}
+     c.fillStyle='#777f7d';c.fillRect(x+bx-1.1,y-1.7,1.15,3.4);
+     c.fillStyle='rgba(240,241,222,.55)';c.fillRect(x+bx-.7,y-1.45,.38,2.8);
+   }
+   // Muzzle crown and bore highlight
+   c.fillStyle='#0d1011';c.beginPath();c.arc(x+L-.45,y,.95,0,TAU);c.fill();
+   c.strokeStyle='rgba(194,199,188,.72)';c.lineWidth=.45;c.beginPath();c.arc(x+L-.45,y,.55,0,TAU);c.stroke();
+   // Optic lens: glass glint and reticle tint
+   if(W.sc){const sx=rx-1,sl=Math.max(L*.38,rl+2);
+     c.fillStyle='rgba(44,111,145,.78)';c.beginPath();c.ellipse(x+sx+sl-1.1,y-.05,1.05,1.45,0,0,TAU);c.fill();
+     c.strokeStyle='rgba(205,233,238,.78)';c.lineWidth=.5;c.beginPath();c.moveTo(x+sx+sl-1.6,y-.75);c.lineTo(x+sx+sl-.7,y-.2);c.stroke();
+     c.fillStyle='#202629';c.fillRect(x+sx+sl*.46,y+1.8,2.2,.9);
+   }
+   // Tiny selector and safety markings
+   c.fillStyle='#c4b88e';c.beginPath();c.arc(x+rx+rl*.34,y+2.05,.62,0,TAU);c.fill();
+   c.strokeStyle='rgba(228,221,194,.36)';c.lineWidth=.45;c.beginPath();c.moveTo(x+rx+rl*.34,y+2.05);c.lineTo(x+rx+rl*.34+1.1,y+1.1);c.stroke();
+   c.restore();
  }
 function scopeX(W){const L=W.len,rx=-4+L*.3,rl=L*.32;return rx-1+Math.max(L*.38,rl+2)+.6}
 function headSpr(hg,col,skin,acc){acc=acc||0;const k=hg+col+skin+acc;let s=HSPR.get(k);if(s)return s;s=mkCv(112,112);const c=s.getContext('2d');c.scale(4,4);c.translate(14,14);

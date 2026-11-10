@@ -2666,6 +2666,19 @@ function draw2DSurfaceDetail(x0,y0,x1,y1){
       if(f>.84){ctx.globalAlpha=.12;ctx.strokeStyle='#17191c';ctx.lineWidth=.75;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+3+f2*5,py+2+f*4);ctx.lineTo(px+5+f2*7,py+1+f*7);ctx.stroke()}
       if(f2>.91){ctx.globalAlpha=.11;ctx.fillStyle='#d4c7aa';ctx.beginPath();ctx.arc(px+5,py-3,1.1,0,TAU);ctx.fill()}
     }else if(desert){
+      /* v111: layered wind-shaped dune ripples and scattered mineral grains. */
+      if(f2>.34){
+        const wave=noise(gx+71,gy-29,step*.8),len=5+f2*13;
+        ctx.globalAlpha=.075+wave*.09;ctx.strokeStyle=wave>.52?'#f5dfb5':'#806044';ctx.lineWidth=.65+f*.35;
+        ctx.beginPath();ctx.moveTo(px-len,py-1.2);
+        ctx.quadraticCurveTo(px-len*.12,py-2.8+(wave-.5)*2,px+len,py-.5);ctx.stroke();
+        if(wave>.78){ctx.globalAlpha=.12;ctx.strokeStyle='#fff1d2';ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(px-len*.55,py-2.5);ctx.quadraticCurveTo(px,py-3.4,px+len*.45,py-2.1);ctx.stroke()}
+      }
+      if(f>.88){
+        ctx.globalAlpha=.14;ctx.fillStyle=f2>.5?'#5d5140':'#d7c29b';
+        ctx.beginPath();ctx.ellipse(px+3,py+2,1.1+f2*1.6,.65+f*.45,f2*TAU,0,TAU);ctx.fill();
+        ctx.globalAlpha=.1;ctx.fillStyle='#332d25';ctx.beginPath();ctx.arc(px+4,py+2.8,.65,0,TAU);ctx.fill();
+      }
       ctx.globalAlpha=.07+f*.09;ctx.fillStyle=f>.72?'#fff0c7':'#8d673d';
       ctx.beginPath();ctx.ellipse(px,py,r*2.8,r*.62,f*TAU,0,TAU);ctx.fill();
       if(f>.78){ctx.globalAlpha=.12;ctx.strokeStyle='#fff0d0';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(px-5,py);ctx.quadraticCurveTo(px,py-2,px+6,py-1);ctx.stroke()}

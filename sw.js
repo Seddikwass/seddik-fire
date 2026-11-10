@@ -1,6 +1,7 @@
 /* Seddik Fire — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'seddik-fire-v117';
+const VERSION = 'seddik-fire-v118';
 const FONTS = 'seddik-fire-fonts';
+const LEGACY_CACHES = ['super-joud-v10'];
 const CORE = [
   './',
   './index.html',
@@ -20,7 +21,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION && k !== FONTS).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => (k !== VERSION && k !== FONTS) || LEGACY_CACHES.includes(k)).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });

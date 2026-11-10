@@ -3981,7 +3981,7 @@ let RSZ=0;
 function frame(now){if((FR30||stats.fr30)&&game.mode==='play'){FRC^=1;if(FRC){requestAnimationFrame(frame);return}}const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;TIME+=dt;if((RSZ+=dt)>.4){RSZ=0;if(window.innerWidth!==VW||window.innerHeight!==VH)resize()}
   // v113: le personnage du lobby est dessiné indépendamment du rendu de la scène.
   // Une erreur dans render()/la simulation ne doit plus laisser la vitrine vide.
-  if(game.mode==='lobby'&&!lobbyEl.hidden){try{drawPreview()}catch(previewErr){console.error('Aperçu du soldat:',previewErr)}}
+  if(!lobbyEl.hidden){try{drawPreview()}catch(previewErr){console.error('Aperçu du soldat:',previewErr)}}
   try{tutoTick(dt);adaptRes(dt);if(game.mode==='play'){if(HSTOP>0)HSTOP-=dt;else update(dt)}else if(game.mode==='lobby')updateLobby(dt);
     render();
     if(game.mode==='end')drawEndHero();

@@ -2481,7 +2481,7 @@ function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;
   for(const e of ents)if(e.alive&&!e.inPlane&&e.air<=0&&!e.veh&&vis(e.x,e.y))drawEnt(e);
   gpDrawWorld();drawFires();
   // bullets
-  ctx.lineCap='round';for(const b of bullets){if(!vis(b.x,b.y,120))continue;ctx.strokeStyle='rgba(255,170,80,.22)';ctx.lineWidth=b.sn?7:5;ctx.beginPath();ctx.moveTo(b.x-b.vx*.024,b.y-b.vy*.024);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.strokeStyle=b.sn?'rgba(255,248,225,1)':'rgba(255,226,170,.95)';ctx.lineWidth=b.sn?2.6:1.8;ctx.stroke()}
+  ctx.lineCap='round';for(const b of bullets){if(!vis(b.x,b.y,120))continue;ctx.strokeStyle=b.sn?'rgba(255,205,130,.34)':'rgba(255,170,80,.3)';ctx.lineWidth=b.sn?9:6.5;ctx.beginPath();ctx.moveTo(b.x-b.vx*.034,b.y-b.vy*.034);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.strokeStyle=b.sn?'rgba(255,250,232,1)':'rgba(255,232,184,.98)';ctx.lineWidth=b.sn?2.8:2;ctx.beginPath();ctx.moveTo(b.x-b.vx*.018,b.y-b.vy*.018);ctx.lineTo(b.x,b.y);ctx.stroke()}
   // particles
   let pi=0;for(const p of parts){if(!vis(p.x,p.y))continue;const a=clamp(p.l/p.m,0,1);
     if(p.fl){drawMuzzle(p);continue}

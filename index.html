@@ -2685,6 +2685,14 @@ function draw2DSurfaceDetail(x0,y0,x1,y1){
     }else if(forest){
       ctx.globalAlpha=.11;ctx.fillStyle=f>.5?'#345d32':'#a0a66a';ctx.beginPath();ctx.arc(px,py,r*1.25,0,TAU);ctx.fill();
       if(f>.7){ctx.globalAlpha=.13;ctx.strokeStyle='#263f25';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px-2,py+2);ctx.lineTo(px,py-2);ctx.lineTo(px+3,py+1);ctx.stroke()}
+      /* v112: layered leaf litter, damp soil flecks and fallen twig fragments add depth to forest floors. */
+      if(f2>.43){
+        const leaf=noise(gx+127,gy-53,step*.38),ang=(leaf-.5)*1.5,lr=1.1+leaf*2.1;
+        ctx.globalAlpha=.075+leaf*.105;ctx.fillStyle=leaf>.58?'#a18b55':(f>.5?'#354b2b':'#725b3a');
+        ctx.beginPath();ctx.ellipse(px+(f2-.5)*8,py+(leaf-.5)*5,lr,lr*.42,ang,0,TAU);ctx.fill();
+        if(leaf>.82){ctx.globalAlpha=.12;ctx.strokeStyle='#c0a66b';ctx.lineWidth=.65;ctx.beginPath();ctx.moveTo(px-2,py+1);ctx.lineTo(px+2.5,py-1.5);ctx.stroke()}
+      }
+      if(f>.94){ctx.globalAlpha=.13;ctx.strokeStyle='#493d2b';ctx.lineWidth=1.05;ctx.beginPath();ctx.moveTo(px-4,py+2);ctx.lineTo(px+3+f2*3,py-2);ctx.lineTo(px+5+f2*2,py-1);ctx.stroke()}
       /* Tiny layered grass blades break up flat forest clearings. */
       if(f2>.58){ctx.globalAlpha=.16+f2*.09;ctx.strokeStyle=f>.5?'#294d2a':'#9ca36a';ctx.lineWidth=.85;ctx.beginPath();for(let q=0;q<4;q++){const bx=px+(q-1.5)*1.8,lean=(q-1.5)*1.15;ctx.moveTo(bx,py+2.8);ctx.quadraticCurveTo(bx+lean*.4,py-.8,bx+lean,py-3.2-(q%2)*1.4)}ctx.stroke()}
     }else{

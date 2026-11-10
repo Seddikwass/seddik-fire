@@ -3485,6 +3485,18 @@ function sf3dSyncTracers(){
   }
   for(let j=count;j<SF3D.tracerMeshes.length;j++)SF3D.tracerMeshes[j].visible=false;
 }
+function sf3dSyncCasings(){
+  const T=SF3D.THREE;
+  if(!SF3D.casingMeshes){SF3D.casingMeshes=[];SF3D.casingGeometry=new T.CylinderGeometry(.72,.72,3.6,7);SF3D.casingMaterial=new T.MeshStandardMaterial({color:0xb58a43,metalness:.72,roughness:.38})}
+  const active=parts.filter(p=>p.sh&&p.l>0).slice(-32);
+  for(let i=0;i<active.length;i++){
+    let m=SF3D.casingMeshes[i];if(!m){m=new T.Mesh(SF3D.casingGeometry,SF3D.casingMaterial);SF3D.casingMeshes[i]=m;SF3D.world.add(m)}
+    const p=active[i],age=1-p.l/Math.max(.01,p.m||1.6);
+    m.visible=true;m.position.set(p.x,13+Math.sin(age*Math.PI)*17,p.y);
+    m.rotation.set(.7+age*3,p.rot||0,(p.vr||0)*age);
+  }
+  for(let i=active.length;i<SF3D.casingMeshes.length;i++)SF3D.casingMeshes[i].visible=false;
+}
 function sf3dSyncImpacts(){
   const T=SF3D.THREE;
   if(!SF3D.impactMeshes){
@@ -3564,7 +3576,7 @@ function render3DWorld(dt=1/60){
   try{
     const key=MAP.id+'|'+blds.length+'|'+trees.length+'|'+solids.length;
     if(SF3D.staticKey!==key||SF3D.terrainSource!==ground)sf3dBuild();
-    sf3dSyncActors();sf3dSyncTracers();sf3dSyncImpacts();sf3dSyncExplosions();
+    sf3dSyncActors();sf3dSyncTracers();sf3dSyncCasings();sf3dSyncImpacts();sf3dSyncExplosions();
     const T=SF3D.THREE,p=player;
     // Match the 3D atmosphere and particles to the active island weather.
     const wx=MAP.wx||'breeze',weather=SF3D.weatherParticles;

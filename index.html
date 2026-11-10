@@ -3144,6 +3144,18 @@ function drawGunTop(c,t,x,y){const W=WEAP[t],L=W.len,f=W.furn,cl=W.cls,wood=!!W.
    // Subtle heat discoloration around the muzzle collar
    const collar=c.createLinearGradient(x+bx-1,y-2,x+bx+1,y+2);collar.addColorStop(0,'#74766d');collar.addColorStop(.5,'#272b29');collar.addColorStop(1,'#8b8170');
    c.fillStyle=collar;c.fillRect(x+bx-.55,y-1.8,1.1,3.6);
+   // v100 : micro-détails de finition sur les armes longues
+   if(W.len>25){
+     c.save();c.lineCap='round';
+     const rx0=x+Math.max(2,W.len*.27),rx1=x+Math.min(W.len-5,W.len*.48);
+     c.strokeStyle='rgba(205,210,198,.24)';c.lineWidth=.42;c.beginPath();c.moveTo(rx0,y-1.25);c.lineTo(rx1,y-1.25);c.stroke();
+     c.strokeStyle='rgba(0,0,0,.48)';c.lineWidth=.55;
+     for(const px of[rx0+1.2,rx1-1.2]){c.beginPath();c.arc(px,y, .58,0,TAU);c.stroke();c.fillStyle='rgba(210,210,190,.42)';c.fillRect(px-.18,y-.18,.36,.36)}
+     c.strokeStyle='rgba(0,0,0,.38)';c.lineWidth=.45;
+     for(let q=0;q<4;q++){const px=x+W.len*.18+q*1.15;c.beginPath();c.moveTo(px,y+2.2);c.lineTo(px+.55,y+3.8);c.stroke()}
+     c.strokeStyle='rgba(220,218,195,.3)';c.lineWidth=.5;c.beginPath();c.moveTo(x+W.len*.72,y-2.1);c.lineTo(x+W.len*.84,y-2.1);c.stroke();
+     c.restore();
+   }
    c.restore();
    c.restore();
  }

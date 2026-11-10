@@ -2908,6 +2908,34 @@ function buildTrack(def, quality) {
     }
     // palmiers de l'avenue
     for (let i = 8; i < N; i += 16) { if (inTun(i, 6)) continue; for (const side of [-1, 1]) if (r() < 0.8) { const p = pos(i, side * (W + 3.2), 0.18); addPalm(ch(rk(i)), p[0], p[1], p[2], 7 + r() * 4, r); } }
+    // Drapeaux tunisiens en bord d'avenue : fanions 3D visibles des deux côtés de la chaussée.
+    // Géométrie légère, intégrée aux mêmes lots de décor pour préserver les performances.
+    for (let i = 24; i < N; i += 118) {
+      if (inTun(i, 8)) continue;
+      for (const side of [-1, 1]) {
+        const mb = ch(rk(i)), base = pos(i, side * (W + 5.1), 0.15);
+        const poleTop = [base[0], base[1] + 5.1, base[2]];
+        bar(mb, base, poleTop, 0.055, [0.22, 0.23, 0.25], 5, 0.055, 5);
+        const sign = side, cx0 = poleTop[0], cy0 = poleTop[1] - 0.55, cz0 = poleTop[2];
+        const P = (u, v) => [cx0 + tx[i] * u * sign, cy0 + v, cz0 + tz[i] * u * sign];
+        const red = [0.86, 0.035, 0.075], white = [0.96, 0.95, 0.9];
+        const a = P(0, 0.45), b = P(1.45, 0.45), c = P(1.45, -0.45), d = P(0, -0.45);
+        mb.quad(a, b, c, d, red, 2);
+        // disque blanc et croissant rouge stylisé
+        const center = P(0.72, 0), radius = 0.27;
+        for (let q = 0; q < 16; q++) {
+          const t0 = q / 16 * Math.PI * 2, t1 = (q + 1) / 16 * Math.PI * 2;
+          mb.tri(center, P(0.72 + Math.cos(t0) * radius, Math.sin(t0) * radius), P(0.72 + Math.cos(t1) * radius, Math.sin(t1) * radius), white, 2);
+        }
+        const cc = P(0.79, 0.015), rr = 0.205;
+        for (let q = 0; q < 16; q++) {
+          const t0 = q / 16 * Math.PI * 2, t1 = (q + 1) / 16 * Math.PI * 2;
+          mb.tri(cc, P(0.79 + Math.cos(t0) * rr, 0.015 + Math.sin(t0) * rr), P(0.79 + Math.cos(t1) * rr, 0.015 + Math.sin(t1) * rr), red, 2);
+        }
+        const star = P(0.61, 0.01), tip = P(0.61, 0.16), left = P(0.48, -0.07), right = P(0.74, -0.07);
+        mb.tri(star, tip, left, red, 2); mb.tri(star, left, right, red, 2); mb.tri(star, right, tip, red, 2);
+      }
+    }
     // éclairage urbain : lampadaires modernes avec bras déporté et tête LED
     for (let i = 12; i < N; i += 22) {
       if (inTun(i, 7)) continue;

@@ -1401,6 +1401,33 @@ function drawCityRoads(c){const X=XTRA.X,Y=XTRA.Y;c.lineCap='butt';const path=rd
   for(const rd of roads){path(rd);c.strokeStyle='#c9c6bd';c.lineWidth=128;c.stroke();c.strokeStyle='rgba(0,0,0,.12)';c.lineWidth=100;c.stroke()}
   for(const rd of roads){path(rd);c.strokeStyle='#3a3c41';c.lineWidth=96;c.stroke()}
   const R=mulberry32(55);for(const rd of roads){const [a,b]=rd,L=Math.hypot(b[0]-a[0],b[1]-a[1]),ux=(b[0]-a[0])/L,uy=(b[1]-a[1])/L;for(let i=0;i<L/6;i++){const t=R()*L,o=(R()-.5)*90;c.fillStyle=R()<.5?'rgba(255,255,255,.05)':'rgba(0,0,0,.08)';c.fillRect(a[0]+ux*t-uy*o,a[1]+uy*t+ux*o,2+R()*3,2+R()*3)}}
+  /* v109: urban asphalt wear — manholes, drainage grates and tire scuffs */
+  c.save();c.lineCap='round';
+  for(let ri=0;ri<roads.length;ri++){
+    const [a,b]=roads[ri],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy),vert=Math.abs(dx)<.01,ux=dx/L,uy=dy/L,seed=mulberry32(901+ri*37);
+    const count=Math.max(1,Math.floor(L/310));
+    for(let m=0;m<count;m++){
+      const t=.16+((m+seed()*.45)/count)*.68,mx=a[0]+dx*t+(seed()-.5)*24,my=a[1]+dy*t+(seed()-.5)*24;
+      c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(mx+2,my+3,10,8,0,0,TAU);c.fill();
+      c.fillStyle='#292c30';c.beginPath();c.ellipse(mx,my,9,7,0,0,TAU);c.fill();
+      c.strokeStyle='rgba(184,185,177,.62)';c.lineWidth=1.6;c.beginPath();c.ellipse(mx,my,7.4,5.5,0,0,TAU);c.stroke();
+      c.strokeStyle='rgba(210,209,197,.28)';c.lineWidth=.8;c.beginPath();c.moveTo(mx-4,my-1);c.lineTo(mx+4,my-1);c.moveTo(mx-3,my+2);c.lineTo(mx+3,my+2);c.stroke();
+    }
+    for(const side of[-1,1])for(let q=0;q<Math.floor(L/190);q++){
+      const t=.12+(q+.5)*.76/Math.max(1,Math.floor(L/190)),px=a[0]+dx*t,py=a[1]+dy*t;
+      const gx=px+(vert?side*43:0)+(vert?0:side*4),gy=py+(vert?side*4:0)+(vert?0:side*43);
+      c.fillStyle='rgba(18,20,21,.42)';c.fillRect(gx-7,gy-3,14,6);
+      c.strokeStyle='rgba(190,190,180,.3)';c.lineWidth=.7;c.strokeRect(gx-7,gy-3,14,6);
+      c.strokeStyle='rgba(215,214,201,.26)';for(let k=-4;k<=4;k+=3){c.beginPath();c.moveTo(gx+k,gy-2);c.lineTo(gx+k,gy+2);c.stroke()}
+    }
+    if(L>260)for(let z=0;z<2;z++){
+      const t=.24+seed()*.52,px=a[0]+dx*t,py=a[1]+dy*t,side=(seed()-.5)*22;
+      c.strokeStyle='rgba(12,14,16,.12)';c.lineWidth=2.2;c.beginPath();
+      c.moveTo(px-ux*24+(vert?side:0),py-uy*24+(vert?0:side));
+      c.quadraticCurveTo(px+(vert?side+2:0),py+(vert?0:side+2),px+ux*31+(vert?side:0),py+uy*31+(vert?0:side));c.stroke();
+    }
+  }
+  c.restore();
   const near=(x,y)=>{for(const xx of X)if(Math.abs(x-xx)<64)return true;return false},nearY=y=>{for(const yy of Y)if(Math.abs(y-yy)<64)return true;return false};
   for(const rd of roads){const [a,b]=rd,vert=a[0]===b[0];for(const [o,col,dash,w] of[[-3.5,'#e2b83a',null,2.4],[3.5,'#e2b83a',null,2.4],[-26,'rgba(235,235,228,.85)',[24,20],2.6],[26,'rgba(235,235,228,.85)',[24,20],2.6]]){c.strokeStyle=col;c.lineWidth=w;c.setLineDash(dash||[]);c.beginPath();
       if(vert){let y=a[1];c.moveTo(a[0]+o,y);for(;y<b[1];y+=8){if(nearY(y)){c.moveTo(a[0]+o,y+8)}else c.lineTo(a[0]+o,y+8)}}else{let x=a[0];c.moveTo(x,a[1]+o);for(;x<b[0];x+=8){if(near(x)){c.moveTo(x+8,a[1]+o)}else c.lineTo(x+8,a[1]+o)}}c.stroke()}}c.setLineDash([]);

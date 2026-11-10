@@ -1469,12 +1469,12 @@ function getWheel(style, r, w) {
   return WHEELS[key];
 }
 function hubMB(r, w) {
-  const mb = new MB(), hw = w / 2, seg = 14;
+  const mb = new MB(), hw = w / 2, seg = 20;
   for (const sx of [-1, 1]) {
     const x = sx * (hw - 0.09);
     for (let i = 0; i < seg; i++) { const a0 = i / seg * Math.PI * 2, a1 = (i + 1) / seg * Math.PI * 2; mb.quad([x, Math.cos(a0) * r * 0.62, Math.sin(a0) * r * 0.62], [x, Math.cos(a1) * r * 0.62, Math.sin(a1) * r * 0.62], [x, Math.cos(a1) * r * 0.2, Math.sin(a1) * r * 0.2], [x, Math.cos(a0) * r * 0.2, Math.sin(a0) * r * 0.2], [0.42, 0.42, 0.44], 4); }
     // disque ventilé, perçages et étrier sport visibles derrière les branches
-    for (let k = 0; k < 12; k++) {
+    for (let k = 0; k < 16; k++) {
       const a = k / 12 * Math.PI * 2;
       sphere(mb, sx * (hw - 0.075), Math.cos(a) * r * 0.47, Math.sin(a) * r * 0.47, 0.012, [0.035, 0.04, 0.045], 0, -Math.PI / 2, Math.PI / 2, 5);
     }

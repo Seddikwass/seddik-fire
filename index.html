@@ -1486,10 +1486,17 @@ function hubMB(r, w) {
   for (const sx of [-1, 1]) {
     const x = sx * (hw - 0.09);
     for (let i = 0; i < seg; i++) { const a0 = i / seg * Math.PI * 2, a1 = (i + 1) / seg * Math.PI * 2; mb.quad([x, Math.cos(a0) * r * 0.62, Math.sin(a0) * r * 0.62], [x, Math.cos(a1) * r * 0.62, Math.sin(a1) * r * 0.62], [x, Math.cos(a1) * r * 0.2, Math.sin(a1) * r * 0.2], [x, Math.cos(a0) * r * 0.2, Math.sin(a0) * r * 0.2], [0.42, 0.42, 0.44], 4); }
-    // disque ventilé, perçages et étrier sport visibles derrière les branches
+    // disque ventilé, perçages régulièrement répartis et étrier sport
     for (let k = 0; k < 16; k++) {
-      const a = k / 12 * Math.PI * 2;
+      const a = k / 16 * Math.PI * 2;
       sphere(mb, sx * (hw - 0.075), Math.cos(a) * r * 0.47, Math.sin(a) * r * 0.47, 0.012, [0.035, 0.04, 0.045], 0, -Math.PI / 2, Math.PI / 2, 5);
+    }
+    // jante alliage à cinq branches : relief métallique visible sur chaque face
+    for (let n = 0; n < 5; n++) {
+      const a = n / 5 * Math.PI * 2 + Math.PI / 2;
+      const p = (rr, aa) => [sx * (hw - 0.045), Math.cos(aa) * r * rr, Math.sin(aa) * r * rr];
+      mb.quad(p(0.12, a - 0.13), p(0.12, a + 0.13), p(0.61, a + 0.075), p(0.61, a - 0.075), [0.68, 0.71, 0.75], 4);
+      mb.quad(p(0.18, a - 0.075), p(0.18, a + 0.075), p(0.55, a + 0.04), p(0.55, a - 0.04), [0.86, 0.88, 0.9], 4);
     }
     mb.box(sx * (hw - 0.08), r * 0.18, -r * 0.42, 0.06, r * 0.36, r * 0.22, [0.78, 0.08, 0.06], 0);
     mb.box(sx * (hw - 0.065), r * 0.48, -r * 0.18, 0.07, r * 0.25, r * 0.3, [0.78, 0.08, 0.055], 4);

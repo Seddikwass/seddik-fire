@@ -3844,6 +3844,35 @@ function drawHead(c,hg,col){c.lineWidth=1.1;c.strokeStyle=OUTL;
   else if(hg==='bala'){dome(1,0,6.8,col);c.fillStyle='rgba(200,150,110,.9)';rrect(c,5.1,-3.6,1.9,7.2,.9);c.fill();c.fillStyle='#16181d';c.fillRect(5.6,-.5,1.5,1);c.strokeStyle='rgba(255,255,255,.08)';c.lineWidth=.5;c.beginPath();c.arc(1,0,4.6,-.9,.9);c.stroke()}
   else{c.fillStyle=col;c.beginPath();c.ellipse(-.8,-1.3,7.6,6.8,-.35,0,TAU);c.fill();const g=c.createRadialGradient(-2.5,-3.5,.5,-.8,-1.3,7.6);g.addColorStop(0,'rgba(255,255,255,.25)');g.addColorStop(1,'rgba(0,0,0,.25)');c.fillStyle=g;c.fill();c.strokeStyle=OUTL;c.lineWidth=1.1;c.stroke();
     c.strokeStyle='#1b1714';c.lineWidth=1.2;c.beginPath();c.arc(-.2,0,6.2,-1.3,1.3);c.stroke();c.fillStyle='#e0bc5e';c.beginPath();c.arc(3.6,-3.4,1.6,0,TAU);c.fill();c.strokeStyle='#8a6a22';c.lineWidth=.5;c.stroke()}
+  /* v143: front NVG mount, articulated dual optics and padded comms headset */
+  if(hg==='helmet'||hg==='h1'||hg==='h2'||hg==='h3'||hg==='boonie'){
+    c.save();
+    // Side headset cups and padded headband
+    c.strokeStyle='rgba(13,16,15,.82)';c.lineWidth=1.25;c.beginPath();
+    c.moveTo(-5.2,-5.1);c.quadraticCurveTo(-.2,-10.4,5.1,-5.1);c.stroke();
+    for(const side of[-1,1]){
+      c.fillStyle='#202521';c.beginPath();c.ellipse(side*7.1,0,2.15,3.25,side*.12,0,TAU);c.fill();
+      c.strokeStyle='rgba(220,220,200,.32)';c.lineWidth=.55;c.stroke();
+      c.fillStyle='#414941';c.beginPath();c.ellipse(side*7.15,0,1.25,2.1,0,0,TAU);c.fill();
+      c.fillStyle='rgba(180,195,170,.42)';c.fillRect(side*7.45-.25,-.8,.5,1.6);
+    }
+    c.strokeStyle='rgba(20,23,20,.9)';c.lineWidth=1.25;c.beginPath();
+    c.moveTo(5.2,2.1);c.quadraticCurveTo(8.4,4.4,8.7,6.1);c.stroke();
+    c.fillStyle='#252b26';c.beginPath();c.arc(8.7,6.1,1.1,0,TAU);c.fill();
+    if(hg!=='boonie'){
+      // Front shroud and folded dual-tube night-vision unit
+      c.fillStyle='#171c1a';rrect(c,6.1,-2.2,2.8,4.4,.8);c.fill();
+      c.strokeStyle='rgba(205,210,190,.36)';c.lineWidth=.55;c.stroke();
+      c.strokeStyle='#343b35';c.lineWidth=1.25;c.beginPath();c.moveTo(7.4,0);c.lineTo(9.2,2.2);c.lineTo(9.2,4.4);c.stroke();
+      for(const side of[-1,1]){
+        c.fillStyle='#202722';rrect(c,8.1,side*1.7,3.2,2.5,.8);c.fill();
+        c.fillStyle='#527b86';c.beginPath();c.ellipse(10.8,side*2.95,1.15,1.05,0,0,TAU);c.fill();
+        c.strokeStyle='rgba(210,235,230,.65)';c.lineWidth=.45;c.stroke();
+        c.fillStyle='rgba(255,255,255,.48)';c.beginPath();c.arc(10.55,side*2.72,.35,0,TAU);c.fill();
+      }
+    }
+    c.restore();
+  }
   // v99 : jugulaire, rivets et rails latéraux pour les casques de combat
   if(hg==='helmet'||hg==='h1'||hg==='h2'||hg==='h3'){
     c.save();c.strokeStyle='rgba(13,15,14,.82)';c.lineWidth=1.05;c.lineCap='round';c.beginPath();c.moveTo(-5.4,5.1);c.quadraticCurveTo(-3.4,10.1,.8,10.2);c.quadraticCurveTo(4.8,10.1,6.2,5.1);c.stroke();

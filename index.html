@@ -2756,7 +2756,13 @@ function drawGunTop(c,t,x,y){const W=WEAP[t],L=W.len,f=W.furn,cl=W.cls,wood=!!W.
   if(t==='m16'){box(rx+rl*.2,-1.4,rl*.6,2.8,'#262626',.6);rail(rx+rl*.25,rl*.5)}
   // scope with lens
   if(W.sc){const sx=rx-1,sl=Math.max(L*.38,rl+2);box(sx-1.6,-2.2,2.4,4.4,'#181818',1);box(sx,-1.8,sl,3.6,'#121212',1.2);box(sx+sl-3,-2.5,3,5,'#181818',1.1);hl(sx+.6,-1.3,sl-1.4);
-    box(sx+sl*.45,-2.6,1.6,5.2,'#232323',.4);c.fillStyle='#3f79a8';c.fillRect(x+sx+sl,y-2,.9,4);c.fillStyle='rgba(255,255,255,.8)';c.fillRect(x+sx+sl,y-1.5,.9,1)}}
+    box(sx+sl*.45,-2.6,1.6,5.2,'#232323',.4);c.fillStyle='#3f79a8';c.fillRect(x+sx+sl,y-2,.9,4);c.fillStyle='rgba(255,255,255,.8)';c.fillRect(x+sx+sl,y-1.5,.9,1)}
+  // v69: micro-details de finition pour une silhouette d'arme plus crédible
+  c.fillStyle='rgba(255,255,255,.16)';c.fillRect(x+rx+rl*.18,y-1.55,Math.max(1,rl*.12),.45);c.fillRect(x+rx+rl*.72,y-1.55,Math.max(1,rl*.1),.45);
+  c.fillStyle='rgba(0,0,0,.48)';for(let k=0;k<3;k++){const px=rx+rl*(.24+k*.22);c.beginPath();c.arc(x+px,y+.05,.42,0,TAU);c.fill()}
+  if(cl==='ar'||cl==='smg'||cl==='sg'){c.fillStyle='rgba(0,0,0,.42)';for(let k=0;k<4;k++)c.fillRect(x+hx+2+k*2.1,y-1.35,.7,2.7)}
+  c.fillStyle='rgba(255,255,255,.22)';c.fillRect(x+L-3.2,y-1.15,1.1,.35);c.fillStyle='rgba(0,0,0,.55)';c.fillRect(x+L-1.2,y-1.25,.55,2.5);
+  if(wood){c.strokeStyle='rgba(225,185,120,.2)';c.lineWidth=.35;c.beginPath();c.moveTo(x+x0+2,y+.8);c.lineTo(x+rx-1,y+.65);c.stroke()}}
 function scopeX(W){const L=W.len,rx=-4+L*.3,rl=L*.32;return rx-1+Math.max(L*.38,rl+2)+.6}
 function headSpr(hg,col,skin,acc){acc=acc||0;const k=hg+col+skin+acc;let s=HSPR.get(k);if(s)return s;s=mkCv(112,112);const c=s.getContext('2d');c.scale(4,4);c.translate(14,14);
   for(const sd of[-1,1]){c.fillStyle=shade(skin,.88);c.beginPath();c.ellipse(.6,sd*6,1.7,2.3,sd*.3,0,TAU);c.fill();c.strokeStyle=OUTL;c.lineWidth=.8;c.stroke();c.strokeStyle='rgba(120,50,30,.35)';c.lineWidth=.5;c.beginPath();c.arc(.7,sd*6,.8,0,TAU);c.stroke()}

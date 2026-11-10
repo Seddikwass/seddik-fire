@@ -1588,6 +1588,34 @@ function genWorld(mid){
     const pts=[[1650,1730],[1600,500],[2540,965],[2875,2250],[1950,440],[1320,3160],[520,2450],[2525,2690]];
     POIS.forEach((p,i)=>{p.x=pts[i][0];p.y=pts[i][1]});
   }
+  /* v131 — quartiers régionaux : architecture et rues propres à chaque île. */
+  if(MAP.id==='djerba'){
+    roads.push([[1390,1710],[1580,1810],[1810,1900],[2030,1905]]);
+    roads.push([[1410,1880],[1320,2070],[1160,2200]]);
+    roads.push([[1770,1900],[1900,2070],[2070,2160]]);
+    bld(1805,1940,112,82,'hut',[['s',.5]]);
+    bld(1950,1955,138,94,'med',[['w',.5],['s',.5]]);
+    bld(2095,1990,104,78,'hut',[['w',.5]]);
+    bld(1240,2110,150,100,'med',[['e',.5],['s',.5]]);
+    bld(1395,2185,116,84,'hut',[['n',.5]]);
+    bld(1530,2220,154,96,'med',[['n',.5],['w',.5]]);
+    bld(2660,2350,176,112,'farm',[['w',.5]],{label:'HOUCH'});
+    addSolid({t:'c',x:1715,y:2040,r:18,k:'fount'});
+    addSolid({t:'c',x:2150,y:1935,r:24,k:'silo'});
+  }else if(MAP.id==='capbon'){
+    roads.push([[1500,470],[1690,520],[1880,610],[2070,650]]);
+    roads.push([[1810,610],[1780,790],[1640,920],[1460,1020]]);
+    roads.push([[2500,830],[2690,900],[2850,1010]]);
+    bld(1770,635,156,104,'farm',[['s',.5]],{label:'FERME'});
+    bld(1940,665,128,88,'farm',[['w',.5]]);
+    bld(1640,875,126,92,'med',[['s',.5]]);
+    bld(1490,1010,144,96,'med',[['e',.5],['s',.5]]);
+    bld(2670,920,154,98,'port',[['w',.5],['s',.5]],{label:'PÊCHE'});
+    bld(2835,1045,108,78,'hut',[['w',.5]]);
+    addSolid({t:'c',x:1850,y:820,r:22,k:'silo'});
+    addSolid({t:'c',x:2010,y:735,r:17,k:'fount'});
+    fields.push({x:2085,y:475,w:290,h:230},{x:2170,y:735,w:220,h:170});
+  }
   // crates
   crate(MC.x-130,MC.y-70);crate(MC.x+80,MC.y+60);crate(MC.x+110,MC.y-110);crate(MC.x-100,MC.y+96);
   for(const p of[[880,720],[1300,700],[700,958],[980,958],[1250,958],[600,420],[1180,420]])crate(p[0],p[1],true);
@@ -3877,6 +3905,25 @@ function drawBody(c,e){const sk=e.sk||SOLDIERS[1],w=curW(e),Wp=w?WEAP[w.type]:nu
     c.fillStyle='#252b28';c.beginPath();c.arc(-10,1,1.5,0,TAU);c.fill();c.restore();
   }
 
+  /* v131 — silhouette opérateur : radio, antenne, épaulières et insigne tunisien. */
+  if(Q.hi&&!sk.ftr&&!sk.jc&&!sk.sp){
+    c.save();
+    c.strokeStyle='rgba(13,17,14,.92)';c.lineWidth=1.15;c.lineCap='round';
+    c.beginPath();c.moveTo(-9,-8);c.quadraticCurveTo(-13,-14,-12,-20);c.stroke();
+    c.strokeStyle='rgba(176,190,157,.82)';c.lineWidth=.55;c.beginPath();c.moveTo(-9,-8);c.quadraticCurveTo(-13,-14,-12,-20);c.stroke();
+    c.fillStyle='#202720';rrect(c,-14,-22,4,4,1);c.fill();c.strokeStyle='rgba(220,220,190,.35)';c.lineWidth=.55;c.stroke();
+    for(const side of[-1,1]){
+      const sg=c.createLinearGradient(side*7,-11,side*12,-5);sg.addColorStop(0,shade(sk.base,1.12));sg.addColorStop(1,shade(sk.base,.62));
+      c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(side*9.2,-7.5,4.6,3.4,side*.18,0,TAU);c.fill();
+      c.fillStyle=sg;c.beginPath();c.ellipse(side*9.2,-8.1,4.1,2.9,side*.18,0,TAU);c.fill();
+      c.strokeStyle='rgba(15,18,14,.72)';c.lineWidth=.7;c.stroke();
+    }
+    c.fillStyle='#b72e2e';rrect(c,-8.2,5.2,5.4,3.8,.7);c.fill();
+    c.fillStyle='#f4eee0';c.beginPath();c.arc(-5.5,7.1,1.35,0,TAU);c.fill();
+    c.fillStyle='#b72e2e';c.beginPath();c.arc(-5.05,7.1,.95,0,TAU);c.fill();
+    c.fillStyle='#f4eee0';c.beginPath();c.arc(-4.35,7.1,.38,0,TAU);c.fill();
+    c.restore();
+  }
   c.restore()}
 const VSC=1.12;let RIMS=null;
 function drawEnt(e){

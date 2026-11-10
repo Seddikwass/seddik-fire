@@ -1,5 +1,13 @@
 # Seddik Fire
 
+## Version 1.31 — soldats et identités régionales
+
+- Silhouette des opérateurs tactiques enrichie : antenne radio, épaulières renforcées et insigne tunisien visible.
+- Djerba : nouveau quartier de houchs, ruelles et cour centrale autour du secteur Houmt Souk.
+- Cap Bon : fermes et parcelles agricoles, village côtier et petit quartier de pêche.
+- Rues et bâtiments régionaux générés de façon déterministe pour conserver une carte stable à chaque partie.
+
+
 Battle royale vu du dessus pour téléphone : 30 joueurs sautent sur l'île de Seddik, ramassent armes et soins, et survivent à la tempête de feu.
 
 Site statique (index.html, manifest, service worker hors ligne). Hébergé sur Render, emballé pour Google Play avec PWABuilder.

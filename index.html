@@ -3040,6 +3040,37 @@ function drawGunTop(c,t,x,y){const W=WEAP[t],L=W.len,f=W.furn,cl=W.cls,wood=!!W.
    // Tiny selector and safety markings
    c.fillStyle='#c4b88e';c.beginPath();c.arc(x+rx+rl*.34,y+2.05,.62,0,TAU);c.fill();
    c.strokeStyle='rgba(228,221,194,.36)';c.lineWidth=.45;c.beginPath();c.moveTo(x+rx+rl*.34,y+2.05);c.lineTo(x+rx+rl*.34+1.1,y+1.1);c.stroke();
+   /* v95: tactile weapon furniture, sling mounts and model-specific controls */
+   c.save();
+   // Trigger guard and trigger, visible from the top-side profile
+   const tx=x+rx+rl*.56,ty=y+2.2;
+   c.strokeStyle='rgba(8,10,10,.95)';c.lineWidth=.8;c.beginPath();c.moveTo(tx-1.7,ty);c.quadraticCurveTo(tx,ty+3.4,tx+2.1,ty);c.stroke();
+   c.strokeStyle='rgba(185,190,178,.48)';c.lineWidth=.45;c.beginPath();c.moveTo(tx-.2,ty+.2);c.lineTo(tx+.6,ty+2.1);c.stroke();
+   // Textured pistol grip and buttstock adjustment notches
+   if(t==='m4'||t==='ak'||t==='mp5'||t==='m16'){
+     c.strokeStyle='rgba(0,0,0,.5)';c.lineWidth=.55;
+     for(let q=0;q<4;q++){const gx=x+rx+rl*.54+q*.8;c.beginPath();c.moveTo(gx,y+3.1);c.lineTo(gx+.65,y+5.1);c.stroke()}
+   }
+   if(t==='m4'||t==='mp5'){
+     c.strokeStyle='rgba(190,194,180,.45)';c.lineWidth=.55;
+     for(let q=0;q<3;q++){c.beginPath();c.moveTo(x+x0+2+q*1.7,y-2.1);c.lineTo(x+x0+2+q*1.7,y+2.1);c.stroke()}
+   }
+   // Sling swivel loops at receiver and fore-end
+   c.strokeStyle='#111514';c.lineWidth=1.05;
+   for(const sx of[x+rx+2,x+bx+Math.max(1,(L-bx)*.45)]){
+     c.beginPath();c.ellipse(sx,y+2.6,1.1,1.8,-.25,0,TAU);c.stroke();
+     c.strokeStyle='rgba(205,205,185,.48)';c.lineWidth=.4;c.beginPath();c.arc(sx-.2,y+2.4,.7,Math.PI*1.05,Math.PI*1.75);c.stroke();
+     c.strokeStyle='#111514';c.lineWidth=1.05;
+   }
+   // Charging handle / bolt detail for modern rifles
+   if(t==='m4'||t==='m16'||t==='ak'||t==='mp5'||cl==='sn'||cl==='dmr'){
+     c.fillStyle='#171a19';c.fillRect(x+rx+rl*.16,y-2.9,Math.max(2,rl*.13),1.15);
+     c.fillStyle='rgba(210,215,200,.55)';c.fillRect(x+rx+rl*.17,y-2.8,Math.max(1,rl*.1),.35);
+   }
+   // Subtle heat discoloration around the muzzle collar
+   const collar=c.createLinearGradient(x+bx-1,y-2,x+bx+1,y+2);collar.addColorStop(0,'#74766d');collar.addColorStop(.5,'#272b29');collar.addColorStop(1,'#8b8170');
+   c.fillStyle=collar;c.fillRect(x+bx-.55,y-1.8,1.1,3.6);
+   c.restore();
    c.restore();
  }
 function scopeX(W){const L=W.len,rx=-4+L*.3,rl=L*.32;return rx-1+Math.max(L*.38,rl+2)+.6}

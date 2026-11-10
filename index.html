@@ -2145,6 +2145,17 @@ function driverMesh(idx, pose) {
     mb.box(sx * 0.2, P.sh[1] - 0.1, P.sh[2] + 0.012, 0.07, 0.075, 0.012, [0.84, 0.86, 0.9], 4);
   }
   mb.box(0, P.hip[1] + 0.16, P.hip[2] + 0.09, 0.075, 0.075, 0.025, [0.72, 0.75, 0.8], 4);
+  // finitions de combinaison : coutures renforcées, écusson poitrine et protections de genoux
+  const seam = V3.sc(suit, 1.55), patch = V3.sc(suit, 0.58);
+  for (const sx of [-1, 1]) {
+    bar(mb, add(P.sh, [sx * 0.12, -0.09, 0.073]), add(P.hip, [sx * 0.105, 0.12, 0.073]), 0.009, seam, 4);
+    const knee = P.knees[sx === -1 ? 1 : 0];
+    mb.box(knee[0], knee[1], knee[2] + 0.045, 0.13, 0.105, 0.035, patch, 4);
+    mb.box(knee[0], knee[1] - 0.065, knee[2] + 0.065, 0.09, 0.012, 0.012, seam, 4);
+  }
+  mb.box(0, P.sh[1] - 0.16, P.sh[2] + 0.095, 0.105, 0.075, 0.018, patch, 4);
+  mb.box(0, P.sh[1] - 0.16, P.sh[2] + 0.106, 0.052, 0.038, 0.008, [0.82, 0.84, 0.88], 15);
+  mb.box(0, P.sh[1] - 0.255, P.sh[2] + 0.07, 0.22, 0.012, 0.012, seam, 4);
   const hc = P.head;
   bar(mb, P.sh, add(hc, [0, -0.1, -0.01]), 0.045, skin, 0);
   if (P.helmet) {

@@ -2308,13 +2308,29 @@ function drawVehicle(v){const V=VEH[v.type],L=v.L,W=v.W,dmg=1-v.hp/V.hp;ctx.save
   if(v.type==='moto'){ctx.fillStyle='#1d1d1d';ctx.fillRect(-L/2,-3,11,6);ctx.fillRect(L/2-11,-3,11,6);
     ctx.fillStyle=body;rrect(ctx,-L/2+7,-W/2,L-16,W,5);ctx.fill();ctx.fillStyle='#2a2a2a';rrect(ctx,-6,-4.5,13,9,3);ctx.fill();
     ctx.strokeStyle='#3b3b3b';ctx.lineWidth=2.4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(L/2-12,-10);ctx.lineTo(L/2-12,10);ctx.stroke();ctx.fillStyle='#ffe7a8';ctx.beginPath();ctx.arc(L/2-3,0,2.2,0,TAU);ctx.fill()}
-  else{const wl=v.type==='buggy'?13:12,ww=7;ctx.fillStyle='#1b1b1b';for(const sx of[-1,1])for(const sy of[-1,1])ctx.fillRect(sx*L*.3-wl/2,sy*(W/2)-ww/2+(v.type==='buggy'?sy*2:0),wl,ww);
+  else{const wl=v.type==='buggy'?13:12,ww=7;/* v85: pneumatic tires with sidewall, tread cuts and metallic hubs */
+    for(const sx of[-1,1])for(const sy of[-1,1]){
+      const wx=sx*L*.3,wy=sy*(W/2)+(v.type==='buggy'?sy*2:0);
+      ctx.fillStyle='#111312';rrect(ctx,wx-wl/2-1,wy-ww/2-1,wl+2,ww+2,3);ctx.fill();
+      ctx.fillStyle='#303330';rrect(ctx,wx-wl/2+1,wy-ww/2+1,wl-2,ww-2,2);ctx.fill();
+      ctx.strokeStyle='rgba(170,170,155,.24)';ctx.lineWidth=.8;
+      for(let t=-1;t<=1;t++){ctx.beginPath();ctx.moveTo(wx-wl*.28,wy+t*2);ctx.lineTo(wx+wl*.28,wy+t*2+1.2);ctx.stroke()}
+      ctx.fillStyle='#777b75';ctx.beginPath();ctx.arc(wx,wy,2.25,0,TAU);ctx.fill();
+      ctx.fillStyle='#252a28';ctx.beginPath();ctx.arc(wx,wy,1.05,0,TAU);ctx.fill();
+    }
     ctx.fillStyle=shade(body,.8);rrect(ctx,-L/2,-W/2+2,L,W-4,6);ctx.fill();ctx.fillStyle=body;rrect(ctx,-L/2+2,-W/2+4,L-4,W-8,5);ctx.fill();
     if(v.type==='buggy'){ctx.strokeStyle='#2b2b2b';ctx.lineWidth=2.6;ctx.strokeRect(-L*.22,-W/2+5,L*.42,W-10);ctx.beginPath();ctx.moveTo(-L*.22,0);ctx.lineTo(L*.2,0);ctx.stroke();ctx.fillStyle='#252525';ctx.fillRect(-L/2+1,-W/2+7,7,W-14)}
     else{ctx.fillStyle=V.col2;ctx.fillRect(-L/2+4,-W/2+6,L*.38,W-12);ctx.fillStyle='rgba(0,0,0,.2)';for(let i=0;i<3;i++)ctx.fillRect(-L/2+8+i*7,-W/2+7,2,W-14);ctx.fillStyle='#262626';ctx.fillRect(L/2-3,-W/2+5,3,W-10)}
     ctx.fillStyle='rgba(150,205,230,.85)';ctx.beginPath();ctx.moveTo(L*.24,-W/2+6);ctx.lineTo(L*.34,-W/2+8);ctx.lineTo(L*.34,W/2-8);ctx.lineTo(L*.24,W/2-6);ctx.closePath();ctx.fill();
     ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(L*.26,-W/2+8,1.6,W*.3);ctx.fillStyle='#ffe7a8';ctx.fillRect(L/2-2,-W/2+5,2,4);ctx.fillRect(L/2-2,W/2-9,2,4)}
-  if(v.type!=='moto'){ctx.fillStyle='rgba(255,255,255,.16)';rrect(ctx,-L/2+4,-W/2+4,L-8,(W-8)*.32,4);ctx.fill();ctx.fillStyle='rgba(0,0,0,.14)';rrect(ctx,-L/2+4,W/2-4-(W-8)*.22,L-8,(W-8)*.22,4);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;rrect(ctx,-L/2,-W/2+2,L,W-4,6);ctx.stroke()}
+  if(v.type!=='moto'){ctx.fillStyle='rgba(255,255,255,.16)';rrect(ctx,-L/2+4,-W/2+4,L-8,(W-8)*.32,4);ctx.fill();
+    /* v85: stamped body seams, fasteners and reflective trim */
+    ctx.save();ctx.strokeStyle='rgba(18,22,20,.48)';ctx.lineWidth=.85;
+    ctx.beginPath();ctx.moveTo(-L*.18,-W/2+5);ctx.lineTo(-L*.18,W/2-5);ctx.moveTo(L*.12,-W/2+5);ctx.lineTo(L*.12,W/2-5);ctx.stroke();
+    ctx.fillStyle='rgba(205,190,145,.62)';
+    for(const sx of[-1,1])for(const sy of[-1,1]){ctx.beginPath();ctx.arc(sx*(L/2-5),sy*(W/2-6),.85,0,TAU);ctx.fill()}
+    ctx.strokeStyle='rgba(225,232,220,.22)';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(-L*.34,-W/2+4);ctx.lineTo(L*.32,-W/2+4);ctx.stroke();
+    ctx.restore();ctx.fillStyle='rgba(0,0,0,.14)';rrect(ctx,-L/2+4,W/2-4-(W-8)*.22,L-8,(W-8)*.22,4);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;rrect(ctx,-L/2,-W/2+2,L,W-4,6);ctx.stroke()}
   if(dmg>.35){ctx.fillStyle='rgba(30,25,20,'+Math.min(.45,dmg*.5)+')';ctx.beginPath();ctx.arc(-L*.1,W*.1,W*.35,0,TAU);ctx.arc(L*.25,-W*.15,W*.2,0,TAU);ctx.fill()}
   const e=v.drv;if(e){const hx=v.type==='moto'?-2:-L*.02,hy=v.type==='moto'?0:-W*.18;ctx.drawImage(headSpr(e.helmet&&!e.sk.sp?'h'+e.helmet:e.sk.hg,e.helmet&&!e.sk.sp?HELM_WEAR[e.helmet]:e.sk.hc,e.sk.ftr?e.sk.base:e.skin||'#c8946a'),hx-12.6,hy-12.6,25.2,25.2)}
   if(v.boomT>0){ctx.fillStyle='rgba(255,220,140,.6)';ctx.fillRect(-L/2,-W/2,L,W)}

@@ -2587,6 +2587,25 @@ function drawWalls(b,sc,ty){const S=STY[b.st],h=b.fh||FH,B=[[b.x,b.y],[b.x+b.w,b
     if(b.st==='glass'){ctx.fillStyle='rgba(140,180,210,.55)';quad(.01,.99,.06,.97);ctx.strokeStyle='rgba(30,40,50,.45)';ctx.lineWidth=1;for(let t=14/L;t<1;t+=14/L){const a=P(t,.06),c2=P(t,.97);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(c2[0],c2[1]);ctx.stroke()}continue}
     const step=b.st==='tower'?26:46,nw=Math.floor(L/step),wc=winCol(b);
     for(let f=0;f<fl;f++){const v0=(f+.36)/fl,v1=(f+.74)/fl;for(let k=0;k<nw;k++){const t=(k+.5)/nw;if(dts.some(q=>Math.abs(q-t)<(DW/2+10)/L))continue;const dw=7/L;ctx.fillStyle='rgba(0,0,0,.4)';quad(t-dw-1/L,t+dw+1/L,v0-.04,v1+.04);ctx.fillStyle=wc;quad(t-dw,t+dw,v0,v1);ctx.fillStyle='rgba(255,255,255,.22)';quad(t-dw,t+dw,v1-.08,v1)}}
+    // v70: relief discret des façades (joints, usure et variations de matière)
+    if(Q.hi&&b.st!=='glass'&&b.st!=='tower'){
+      const rows=Math.max(2,Math.min(6,fl+1));
+      ctx.lineWidth=1;
+      for(let row=1;row<rows;row++){
+        const v=row/rows*.88;
+        ctx.strokeStyle=row%2?'rgba(25,20,15,.13)':'rgba(255,242,215,.12)';
+        const a=P(.025,v),z=P(.975,v);
+        ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(z[0],z[1]);ctx.stroke();
+      }
+      const seed=Math.abs(Math.sin(b.x*12.9898+b.y*78.233)*43758.5453);
+      for(let mark=0;mark<5;mark++){
+        const q=(seed+mark*.61803398875)%1;
+        const v=.12+((seed* (mark+3)*.173)% .72);
+        const a=P(.08+q*.82,v),z=P(Math.min(.98,.08+q*.82+.018),Math.min(.96,v+.045));
+        ctx.strokeStyle='rgba(24,19,14,.16)';ctx.lineWidth=1.2;
+        ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(z[0],z[1]);ctx.stroke();
+      }
+    }
     ctx.fillStyle='rgba(255,250,235,.14)';quad(0,1,.94,1)}}
 function drawRoofDetail(b){
   if(!Q.hi||LOWD||b.w<70||b.h<65)return;

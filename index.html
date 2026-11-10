@@ -1878,7 +1878,32 @@ function punch(e){const M=meleeOf(e);e.fireCd=M.cd;e.punchT=.16;e.punchSide=!e.p
   sfxShot('punch',sndVol(e.x,e.y)*.6,e===player,sndPan(e.x));
   for(const o of ents){if(o===e||!o.alive||o.air>0||o.inPlane)continue;if(dd2(fx,fy,o.x,o.y)<(o.r+16+(M.reach-16)*.5)**2){damage(o,M.dmg,e,M.n);return}}
   const list=query(fx-20,fy-20,fx+20,fy+20,QM);for(const c of list){if(c.k==='crate'&&dd2(fx,fy,clamp(fx,c.x,c.x+c.w),clamp(fy,c.y,c.y+c.h))<20*20){hitCrate(c,M.dmg,e);return}}}
-function hitCrate(c,dmg,src){c.hp-=dmg;puff(c.x+c.w/2,c.y+c.h/2,4,'#8a5a2c',120,.5,4);if(c.hp<=0){c.alive=false;puff(c.x+c.w/2,c.y+c.h/2,18,'#9a6b3c',260,.8,6);const n=c.mil?2:1+(Math.random()<.4?1:0);for(let i=0;i<n;i++)spawnCode(rollTable(c.mil?LOOT_M:LOOT_N),c.x+c.w/2+rand(-12,12),c.y+c.h/2+rand(-12,12));if(src===player)blip(520,.06,.05)}}
+function hitCrate(c,dmg,src){
+  c.hp-=dmg;
+  const cx=c.x+c.w/2,cy=c.y+c.h/2,impact=src&&src!==c?Math.atan2(cy-src.y,cx-src.x):rand(0,TAU);
+  puff(cx,cy,5,'#8a5a2c',145,.55,4.5);
+  // v105: wood splinters and dusty chips kick away from the impact point.
+  if(vis(cx,cy,100)&&parts.length<500){
+    for(let j=0;j<5&&parts.length<510;j++){
+      const a=impact+rand(-1.05,1.05),v=rand(48,118);
+      parts.push({x:cx+Math.cos(impact)*rand(-9,9),y:cy+Math.sin(impact)*rand(-9,9),vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:rand(.18,.34),m:.34,s:rand(1.8,3.2),c:j%2?'#b7834d':'#e0bd83',g:0,spk:1});
+    }
+  }
+  if(c.hp<=0){
+    c.alive=false;
+    puff(cx,cy,24,'#9a6b3c',300,.95,7);
+    puff(cx,cy,12,'#d0b18a',95,1.15,11,-5);
+    if(vis(cx,cy,120)&&parts.length<500){
+      for(let j=0;j<12&&parts.length<514;j++){
+        const a=rand(0,TAU),v=rand(55,180);
+        parts.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:rand(.22,.48),m:.48,s:rand(2,4),c:j%3?'#9b683b':'#d8b783',g:0,spk:1});
+      }
+    }
+    const n=c.mil?2:1+(Math.random()<.4?1:0);
+    for(let i=0;i<n;i++)spawnCode(rollTable(c.mil?LOOT_M:LOOT_N),cx+rand(-12,12),cy+rand(-12,12));
+    if(src===player)blip(520,.06,.05)
+  }
+}
 function damage(t,amt,src,wn){if(src&&src!==t&&src.team&&src.team===t.team)return;if(src&&src.bot&&t.bot&&src!==t&&matchT<210)amt*=matchT<130?.5:.7;
   if(!t.alive||t.air>0||t.inPlane)return;
   if(t.shield>0&&src&&src!==t&&(GUNN.has(wn)||MELEEN.has(wn))){const a=Math.atan2(src.y-t.y,src.x-t.x),face=curW(t)?t.angle+Math.PI:t.angle;if(Math.abs(angDiff(face,a))<1.1){const ab=Math.min(t.shield,amt*.6);t.shield-=ab;amt-=ab;if(t.shield<=.5){t.shield=0;puff(t.x,t.y,10,'#8a6a3a',160,.6,4);if(t===player)toast('Bouclier brisé',1.4)}else puff(t.x+Math.cos(a)*16,t.y+Math.sin(a)*16,3,'#d9b45a',120,.25,2.5);if(src===player&&amt<.5){sfxImpact(t.x,t.y);return}}}

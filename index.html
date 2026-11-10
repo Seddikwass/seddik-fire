@@ -1271,7 +1271,7 @@ const PH=[{w:80,s:45,r:1550,d:1},{w:55,s:35,r:980,d:2},{w:45,s:30,r:600,d:3.5},{
 
 /* ===== storage ===== */
 const LSK='seddikfire.v1';
-const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,pSize:1.25,camZoom:1,mode:'classic',map:'seddik',stage:0,cupBest:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'foret',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
+const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,pSize:1.25,camZoom:1,mode:'classic',map:'seddik',stage:0,cupBest:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'raider',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
 if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';if(!stats.photoSk){stats.photoSk=1;stats.skin='spartiate'}if(!stats.hanSk){stats.hanSk=1;stats.skin='hannibal'}if(!stats.ombSk){stats.ombSk=1;stats.skin='ombre'}
 if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};

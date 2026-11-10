@@ -3145,13 +3145,15 @@ async function sf3dBoot(){
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobile?1.2:1.6));
     renderer.setSize(window.innerWidth,window.innerHeight,false);
     renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    renderer.info.autoReset=true;
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
     const scene=new THREE.Scene();scene.background=new THREE.Color(0x87b8cf);scene.fog=new THREE.Fog(0x9bb9b4,1050,4700);
-    scene.add(new THREE.HemisphereLight(0xd9edff,0x62513a,1.85));
-    const sun=new THREE.DirectionalLight(0xffe4c2,2.15);sun.position.set(-900,1500,-700);sun.castShadow=true;sun.shadow.mapSize.set(mobile?768:1536,mobile?768:1536);sun.shadow.camera.left=-1150;sun.shadow.camera.right=1150;sun.shadow.camera.top=1150;sun.shadow.camera.bottom=-1150;sun.shadow.bias=-.00018;sun.shadow.normalBias=.025;scene.add(sun);
-    // A gentle sky fill softens harsh black shadows on mobile screens.
-    const fill=new THREE.DirectionalLight(0xb8d4e8,.42);fill.position.set(700,520,850);scene.add(fill);
+    scene.add(new THREE.HemisphereLight(0xd9edff,0x62513a,2.0));
+    const sun=new THREE.DirectionalLight(0xffe4c2,2.35);sun.position.set(-900,1500,-700);sun.castShadow=true;sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);sun.shadow.camera.left=-1050;sun.shadow.camera.right=1050;sun.shadow.camera.top=1050;sun.shadow.camera.bottom=-1050;sun.shadow.bias=-.00012;sun.shadow.normalBias=.018;sun.shadow.radius=mobile?3:4;scene.add(sun);
+    // Broad sky fill and a cool rim light keep tactical silhouettes readable in shade.
+    const fill=new THREE.DirectionalLight(0xb8d4e8,.5);fill.position.set(700,520,850);scene.add(fill);
+    const rim=new THREE.DirectionalLight(0xffc98c,.28);rim.position.set(450,360,-900);scene.add(rim);
     const camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,.5,6500);
     const world=new THREE.Group();scene.add(world);
     // Lightweight 3D weather particles, separate from the map so they follow the camera.
@@ -3197,9 +3199,14 @@ function sf3dBuild(){
   SF3D.staticMeshes=[];
   if(SF3D.terrain){SF3D.world.remove(SF3D.terrain);SF3D.terrain.geometry.dispose();SF3D.terrain.material.map?.dispose()}
   const tex=new T.CanvasTexture(ground);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=Math.min(8,SF3D.renderer.capabilities.getMaxAnisotropy());
-  // Use the painted ground image for subtle surface relief as well as color.
-  // A restrained bump keeps sand, dirt and paths readable without hurting mobile performance.
-  const mat=new T.MeshStandardMaterial({map:tex,bumpMap:tex,bumpScale:2.1,roughness:.96,metalness:0});
+  // Fine procedural grain adds a tactile soil/sand surface without replacing the authored island art.
+  const detail=document.createElement('canvas');detail.width=detail.height=512;const dc=detail.getContext('2d');
+  dc.fillStyle='#858585';dc.fillRect(0,0,512,512);
+  for(let i=0;i<10500;i++){const v=92+Math.random()*90;dc.fillStyle='rgba('+v+','+v+','+v+','+(.08+Math.random()*.2)+')';const x=Math.random()*512,y=Math.random()*512,r=.35+Math.random()*1.6;dc.fillRect(x,y,r,r)}
+  for(let i=0;i<110;i++){dc.strokeStyle='rgba(45,48,38,.12)';dc.lineWidth=.5+Math.random()*1.1;dc.beginPath();const x=Math.random()*512,y=Math.random()*512;dc.moveTo(x,y);dc.lineTo(x+Math.random()*22-11,y+Math.random()*22-11);dc.stroke()}
+  const detailTex=new T.CanvasTexture(detail);detailTex.wrapS=detailTex.wrapT=T.RepeatWrapping;detailTex.repeat.set(18,18);detailTex.anisotropy=2;
+  // Original map supplies color; micro-grain supplies only restrained physical relief.
+  const mat=new T.MeshStandardMaterial({map:tex,bumpMap:detailTex,bumpScale:1.15,roughness:.94,metalness:0});
   const terrain=new T.Mesh(new T.PlaneGeometry(WS,WS),mat);terrain.rotation.x=-Math.PI/2;terrain.position.set(WS/2,-3,WS/2);terrain.receiveShadow=true;SF3D.world.add(terrain);SF3D.terrain=terrain;SF3D.terrainSource=ground;
   const add=m=>{SF3D.world.add(m);SF3D.staticMeshes.push(m)};
   // Building volumes and their roof slabs create real height and cover.
@@ -3348,7 +3355,7 @@ function sf3dActor(e){
     mesh(new T.BoxGeometry(8,3,7),gear,x,13,0);
   }
   // torso, tactical vest, shoulder plates
-  mesh(new T.CapsuleGeometry(7.5,13,4,8),cloth,0,26,0);
+  mesh(new T.CapsuleGeometry(7.5,13,6,10),cloth,0,26,0);
   mesh(new T.BoxGeometry(15,13,8),gear,0,27,1);
   mesh(new T.BoxGeometry(10,10,2),dark,0,27,5.2);
   for(let j=0;j<3;j++)mesh(new T.BoxGeometry(3.4,5,2),sf3dMat(0x887d55),-4+j*4,24,5.1);
@@ -3368,8 +3375,8 @@ function sf3dActor(e){
     mesh(new T.SphereGeometry(4,7,5),gear,side*7,32,0);
   }
   // head, helmet shell, brim, goggles
-  mesh(new T.SphereGeometry(5,9,7),skin,0,39,0);
-  mesh(new T.SphereGeometry(5.8,9,6,0,Math.PI*2,0,Math.PI*.58),gear,0,42,0);
+  mesh(new T.SphereGeometry(5,12,9),skin,0,39,0);
+  mesh(new T.SphereGeometry(5.8,12,8,0,Math.PI*2,0,Math.PI*.58),gear,0,42,0);
   mesh(new T.CylinderGeometry(6.1,6.1,1.2,10),dark,0,40.2,0);
   mesh(new T.BoxGeometry(7,2,1.5),dark,0,39,4.7);
   // Face details, helmet fittings and layered tactical webbing.

@@ -1580,6 +1580,14 @@ function genWorld(mid){
     if(ok&&dd2(x+w/2,y+h/2,1420,760)<260*260)ok=false;
     if(ok)for(const f of fields)if(x<f.x+f.w&&x+w>f.x&&y<f.y+f.h&&y+h>f.y){ok=false;break}
     if(!ok)continue;bld(x,y,w,h,SR()<.7?'med':'farm',rdoors());lone++}
+  /* v130 — les lieux d'intérêt régionaux pointent sur les vrais secteurs du terrain. */
+  if(MAP.id==='djerba'){
+    const pts=[[1650,1730],[1420,760],[2540,965],[2875,2250],[520,2450],[1600,500],[1320,3160],[2525,2690]];
+    POIS.forEach((p,i)=>{p.x=pts[i][0];p.y=pts[i][1]});
+  }else if(MAP.id==='capbon'){
+    const pts=[[1650,1730],[1600,500],[2540,965],[2875,2250],[1950,440],[1320,3160],[520,2450],[2525,2690]];
+    POIS.forEach((p,i)=>{p.x=pts[i][0];p.y=pts[i][1]});
+  }
   // crates
   crate(MC.x-130,MC.y-70);crate(MC.x+80,MC.y+60);crate(MC.x+110,MC.y-110);crate(MC.x-100,MC.y+96);
   for(const p of[[880,720],[1300,700],[700,958],[980,958],[1250,958],[600,420],[1180,420]])crate(p[0],p[1],true);

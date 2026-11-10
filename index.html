@@ -1748,6 +1748,7 @@ function damage(t,amt,src,wn){if(src&&src!==t&&src.team&&src.team===t.team)retur
   let d=amt*(1-HELM_RED[t.helmet]);
   if(t.vest>0){const ab=Math.min(t.vest,d*VEST_RED[t.vestLvl]);t.vest-=ab;d-=ab}
   t.hp-=d;t.hurtT=.3;t.hpShowT=2.5;
+  if(src&&src!==t)t.hitDir=Math.atan2(src.y-t.y,src.x-t.x);
   if(src&&src!==t){src.dmg+=d;if(t.bot){t.ai.alert=src;t.ai.alertT=3}}
   if(src===player&&t!==player){sfxTick(false);hitMarks.push({x:t.x,y:t.y,t:.16,k:false})}
   if(t===player&&src&&src!==t)dmgDirs.push({a:Math.atan2(src.y-t.y,src.x-t.x),t:1.1});
@@ -3429,12 +3430,12 @@ function sf3dPoseActor(g,e){
   const hurt=Math.max(0,Math.min(1,(e.hurtT||0)/.3));
   const recoil=fire*fire;
   const bob=moving?Math.abs(Math.sin(phase))*(.65+Math.min(.45,speed*.001)):Math.sin(TIME*1.8+(e.id||0))*.12;
-  const airborne=(e.air||0)>0;
+  const airborne=(e.air||0)>0,hitSide=Math.sin((e.hitDir||0)-(e.angle||0));
   g.position.set(e.x+(airborne?Math.sin(TIME*1.25+(e.id||0))*(e.vx||0)*.012:0),airborne?24+(e.air||0)*105:bob+hurt*1.8,e.y+(airborne?Math.cos(TIME*1.1+(e.id||0))*(e.vy||0)*.012:0));
   g.rotation.y=-(e.angle||0);
   // A short flinch and backward recoil communicate incoming hits and weapon kick.
   g.rotation.x=airborne?0:-hurt*.105-recoil*.075;
-  g.rotation.z=airborne?Math.sin(TIME*1.4+(e.id||0))*.035:Math.sin(phase)*(moving?.025:.006)-fire*.012+Math.sin(TIME*42+(e.id||0))*hurt*.035;
+  g.rotation.z=airborne?Math.sin(TIME*1.4+(e.id||0))*.035:Math.sin(phase)*(moving?.025:.006)-fire*.012+Math.sin(TIME*42+(e.id||0))*hurt*.035+hitSide*hurt*.065;
   if(g.userData.muzzleFlash){const active=fire>.08&&!airborne;g.userData.muzzleFlash.visible=active;if(active){const pulse=.72+Math.sin(TIME*95+(e.id||0))* .28;g.userData.muzzleFlash.scale.setScalar(pulse);g.userData.muzzleFlash.rotation.z=Math.sin(TIME*70)*.16}}
   if(g.userData.parachute){g.userData.parachute.visible=airborne;g.userData.parachute.rotation.x=airborne?Math.sin(TIME*1.7+(e.id||0))*.055:0;g.userData.parachute.rotation.z=airborne?Math.cos(TIME*1.35+(e.id||0))*.07:0;}
   if(g.userData.limbs){

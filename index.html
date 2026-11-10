@@ -1424,7 +1424,16 @@ function dirtRoads(c){const RC=MAP.rd||['#a98a5d','#b99b6c'],Rr=mulberry32(733);
   for(const rd of roads){path(rd);c.globalAlpha=.25;c.strokeStyle=RC[0];c.lineWidth=68;c.stroke();c.globalAlpha=.6;c.lineWidth=54;c.stroke();c.globalAlpha=1;c.lineWidth=44;c.stroke();c.strokeStyle=RC[1];c.lineWidth=32;c.stroke()}
   for(const rd of roads){for(const o of[-10,10]){off(rd,o);c.strokeStyle='rgba(66,48,28,.3)';c.lineWidth=8;c.stroke();off(rd,o-2.5);c.strokeStyle='rgba(255,242,212,.13)';c.lineWidth=2;c.stroke()}
     if(MAP.id!=='sahara'){path(rd);c.strokeStyle='rgba(104,124,56,.24)';c.lineWidth=6;c.stroke()}
-    for(let i=0;i<rd.length-1;i++){const a=rd[i],b=rd[i+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let k=0;k<L/4;k++){const t=Rr(),x=a[0]+(b[0]-a[0])*t+(Rr()-.5)*46,y=a[1]+(b[1]-a[1])*t+(Rr()-.5)*46,sz=1.4+Rr()*1.8;c.fillStyle=Rr()<.5?'rgba(78,60,38,.38)':'rgba(242,228,198,.38)';c.fillRect(x,y,sz,sz)}}}}
+    for(let i=0;i<rd.length-1;i++){const a=rd[i],b=rd[i+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let k=0;k<L/4;k++){const t=Rr(),x=a[0]+(b[0]-a[0])*t+(Rr()-.5)*46,y=a[1]+(b[1]-a[1])*t+(Rr()-.5)*46,sz=1.4+Rr()*1.8;c.fillStyle=Rr()<.5?'rgba(78,60,38,.38)':'rgba(242,228,198,.38)';c.fillRect(x,y,sz,sz)}
+      // Baked-in wheel ruts, compacted earth and sparse fractured edges.
+      for(let d=52;d<L;d+=96){const t=d/L,x=a[0]+(b[0]-a[0])*t,y=a[1]+(b[1]-a[1])*t,dx=(b[0]-a[0])/L,dy=(b[1]-a[1])/L,nx=-dy,ny=dx;
+        c.fillStyle='rgba(65,48,31,.105)';c.beginPath();c.ellipse(x,y,19,5,Math.atan2(dy,dx),0,TAU);c.fill();
+        c.strokeStyle='rgba(255,236,199,.16)';c.lineWidth=2;c.beginPath();c.moveTo(x-nx*7-dx*13,y-ny*7-dy*13);c.lineTo(x-nx*5+dx*12,y-ny*5+dy*12);c.stroke();
+        if(Rr()<.42){const side=Rr()<.5?-1:1,ex=x+nx*side*(22+Rr()*7),ey=y+ny*side*(22+Rr()*7);c.strokeStyle='rgba(62,49,36,.28)';c.lineWidth=1.4;c.beginPath();c.moveTo(ex,ey);c.lineTo(ex+nx*side*4+dx*7,ey+ny*side*4+dy*7);c.lineTo(ex+nx*side*2-dx*3,ey+ny*side*2-dy*3);c.stroke()}
+      }
+    }
+  }
+}
 function decoRoads(c){for(const rd of roads){c.beginPath();rd.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.strokeStyle='rgba(120,90,55,.25)';c.lineWidth=3;c.setLineDash([12,9]);
     for(const o of[-12,12]){c.save();c.translate(0,0);c.beginPath();for(let i=0;i<rd.length;i++){const a=rd[Math.max(0,i-1)],b=rd[Math.min(rd.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,x=rd[i][0]-dy/L*o,y=rd[i][1]+dx/L*o;i?c.lineTo(x,y):c.moveTo(x,y)}c.stroke();c.restore()}c.setLineDash([])}
   c.fillStyle='rgba(245,232,200,.55)';for(const rd of roads){for(const e of[rd[0],rd[rd.length-1]]){c.beginPath();c.arc(e[0],e[1],22,0,TAU);c.fill()}}}

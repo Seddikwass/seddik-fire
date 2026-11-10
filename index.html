@@ -2294,6 +2294,12 @@ const TRACKS = [
     road: [0.12, 0.12, 0.13], cols: [[0.2, 0.3, 0.12], [0.18, 0.27, 0.11], [0.15, 0.23, 0.1], [0.28, 0.24, 0.17], [0.36, 0.36, 0.33], [0.42, 0.42, 0.4]],
   }
 ];
+// New Tunisian urban circuits: Sousse, Sfax and Djerba.
+TRACKS.push(
+ Object.assign({}, TRACKS[0], {id:'sousse',name:'Sousse Marina Run',sub:'Sousse • Marina et centre-ville',theme:'city',seed:103,pts:[[0,-360,1],[0,-80,0],[60,170,2],[170,330,3],[340,360,2],[470,260,1],[500,80,0],[420,-70,1],[520,-230,3],[430,-390,2],[240,-450,1],[80,-430,0]],env:{sky:[0.16,0.3,0.62],hor:[0.72,0.78,0.88],gnd:[0.2,0.24,0.22],fog:[0.55,0.65,0.76],fogDen:0.0019,sunDir:nrm([0.35,0.72,-0.3]),sunCol:[1.22,1.14,1],wet:0,clouds:0.35,sunSize:0.0015,grade:GR([0.012,0.018,0.03],[1.04,1.02,0.98],0.29)},road:[0.14,0.145,0.15],cols:[[0.72,0.68,0.56],[0.64,0.62,0.54],[0.52,0.54,0.53],[0.72,0.68,0.58],[0.56,0.53,0.48],[0.62,0.59,0.52]]}),
+ Object.assign({}, TRACKS[0], {id:'sfax',name:'Sfax Industrial GP',sub:'Sfax • Quartier industriel',theme:'city',seed:117,pts:[[0,-420,0],[0,-120,0],[-90,110,1],[-40,330,2],[130,430,2],[350,390,1],[480,240,0],[420,40,0],[560,-130,1],[500,-350,2],[280,-460,1],[90,-500,0]],env:{sky:[0.2,0.25,0.34],hor:[0.62,0.56,0.46],gnd:[0.25,0.23,0.19],fog:[0.52,0.48,0.42],fogDen:0.0022,sunDir:nrm([-0.3,0.68,0.42]),sunCol:[1.08,0.98,0.84],wet:0.15,clouds:0.5,sunSize:0.0012,grade:GR([0.025,0.018,0.012],[1.02,0.98,0.92],0.32)},road:[0.13,0.13,0.135],cols:[[0.52,0.48,0.4],[0.46,0.44,0.39],[0.38,0.39,0.38],[0.58,0.52,0.43],[0.42,0.4,0.36],[0.48,0.45,0.4]]}),
+ Object.assign({}, TRACKS[3], {id:'djerba',name:'Djerba Island Sprint',sub:'Djerba • Palmeraie et lagune',theme:'coast',seed:131,pts:[[0,-390,3],[0,-90,4],[80,180,5],[230,350,6],[430,360,5],[560,220,4],[520,40,3],[620,-130,4],[540,-340,5],[340,-470,4],[150,-480,3]],env:{sky:[0.18,0.42,0.82],hor:[0.78,0.82,0.86],gnd:[0.25,0.34,0.3],fog:[0.7,0.77,0.82],fogDen:0.0017,sunDir:nrm([-0.42,0.62,-0.28]),sunCol:[1.3,1.18,0.98],wet:0,clouds:0.25,sunSize:0.0018,grade:GR([0.012,0.025,0.035],[1.06,1.02,0.94],0.28)},road:[0.15,0.15,0.15],cols:[[0.66,0.62,0.48],[0.58,0.57,0.43],[0.48,0.5,0.4],[0.68,0.62,0.48],[0.56,0.5,0.4],[0.62,0.56,0.45]]})
+);
 function crPoint(p0, p1, p2, p3, t) {
   const d = (p, q) => Math.pow(Math.hypot(q[0] - p[0], q[1] - p[1], q[2] - p[2]), 0.5) || 1e-4;
   const t0 = 0, t1 = t0 + d(p0, p1), t2 = t1 + d(p1, p2), t3 = t2 + d(p2, p3);
@@ -3683,6 +3689,12 @@ const CARS = [
   { id: 'sahara', name: 'Sahara Turbo', cls: 'A', tier: 3, style: 'muscle', price: 72000, vmax: 314, acc: 10.7, lat: 23, nos: 1.35, desc: 'Muscle car turbo. Brutale en ligne droite, joueuse en virage.' },
   { id: 'phenix', name: 'Phénix E', cls: 'A', tier: 3, style: 'ev', price: 92000, vmax: 318, acc: 12.4, lat: 24, nos: 1.2, desc: 'Supercar électrique silencieuse : couple instantané, accélération foudroyante.' },
   { id: 'hannibal', name: 'Hannibal V12', cls: 'S', tier: 4, style: 'hyper', price: 125000, vmax: 348, acc: 12.2, lat: 25.5, nos: 1.5, desc: 'Hypercar V12. La reine absolue de la route.' },
+  // Collection Prestige : silhouettes fictives inspirées des grandes écoles automobiles.
+  { id: 'monza_v12', name: 'Monza V12 Competizione', cls: 'S', tier: 4, style: 'hyper', price: 168000, vmax: 362, acc: 13.1, lat: 26.2, nos: 1.55, desc: 'Hypercar italienne à moteur central, aérodynamique extrême et V12 atmosphérique.' },
+  { id: 'stuttgart_gt', name: 'Stuttgart GT-RS', cls: 'S', tier: 4, style: 'gt', price: 154000, vmax: 342, acc: 12.8, lat: 27.2, nos: 1.4, desc: 'Grand tourisme allemand, précision chirurgicale et freinage carbone.' },
+  { id: 'royale_w12', name: 'Royale W12 Grand Tourer', cls: 'S', tier: 4, style: 'gt', price: 196000, vmax: 350, acc: 12.5, lat: 25.8, nos: 1.45, desc: 'Coupé de grand luxe britannique, moteur W12 et confort haute vitesse.' },
+  { id: 'eclipse_gtx', name: 'Eclipse GTX Electric', cls: 'S', tier: 4, style: 'ev', price: 142000, vmax: 338, acc: 14.1, lat: 27.5, nos: 1.35, desc: 'Supercar électrique à quatre moteurs, couple instantané et motricité intégrale.' },
+  { id: 'alpine_xr', name: 'Alpine XR-900', cls: 'S', tier: 4, style: 'sports', price: 138000, vmax: 330, acc: 12.9, lat: 28.1, nos: 1.4, desc: 'Sportive légère de précision, châssis affûté et appui aérodynamique.' },
   // motos (adversaires : motos aussi)
   { id: 'zitouna', name: 'Zitouna 125', cls: 'D', tier: 0, cat: 'moto', style: 'moto_scoot', price: 4000, vmax: 150, acc: 7.6, lat: 20, nos: 1.0, mass: 0.45, desc: 'Scooter de ville.' },
   { id: 'djebel', name: 'Djebel 800', cls: 'B', tier: 2, cat: 'moto', style: 'moto_trail', price: 30000, vmax: 228, acc: 10.2, lat: 21.5, nos: 1.15, mass: 0.55, desc: 'Trail aventure.' },
@@ -3722,12 +3734,12 @@ const CAREER = [
   { name: 'Roi de Tunis', mode: 'race', track: 0, laps: 4, opp: 7, tier: 4, diff: 2, reward: 45000, desc: 'La grande finale sous la pluie. Deviens le roi de la route.', weather: 'rain' },
   // Deuxième championnat : huit épreuves supplémentaires, difficulté et récompenses croissantes.
   { name: 'Défi des docks', mode: 'race', track: 5, laps: 4, opp: 7, tier: 3, diff: 3, reward: 52000, desc: 'Quatre tours entre les grues et les conteneurs, sous une pluie fine.', weather: 'rain' },
-  { name: 'Évasion maximale', mode: 'chase', track: 0, tier: 3, heat: 4, diff: 4, reward: 60000, desc: 'Échappe à une poursuite renforcée dans les rues de Tunis.' },
+  { name: 'Évasion maximale', mode: 'chase', track: 7, tier: 3, heat: 4, diff: 4, reward: 60000, desc: 'Échappe à une poursuite renforcée dans les rues de Tunis.' },
   { name: 'Le mur de l’Atlas', mode: 'race', track: 2, laps: 4, opp: 7, tier: 4, diff: 5, reward: 68000, desc: 'Enchaîne les épingles de montagne face aux pilotes experts.' },
-  { name: 'Chrono des dunes', mode: 'tt', track: 1, laps: 3, tier: 4, diff: 6, reward: 76000, desc: 'Trois tours dans le Sahara : maîtrise la vitesse et les trajectoires.' },
+  { name: 'Chrono des dunes', mode: 'tt', track: 8, laps: 3, tier: 4, diff: 6, reward: 76000, desc: 'Trois tours dans le Sahara : maîtrise la vitesse et les trajectoires.' },
   { name: 'Grand Prix nocturne', mode: 'race', track: 4, laps: 5, opp: 7, tier: 4, diff: 7, reward: 85000, desc: 'Cinq tours sur le circuit professionnel, de nuit et sans erreur.' },
-  { name: 'La police ne lâche rien', mode: 'chase', track: 3, tier: 4, heat: 5, diff: 8, reward: 95000, desc: 'Survis à la poursuite la plus intense le long de la corniche.' },
-  { name: 'Tempête sur la corniche', mode: 'race', track: 3, laps: 5, opp: 7, tier: 4, diff: 9, reward: 110000, desc: 'Affronte les meilleurs sous une météo difficile.', weather: 'rain' },
+  { name: 'La police ne lâche rien', mode: 'chase', track: 9, tier: 4, heat: 5, diff: 8, reward: 95000, desc: 'Survis à la poursuite la plus intense le long de la corniche.' },
+  { name: 'Tempête sur la corniche', mode: 'race', track: 9, laps: 5, opp: 7, tier: 4, diff: 9, reward: 110000, desc: 'Affronte les meilleurs sous une météo difficile.', weather: 'rain' },
   { name: 'SUPER SEDDIK & JOUD — Légende', mode: 'race', track: 0, laps: 6, opp: 7, tier: 4, diff: 10, reward: 150000, desc: 'La finale ultime : six tours, sept rivaux experts et la pluie. Deviens une légende.', weather: 'rain' },
 ];
 const DIFFS = [
@@ -4718,7 +4730,7 @@ const UI = {
     $('c-list').innerHTML = CAREER.map((e, i) => {
       const isDone = SAVE.careerDone.includes(i), lock = i > SAVE.career, next = i === SAVE.career, tc = tierCars(e.tier)[0].cls;
       const SEP = LANG === 'ar' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');
-      return `<button class="ev ${isDone ? 'done' : ''} ${lock ? 'lock' : ''} ${next ? 'next' : ''}" data-i="${i}" ${lock ? 'aria-disabled="true"' : ''}><span class="num">${i + 1}</span><span class="st">${isDone ? t('done') : lock ? t('locked') : t('available')}</span><b>${tEvName(i)}</b><span class="meta">${meta}</span><small>${tEvDesc(i)}</small><div class="rw"><span>${t('advised')} <b class="cls ${tc} mini">${tc}</b></span><em>${money(isDone ? e.reward * 0.3 : e.reward)}</em></div></button>`;
+      return `<button class="ev ${isDone ? 'done' : ''} ${lock ? 'lock' : ''} ${next ? 'next' : ''}" data-i="${i}" ${lock ? 'aria-disabled="true"' : ''}><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="st">${isDone ? t('done') : lock ? t('locked') : t('available')}</span><b>${tEvName(i)}</b><span class="meta">${meta}</span><small>${tEvDesc(i)}</small><div class="rw"><span>${t('advised')} <b class="cls ${tc} mini">${tc}</b></span><em>${money(isDone ? e.reward * 0.3 : e.reward)}</em></div></button>`;
     }).join('');
     $('c-list').querySelectorAll('button').forEach(b => b.onclick = () => { const i = +b.dataset.i; if (i > SAVE.career) return; this.startRace(evCfg(i)); });
   },

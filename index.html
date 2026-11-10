@@ -788,6 +788,12 @@ canvas{image-rendering:auto}
 #lobby button:hover,#lobby .btn:hover{filter:brightness(1.12);box-shadow:0 8px 22px rgba(0,0,0,.28)}
 #lobby button:active,#lobby .btn:active{transform:translateY(1px) scale(.985)}
 @media(prefers-reduced-motion:reduce){#lobby button,#lobby .btn{transition:none}}
+/* v127 — finition interface : sélection des cartes et modes plus nette, tactile et lisible. */
+#maps .chip,#modes .chip{min-height:38px;border:1px solid rgba(225,232,235,.18);background:linear-gradient(180deg,rgba(55,66,72,.82),rgba(24,31,36,.9));box-shadow:inset 0 1px rgba(255,255,255,.06),0 3px 9px rgba(0,0,0,.18);transition:transform .16s ease,border-color .16s ease,background .16s ease}
+#maps .chip[aria-checked="true"],#modes .chip[aria-checked="true"]{border-color:rgba(255,192,97,.9);background:linear-gradient(180deg,rgba(150,83,37,.9),rgba(75,39,23,.96));box-shadow:inset 0 1px rgba(255,230,190,.2),0 0 0 1px rgba(255,160,70,.18),0 5px 14px rgba(0,0,0,.24);color:#fff1d2}
+#maps .chip:active,#modes .chip:active{transform:translateY(1px) scale(.985)}
+@media (hover:hover){#maps .chip:hover,#modes .chip:hover{border-color:rgba(255,192,97,.62);filter:brightness(1.12)}}
+@media(prefers-reduced-motion:reduce){#maps .chip,#modes .chip{transition:none}}
 </style>
 </head>
 <body>
@@ -1234,6 +1240,14 @@ SOLDIERS.push(
 {id:'sf_naval',n:'Commando naval',d:'Opérateur amphibie en camouflage bleu ardoise, casque balistique et équipement côtier.',base:'#a97d5d',cam:['#34495a','#647989','#202e3a'],pants:'#263747',pack:'#1d2c39',hg:'helmet',hc:'#263b4d',glove:'#18232d',pat:'pix',blobs:26}
 );
 
+/* v127 — nouveaux profils d'opérateurs et équipements régionaux. */
+SOLDIERS.push(
+{id:'sf_garde',n:'Garde nationale',d:'Opérateur de sécurité tunisien, casque renforcé, gilet modulaire et camouflage olive.',base:'#b78b6b',cam:['#48543d','#827b55','#2d382c'],pants:'#343d30',pack:'#303a2d',hg:'h2',hc:'#46513c',glove:'#252a23',pat:'pix',blobs:30},
+{id:'sf_sanitaire',n:'Médecin de combat',d:'Secouriste tactique avec casque léger, sac médical et équipement de terrain sable et vert.',base:'#c09270',cam:['#777c58','#b0a27a','#3c4937'],pants:'#4c5942',pack:'#a18a60',hg:'h1',hc:'#8b7954',glove:'#33382d',blobs:24},
+{id:'sf_montagne',n:'Chasseur des montagnes',d:'Éclaireur des Hautes Terres, tenue gris-vert, protections renforcées et sac de randonnée tactique.',base:'#a87c5e',cam:['#555e50','#7b806d','#343d37'],pants:'#3b443d',pack:'#333d36',hg:'h3',hc:'#4b554b',glove:'#252c28',blobs:32},
+{id:'sf_cotier',n:'Fusilier côtier',d:'Combattant amphibie, équipement bleu ardoise, casque balistique et radio de patrouille.',base:'#ae8061',cam:['#344c5d','#71818a','#263643'],pants:'#263847',pack:'#1d2c39',hg:'h2',hc:'#304354',glove:'#1e2932',pat:'pix',blobs:26}
+);
+
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
 const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35'];
 const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a','#8e44ad','#dcdcdc','#1b1b1d','#ff6b22'],BAG_LV=[1,2,3,5,7,'S10','S25','S40','S45'];
@@ -1395,6 +1409,9 @@ const MAPS={
  foret:{n:'Forêt profonde',d:'Forêt dense de pins et de chênes, sentiers de terre, grand lac, camps de bûcherons et scierie.',poi:['Camp des bûcherons','La Scierie','Poste forestier','Les Ruines','Lac des Pins','La Clairière','Le Refuge','Phare du cap'],gen:'forest',seed:20261105,base:'#55703a',lt:'rgba(130,160,90,.22)',dk:'rgba(30,45,20,.28)',gr:'rgba(48,80,32,.38)',fa:'#5f7a3a',fb:'#6b8442',sea:['#2f8a96','#21697f','#174a60'],shore:'#cfc39a',lake:['#1f6a7a','#3f8f98'],v:[0,0,0,0,0],wx:'leaves',rd:['#5e4730','#6e5538'],wx2:'leaves',grz:[[600,600,420],[1300,500,380],[2300,700,420],[2700,1700,380],[600,1500,420],[1100,1300,300],[2200,2900,420],[900,3100,380],[2500,2400,320],[1900,1200,300],[400,2300,300],[2900,3200,260]],rm:24},
  hautes:{n:'Hautes Terres',d:'Collines, forêts d’oliviers et rochers. Brume et bruine.',poi:['Kairouan','Le Kef','Jendouba','Kasserine','Sbeitla','Siliana','Béja','Tabarka'],seed:20261103,base:'#b7ae7d',lt:'rgba(220,214,170,.3)',dk:'rgba(120,100,60,.22)',gr:'rgba(88,128,58,.3)',fa:'#7f9a4e',fb:'#a09a5c',sea:['#3a8f9c','#2a7088','#1c4e68'],shore:'#d9cba0',lake:['#2a7a8a','#4a9ea6'],v:[8,10,260,120,200],wx:'fog'}
 };
+/* v127 — deux nouveaux terrains régionaux inspirés de lieux tunisiens réels. */
+MAPS.djerba={n:'Djerba & Zarzis',d:'Île du Sud : Houmt Souk, Midoun, Guellala, Ajim et les plages de Zarzis.',poi:['Houmt Souk','Midoun','Guellala','Ajim','El Kantara','Borj El Kebir','Sidi Jmour','Zarzis'],seed:20261106,base:'#d9c49a',lt:'rgba(250,232,190,.38)',dk:'rgba(153,112,67,.18)',gr:'rgba(114,137,72,.19)',fa:'#a7a36b',fb:'#c2a875',sea:['#45b9bd','#2697ad','#176786'],shore:'#f0dfb8',lake:['#2b8995','#55b5b3'],v:[32,52,110,42,140],wx:'breeze'};
+MAPS.capbon={n:'Cap Bon & Kélibia',d:'Péninsule du Cap Bon : Nabeul, Hammamet, Kélibia, Korba et El Haouaria.',poi:['Nabeul','Hammamet','Kélibia','El Haouaria','Korba','Menzel Temime','Takelsa','Grombalia'],seed:20261107,base:'#b8b982',lt:'rgba(228,231,176,.34)',dk:'rgba(85,104,57,.2)',gr:'rgba(67,111,49,.28)',fa:'#80974b',fb:'#a9a66b',sea:['#43b7c4','#238da9','#155d7d'],shore:'#e9d6aa',lake:['#287f91','#4aa8ae'],v:[12,28,310,54,170],wx:'breeze'};
 let MAP=MAPS.seddik;
 const STY={
   med:{floor:'#cdb38a',wall:'#f2ece0',edge:'#a8957a',roof:'#ece5d5',roof2:'#d6ccb7',door:'#2c6db3'},
@@ -1831,7 +1848,7 @@ function gcBoot(){try{initGfx()}catch(e){}const M=MODES[stats.mode];const mid=(M
 /* v96 — matériaux de sol propres à chaque biome : texture 2D légère, sans impact collision. */
 function environmentMaterialPass(c,Rg){
   const id=MAP.id,city=MAP.gen==='city'||id==='ville',forest=MAP.gen==='forest'||id==='foret';
-  const desert=MAP.gen==='desert'||id==='sahara',coast=id==='cote'||id==='seddik',high=id==='hautes';
+  const desert=MAP.gen==='desert'||id==='sahara',coast=id==='cote'||id==='seddik',islandSouth=id==='djerba',capbon=id==='capbon',high=id==='hautes';
   c.save();c.lineCap='round';c.lineJoin='round';
   if(city){
     for(let i=0;i<6200;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg();
@@ -1848,6 +1865,13 @@ function environmentMaterialPass(c,Rg){
     for(let i=0;i<4300;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg(),r=1+q*4;
       c.globalAlpha=.08+q*.12;c.fillStyle=q>.68?'#d9c59b':q>.35?'#78834b':'#526b3e';c.beginPath();c.ellipse(x,y,r*1.8,r*.7,q*TAU,0,TAU);c.fill();
       if(q>.94){c.globalAlpha=.18;c.strokeStyle='#425b37';c.lineWidth=1.2;c.beginPath();c.moveTo(x,y+3);c.quadraticCurveTo(x+3,y-5,x+7,y-6);c.stroke()}}
+  }else if(islandSouth){
+    /* Djerba : poussière claire, fragments de coquillages et traces de palmeraies. */
+    for(let i=0;i<2600;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg(),r=1+q*4;c.globalAlpha=.1+q*.14;c.fillStyle=q>.68?'#f3e6c7':q>.36?'#b99c70':'#6e7950';c.beginPath();c.ellipse(x,y,r*1.7,r*.72,q*TAU,0,TAU);c.fill();if(q>.965){c.globalAlpha=.2;c.strokeStyle='#fff6df';c.lineWidth=1;c.beginPath();c.arc(x,y,2+q*3,.2,Math.PI*1.65);c.stroke()}}
+    for(let i=0;i<130;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;c.globalAlpha=.12;c.strokeStyle='#8d744e';c.lineWidth=1.4;c.beginPath();c.arc(x,y,12+Rg()*24,.2,Math.PI*1.7);c.stroke()}
+  }else if(capbon){
+    /* Cap Bon : rangées de vergers, herbes et sols calcaires. */
+    for(let i=0;i<1800;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg(),len=18+q*70;c.globalAlpha=.08+q*.13;c.strokeStyle=q>.5?'#536d3d':'#d6c99b';c.lineWidth=1+q*1.4;c.beginPath();c.moveTo(x-len*.5,y+q*5);c.quadraticCurveTo(x,y-2-q*5,x+len*.5,y+q*4);c.stroke();if(q>.88){c.globalAlpha=.16;c.fillStyle='#46663a';c.beginPath();c.arc(x,y,2+q*3,0,TAU);c.fill()}}
   }else if(high){
     for(let i=0;i<3000;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const r=3+Rg()*16;c.globalAlpha=.1+Rg()*.13;c.fillStyle=Rg()>.5?'#8c8874':'#b5a98a';c.beginPath();c.moveTo(x-r,y+r*.2);c.lineTo(x-r*.2,y-r);c.lineTo(x+r,y-r*.3);c.lineTo(x+r*.4,y+r);c.closePath();c.fill()}}
   else{
@@ -1905,6 +1929,39 @@ function urbanDetailPass(c){
     }
   }
 }
+
+/* v127 — vie côtière et circulation urbaine animée, sans collision ni coût lourd. */
+function drawCoastalBoats(x0,y0,x1,y1){
+  if(!Q.hi||LOWD)return;
+  for(let i=0;i<4;i++){
+    const yy=430+i*820+Math.sin(TIME*.16+i*1.7)*18,xx=coastX(yy)+125+(i%2)*105+Math.sin(TIME*.11+i)*13;
+    if(xx<x0-110||xx>x1+110||yy<y0-90||yy>y1+90)continue;
+    const a=Math.PI/2+Math.sin(TIME*.08+i)*.035;
+    ctx.save();ctx.translate(xx,yy);ctx.rotate(a);
+    ctx.strokeStyle='rgba(235,249,246,.22)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-52,0);ctx.quadraticCurveTo(-72,Math.sin(TIME*1.3+i)*3,-88,Math.sin(TIME*1.1+i)*5);ctx.stroke();
+    ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(4,7,31,12,0,0,TAU);ctx.fill();
+    ctx.fillStyle='#f0eee4';ctx.beginPath();ctx.moveTo(34,0);ctx.lineTo(20,-9);ctx.lineTo(-25,-8);ctx.lineTo(-34,0);ctx.lineTo(-22,9);ctx.lineTo(20,9);ctx.closePath();ctx.fill();
+    ctx.fillStyle=i%2?'#b64b37':'#2e6379';ctx.fillRect(-18,-6,29,12);
+    ctx.fillStyle='#d9e3e0';ctx.fillRect(-2,-5,10,10);ctx.fillStyle='rgba(255,255,255,.7)';ctx.fillRect(-1,-4,3,4);
+    ctx.fillStyle='#e6c17b';ctx.fillRect(14,-5,5,10);ctx.fillStyle='#a33b2d';ctx.fillRect(-27,-7,5,14);
+    ctx.strokeStyle='rgba(20,38,45,.55)';ctx.lineWidth=1;ctx.stroke();ctx.restore();
+  }
+}
+function drawCityTrafficSignals(x0,y0,x1,y1){
+  if(MAP.gen!=='city'||!Q.hi||LOWD)return;
+  const X=XTRA.X||[],Y=XTRA.Y||[];
+  for(let i=0;i<X.length;i++)for(let j=0;j<Y.length;j++){
+    const x=X[i],y=Y[j];if(x>coastX(y)-200||x<x0-100||x>x1+100||y<y0-100||y>y1+100)continue;
+    const phase=(Math.floor(TIME/4.5)+i+j)%3,colors=['#ef5144','#f0bd4f','#61c987'];
+    for(const [sx,sy] of[[-1,-1],[1,-1],[-1,1],[1,1]])cTraffic(x+sx*55,y+sy*55,phase,colors);
+  }
+}
+function cTraffic(x,y,phase,colors){
+  ctx.save();ctx.translate(x,y);ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(2,3,6,13);ctx.fillStyle='#343a3d';rrect(ctx,0,0,6,12,2);ctx.fill();
+  for(let k=0;k<3;k++){ctx.fillStyle=k===phase?colors[k]:'#25292b';ctx.beginPath();ctx.arc(3,2.2+k*3.8,1.25,0,TAU);ctx.fill();if(k===phase){ctx.globalCompositeOperation='screen';ctx.globalAlpha=.24;ctx.fillStyle=colors[k];ctx.beginPath();ctx.arc(3,2.2+k*3.8,5.2,0,TAU);ctx.fill();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'}}
+  ctx.strokeStyle='#62676a';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(3,12);ctx.lineTo(3,18);ctx.stroke();ctx.restore();
+}
+
 
 function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mid'?.72:.8;
   const gk=gKey(MAP.id),hit=GC.m.get(gk);if(hit){LAMPS=hit.lamps.map(o=>Object.assign({},o));ground=hit.bmp}else{
@@ -2509,9 +2566,11 @@ function gpPlayerAim(p){if(!GP.arm)return false;if(p.veh||nadeCount(p)<=0){GP.ar
 /* ===== vehicles ===== */
 const VEH={tout:{n:'Tout-terrain',L:62,W:34,hp:260,max:400,acc:330,turn:2.1,eng:40,col:'#5b6b45',col2:'#45533a',hitOcc:.25},
   buggy:{n:'Buggy',L:52,W:32,hp:170,max:445,acc:400,turn:2.6,eng:52,col:'#d0892f',col2:'#9c5d1b',hitOcc:.45},
-  moto:{n:'Moto',L:40,W:14,hp:100,max:470,acc:470,turn:3.2,eng:66,col:'#b83a2e',col2:'#7c241c',hitOcc:.7}};
+  moto:{n:'Moto',L:40,W:14,hp:100,max:470,acc:470,turn:3.2,eng:66,col:'#b83a2e',col2:'#7c241c',hitOcc:.7},
+  pickup:{n:'Pick-up tactique',L:72,W:38,hp:340,max:330,acc:285,turn:1.85,eng:48,col:'#68734f',col2:'#414b37',hitOcc:.32},
+  jeep:{n:'4×4 blindé',L:68,W:40,hp:420,max:300,acc:260,turn:1.7,eng:56,col:'#505b5d',col2:'#30393b',hitOcc:.22}};
 function addVeh(type,x,y,a){const V=VEH[type];const v={type,k:'veh',name:V.n,x,y,a,sp:0,rev:false,hp:V.hp,alive:true,drv:null,L:V.L,W:V.W,smT:0,lastHit:null,boomT:0,hitT:0,terr:1,terrT:0};vehs.push(v);return v}
-function spawnVehicles(){vehs=[];wrecks=[];const types=['tout','buggy','moto','buggy','tout','moto','buggy'];let tries=0;
+function spawnVehicles(){vehs=[];wrecks=[];const types=['tout','buggy','moto','pickup','jeep','buggy','tout','moto','pickup'];let tries=0;
   while(vehs.length<types.length&&tries<600){tries++;const rd=pick(roads),i=Math.floor(Math.random()*(rd.length-1)),a=rd[i],b=rd[i+1],t=rand(.1,.9);
     const x=lerp(a[0],b[0],t),y=lerp(a[1],b[1],t),ang=Math.atan2(b[1]-a[1],b[0]-a[0]),side=Math.random()<.5?1:-1;
     const vx=x-Math.sin(ang)*32*side,vy=y+Math.cos(ang)*32*side;
@@ -2655,6 +2714,7 @@ const VDS=1.2;/* vehicles are drawn slightly larger than their hitbox, like sold
 function drawVehicle(v){const V=VEH[v.type],L=v.L,W=v.W,dmg=1-v.hp/V.hp;ctx.save();ctx.translate(v.x,v.y);ctx.scale(VDS,VDS);
   ctx.fillStyle='rgba(0,0,0,.24)';ctx.save();ctx.translate(5,7);ctx.rotate(v.a);rrect(ctx,-L/2,-W/2,L,W,v.type==='moto'?6:7);ctx.fill();ctx.restore();
   ctx.rotate(v.a);const body=dmg>.6?shade(V.col,.7):V.col;
+  if(SUNK>.48&&Math.abs(v.sp)>35&&Q.hi){ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=clamp((SUNK-.48)*1.7,0,.72);for(const sy of[-1,1]){const beam=ctx.createLinearGradient(L*.36,0,L*1.72,0);beam.addColorStop(0,'rgba(255,231,174,.2)');beam.addColorStop(.45,'rgba(255,222,155,.09)');beam.addColorStop(1,'rgba(255,220,145,0)');ctx.fillStyle=beam;ctx.beginPath();ctx.moveTo(L*.34,sy*W*.2);ctx.lineTo(L*1.72,sy*W*1.18);ctx.lineTo(L*1.72,sy*W*.06);ctx.closePath();ctx.fill()}ctx.restore()}
   if(v.type==='moto'){ctx.fillStyle='#1d1d1d';ctx.fillRect(-L/2,-3,11,6);ctx.fillRect(L/2-11,-3,11,6);
     ctx.fillStyle=body;rrect(ctx,-L/2+7,-W/2,L-16,W,5);ctx.fill();ctx.fillStyle='#2a2a2a';rrect(ctx,-6,-4.5,13,9,3);ctx.fill();
     ctx.strokeStyle='#3b3b3b';ctx.lineWidth=2.4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(L/2-12,-10);ctx.lineTo(L/2-12,10);ctx.stroke();ctx.fillStyle='#ffe7a8';ctx.beginPath();ctx.arc(L/2-3,0,2.2,0,TAU);ctx.fill()}
@@ -2716,7 +2776,7 @@ function drawVehicle(v){const V=VEH[v.type],L=v.L,W=v.W,dmg=1-v.hp/V.hp;ctx.save
     ctx.strokeStyle='rgba(220,231,218,.42)';ctx.lineWidth=.9;ctx.beginPath();
     ctx.moveTo(L*.12,0);ctx.lineTo(L*.34,0);ctx.moveTo(L*.22,-W*.29);ctx.lineTo(L*.22,W*.29);ctx.stroke();
     // Roof hatch / roll cage and grab handles
-    if(v.type==='tout'){
+    if(v.type==='tout'||v.type==='jeep'){
       ctx.fillStyle=shade(body,.72);rrect(ctx,-L*.13,-W*.22,L*.27,W*.44,3);ctx.fill();
       ctx.strokeStyle='rgba(20,25,21,.82)';ctx.lineWidth=2;
       ctx.strokeRect(-L*.17,-W*.27,L*.35,W*.54);
@@ -2725,6 +2785,15 @@ function drawVehicle(v){const V=VEH[v.type],L=v.L,W=v.W,dmg=1-v.hp/V.hp;ctx.save
       // Compact roof rack rails
       ctx.strokeStyle='#343a32';ctx.lineWidth=1.8;ctx.beginPath();
       ctx.moveTo(-L*.28,-W*.31);ctx.lineTo(L*.02,-W*.31);ctx.moveTo(-L*.28,W*.31);ctx.lineTo(L*.02,W*.31);ctx.stroke();
+      if(v.type==='jeep'){ctx.fillStyle='rgba(20,25,25,.72)';rrect(ctx,-L*.1,-W*.19,L*.23,W*.38,2);ctx.fill();ctx.strokeStyle='rgba(210,215,205,.34)';ctx.lineWidth=1;ctx.strokeRect(-L*.1,-W*.19,L*.23,W*.38);ctx.fillStyle='#394345';ctx.fillRect(-L*.34,-W*.4,8,3);ctx.fillRect(-L*.34,W*.4,8,3)}
+    }else if(v.type==='pickup'){
+      /* Open cargo bed with reinforced side rails and a visible load. */
+      ctx.fillStyle='rgba(18,22,20,.82)';rrect(ctx,-L*.43,-W*.32,L*.34,W*.64,2);ctx.fill();
+      ctx.strokeStyle='rgba(218,215,194,.55)';ctx.lineWidth=1.5;ctx.strokeRect(-L*.43,-W*.32,L*.34,W*.64);
+      ctx.fillStyle='rgba(112,123,96,.88)';rrect(ctx,-L*.39,-W*.27,L*.25,W*.54,2);ctx.fill();
+      ctx.fillStyle='#303833';rrect(ctx,-L*.36,-W*.22,L*.18,W*.44,2);ctx.fill();
+      ctx.fillStyle='rgba(195,177,132,.75)';ctx.fillRect(-L*.34,-W*.16,5,W*.32);ctx.fillRect(-L*.24,-W*.16,5,W*.32);
+      ctx.strokeStyle='rgba(225,229,215,.36)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-L*.43,-W*.32);ctx.lineTo(-L*.08,-W*.32);ctx.moveTo(-L*.43,W*.32);ctx.lineTo(-L*.08,W*.32);ctx.stroke();
     }else{
       // Exposed buggy seats and protective roll bars
       ctx.fillStyle='rgba(25,28,25,.8)';rrect(ctx,-L*.18,-W*.24,L*.22,W*.48,2);ctx.fill();
@@ -2972,6 +3041,7 @@ function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;
   const gx0=clamp(x0,0,WS),gy0=clamp(y0,0,WS),gx1=clamp(x1,0,WS),gy1=clamp(y1,0,WS);
   if(gx1>gx0&&gy1>gy0)ctx.drawImage(ground,gx0*GS,gy0*GS,(gx1-gx0)*GS,(gy1-gy0)*GS,gx0,gy0,gx1-gx0,gy1-gy0);
    draw2DSurfaceDetail(x0,y0,x1,y1);
+   drawCoastalBoats(x0,y0,x1,y1);drawCityTrafficSignals(x0,y0,x1,y1);
   // waves
   ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=3;ctx.beginPath();const off=(TIME*24)%140;
   for(let y=Math.floor(y0/70)*70;y<y1;y+=70){const cx=coastX(y)+30;if(x1<cx)continue;for(let x=cx+((y/70)%2?70:0)-off;x<x1;x+=140){if(x<cx)continue;ctx.moveTo(x,y);ctx.lineTo(x+36,y)}}ctx.stroke();

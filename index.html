@@ -3828,7 +3828,9 @@ function drawShowcase(c,S,o){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,S,S);co
     try{const px=c.getImageData(Math.floor(S*.2),Math.floor(S*.08),Math.ceil(S*.6),Math.ceil(S*.82)).data;
       for(let i=3;i<px.length;i+=4)if(px[i]>238&&++visible>90)break;
     }catch(_){}
-    if(visible<=90){
+    // Always draw a guaranteed visible full-body lobby soldier over the showcase.
+    // The current preview renderer is leaving only its orange halo on some devices.
+    if(true){
       c.save();c.translate(S*.5,S*.47);c.scale(S/220,S/220);
       const metal=c.createLinearGradient(-22,0,22,0);metal.addColorStop(0,'#222a27');metal.addColorStop(.45,'#65705b');metal.addColorStop(1,'#252c27');
       const cloth=c.createLinearGradient(-18,-35,18,35);cloth.addColorStop(0,'#87906a');cloth.addColorStop(.5,'#424d3a');cloth.addColorStop(1,'#252d25');

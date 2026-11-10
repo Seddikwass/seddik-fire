@@ -3091,6 +3091,14 @@ async function sf3dBoot(){
     const fill=new THREE.DirectionalLight(0xb8d4e8,.42);fill.position.set(700,520,850);scene.add(fill);
     const camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,.5,6500);
     const world=new THREE.Group();scene.add(world);
+    // Lightweight 3D weather particles, separate from the map so they follow the camera.
+    const weatherCount=matchMedia('(max-width: 900px), (pointer: coarse)').matches?90:180;
+    const weatherPositions=new Float32Array(weatherCount*3);
+    for(let i=0;i<weatherCount;i++){weatherPositions[i*3]=(Math.random()-.5)*760;weatherPositions[i*3+1]=20+Math.random()*260;weatherPositions[i*3+2]=(Math.random()-.5)*760}
+    const weatherGeometry=new THREE.BufferGeometry();weatherGeometry.setAttribute('position',new THREE.BufferAttribute(weatherPositions,3));
+    const weatherMaterial=new THREE.PointsMaterial({color:0xd9e5bd,size:3.2,transparent:true,opacity:.48,depthWrite:false,sizeAttenuation:true});
+    const weatherParticles=new THREE.Points(weatherGeometry,weatherMaterial);weatherParticles.frustumCulled=false;scene.add(weatherParticles);
+    SF3D.weatherParticles=weatherParticles;SF3D.weatherPositions=weatherPositions;
     SF3D.renderer=renderer;SF3D.scene=scene;SF3D.camera=camera;SF3D.world=world;
     SF3D.ready=true;SF3D.loading=false;SF3D.resize();
   }catch(e){SF3D.loading=false;SF3D.failed=true;SF3D.error=String(e&&e.message||e);sf3dShowError('Initialisation WebGL : '+SF3D.error);console.error('Seddik Fire 3D init:',e)}
@@ -3521,6 +3529,24 @@ function render3DWorld(dt=1/60){
     if(SF3D.staticKey!==key||SF3D.terrainSource!==ground)sf3dBuild();
     sf3dSyncActors();sf3dSyncTracers();sf3dSyncImpacts();sf3dSyncExplosions();
     const T=SF3D.THREE,p=player;
+    // Match the 3D atmosphere and particles to the active island weather.
+    const wx=MAP.wx||'breeze',weather=SF3D.weatherParticles;
+    if(weather){
+      const sand=wx==='sand',leaves=wx==='leaves',fog=wx==='fog';
+      weather.visible=sand||leaves||wx==='breeze';
+      weather.material.color.setHex(sand?0xd8b477:leaves?0x9caf69:0xd7e4e8);
+      weather.material.size=sand?4.2:leaves?5.2:2.1;
+      weather.material.opacity=sand?.34:leaves?.58:.2;
+      weather.position.set(cam.x,0,cam.y);
+      weather.rotation.y=TIME*(leaves?.12:sand?.025:.045);
+      const pos=SF3D.weatherPositions;
+      for(let i=1;i<pos.length;i+=3)pos[i]=20+((pos[i]-20+dt*(sand?105:leaves?48:22))%260);
+      weather.geometry.attributes.position.needsUpdate=true;
+      SF3D.scene.background.setHex(fog?0xb9c6c3:sand?0xc9ad83:0x87b8cf);
+      SF3D.scene.fog.color.setHex(fog?0xb9c6c3:sand?0xc9ad83:0x9bb9b4);
+      SF3D.scene.fog.near=fog?360:sand?500:1050;
+      SF3D.scene.fog.far=fog?1900:sand?2600:4700;
+    }
     // During the aircraft phase the player stays at the aircraft origin;
     // follow the live camera position instead of the not-yet-landed soldier.
     const focusX=p.inPlane?cam.x:p.x,focusZ=p.inPlane?cam.y:p.y;

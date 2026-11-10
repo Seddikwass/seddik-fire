@@ -682,6 +682,67 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
 @keyframes sfSoldierIdle{0%,100%{translate:0 0;scale:1}50%{translate:0 -2px;scale:1.006}}
 @media(prefers-reduced-motion:reduce){#lobbySoldierFallback{animation:none}}
 
+ 
+/* SEDDIK FIRE v121 — finition UI moderne, lisibilité et confort mobile */
+:root{
+ --sf-panel:rgba(11,15,20,.91);
+ --sf-panel-soft:rgba(18,23,30,.82);
+ --sf-border:rgba(226,235,245,.15);
+ --sf-orange:#ff6a24;
+ --sf-gold:#ffc16a;
+ --sf-text:#f5f7fa;
+ --sf-muted:#aeb6c0;
+}
+html{background:#080b10;color-scheme:dark}
+body{background:radial-gradient(ellipse at 50% 35%,rgba(39,49,60,.22),transparent 58%),#080b10}
+button,.btn,[role="button"]{transition:transform .16s ease,border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--sf-gold);outline-offset:3px}
+button:active,.btn:active{transform:translateY(1px) scale(.985)}
+/* Panneaux plus nets, sans masquer les illustrations ni les canvas */
+.prof,.stat,.statbox,.panel,.card,.sidebox,.mode-card,.map-card,.weapon-card,.custom-card{
+ border-color:var(--sf-border);
+}
+.prof,.stat,.statbox,.panel,.card,.sidebox,.mode-card,.map-card,.weapon-card,.custom-card{
+ box-shadow:0 10px 28px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.035);
+}
+.lob{isolation:isolate}
+.lob:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 47%,rgba(255,112,43,.075),transparent 34%),linear-gradient(180deg,rgba(5,8,12,.12),rgba(5,8,12,.32))}
+.ltop{backdrop-filter:blur(10px)}
+.prof{background:linear-gradient(145deg,rgba(19,24,31,.96),rgba(10,13,18,.9))}
+.lvl{box-shadow:0 0 22px rgba(255,105,35,.2)}
+/* Boutons d'action : contraste et retour visuel */
+#playBtn,.play-btn,[data-action="play"]{box-shadow:0 10px 28px rgba(255,82,23,.24),inset 0 1px 0 rgba(255,255,255,.22)}
+#playBtn:hover,.play-btn:hover,[data-action="play"]:hover{filter:brightness(1.08);box-shadow:0 13px 34px rgba(255,82,23,.32),inset 0 1px 0 rgba(255,255,255,.25)}
+/* Panneaux de sélection */
+.lob button:not(.arrow):hover,.lob select:hover{border-color:rgba(255,166,99,.52)}
+#skinCv{filter:drop-shadow(0 12px 15px rgba(0,0,0,.26))}
+#lobbySoldierFallback{will-change:transform;filter:drop-shadow(0 14px 15px rgba(0,0,0,.65)) drop-shadow(0 0 12px rgba(255,111,45,.16))}
+/* HUD du match : lisible sur les cartes claires et les zones de nuit */
+.hud .tl,.hud .tr,.hud .bl,.hud .br,.hud .feed,.hud .toast,.hud .minimap{
+ text-shadow:0 1px 3px rgba(0,0,0,.85);
+}
+.hud .counts,.hud .count,.hud .feed,.hud .toast{
+ backdrop-filter:blur(8px);
+}
+#game{touch-action:none}
+canvas{image-rendering:auto}
+/* Petits écrans : éviter les panneaux écrasés et préserver les commandes tactiles */
+@media(max-width:760px){
+ .lob{padding-left:max(12px,var(--ix,0px));padding-right:max(12px,var(--ir,0px))}
+ .ltop{gap:8px}
+ .stage{max-width:min(100%,360px);grid-template-columns:40px minmax(0,1fr) 40px}
+ .arrow{width:40px;height:40px}
+ #skinCv{max-width:min(250px,36vh)}
+ .pc-name b{font-size:clamp(24px,7vw,32px)}
+}
+@media(max-width:430px){
+ .prof{max-width:calc(100vw - 24px)}
+ .lob button,.lob select{min-height:40px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>

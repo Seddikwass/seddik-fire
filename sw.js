@@ -1,5 +1,5 @@
 /* Seddik Fire — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'seddik-fire-v140';
+const VERSION = 'seddik-fire-v141';
 const FONTS = 'seddik-fire-fonts';
 const LEGACY_CACHES = ['super-joud-v10'];
 const CORE = [

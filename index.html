@@ -1612,6 +1612,40 @@ async function gcBundled(k){if(!adsNative())return null;try{const f=k.replace(/\
 async function gcLoad(mid){const k=gKey(mid);if(GC.m.has(k))return true;try{let v=adsNative()?await gcBundled(k):null;if(!v||!v.blob)try{const db=await gcDB();v=await new Promise(res=>{const q=db.transaction('g').objectStore('g').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})}catch(e){}if((!v||!v.blob)&&!adsNative())v=await gcBundled(k);if(!v||!v.blob)return false;const bmp=await createImageBitmap(v.blob);for(const [kk,o] of GC.m)if(kk!==k){try{o.bmp.close&&o.bmp.close()}catch(e){}GC.m.delete(kk)}GC.m.set(k,{bmp,lamps:v.lamps||[]});return true}catch(e){return false}}
 function gcSave(k,g,lamps){const L=lamps.map(o=>Object.assign({},o));setTimeout(()=>{try{if(!g.toBlob)return;g.toBlob(async blob=>{if(!blob)return;try{const db=await gcDB();const st=db.transaction('g','readwrite').objectStore('g');const ck=st.getAllKeys();ck.onsuccess=()=>{for(const kk of ck.result||[])if(!String(kk).endsWith('|'+gcHash()))st.delete(kk);st.put({blob,lamps:L},k)}}catch(e){}},'image/webp',.92)}catch(e){}},2500)}
 function gcBoot(){try{initGfx()}catch(e){}const M=MODES[stats.mode];const mid=(M&&M.map)||(MAPS[stats.map]?stats.map:'seddik');return Promise.race([gcLoad(mid),new Promise(r=>setTimeout(r,1500))])}
+
+/* v96 — matériaux de sol propres à chaque biome : texture 2D légère, sans impact collision. */
+function environmentMaterialPass(c,Rg){
+  const id=MAP.id,city=MAP.gen==='city'||id==='ville',forest=MAP.gen==='forest'||id==='foret';
+  const desert=MAP.gen==='desert'||id==='sahara',coast=id==='cote'||id==='seddik',high=id==='hautes';
+  c.save();c.lineCap='round';c.lineJoin='round';
+  if(city){
+    for(let i=0;i<6200;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg();
+      c.globalAlpha=.08+q*.09;c.fillStyle=q>.5?'#f2e8d2':'#171b20';c.beginPath();c.ellipse(x,y,1.2+q*3,.5+q, q*6.28,0,TAU);c.fill();
+      if(q>.965){c.globalAlpha=.18;c.strokeStyle='#25282b';c.lineWidth=1;c.beginPath();c.moveTo(x,y);c.lineTo(x+5+q*8,y+2+q*5);c.stroke()}}
+  }else if(desert){
+    for(let i=0;i<2300;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const r=18+Rg()*95;
+      c.globalAlpha=.08+Rg()*.12;c.strokeStyle=Rg()>.5?'#fff0c7':'#956b3e';c.lineWidth=1+Rg()*2;c.beginPath();c.moveTo(x-r,y);c.quadraticCurveTo(x,y-r*.22,x+r,y+Rg()*7);c.stroke();
+      if(Rg()>.82){c.globalAlpha=.18;c.fillStyle='#756044';c.beginPath();c.ellipse(x,y,r*.18,r*.08,Rg(),0,TAU);c.fill()}}
+  }else if(forest){
+    for(let i=0;i<5200;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg();c.globalAlpha=.12+q*.14;c.strokeStyle=q>.5?'#b0a16b':'#293d27';c.lineWidth=.8+q*1.4;c.beginPath();c.moveTo(x-3,y+2);c.lineTo(x+2+q*5,y-2-q*5);c.stroke();
+      if(q>.91){c.globalAlpha=.15;c.fillStyle='#253b25';c.beginPath();c.arc(x,y,2+q*4,0,TAU);c.fill()}}
+  }else if(coast){
+    for(let i=0;i<4300;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg(),r=1+q*4;
+      c.globalAlpha=.08+q*.12;c.fillStyle=q>.68?'#d9c59b':q>.35?'#78834b':'#526b3e';c.beginPath();c.ellipse(x,y,r*1.8,r*.7,q*TAU,0,TAU);c.fill();
+      if(q>.94){c.globalAlpha=.18;c.strokeStyle='#425b37';c.lineWidth=1.2;c.beginPath();c.moveTo(x,y+3);c.quadraticCurveTo(x+3,y-5,x+7,y-6);c.stroke()}}
+  }else if(high){
+    for(let i=0;i<3000;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const r=3+Rg()*16;c.globalAlpha=.1+Rg()*.13;c.fillStyle=Rg()>.5?'#8c8874':'#b5a98a';c.beginPath();c.moveTo(x-r,y+r*.2);c.lineTo(x-r*.2,y-r);c.lineTo(x+r,y-r*.3);c.lineTo(x+r*.4,y+r);c.closePath();c.fill()}}
+  }else{
+    /* Île principale : dalle et gravier de la base, terre ocre du ksar et du douar. */
+    for(let i=0;i<3600;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg();
+      let col=q>.55?'#b6a17d':'#5f6844';
+      if(x>430&&x<1320&&y>360&&y<980)col=q>.5?'#74745e':'#4b503e';
+      if(y>2350&&x<1050)col=q>.5?'#d0a16a':'#956b45';
+      if(y>2920&&x<1600)col=q>.5?'#c2a77b':'#88714f';
+      c.globalAlpha=.08+q*.1;c.fillStyle=col;c.beginPath();c.ellipse(x,y,1.5+q*3,.8+q*1.4,q*TAU,0,TAU);c.fill()}}
+  c.restore();
+}
+
 function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mid'?.72:.8;
   const gk=gKey(MAP.id),hit=GC.m.get(gk);if(hit){LAMPS=hit.lamps.map(o=>Object.assign({},o));ground=hit.bmp}else{
   const g=document.createElement('canvas');g.width=g.height=WS*GS;const c=g.getContext('2d');c.scale(GS,GS);
@@ -1626,7 +1660,7 @@ function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mi
   for(let i=0;i<1700;i++){const x=Rg()*WS,y=Rg()*WS,l=40+Rg()*130,a=.35+(Rg()-.5)*.35,bx=Math.cos(a),by=Math.sin(a);c.strokeStyle=Rg()<.5?'rgba(255,244,215,.17)':'rgba(140,100,55,.12)';c.lineWidth=2+Rg()*2.5;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+bx*l/2-by*9,y+by*l/2+bx*9,x+bx*l,y+by*l);c.stroke()}
   {const PB=[new Path2D(),new Path2D(),new Path2D()];for(let i=0;i<5200;i++){const x=Rg()*WS,y=Rg()*WS,r0=1.5+Rg()*3,k=Math.floor(Rg()*3),p=PB[k],rt=Rg()*3;p.moveTo(x+Math.cos(rt)*r0,y+Math.sin(rt)*r0);p.ellipse(x,y,r0,r0*.72,rt,0,TAU)}['#a89a86','#8f8576','#c4b8a2'].forEach((col,k)=>{c.fillStyle=col;c.fill(PB[k])})}
   for(const z of(MAP.grz||GRZ0)){for(let i=0;i<300;i++){const a=Rg()*TAU,d=Math.sqrt(Rg())*z[2],x=z[0]+Math.cos(a)*d,y=z[1]+Math.sin(a)*d;c.strokeStyle=Rg()<.5?'rgba(92,118,48,.65)':'rgba(128,150,66,.6)';c.lineWidth=2.2;c.beginPath();for(let k=-1;k<=1;k++){c.moveTo(x,y);c.lineTo(x+k*4.5,y-7-Rg()*5)}c.stroke()}}
-  decoGround(c,Rg);
+  decoGround(c,Rg);environmentMaterialPass(c,Rg);
   {const N=NAT[MAP.id];if(N){const Rn=mulberry32(4401);tallGrass(c,Rn,N[1]);rockSlabs(c,Rn,N[0])}terrainSurfacePass(c,mulberry32(73073));}
   for(const p of PAVED){c.fillStyle=p.c;c.fillRect(p.x,p.y,p.w,p.h);c.strokeStyle='rgba(0,0,0,.08)';c.lineWidth=2;c.beginPath();for(let x=p.x+p.g;x<p.x+p.w;x+=p.g){c.moveTo(x,p.y);c.lineTo(x,p.y+p.h)}for(let y=p.y+p.g;y<p.y+p.h;y+=p.g){c.moveTo(p.x,y);c.lineTo(p.x+p.w,y)}c.stroke();c.strokeStyle='rgba(0,0,0,.18)';c.lineWidth=4;c.strokeRect(p.x,p.y,p.w,p.h)}
   if(!MAP.gen){c.save();c.translate(1420,760);c.fillStyle='#aaa38c';c.beginPath();c.arc(0,0,78,0,TAU);c.fill();c.strokeStyle='rgba(0,0,0,.15)';c.lineWidth=4;c.stroke();c.strokeStyle='#f0c541';c.lineWidth=6;c.beginPath();c.arc(0,0,63,0,TAU);c.stroke();c.fillStyle='#f3efe4';c.fillRect(-26,-34,12,68);c.fillRect(14,-34,12,68);c.fillRect(-14,-6,28,12);c.restore();

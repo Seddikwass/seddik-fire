@@ -2552,7 +2552,7 @@ function updateBullets(dt){const pl=player&&player.alive&&!player.inPlane&&playe
     if(hitT<=1){const hx=b.x+(nx-b.x)*hitT,hy=b.y+(ny-b.y)*hitT;
       if(hitEnt){const f=b.tr>b.rg*.6?lerp(1,.6,(b.tr-b.rg*.6)/(b.rg*.4)):1;damage(hitEnt,b.dmg*f,b.o,b.wn)}
       else if(hitV)hitVeh(hitV,b.dmg,b.o,b.wn);
-      else{if(hitObj){fxImpacts.push({x:hx,y:hy,t:matchT,k:hitObj.k});if(fxImpacts.length>36)fxImpacts.shift()}puff(hx,hy,3,hitObj.k==='wall'?'#e9dfc9':hitObj.k==='crate'?'#8a5a2c':'#cdb88f',110,.35,3);if(vis(hx,hy,40)){const met=hitObj.k==='cont'||hitObj.k==='pcar'||hitObj.k==='pump';puff(hx,hy,met?6:2,'#ffe08a',met?260:170,.16,1.6);puff(hx,hy,2,'#bdb5a6',30,1.1,9,-8)}if(hitObj.k==='crate')hitCrate(hitObj,b.dmg,b.o);sfxImpact(hx,hy)}
+      else{if(hitObj){fxImpacts.push({x:hx,y:hy,t:matchT,k:hitObj.k,a:Math.atan2(ny-b.y,nx-b.x)});if(fxImpacts.length>36)fxImpacts.shift()}puff(hx,hy,3,hitObj.k==='wall'?'#e9dfc9':hitObj.k==='crate'?'#8a5a2c':'#cdb88f',110,.35,3);if(vis(hx,hy,40)){const met=hitObj.k==='cont'||hitObj.k==='pcar'||hitObj.k==='pump';puff(hx,hy,met?6:2,'#ffe08a',met?260:170,.16,1.6);puff(hx,hy,2,'#bdb5a6',30,1.1,9,-8)}if(hitObj.k==='crate')hitCrate(hitObj,b.dmg,b.o);sfxImpact(hx,hy)}
       bullets.splice(i,1);continue}
     if(pl&&!b.wz&&b.o!==pl&&Math.abs(nx-pl.x)<120&&Math.abs(ny-pl.y)<120&&segDist(pl.x,pl.y,b.x,b.y,nx,ny)<60){b.wz=1;sfxWhiz(sndPan(nx))}
     b.tr+=Math.hypot(nx-b.x,ny-b.y);b.px=b.x;b.py=b.y;b.x=nx;b.y=ny;if(b.tr>b.rg||nx<0||ny<0||nx>WS||ny>WS)bullets.splice(i,1)}}
@@ -3485,9 +3485,26 @@ function drawImpactMarks(){
     const fade=Math.max(0,1-age/3.2),pulse=Math.max(0,1-age/.16);
     ctx.save();ctx.translate(p.x,p.y);
     if(p.k==='cont'||p.k==='wall'||p.k==='rock'){
-      ctx.globalAlpha=fade*.58;ctx.strokeStyle='#40382e';ctx.lineWidth=1.15;
-      for(let j=0;j<4;j++){const a=j*1.57+.28;ctx.beginPath();ctx.moveTo(Math.cos(a)*2,Math.sin(a)*2);ctx.lineTo(Math.cos(a+.22)*(7+j*2),Math.sin(a+.22)*(7+j*2));ctx.stroke()}
-      ctx.globalAlpha=fade*.34;ctx.fillStyle='#e9dfc9';ctx.beginPath();ctx.arc(-1,-1,1.6,0,TAU);ctx.fill();
+      // v106: layered masonry fractures, impact crater and small plaster chips.
+      ctx.save();ctx.rotate((p.a||0)+Math.PI);
+      const stone=p.k==='rock',base=stone?'#393a35':'#40382e',light=stone?'#c0b7a6':'#e9dfc9';
+      ctx.globalAlpha=fade*(stone?.52:.62);ctx.strokeStyle=base;ctx.lineWidth=stone?1.45:1.2;
+      for(let j=0;j<7;j++){
+        const a=j*TAU/7+.16+(j%2)*.12,len=stone?10+j%3*3:8+j%3*4;
+        ctx.beginPath();ctx.moveTo(Math.cos(a)*1.5,Math.sin(a)*1.5);
+        ctx.lineTo(Math.cos(a+.12)*len*.48,Math.sin(a+.12)*len*.48);
+        ctx.lineTo(Math.cos(a-.045)*len,Math.sin(a-.045)*len);ctx.stroke();
+        if(j%2===0){ctx.beginPath();ctx.moveTo(Math.cos(a+.12)*len*.48,Math.sin(a+.12)*len*.48);ctx.lineTo(Math.cos(a+.38)*(len+3),Math.sin(a+.38)*(len+3));ctx.stroke()}
+      }
+      ctx.globalAlpha=fade*.3;ctx.fillStyle=light;ctx.beginPath();ctx.arc(-1,-1,stone?2.2:2.8,0,TAU);ctx.fill();
+      for(let j=0;j<4;j++){
+        const a=j*1.71+.4,dist=6+(j%2)*3;
+        ctx.globalAlpha=fade*(.24+(j%2)*.08);ctx.fillStyle=j%2?base:light;
+        ctx.beginPath();ctx.moveTo(Math.cos(a)*dist,Math.sin(a)*dist);
+        ctx.lineTo(Math.cos(a+.34)*(dist+3),Math.sin(a+.34)*(dist+3));
+        ctx.lineTo(Math.cos(a-.27)*(dist+2),Math.sin(a-.27)*(dist+2));ctx.closePath();ctx.fill();
+      }
+      ctx.restore();
     }else if(p.k==='crate'||p.k==='trunk'){
       ctx.globalAlpha=fade*.55;ctx.strokeStyle='#b58a54';ctx.lineWidth=1.35;
       for(let j=0;j<3;j++){const a=j*2.1+.5;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*(8+j*2),Math.sin(a)*(5+j));ctx.stroke()}

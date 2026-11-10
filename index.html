@@ -5097,6 +5097,25 @@ function bindInputs() {
   document.addEventListener('visibilitychange', () => { if (document.hidden && (G.state === 'race' || G.state === 'countdown')) UI.pause(true); });
   addEventListener('pointerdown', () => { AU.init(); if (G.state === 'menu') MUS.play('menu'); }, { capture: true });
   addEventListener('contextmenu', e => { if (G.state !== 'menu') e.preventDefault(); });
+  // Pont tactile fiable : déclenche les mêmes gestionnaires click que la souris,
+  // sans interférer avec les commandes maintenues (accélérateur, frein, joystick).
+  let tapTarget = null, tapPointer = null;
+  document.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const b = e.target && e.target.closest ? e.target.closest('button,a,[role="button"]') : null;
+    if (!b || b.disabled || b.closest('#touch,#stick')) return;
+    if (e.pointerType !== 'mouse') { tapTarget = b; tapPointer = e.pointerId; e.preventDefault(); }
+  }, true);
+  document.addEventListener('pointerup', e => {
+    if (!tapTarget || e.pointerId !== tapPointer) return;
+    const b = tapTarget; tapTarget = null; tapPointer = null;
+    if (!b.isConnected || (e.target !== b && !b.contains(e.target))) return;
+    e.preventDefault();
+    try { b.focus({ preventScroll: true }); b.click(); } catch (err) { console.error('Activation tactile :', err); }
+  }, true);
+  document.addEventListener('pointercancel', e => {
+    if (e.pointerId === tapPointer) { tapTarget = null; tapPointer = null; }
+  }, true);
   document.querySelectorAll('#touch button').forEach(b => {
     const k = b.dataset.t;
     const on = e => { e.preventDefault(); TOUCH[k] = true; b.classList.add('on'); try { b.setPointerCapture(e.pointerId); } catch (x) { } if (k === 'nitro' && SAVE.settings.vibe) buzz(1); };

@@ -794,6 +794,14 @@ canvas{image-rendering:auto}
 #maps .chip:active,#modes .chip:active{transform:translateY(1px) scale(.985)}
 @media (hover:hover){#maps .chip:hover,#modes .chip:hover{border-color:rgba(255,192,97,.62);filter:brightness(1.12)}}
 @media(prefers-reduced-motion:reduce){#maps .chip,#modes .chip{transition:none}}
+/* v145 — sélection de carte synchronisée et aperçu soldat dégagé sur mobile */
+@media(max-width:760px){
+  #lobby .stage{margin-bottom:12px;}
+  #lobby .pc-name{position:relative;z-index:5;margin-top:8px;padding-top:4px;}
+  #lobbySoldierFallback{height:78%;top:45%;width:min(70%,200px);}
+  #lobby #skinCv{max-width:min(220px,32vh);}
+}
+#lobby .stamp{max-width:100%;text-align:center;}
 </style>
 </head>
 <body>
@@ -4628,7 +4636,7 @@ function buildMaps(){const box=$('#maps');box.innerHTML=Object.keys(MAPS).map(k=
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
 function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mode];return MAPS[(M&&M.map)||stats.map]}
 function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
-function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby'){const go=()=>{if(stats.map===id&&MAP.id!==id&&game.mode==='lobby'){genWorld(id);markMap()}};Promise.race([gcLoad(id),new Promise(r=>setTimeout(r,1200))]).then(go,go)}markMap()}
+function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby'){const go=()=>{if(stats.map===id&&MAP.id!==id&&game.mode==='lobby'){genWorld(id);markMap()}};Promise.race([gcLoad(id),new Promise(r=>setTimeout(r,1200))]).then(go,go)}markMap();const stamp=document.querySelector('.stamp');if(stamp){const M=MODES[stats.mode]||MODES.classic,active=selMap();stamp.textContent=active.n+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant')}}
 const MPOOL=[
   {id:'kills',n:k=>'Éliminez '+k+' adversaires',g:[2,3,5],xp:[120,180,280],key:'kills'},
   {id:'games',n:k=>'Jouez '+k+' parties',g:[2,3],xp:[100,160],key:'games'},

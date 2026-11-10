@@ -2742,6 +2742,37 @@ function buildTrack(def, quality) {
         mb.box(grille[0], grille[1], grille[2], 0.025, 0.2, 0.42, [0.16, 0.17, 0.18], 4, yaw);
       }
     }
+
+    // Détails architecturaux supplémentaires : soubassement, corniche, pilastres et équipements de toit.
+    if (h > 9) {
+      const baseY = 0.34, trim = V3.sc(c, 0.72), edge = V3.sc(c, 1.28);
+      mb.box(x, y0 + baseY, z, wLat + 0.22, 0.42, dAl + 0.22, trim, 18, yaw);
+      if (h > 18) {
+        mb.box(x, y0 + h - 0.42, z, wLat + 0.42, 0.48, dAl + 0.42, edge, 18, yaw);
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+          const p = P(sx * (hx - 0.28), h * 0.52, sz * (hz - 0.28));
+          mb.box(p[0], p[1], p[2], 0.22, h * 0.88, 0.22, trim, 18, yaw);
+        }
+      }
+      // panneaux solaires inclinés sur les toits des immeubles modernes
+      if (h > 15 && r() < 0.38) {
+        const count = 2 + Math.floor(r() * 3);
+        for (let q = 0; q < count; q++) {
+          const px = (q - (count - 1) / 2) * Math.min(2.0, wLat / count);
+          const p = P(px, h + 0.34, 0);
+          mb.box(p[0], p[1], p[2], Math.min(1.65, wLat / count - 0.12), 0.07, Math.min(2.4, dAl * 0.34), [0.035, 0.09, 0.16], 4, yaw, 1, 1, [0.12, 0.2, 0.3]);
+          mb.box(p[0], p[1] + 0.055, p[2], Math.min(1.55, wLat / count - 0.2), 0.018, Math.min(2.28, dAl * 0.31), [0.12, 0.2, 0.29], 4, yaw);
+        }
+      }
+    }
+    // Réservoirs d'eau et antennes, détails typiques des toits urbains tunisiens.
+    if (h > 22 && r() < 0.3) {
+      const p = P((r() - 0.5) * hx, h + 1.0, (r() - 0.5) * hz);
+      mb.cyl(p[0], p[1], p[2], 0.58, 1.45, 12, [0.58, 0.62, 0.64], 4);
+      mb.cyl(p[0], p[1] + 0.76, p[2], 0.6, 0.08, 12, [0.28, 0.31, 0.34], 4);
+      const mast = P((r() - 0.5) * hx, h + 3.0, (r() - 0.5) * hz);
+      bar(mb, P((r() - 0.5) * hx, h + 1.4, (r() - 0.5) * hz), mast, 0.035, [0.24, 0.25, 0.27], 4);
+    }
     if (h > 45) { const p = P(0, h, 0); mb.box(p[0], p[1], p[2], 0.5, 1.6, 0.5, [1, 0.1, 0.05], 2); }
     if (r() < 0.5) { const p = P((r() - 0.5) * hx, h, (r() - 0.5) * hz); mb.box(p[0], p[1], p[2], 3, 1.8, 3, V3.sc(c, 0.8), 0, yaw); }
   }

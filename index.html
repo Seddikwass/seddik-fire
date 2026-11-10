@@ -1428,7 +1428,7 @@ function loftSE(secs, c, m, ex = 2.4, n = 16, capEnds = true) {
 const WHEELS = {};
 function getWheel(style, r, w) {
   const key = style + '_' + r + '_' + w; if (WHEELS[key]) return WHEELS[key];
-  const mb = new MB(), seg = 20, hw = w / 2, P = (x, a, rr) => [x, Math.cos(a) * rr, Math.sin(a) * rr];
+  const mb = new MB(), seg = 28, hw = w / 2, P = (x, a, rr) => [x, Math.cos(a) * rr, Math.sin(a) * rr];
   const tire = [0.055, 0.055, 0.06], wall = [0.085, 0.085, 0.09], rimW = [1, 1, 1], rimD = [0.55, 0.55, 0.55], rec = [0.07, 0.07, 0.075];
   const rr = r * (style === 'dish' ? 0.66 : 0.7);
   for (let i = 0; i < seg; i++) {

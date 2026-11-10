@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#07080b">
-<title>SUPER SEDDIK@JOUD</title>
+<title>SUPER SEDDIK & JOUD</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -348,7 +348,7 @@ html[lang=ar] .dcard b,html[lang=ar] .dhead h2,html[lang=ar] .drvchip b{font-fam
 <body>
 <canvas id="gl"></canvas>
 
-<div id="loading" class="overlay show"><div class="logo big">SUPER<span>SEDDIK<i>@</i>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر صدّيق@جود</b></div><div class="bar"><i></i></div><p id="loadtxt" data-i18n="loading">Démarrage du moteur…</p></div>
+<div id="loading" class="overlay show"><div class="logo big">SUPER<span>SEDDIK<i>&amp;</i>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر صدّيق@جود</b></div><div class="bar"><i></i></div><p id="loadtxt" data-i18n="loading">Démarrage du moteur…</p></div>
 <div id="err" class="overlay"><div class="box"><h2>Oups…</h2><p id="errtxt"></p><p id="errhelp" class="note"></p><a id="err-test" class="hidden" href="https://get.webgl.org/" target="_blank" rel="noopener"></a><button id="err-retry" class="cta hidden">Réessayer</button></div></div>
 
 <div id="ui">
@@ -360,7 +360,7 @@ html[lang=ar] .dcard b,html[lang=ar] .dhead h2,html[lang=ar] .drvchip b{font-fam
   </div>
 
   <section id="scr-main" class="screen">
-    <div class="hero"><div class="logo big">SUPER<span>SEDDIK<i>@</i>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر صدّيق@جود</b></div><div class="tag" data-i18n="tagline">Courses de rue · Police · Nitro</div></div>
+    <div class="hero"><div class="logo big">SUPER<span>SEDDIK<i>&amp;</i>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر صدّيق@جود</b></div><div class="tag" data-i18n="tagline">Courses de rue · Police · Nitro</div></div>
     <nav class="mainnav">
       <button id="m-play" class="nbtn play"><b><svg viewBox="0 0 24 24" class="ic"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg><span data-i18n="play">JOUER</span></b><small id="m-play-sub"></small></button>
       <button data-go="career" class="nbtn"><b data-i18n="career">CARRIÈRE</b><small id="m-career"></small></button>
@@ -460,7 +460,7 @@ html[lang=ar] .dcard b,html[lang=ar] .dhead h2,html[lang=ar] .drvchip b{font-fam
 <script>
 'use strict';
 /* =====================================================================
-   SUPER SEDDIK@JOUD — moteur 3D WebGL autonome (aucune dépendance externe)
+   SUPER SEDDIK & JOUD — moteur 3D WebGL autonome (aucune dépendance externe)
    ===================================================================== */
 const STRIDE = 11; // pos3 norm3 col3 mat1 light1
 
@@ -1428,7 +1428,7 @@ function loftSE(secs, c, m, ex = 2.4, n = 16, capEnds = true) {
 const WHEELS = {};
 function getWheel(style, r, w) {
   const key = style + '_' + r + '_' + w; if (WHEELS[key]) return WHEELS[key];
-  const mb = new MB(), seg = 28, hw = w / 2, P = (x, a, rr) => [x, Math.cos(a) * rr, Math.sin(a) * rr];
+  const mb = new MB(), seg = 32, hw = w / 2, P = (x, a, rr) => [x, Math.cos(a) * rr, Math.sin(a) * rr];
   const tire = [0.055, 0.055, 0.06], wall = [0.085, 0.085, 0.09], rimW = [1, 1, 1], rimD = [0.55, 0.55, 0.55], rec = [0.07, 0.07, 0.075];
   const rr = r * (style === 'dish' ? 0.66 : 0.7);
   for (let i = 0; i < seg; i++) {
@@ -2550,7 +2550,7 @@ function buildTrack(def, quality) {
     for (const sd of [-1, 1]) { const p = pos(0, sd * (W + 2.2)); mb.box(p[0], p[1], p[2], 0.9, 8.6, 0.9, [0.1, 0.1, 0.12], 4, hd[0]); }
     const b = pos(0, 0, 6.2); mb.box(b[0], b[1], b[2], 2 * W + 5.3, 2.4, 1.0, [0.06, 0.06, 0.08], 4, hd[0]);
     const lb = pos(0, 0, 6.05); mb.box(lb[0], lb[1], lb[2], 2 * W + 3, 0.12, 0.5, [1, 0.95, 0.85], 2, hd[0]);
-    const txt = 'SUPER SEDDIK@JOUD', px0 = Math.min(0.25, (2 * W + 3) / (txt.length * 6)), tw = txt.length * 6 * px0, yo = (0.25 - px0) * 3.5;
+    const txt = 'SUPER SEDDIK & JOUD', px0 = Math.min(0.25, (2 * W + 3) / (txt.length * 6)), tw = txt.length * 6 * px0, yo = (0.25 - px0) * 3.5;
     for (const face of [-1, 1]) {
       for (let ci = 0; ci < txt.length; ci++) {
         const g = FONT[txt[ci]] || FONT[' '];
@@ -2946,7 +2946,7 @@ function buildTrack(def, quality) {
       mb.quad(pos(i, g * (W + 8.5), 0), pos(j, g * (W + 8.5), 0), pos(j, g * (W + 8.5), 0.6), pos(i, g * (W + 8.5), 0.6), [0.5, 0.5, 0.5], 18);
       mb.quad(pos(i, g * (db + 0.5), 9.2), pos(j, g * (db + 0.5), 9.2), pos(j, g * (W + 7.5), 7.6), pos(i, g * (W + 7.5), 7.6), [0.9, 0.9, 0.9], 18);
       if ((i - G0) % 12 === 0) { const q = pos(i, g * (W + 19.6)); mb.box(q[0], q[1], q[2], 0.3, 9.2, 0.3, [0.7, 0.7, 0.72], 4, hd[i]); }
-      if ((i - G0) % 24 === 6) boardText(mb, i, g, W + 7.45, 7.9, 'SUPER SEDDIK@JOUD', 0.11, [1, 0.5, 0.08], 2);
+      if ((i - G0) % 24 === 6) boardText(mb, i, g, W + 7.45, 7.9, 'SUPER SEDDIK & JOUD', 0.11, [1, 0.5, 0.08], 2);
     }
     // stands / garages
     for (let i = P0 + 2; i < P1 - 12; i += 12) {
@@ -2966,7 +2966,7 @@ function buildTrack(def, quality) {
       const side = (i / 22) % 2 ? 1 : -1; if (inPit(i, side) || inGs(i, side)) continue;
       const mb = ch(rk(i)), q = pos(i, side * (W + 5.35), 0.25), c = pal[Math.floor(r() * pal.length)];
       mb.box(q[0], q[1], q[2], 0.1, 1.25, 7.5, c, 0, hd[i]);
-      boardText(mb, i, side, W + 5.28, 0.55, 'SEDDIK@JOUD', 0.1, [1, 1, 1], 0);
+      boardText(mb, i, side, W + 5.28, 0.55, 'SEDDIK & JOUD', 0.1, [1, 1, 1], 0);
     }
     for (let i = 0; i < N; i += 45) { if (Math.abs(kk[i]) < 0.006) continue; const side = kk[i] > 0 ? 1 : -1; if (inPit(i, side) || inGs(i, side)) continue; const q = pos(i, side * (W + 7.5)); ch(rk(i)).box(q[0], T.groundY(q[0], q[2]), q[2], 2, 2.4, 2.2, [0.95, 0.5, 0.1], 18, hd[i]); }
     for (let k = 0; k < 220; k++) {
@@ -3516,7 +3516,7 @@ function applyI18n() {
 
 'use strict';
 /* =====================================================================
-   ART BIBLE — SUPER SEDDIK@JOUD
+   ART BIBLE — SUPER SEDDIK & JOUD
    Adjectifs : nerveux · nocturne · méditerranéen
    Réalisme stylisé : formes simples générées par code, belle lumière, palette maîtrisée.
    Formes : triangles et biseaux (vitesse) pour l'interface, carrosseries arrondies et basses.

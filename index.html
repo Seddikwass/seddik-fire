@@ -1891,6 +1891,8 @@ function damage(t,amt,src,wn){if(src&&src!==t&&src.team&&src.team===t.team)retur
   if(t===player&&src&&src!==t)dmgDirs.push({a:Math.atan2(src.y-t.y,src.x-t.x),t:1.1});
   if(t===player){cam.shake=Math.min(.5,cam.shake+.18);buzz(22)}
   puff(t.x,t.y,3,'#8e2b22',90,.4,3.5);
+  // Impact directionnel : éclats brefs sur les touches, avec coût limité aux impacts visibles.
+  if(src&&src!==t&&vis(t.x,t.y,90)&&parts.length<510){const ia=Math.atan2(t.y-src.y,t.x-src.x);for(let j=0;j<4&&parts.length<516;j++){const a=ia+rand(-.95,.95),v=rand(55,125);parts.push({x:t.x+Math.cos(ia)*t.r*.35,y:t.y+Math.sin(ia)*t.r*.35,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:rand(.09,.19),m:.19,s:rand(1.4,2.5),c:j%2?'#ffbd68':'#fff0c2',g:0,spk:1})}if(parts.length<516)parts.push({x:t.x,y:t.y,vx:0,vy:0,l:.16,m:.16,s:Math.max(4,t.r*.48),c:'#fff0c2',g:0,ring:1})}
   if(d>4&&src&&src!==t&&(GUNN.has(wn)||MELEEN.has(wn)))addBlood(t.x,t.y,Math.atan2(t.y-src.y,t.x-src.x),Math.min(5,d*.05));
   if(t.hp<=0)kill(t,src,wn);
 }

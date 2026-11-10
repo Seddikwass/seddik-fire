@@ -3426,17 +3426,24 @@ function sf3dPoseActor(g,e){
   const fire=Math.max(0,Math.min(1,(e.firedT||0)/.16));
   const reload=e.reloadT>0?Math.sin((1-e.reloadT/Math.max(.01,e.reloadTot||1))*Math.PI):0;
   const using=e.using?Math.sin(TIME*7)*.08:0;
+  const hurt=Math.max(0,Math.min(1,(e.hurtT||0)/.3));
+  const recoil=fire*fire;
   const bob=moving?Math.abs(Math.sin(phase))*(.65+Math.min(.45,speed*.001)):Math.sin(TIME*1.8+(e.id||0))*.12;
-  const airborne=(e.air||0)>0;g.position.set(e.x+(airborne?Math.sin(TIME*1.25+(e.id||0))*(e.vx||0)*.012:0),airborne?24+(e.air||0)*105:bob,e.y+(airborne?Math.cos(TIME*1.1+(e.id||0))*(e.vy||0)*.012:0));g.rotation.y=-(e.angle||0);
+  const airborne=(e.air||0)>0;
+  g.position.set(e.x+(airborne?Math.sin(TIME*1.25+(e.id||0))*(e.vx||0)*.012:0),airborne?24+(e.air||0)*105:bob+hurt*1.8,e.y+(airborne?Math.cos(TIME*1.1+(e.id||0))*(e.vy||0)*.012:0));
+  g.rotation.y=-(e.angle||0);
+  // A short flinch and backward recoil communicate incoming hits and weapon kick.
+  g.rotation.x=airborne?0:-hurt*.105-recoil*.075;
+  g.rotation.z=airborne?Math.sin(TIME*1.4+(e.id||0))*.035:Math.sin(phase)*(moving?.025:.006)-fire*.012+Math.sin(TIME*42+(e.id||0))*hurt*.035;
   if(g.userData.muzzleFlash){const active=fire>.08&&!airborne;g.userData.muzzleFlash.visible=active;if(active){const pulse=.72+Math.sin(TIME*95+(e.id||0))* .28;g.userData.muzzleFlash.scale.setScalar(pulse);g.userData.muzzleFlash.rotation.z=Math.sin(TIME*70)*.16}}
   if(g.userData.parachute){g.userData.parachute.visible=airborne;g.userData.parachute.rotation.x=airborne?Math.sin(TIME*1.7+(e.id||0))*.055:0;g.userData.parachute.rotation.z=airborne?Math.cos(TIME*1.35+(e.id||0))*.07:0;}
-  g.rotation.z=airborne?Math.sin(TIME*1.4+(e.id||0))*.035:Math.sin(phase)*(moving?.025:.006)-fire*.012;
   if(g.userData.limbs){
     const axis=new SF3D.THREE.Vector3(0,0,1),q=new SF3D.THREE.Quaternion();
     g.userData.limbs.forEach((part,i)=>{
       let swing;
       if(i<4)swing=airborne?.16+(i%2)*.08:(moving?Math.sin(phase+(i%2)*Math.PI)*.3:Math.sin(TIME*1.5+i)*.01);
-      else{const arm=i<6?1:-1;swing=airborne?arm*(.48+Math.sin(TIME*2+i)*.035):(moving?Math.sin(phase+(i%2)*Math.PI)*.07:0)+arm*(fire*.17+reload*.2+using*.12)}
+      else{const arm=i<6?1:-1;swing=airborne?arm*(.48+Math.sin(TIME*2+i)*.035):(moving?Math.sin(phase+(i%2)*Math.PI)*.07:0)+arm*(fire*.17+reload*.2+using*.12)+arm*(i<6?hurt*.22:0)+arm*(i<6?recoil*.09:0)}
+      if(i<4&&!airborne)swing+=((i%2===0)?1:-1)*hurt*.12;
       q.setFromAxisAngle(axis,swing);part.mesh.quaternion.copy(part.base).multiply(q);
     });
   }

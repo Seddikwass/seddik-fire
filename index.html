@@ -1711,6 +1711,11 @@ function buildCarModel(styleName, extra = {}) {
     mb.box(sx * (sMir.x8 + 0.06), sMir.y8 + 0.03, zMir + 0.02, 0.13, 0.035, 0.06, TRIM, 0);
     sphere(mb, sx * (sMir.x8 + 0.16), sMir.y8 + 0.1, zMir, 0.1, WHITE, 1, -Math.PI / 2, Math.PI / 2, 8, 0.62, 0.55);
     nd.box(sx * (sMir.x8 + 0.16), sMir.y8 + 0.055, zMir - 0.052, 0.16, 0.09, 0.006, CHROME, 4);
+    // répétiteur orange intégré au rétroviseur, visible de profil
+    nd.box(sx * (sMir.x8 + 0.255), sMir.y8 + 0.105, zMir, 0.012, 0.022, 0.068, [1, 0.52, 0.08], 5);
+    // répétiteur latéral sur l'aile avant, affleurant à la carrosserie
+    const sf = G.prof(zF - 0.24);
+    nd.box(sx * (sf.w * 0.99 + 0.012), sf.ys - 0.12, zF - 0.24, 0.012, 0.026, 0.095, [1, 0.58, 0.1], 5);
     // poignées de portes
     const hz = S.doors === 4 ? [G.zB + 0.32, G.zB - 0.32] : [G.zB + 0.3];
     for (const z of hz) { const sh = G.prof(z); nd.box(sx * (sh.w * 0.985 + 0.01), sh.ys - 0.09, z, 0.02, 0.03, 0.16, CHROME, 4); }

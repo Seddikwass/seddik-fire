@@ -2847,6 +2847,25 @@ function buildTrack(def, quality) {
     }
     // palmiers de l'avenue
     for (let i = 8; i < N; i += 16) { if (inTun(i, 6)) continue; for (const side of [-1, 1]) if (r() < 0.8) { const p = pos(i, side * (W + 3.2), 0.18); addPalm(ch(rk(i)), p[0], p[1], p[2], 7 + r() * 4, r); } }
+    // éclairage urbain : lampadaires modernes avec bras déporté et tête LED
+    for (let i = 12; i < N; i += 22) {
+      if (inTun(i, 7)) continue;
+      for (const side of [-1, 1]) {
+        if (r() < 0.18) continue;
+        const mb = ch(rk(i)), base = pos(i, side * (W + 2.0), 0.12);
+        const poleTop = [base[0], base[1] + 6.2, base[2]];
+        bar(mb, base, poleTop, 0.095, [0.16, 0.17, 0.18], 7, 0.095, 6);
+        const armA = [base[0], base[1] + 5.85, base[2]];
+        const armB = pos(i, side * (W + 0.65), 5.85);
+        bar(mb, armA, armB, 0.065, [0.19, 0.2, 0.21], 6, 0.065, 6);
+        const lamp = [armB[0], armB[1] - 0.08, armB[2]];
+        mb.box(lamp[0], lamp[1], lamp[2], 0.34, 0.12, 0.72, [0.22, 0.24, 0.25], 4, hd[i]);
+        const lens = [lamp[0], lamp[1] - 0.075, lamp[2]];
+        mb.box(lens[0], lens[1], lens[2], 0.25, 0.025, 0.55, [0.92, 0.82, 0.58], night ? 2 : 0, hd[i]);
+        const foot = pos(i, side * (W + 2.0), 0.28);
+        mb.cyl(foot[0], foot[1], foot[2], 0.18, 0.12, 10, [0.28, 0.29, 0.3], 4);
+      }
+    }
     // ligne d'horizon
     for (let k = 0; k < 140; k++) {
       const x = cx + (r() - 0.5) * (rad * 2 + 900), z = cz + (r() - 0.5) * (rad * 2 + 900), s = 25 + r() * 35;

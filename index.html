@@ -835,6 +835,8 @@ body:not(.eco) .card,body:not(.eco) .prof,body:not(.eco) .endbox.glass{-webkit-b
       <label class="rg"><span>Taille</span><input id="oBsz" type="range" min=".8" max="1.15" step=".05"><em id="oBszV"></em></label>
       <label class="rg"><span>Opacité</span><input id="oBop" type="range" min=".4" max="1" step=".05"><em id="oBopV"></em></label>
       <label class="rg"><span>Hauteur</span><input id="oBoy" type="range" min="-90" max="40" step="5"><em id="oBoyV"></em></label>
+      <label class="rg"><span>Taille joueurs</span><input id="oPsize" type="range" min=".8" max="1.8" step=".05"><em id="oPsizeV"></em></label>
+      <label class="rg"><span>Zoom caméra</span><input id="oCam" type="range" min=".75" max="1.25" step=".05"><em id="oCamV"></em></label>
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
@@ -1064,7 +1066,7 @@ const PH=[{w:80,s:45,r:1550,d:1},{w:55,s:35,r:980,d:2},{w:45,s:30,r:600,d:3.5},{
 
 /* ===== storage ===== */
 const LSK='seddikfire.v1';
-const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,mode:'classic',map:'seddik',stage:0,cupBest:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'foret',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
+const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,pSize:1.25,camZoom:1,mode:'classic',map:'seddik',stage:0,cupBest:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'foret',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
 if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';if(!stats.photoSk){stats.photoSk=1;stats.skin='spartiate'}if(!stats.hanSk){stats.hanSk=1;stats.skin='hannibal'}if(!stats.ombSk){stats.ombSk=1;stats.skin='ombre'}
 if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
@@ -2337,7 +2339,7 @@ function gpHUD(p){const ground=p.alive&&!p.inPlane&&p.air<=0;
 tapOn(GH.veh,humanVeh);tapOn(GH.nade,()=>humanNade(false));tapOn(GH.sw,nadeSwap);
 
 /* ===== main update ===== */
-function baseZoom(){return clamp(Math.sqrt(VW*VH)/1310,.31,.85)}
+function baseZoom(){return clamp(Math.sqrt(VW*VH)/1310,.31,.85)*clamp(+stats.camZoom||1,.75,1.25)}
 function update(dt){matchT+=dt;
   if(!plane.done){plane.trav+=plane.sp*dt;plane.x=plane.sx+plane.dx*plane.trav;plane.y=plane.sy+plane.dy*plane.trav;
     for(const e of ents)if(e.inPlane&&e.bot&&plane.trav>=e.jumpS)jump(e);
@@ -2923,13 +2925,13 @@ function drawEnt(e){
   if(e._lx===undefined){e._lx=e.x;e._ly=e.y}
   const md=Math.hypot(e.x-e._lx,e.y-e._ly);e._lx=e.x;e._ly=e.y;if(md<40)e.walkPh=(e.walkPh||0)+md*.085;
   e._ws=(e._ws||0)+((md>.2&&e.moveMag>.08?1:0)-(e._ws||0))*.22;if(Q.hi&&md>.2&&!e.veh){e._sd=(e._sd||0)+md;if(e._sd>17){e._sd=0;e._sf=-(e._sf||1);const w=isWater(e.x,e.y);if(w){RIPS.push({x:e.x,y:e.y,t:TIME});if(RIPS.length>60)RIPS.shift()}else if(MAP.id==='sahara'||e.x>coastX(e.y)-150){const a=e.angle;STEPS.push({x:e.x-Math.sin(a)*4*e._sf,y:e.y+Math.cos(a)*4*e._sf,a,t:TIME});if(STEPS.length>160)STEPS.shift()}}}{const da=angDiff(e._pa==null?e.angle:e._pa,e.angle);e._pa=e.angle;e._turn=(e._turn||0)*.86+clamp(da,-.35,.35)*2.4}
-  const R=e.r*SV*VSC;
+  const PS=clamp(+stats.pSize||1.25,.8,1.8),R=e.r*SV*VSC*PS;
   ctx.fillStyle='rgba(28,16,4,.13)';ctx.beginPath();ctx.ellipse(e.x+6+SUNK*9,e.y+8+SUNK*6,R*(1.18+SUNK*.35),R*1.02,.5,0,TAU);ctx.fill();ctx.fillStyle='rgba(28,16,4,.22)';ctx.beginPath();ctx.ellipse(e.x+3,e.y+4.5,R*.98,R*.86,.5,0,TAU);ctx.fill();
   if(e!==player&&e.alive&&e.team&&player&&e.team===player.team){ctx.lineWidth=3;ctx.strokeStyle='rgba(90,200,255,.95)';ctx.beginPath();ctx.arc(e.x,e.y,R+4,0,TAU);ctx.stroke()}
   if(e===player){const a=e.angle;ctx.lineWidth=4;ctx.strokeStyle='rgba(20,12,4,.35)';ctx.beginPath();ctx.arc(e.x,e.y,R+5,0,TAU);ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=2;ctx.stroke();
     const tx=e.x+Math.cos(a)*(R+14),ty=e.y+Math.sin(a)*(R+14);ctx.fillStyle='#ff6b22';ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(e.x+Math.cos(a+.22)*(R+5),e.y+Math.sin(a+.22)*(R+5));ctx.lineTo(e.x+Math.cos(a-.22)*(R+5),e.y+Math.sin(a-.22)*(R+5));ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(28,16,4,.6)';ctx.lineWidth=1;ctx.stroke()}
   if(e!==player&&e.alive&&!(e.team&&player&&e.team===player.team)){ctx.lineWidth=2.4;ctx.strokeStyle='rgba(12,8,4,.38)';ctx.beginPath();ctx.arc(e.x,e.y,R+1.5,0,TAU);ctx.stroke()}
-  ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.scale(VSC,VSC);drawBody(ctx,e);ctx.restore();
+  ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.scale(VSC*PS,VSC*PS);drawBody(ctx,e);ctx.restore();
   if(!e.veh){if(!RIMS){RIMS=mkCv(96,96);const c=RIMS.getContext('2d'),g=c.createRadialGradient(36,34,4,48,48,46);g.addColorStop(0,'rgba(255,244,222,.34)');g.addColorStop(.45,'rgba(255,244,222,.10)');g.addColorStop(1,'rgba(255,244,222,0)');c.fillStyle=g;c.beginPath();c.arc(48,48,46,0,TAU);c.fill()}ctx.globalAlpha=.55;ctx.drawImage(RIMS,e.x-R*1.05,e.y-R*1.05,R*2.1,R*2.1);ctx.globalAlpha=1}
   if(e.hurtT>0){ctx.globalAlpha=Math.min(.5,e.hurtT*1.8);ctx.fillStyle='#fff4e4';ctx.beginPath();ctx.arc(e.x,e.y,R*.82,0,TAU);ctx.fill();ctx.globalAlpha=1}
   if(e!==player&&e.alive){const sc=Math.max(1,.85/cam.z),w=38*sc,y=e.y-R-14*sc,h=4.2*sc,f=clamp(e.hp/100,0,1);ctx.globalAlpha=e.hpShowT>0?1:.82;const vb=e.vest>0?2.8*sc:0;ctx.fillStyle='rgba(8,10,14,.74)';rrect(ctx,e.x-w/2-1.8*sc,y-1.8*sc,w+3.6*sc,h+3.6*sc+vb,3.2*sc);ctx.fill();ctx.fillStyle='rgba(255,255,255,.14)';rrect(ctx,e.x-w/2,y,w,h,h/2);ctx.fill();if(f>0){ctx.fillStyle=f>.6?'#5fd38d':f>.3?'#ffb547':'#ff4d4d';rrect(ctx,e.x-w/2,y,Math.max(h,w*f),h,h/2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.3)';rrect(ctx,e.x-w/2+h*.3,y+h*.12,Math.max(0,w*f-h*.6),h*.32,h*.16);ctx.fill()}if(e.vest>0){ctx.fillStyle='#4cc3ff';rrect(ctx,e.x-w/2,y+h+1.2*sc,Math.max(1.6*sc,w*clamp(e.vest/100,0,1)),1.6*sc,.8*sc);ctx.fill()}ctx.globalAlpha=1}}
@@ -3799,9 +3801,9 @@ function frame(now){if((FR30||stats.fr30)&&game.mode==='play'){FRC^=1;if(FRC){re
     if(game.mode==='play'&&player){drawMini();updateHUD();uiFire();if(bigOpen)drawMapView(bctx,bigcv.width,WS/2,WS/2,WS,true)}}catch(err){console.error(err)}
   requestAnimationFrame(frame)}
 /* ===== réglages & tutoriel (lot 1) ===== */
-const OPTS=[['musV','#oMus',v=>Math.round(v*100)+'%'],['sfxV','#oSfx',v=>Math.round(v*100)+'%'],['sens','#oSens',v=>v.toFixed(1)+'×'],['bsz','#oBsz',v=>v.toFixed(2)+'×'],['bop','#oBop',v=>Math.round(v*100)+'%'],['boy','#oBoy',v=>v+' px']];
-const OPT_DEF={musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0};
-function applyCtl(){const b=document.body.style;stats.sens=clamp(+stats.sens||1,.6,1.6);STICK_R=58/stats.sens;b.setProperty('--bs',clamp(+stats.bsz||1,.8,1.15));b.setProperty('--bo',clamp(+stats.bop||1,.4,1));b.setProperty('--by',clamp(+stats.boy||0,-90,40)+'px')}
+const OPTS=[['musV','#oMus',v=>Math.round(v*100)+'%'],['sfxV','#oSfx',v=>Math.round(v*100)+'%'],['sens','#oSens',v=>v.toFixed(1)+'×'],['bsz','#oBsz',v=>v.toFixed(2)+'×'],['bop','#oBop',v=>Math.round(v*100)+'%'],['boy','#oBoy',v=>v+' px'],['pSize','#oPsize',v=>Math.round(v*100)+'%'],['camZoom','#oCam',v=>v.toFixed(2)+'×']];
+const OPT_DEF={musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,pSize:1.25,camZoom:1};
+function applyCtl(){const b=document.body.style;stats.sens=clamp(+stats.sens||1,.6,1.6);stats.pSize=clamp(+stats.pSize||1.25,.8,1.8);stats.camZoom=clamp(+stats.camZoom||1,.75,1.25);STICK_R=58/stats.sens;b.setProperty('--bs',clamp(+stats.bsz||1,.8,1.15));b.setProperty('--bo',clamp(+stats.bop||1,.4,1));b.setProperty('--by',clamp(+stats.boy||0,-90,40)+'px')}
 function syncOpts(){for(const[k,id,f]of OPTS){const el=$(id);el.value=stats[k];$(id+'V').textContent=f(+stats[k])}}
 for(const[k,id,f]of OPTS){const el=$(id);el.addEventListener('input',()=>{stats[k]=+el.value;$(id+'V').textContent=f(+el.value);applyCtl();saveStats()});
   if(k==='sfxV')el.addEventListener('change',()=>{initAudio();if(typeof blip==='function'){blip(520,.07,.25);setTimeout(()=>blip(780,.09,.25),90)}})}

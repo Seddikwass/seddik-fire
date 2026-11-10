@@ -3026,6 +3026,15 @@ function drawScorches(){if(!scorches.length)return;fxReset();for(const s of scor
   ctx.globalAlpha=a*.5;ctx.beginPath();ctx.arc(0,0,s.r*.55,0,TAU);ctx.fill();if(age<6){ctx.globalAlpha=(1-age/6)*.55;ctx.fillStyle='#ff7a2c';ctx.beginPath();ctx.arc(0,0,s.r*.28,0,TAU);ctx.fill()}ctx.restore()}ctx.globalAlpha=1}
 function drawBooms(){for(let i=fxBooms.length-1;i>=0;i--){const b=fxBooms[i],age=matchT-b.t;if(age>.9||age<0){fxBooms.splice(i,1);continue}if(!vis(b.x,b.y,b.r*3))continue;
   const k=age/.9;ctx.globalAlpha=(1-k)*.85;ctx.strokeStyle='#fff0cc';ctx.lineWidth=Math.max(1.5,b.r*.12*(1-k));ctx.beginPath();ctx.arc(b.x,b.y,b.r*(.3+k*2.3),0,TAU);ctx.stroke();
+  // Deuxième onde de pression, plus large et plus douce, pour donner du volume à l'explosion.
+  ctx.globalAlpha=(1-k)*.32;ctx.strokeStyle='rgba(255,190,112,.9)';ctx.lineWidth=Math.max(1,b.r*.055*(1-k));
+  ctx.beginPath();ctx.arc(b.x,b.y,b.r*(.62+k*2.85),0,TAU);ctx.stroke();
+  // Fragments incandescents qui s'éloignent du centre pendant les premières images.
+  if(age<.34){const f=1-age/.34;ctx.save();ctx.translate(b.x,b.y);ctx.globalAlpha=f*.8;ctx.lineCap='round';
+    for(let j=0;j<8;j++){const a=j*TAU/8+.31,dist=b.r*(.42+age*5.2),len=b.r*(.12+.12*f);
+      ctx.strokeStyle=j%3===0?'#fff0bd':'#ff9a42';ctx.lineWidth=Math.max(1,b.r*.025);
+      ctx.beginPath();ctx.moveTo(Math.cos(a)*dist,Math.sin(a)*dist);ctx.lineTo(Math.cos(a)*(dist+len),Math.sin(a)*(dist+len));ctx.stroke()}
+    ctx.restore()}
   if(age<.5){const f=1-age/.5,R2=b.r*(.5+(1-f)*.9),fg=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,R2);fg.addColorStop(0,'rgba(255,240,190,'+(f*.95).toFixed(3)+')');fg.addColorStop(.45,'rgba(255,140,40,'+(f*.8).toFixed(3)+')');fg.addColorStop(1,'rgba(120,40,10,0)');ctx.globalAlpha=1;ctx.fillStyle=fg;ctx.beginPath();ctx.arc(b.x,b.y,R2,0,TAU);ctx.fill();ctx.globalAlpha=(1-k)*.85}
   if(age<.16){const f=1-age/.16;ctx.globalAlpha=f;ctx.fillStyle='#fff6e0';ctx.beginPath();ctx.arc(b.x,b.y,b.r*(.55+.3*(1-f)),0,TAU);ctx.fill();ctx.globalAlpha=f*.45;ctx.fillStyle='#ffd27a';ctx.beginPath();ctx.arc(b.x,b.y,b.r*1.5,0,TAU);ctx.fill()}}ctx.globalAlpha=1}
 function boomFlash(){let f=0;for(const b of fxBooms){const age=matchT-b.t;if(age<.22&&player){const d=Math.hypot(player.x-b.x,player.y-b.y);f=Math.max(f,(1-age/.22)*clamp(1-d/(b.r*8+400),0,1))}}if(f>0){ctx.globalAlpha=f*.35;ctx.fillStyle='#ffe2b0';ctx.fillRect(0,0,VW,VH);ctx.globalAlpha=1}}

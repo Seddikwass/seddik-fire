@@ -3364,6 +3364,9 @@ function sf3dActor(e){
   }
   // A curved sling is approximated with short linked segments, avoiding a heavy imported rig.
   for(let j=0;j<5;j++)mesh(new T.BoxGeometry(.9,2.1,1.1),strap,7.3-j*.7,25-j*1.2,3+j*1.1,.12);
+  // Soft contact shadow anchors the soldier to the terrain and scales subtly while airborne.
+  const groundShadow=new T.Mesh(new T.CircleGeometry(1,20),new T.MeshBasicMaterial({color:0x10130f,transparent:true,opacity:.2,depthWrite:false,side:T.DoubleSide}));
+  groundShadow.rotation.x=-Math.PI/2;groundShadow.position.y=1.2;groundShadow.scale.set(12,6,1);groundShadow.renderOrder=1;g.add(groundShadow);g.userData.groundShadow=groundShadow;
   g.scale.setScalar(1.38);
   return g;
 }
@@ -3432,6 +3435,7 @@ function sf3dPoseActor(g,e){
   const bob=moving?Math.abs(Math.sin(phase))*(.65+Math.min(.45,speed*.001)):Math.sin(TIME*1.8+(e.id||0))*.12;
   const airborne=(e.air||0)>0,hitSide=Math.sin((e.hitDir||0)-(e.angle||0));
   g.position.set(e.x+(airborne?Math.sin(TIME*1.25+(e.id||0))*(e.vx||0)*.012:0),airborne?24+(e.air||0)*105:bob+hurt*1.8,e.y+(airborne?Math.cos(TIME*1.1+(e.id||0))*(e.vy||0)*.012:0));
+  if(g.userData.groundShadow){const sh=g.userData.groundShadow;sh.position.y=-g.position.y+1.2;sh.scale.set(airborne?18:12,airborne?10:6,1);sh.material.opacity=airborne?.11:.2;}
   g.rotation.y=-(e.angle||0);
   // A short flinch and backward recoil communicate incoming hits and weapon kick.
   g.rotation.x=airborne?0:-hurt*.105-recoil*.075;

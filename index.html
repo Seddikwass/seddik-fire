@@ -3382,8 +3382,8 @@ function buildGarage() {
   // plafond sombre + bandeaux lumineux au-dessus du plateau
   for (let s = 0; s < seg; s++) { const a0 = s / seg * TAU, a1 = (s + 1) / seg * TAU; mb.quad([Math.cos(a0) * 14, 9, Math.sin(a0) * 14], [Math.cos(a1) * 14, 9, Math.sin(a1) * 14], [0, 9, 0], [0, 9, 0], [0.025, 0.025, 0.03], 0); }
   for (const z of [-1.6, 0, 1.6]) mb.box(0, 8.2, z, 7.5, 0.06, 0.55, [1, 0.97, 0.92], 2);
-  const env = { sky: [0.01, 0.01, 0.015], hor: [0.05, 0.035, 0.03], gnd: [0.02, 0.02, 0.02], fog: [0.02, 0.018, 0.02], fogDen: 0.018, sunDir: nrm([0.3, 1, 0.2]), sunCol: [0.35, 0.35, 0.38], wet: 0, night: true, clouds: 0, bake: [0, 0, 0], studio: 1, grade: GR([0.0, 0.006, 0.02], [1.03, 1.0, 0.97], 0.3) };
-  const lights = [[0, 6.5, 1.5, 0.26, 0.25, 0.24], [0, 6.5, -1.5, 0.26, 0.25, 0.24], [-4, 3, 4, 0.12, 0.12, 0.13], [4, 3, -4, 0.12, 0.12, 0.13], [9, 2.2, 3, 0.4, 0.17, 0.04], [-9, 2.2, -3, 0.4, 0.17, 0.04], [3, 2.2, 9, 0.05, 0.16, 0.42], [-3, 2.2, -9, 0.05, 0.16, 0.42]];
+  const env = { sky: [0.16, 0.15, 0.17], hor: [0.24, 0.19, 0.16], gnd: [0.11, 0.11, 0.13], fog: [0.12, 0.105, 0.10], fogDen: 0.009, sunDir: nrm([0.3, 1, 0.2]), sunCol: [0.85, 0.78, 0.68], wet: 0, night: false, clouds: 0, bake: [0.12, 0.11, 0.10], studio: 1, grade: GR([0.035, 0.025, 0.018], [1.08, 1.04, 1.0], 0.12) };
+  const lights = [[0, 6.5, 1.5, 0.95, 0.88, 0.78], [0, 6.5, -1.5, 0.95, 0.88, 0.78], [-4, 3, 4, 0.42, 0.40, 0.38], [4, 3, -4, 0.42, 0.40, 0.38], [9, 2.2, 3, 0.85, 0.42, 0.12], [-9, 2.2, -3, 0.85, 0.42, 0.12], [3, 2.2, 9, 0.18, 0.48, 0.95], [-3, 2.2, -9, 0.18, 0.48, 0.95]];
   return { mesh: R.upload(mb), floor: R.upload(fl), env, lights };
 }
 
@@ -4430,7 +4430,7 @@ const GAR = { ang: 0.6, drag: false, spin: 0.25, zoom: 1, focus: 0 };
 // couleurs hexadécimales converties une seule fois (le garage tourne en continu derrière les menus)
 const RGB_CACHE = {};
 function rgbOf(h) { return h ? (RGB_CACHE[h] || (RGB_CACHE[h] = hexToRgb(h))) : null; }
-const GAR_FX = { bloom: 0.9, blur: 0, vig: 0.75, sat: 1.1, time: 0, grade: null, flare: 0 };
+const GAR_FX = { bloom: 1.15, blur: 0, vig: 0.28, sat: 1.12, time: 0, grade: null, flare: 0 };
 function renderGarage(dt) {
   if (!GAR.scene) GAR.scene = buildGarage();
   const sc = GAR.scene, car = CARS.find(c => c.id === (UI.viewCar || SAVE.car)) || CARS[0], m = MODELS[car.style];
@@ -4440,7 +4440,7 @@ function renderGarage(dt) {
     // lumières et ambiance du garage préparées une fois, puis réutilisées à chaque image (zéro allocation)
     const lp = new Float32Array(24), lc = new Float32Array(24);
     sc.lights.forEach((l, k) => { lp.set([l[0], l[1], l[2]], k * 3); lc.set([l[3], l[4], l[5]], k * 3); });
-    GAR.env = Object.assign({}, sc.env, { time: 0, lp, lc, head: 0, expo: 1.15 });
+    GAR.env = Object.assign({}, sc.env, { time: 0, lp, lc, head: 0, expo: 1.65 });
     GAR.cam = { eye: [0, 0, 0], target: [0, 0, 0], fov: 42, fwd: [0, 0, 1] };
     GAR.M = new Float32Array(16);
     GAR.fake = { model: m, paint: null, brake: 0.3, under: null, kind: 'ai', dv: 0, spin: 0, rimS: null, rimC: null, wm: null, key: '', drv: 0, camD: 0 };

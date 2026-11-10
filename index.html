@@ -145,7 +145,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 .golbl{display:flex;justify-content:flex-end;margin-top:6px}
 /* career */
 .evlist{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.ev{text-align:left;background:var(--pan);border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:6px;position:relative;min-height:150px;transition:all .12s}
+.ev{text-align:left;background:linear-gradient(155deg,rgba(26,29,39,.98),rgba(11,13,19,.98));border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:7px;position:relative;min-height:220px;overflow:hidden;transition:all .16s}.ev canvas{display:block;width:100%;height:78px;object-fit:cover;border:1px solid rgba(255,255,255,.1);border-radius:5px;background:#090c12}.evphase{grid-column:1/-1;margin:14px 2px 0;padding:8px 12px;border-left:3px solid var(--acc);background:linear-gradient(90deg,rgba(255,122,24,.14),transparent);color:var(--acc2);font:700 12px var(--fh);letter-spacing:.16em;text-transform:uppercase}
 .ev:hover:not(.lock){border-color:var(--acc)}
 .ev .num{font-family:var(--fh);font-size:34px;color:rgba(255,255,255,.07);position:absolute;right:10px;top:4px}
 .ev b{font-family:var(--fh);font-style:italic;font-weight:400;font-size:18px}
@@ -2113,24 +2113,24 @@ function buildBus() {
    (assis au volant ou sur une moto, casque coloré en moto)
    ===================================================================== */
 const DRIVERS = [
-  { id: 'aziz', name: 'Seddik', price: 0, skin: '#c58c62', hair: 'short', hairC: '#1d1410', beard: 'stubble', suit: '#d81e1e', helmet: '#d81e1e', perk: 'speed' },
-  { id: 'rania', name: 'Joud', price: 0, skin: '#e0b48c', hair: 'long', hairC: '#2a1a12', suit: '#1e56d8', helmet: '#f2f2f2', perk: 'nitro' },
-  { id: 'skander', name: 'Skander', price: 6000, skin: '#a8714b', hair: 'cap', hairC: '#111111', capC: '#ffb020', suit: '#24262e', helmet: '#ffb020', perk: 'accel' },
-  { id: 'yosra', name: 'Yosra', price: 9000, skin: '#8a5a3c', hair: 'bun', hairC: '#140d0a', suit: '#1fb84a', helmet: '#1fb84a', perk: 'grip' },
-  { id: 'fares', name: 'Fares', price: 12000, skin: '#b97f55', hair: 'curly', hairC: '#20140e', beard: 'full', suit: '#6a2bd8', helmet: '#2b2d31', perk: 'tough' },
-  { id: 'ines', name: 'Inès', price: 15000, skin: '#f0c9a5', hair: 'bob', hairC: '#7a2a1a', suit: '#e0218a', helmet: '#e0218a', perk: 'drift' },
-  { id: 'omar', name: 'Omar', price: 20000, skin: '#6b4430', hair: 'bald', hairC: '#0b0807', beard: 'goatee', glasses: true, suit: '#101114', helmet: '#101114', perk: 'ghost' },
-  { id: 'salma', name: 'Salma', price: 25000, skin: '#d29e74', hair: 'pony', hairC: '#3a2416', glasses: true, suit: '#00b3c7', helmet: '#f2f2f2', perk: 'money' },
+  { id: 'aziz', name: 'Frankenstein', role: 'Champion masqué · pilote légendaire', price: 0, skin: '#c58c62', hair: 'short', hairC: '#1d1410', beard: 'stubble', suit: '#d81e1e', helmet: '#d81e1e', perk: 'speed' },
+  { id: 'rania', name: 'Elizabeth Case', role: 'Stratège · précision et sang-froid', price: 0, skin: '#e0b48c', hair: 'long', hairC: '#2a1a12', suit: '#1e56d8', helmet: '#f2f2f2', perk: 'nitro' },
+  { id: 'skander', name: '14K', role: 'Tacticien · maîtrise technique', price: 6000, skin: '#a8714b', hair: 'cap', hairC: '#111111', capC: '#ffb020', suit: '#24262e', helmet: '#ffb020', perk: 'accel' },
+  { id: 'yosra', name: 'Katrina Banks', role: 'Pilote d’élite · trajectoires propres', price: 9000, skin: '#8a5a3c', hair: 'bun', hairC: '#140d0a', suit: '#1fb84a', helmet: '#1fb84a', perk: 'grip' },
+  { id: 'fares', name: 'Machine Gun Joe', role: 'Rival agressif · puissance brute', price: 12000, skin: '#b97f55', hair: 'curly', hairC: '#20140e', beard: 'full', suit: '#6a2bd8', helmet: '#2b2d31', perk: 'tough' },
+  { id: 'ines', name: 'Coach', role: 'Vétéran · expérience de course', price: 15000, skin: '#f0c9a5', hair: 'bob', hairC: '#7a2a1a', suit: '#e0218a', helmet: '#e0218a', perk: 'drift' },
+  { id: 'omar', name: 'Grimm', role: 'Spécialiste des dépassements', price: 20000, skin: '#6b4430', hair: 'bald', hairC: '#0b0807', beard: 'goatee', glasses: true, suit: '#101114', helmet: '#101114', perk: 'ghost' },
+  { id: 'salma', name: 'Gunner', role: 'Pilote lourd · attaque frontale', price: 25000, skin: '#d29e74', hair: 'pony', hairC: '#3a2416', glasses: true, suit: '#00b3c7', helmet: '#f2f2f2', perk: 'money' },
   // quatre pilotes originaux supplémentaires, silhouettes et livrées distinctes
-  { id: 'nader', name: 'Nader', price: 32000, skin: '#bd8059', hair: 'short', hairC: '#17120f', beard: 'stubble', suit: '#f0a51b', helmet: '#f0a51b', perk: 'speed' },
-  { id: 'maya', name: 'Maya', price: 38000, skin: '#e2b28d', hair: 'bob', hairC: '#26150f', suit: '#8c36d9', helmet: '#8c36d9', perk: 'drift' },
-  { id: 'kais', name: 'Kaïs', price: 45000, skin: '#8d5c40', hair: 'curly', hairC: '#17100d', beard: 'full', suit: '#e8e8e8', helmet: '#d51f2a', perk: 'tough' },
-  { id: 'lina', name: 'Lina', price: 52000, skin: '#c98d68', hair: 'long', hairC: '#21130f', suit: '#16a6a0', helmet: '#16a6a0', perk: 'nitro' },
+  { id: 'nader', name: 'Blackout', role: 'Expert des courses nocturnes', price: 32000, skin: '#bd8059', hair: 'short', hairC: '#17120f', beard: 'stubble', suit: '#f0a51b', helmet: '#f0a51b', perk: 'speed' },
+  { id: 'maya', name: 'Valkyrie', role: 'Pilote d’attaque · grande vitesse', price: 38000, skin: '#e2b28d', hair: 'bob', hairC: '#26150f', suit: '#8c36d9', helmet: '#8c36d9', perk: 'drift' },
+  { id: 'kais', name: 'Road Reaper', role: 'Spécialiste du contact', price: 45000, skin: '#8d5c40', hair: 'curly', hairC: '#17100d', beard: 'full', suit: '#e8e8e8', helmet: '#d51f2a', perk: 'tough' },
+  { id: 'lina', name: 'Nightshade', role: 'Pilote furtive · conduite précise', price: 52000, skin: '#c98d68', hair: 'long', hairC: '#21130f', suit: '#16a6a0', helmet: '#16a6a0', perk: 'nitro' },
   // Pilotes fictifs supplémentaires en combinaisons et casques de compétition.
-  { id: 'mehdi', name: 'Mehdi', price: 60000, skin: '#a87351', hair: 'short', hairC: '#17110e', beard: 'stubble', suit: '#c91e32', helmet: '#f0f0f0', perk: 'accel' },
-  { id: 'amira', name: 'Amira', price: 68000, skin: '#d8a27d', hair: 'pony', hairC: '#2a1912', suit: '#087d83', helmet: '#08a9b2', perk: 'grip' },
-  { id: 'walid', name: 'Walid', price: 76000, skin: '#87583f', hair: 'short', hairC: '#16110e', beard: 'full', suit: '#20242e', helmet: '#ffb020', perk: 'tough' },
-  { id: 'rim', name: 'Rim', price: 84000, skin: '#c98e6d', hair: 'bun', hairC: '#24140e', suit: '#8a2bba', helmet: '#f4f4f4', perk: 'drift' },
+  { id: 'mehdi', name: 'Pachenko', role: 'Sprinteur · accélération', price: 60000, skin: '#a87351', hair: 'short', hairC: '#17110e', beard: 'stubble', suit: '#c91e32', helmet: '#f0f0f0', perk: 'accel' },
+  { id: 'amira', name: 'Steel Rose', role: 'Pilote tactique · régularité', price: 68000, skin: '#d8a27d', hair: 'pony', hairC: '#2a1912', suit: '#087d83', helmet: '#08a9b2', perk: 'grip' },
+  { id: 'walid', name: 'Lists', role: 'Technicien · réglages fins', price: 76000, skin: '#87583f', hair: 'short', hairC: '#16110e', beard: 'full', suit: '#20242e', helmet: '#ffb020', perk: 'tough' },
+  { id: 'rim', name: 'The Navigator', role: 'Maître des circuits · lecture de piste', price: 84000, skin: '#c98e6d', hair: 'bun', hairC: '#24140e', suit: '#8a2bba', helmet: '#f4f4f4', perk: 'drift' },
 ];
 // bonus volontairement modestes : le pilote donne un style, la voiture reste décisive
 const PERKS = {
@@ -3626,7 +3626,7 @@ const LANGS = {
     perk_speed: '+3 % de vitesse maximale.', perk_nitro: 'La nitro se recharge 25 % plus vite.', perk_accel: '+5 % d’accélération.', perk_grip: '+4 % d’adhérence en virage.', perk_tough: 'Plus lourd au contact (+25 %) : pousse les adversaires.', perk_drift: 'Points de style ×1,5 en dérapage.', perk_ghost: 'Sème la police 30 % plus vite.', perk_money: '+15 % d’argent gagné à chaque course.',
     loading: 'Démarrage du moteur…', preparing: 'Préparation du circuit : {0}', webgl: 'Le moteur 3D n’a pas pu démarrer : le navigateur a désactivé WebGL, souvent après un plantage graphique.', webglHelp: 'Ferme complètement Chrome (ou redémarre le téléphone), puis rouvre le jeu. Si tu l’as ouvert depuis Facebook, Messenger ou WhatsApp, ouvre le lien dans Chrome. Le jeu redémarrera en qualité basse.', retry: 'Réessayer', glLost: 'Le moteur graphique s’est réinitialisé. Redémarrage en qualité basse…', safeMode: 'Mode sans échec : qualité basse (le dernier lancement ne s’est pas terminé).',
     tagline: 'Courses de rue à travers la Tunisie, de la médina au Sahara.', play: 'JOUER', career: 'CARRIÈRE', quick: 'COURSE RAPIDE', garage: 'GARAGE', options: 'OPTIONS', help: 'COMMENT JOUER',
-    careerSub: '24 épreuves à conquérir', quickSub: 'Course, contre-la-montre ou poursuite', garageSub: 'Voitures, peinture, jantes, néons, tuning', optionsSub: 'Langue, son, graphismes, commandes', helpSub: 'Clavier, tactile, manette',
+    careerSub: '20 étapes pour remporter le tournoi', quickSub: 'Course, contre-la-montre ou poursuite', garageSub: 'Voitures, peinture, jantes, néons, tuning', optionsSub: 'Langue, son, graphismes, commandes', helpSub: 'Clavier, tactile, manette',
     playNext: 'Épreuve {0} : {1}', playQuick: 'Course rapide : {0}', careerDone: 'Carrière terminée — tu es le roi !', careerStep: 'Épreuve {0} / {1}',
     yourCar: 'Ta voiture, classe {0}', back: '‹ RETOUR', paint: 'Peinture', rims: 'Jantes', neons: 'Néons', tuning: 'Tuning',
     selected: 'Sélectionnée', inGarage: 'Dans ton garage', select: 'CHOISIR', isSelected: 'SÉLECTIONNÉE', buy: 'ACHETER {0}', buyConfirm: 'Acheter {0} pour {1} ?',
@@ -3661,7 +3661,7 @@ const LANGS = {
     perk_speed: '+3% top speed.', perk_nitro: 'Nitro recharges 25% faster.', perk_accel: '+5% acceleration.', perk_grip: '+4% cornering grip.', perk_tough: 'Heavier on contact (+25%): pushes rivals around.', perk_drift: 'Style points ×1.5 when drifting.', perk_ghost: 'Loses the police 30% faster.', perk_money: '+15% money from every race.',
     loading: 'Starting the engine…', preparing: 'Preparing track: {0}', webgl: 'The 3D engine could not start: the browser has disabled WebGL, often after a graphics crash.', webglHelp: 'Fully close Chrome (or restart the phone), then open the game again. If you opened it from Facebook, Messenger or WhatsApp, open the link in Chrome. The game will restart in low quality.', retry: 'Try again', glLost: 'The graphics engine was reset. Restarting in low quality…', safeMode: 'Safe mode: low quality (the last launch did not finish).',
     tagline: 'Street racing across Tunisia, from the medina to the Sahara.', play: 'PLAY', career: 'CAREER', quick: 'QUICK RACE', garage: 'GARAGE', options: 'OPTIONS', help: 'HOW TO PLAY',
-    careerSub: '24 events to conquer', quickSub: 'Race, time trial or police chase', garageSub: 'Cars, paint, rims, neons, tuning', optionsSub: 'Language, sound, graphics, controls', helpSub: 'Keyboard, touch, gamepad',
+    careerSub: '20 stages to win the tournament', quickSub: 'Race, time trial or police chase', garageSub: 'Cars, paint, rims, neons, tuning', optionsSub: 'Language, sound, graphics, controls', helpSub: 'Keyboard, touch, gamepad',
     playNext: 'Event {0}: {1}', playQuick: 'Quick race: {0}', careerDone: 'Career complete — you are the king!', careerStep: 'Event {0} / {1}',
     yourCar: 'Your car, class {0}', back: '‹ BACK', paint: 'Paint', rims: 'Rims', neons: 'Neons', tuning: 'Tuning',
     selected: 'Selected', inGarage: 'In your garage', select: 'SELECT', isSelected: 'SELECTED', buy: 'BUY {0}', buyConfirm: 'Buy the {0} for {1}?',
@@ -3771,7 +3771,7 @@ const TXT = {
 LANGS.tn = Object.assign({}, LANGS.fr, {
   tagline: 'سباقات في تونس، من المدينة للصحراء ومن البحر للجبال.',
   play: 'إلعب', career: 'المسيرة', quick: 'سباق سريع', garage: 'الكراج', options: 'الإعدادات', help: 'كيفاش تلعب',
-  careerSub: '24 مرحلة تستنّاك', quickSub: 'سباق، ضدّ الوقت ولا مطاردة', garageSub: 'كراهب، ألوان، جنوط وتطوير', optionsSub: 'اللغة، الصوت، الغرافيك والتحكّم', helpSub: 'كلافيي، لمس ولا مانيت',
+  careerSub: '20 مرحلة باش تربح البطولة', quickSub: 'سباق، ضدّ الوقت ولا مطاردة', garageSub: 'كراهب، ألوان، جنوط وتطوير', optionsSub: 'اللغة، الصوت، الغرافيك والتحكّم', helpSub: 'كلافيي، لمس ولا مانيت',
   back: '‹ رجوع', start: 'إنطلق ›', settings: 'الإعدادات', gameMode: 'نوع السباق', circuit: 'الحلبة', laps: 'الدورات', opponents: 'المنافسين', difficulty: 'الصعوبة', traffic: 'الترافيك', weather: 'الطقس',
   no: 'لا', yes: 'إي', easy: 'ساهل', normal: 'عادي', hard: 'صعيب', sunny: 'صحو', rain: 'شتاء',
   drivers: 'السواق', driver: 'السائق', driverNote: 'السائق يظهر ورا الفولان ويعطيك شوية امتيازات.',
@@ -3869,12 +3869,10 @@ const CAREER = [
   { name: 'Chrono des dunes', mode: 'tt', track: 8, laps: 3, tier: 4, diff: 6, reward: 76000, desc: 'Trois tours dans le Sahara : maîtrise la vitesse et les trajectoires.' },
   { name: 'Grand Prix nocturne', mode: 'race', track: 4, laps: 5, opp: 7, tier: 4, diff: 7, reward: 85000, desc: 'Cinq tours sur le circuit professionnel, de nuit et sans erreur.' },
   { name: 'La police ne lâche rien', mode: 'chase', track: 9, tier: 4, heat: 5, diff: 8, reward: 95000, desc: 'Survis à la poursuite la plus intense le long de la corniche.' },
-  { name: 'Tempête sur la corniche', mode: 'race', track: 9, laps: 5, opp: 7, tier: 4, diff: 9, reward: 110000, desc: 'Affronte les meilleurs sous une météo difficile.', weather: 'rain' },
-  { name: 'SUPER SEDDIK & JOUD — Légende', mode: 'race', track: 0, laps: 6, opp: 7, tier: 4, diff: 10, reward: 150000, desc: 'La finale ultime : six tours, sept rivaux experts et la pluie. Deviens une légende.', weather: 'rain' },
-  { name: 'Nuit de Hammamet', mode: 'race', track: 10, laps: 4, opp: 7, tier: 3, diff: 5, reward: 98000, desc: 'Course côtière autour de Yasmine Hammamet, sous les lumières de la marina.' },
-  { name: 'Cap Blanc Challenge', mode: 'tt', track: 11, laps: 3, tier: 3, diff: 6, reward: 105000, desc: 'Un contre-la-montre rapide sur la côte de Bizerte.' },
-  { name: 'Rallye de Kairouan', mode: 'race', track: 12, laps: 4, opp: 7, tier: 4, diff: 8, reward: 118000, desc: 'Enchaîne les virages autour des remparts et de la médina.' },
-  { name: 'Grand Prix de Monastir', mode: 'race', track: 13, laps: 5, opp: 7, tier: 4, diff: 9, reward: 132000, desc: 'Finale côtière entre le Ribat et la marina.' },
+  { name: 'Nuit de Hammamet — demi-finale', mode: 'race', track: 10, laps: 4, opp: 7, tier: 4, diff: 7, reward: 98000, desc: 'Demi-finale côtière sur le tracé nocturne de Yasmine Hammamet, sous les lumières de la marina.' },
+  { name: 'Cap Blanc — super pole', mode: 'tt', track: 11, laps: 3, tier: 4, diff: 8, reward: 105000, desc: 'Super pole chronométrée sur la côte de Bizerte : une seule trajectoire parfaite.' },
+  { name: 'Rallye de Kairouan — finale régionale', mode: 'race', track: 12, laps: 5, opp: 7, tier: 4, diff: 9, reward: 125000, desc: 'Finale régionale exigeante autour des remparts et de la médina.' },
+  { name: 'SUPER SEDDIK & JOUD — Grand tournoi', mode: 'race', track: 13, laps: 6, opp: 7, tier: 4, diff: 10, reward: 180000, desc: 'Grande finale du championnat à Monastir : six tours, rivaux élite et météo changeante.', weather: 'rain' },
 ];
 const DIFFS = [
   { name: 'Facile', v: 0.86, lat: 0.86, rb: 0.6 },
@@ -4014,7 +4012,7 @@ function physPlayer(c, dt, inp) {
   const spd = Math.abs(vf);
   let yawMax = Math.min(2.3, st.lat / Math.max(spd, 3));
   if (spd < 3) yawMax *= spd / 3;
-  let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
+  let target = (c.model.bike ? 1 : -1) * inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   if (inp.hand && spd > 8) target *= 1.75; else if (c.sliding) target *= 1.22;
   c.yaw += (target - c.yaw) * Math.min(1, dt * 9);
   c.h += c.yaw * dt;
@@ -4068,7 +4066,7 @@ function physPlayer(c, dt, inp) {
   const along = Fx * A.tx + Fz * A.tz;
   c.slopeF = A.slope * along;
   c.pitch = Math.atan(A.slope * along);
-  if (c.model.bike) c.roll = lerp(c.roll, clamp(Math.atan(c.yaw * spd / 9.81) * 0.95, -0.8, 0.8), Math.min(1, dt * 7)); // la moto se couche dans le virage
+  if (c.model.bike) c.roll = lerp(c.roll, clamp(Math.atan(-c.yaw * spd / 9.81) * 0.95, -0.8, 0.8), Math.min(1, dt * 7)); // la moto se couche dans le virage
   else c.roll = lerp(c.roll, clamp(-vl * 0.012 - c.yaw * spd * 0.0025, -0.07, 0.07), Math.min(1, dt * 6));
   c.along = along;
 }
@@ -4084,7 +4082,7 @@ function kin(c, dt) {
   c.spinVis *= Math.exp(-dt * 2.5);
   c.squat = lerp(c.squat, clamp((c.v - c.pv) / Math.max(dt, 1e-4) * 0.0028, -0.045, 0.035), Math.min(1, dt * 6)); c.pv = c.v;
   c.h = a.h - Math.atan2(c.dv, Math.max(3, c.v)) + c.spinVis; c.pitch = Math.atan(a.slope);
-  if (c.model.bike) { const yr = wrapPi(c.h - c.ph) / Math.max(dt, 1e-4); c.roll = lerp(c.roll, clamp(Math.atan(c.v * yr / 9.81) * 0.95, -0.8, 0.8), Math.min(1, dt * 6)); }
+  if (c.model.bike) { const yr = wrapPi(c.h - c.ph) / Math.max(dt, 1e-4); c.roll = lerp(c.roll, clamp(Math.atan(-c.v * yr / 9.81) * 0.95, -0.8, 0.8), Math.min(1, dt * 6)); }
   else c.roll = lerp(c.roll, clamp(c.dv * 0.012, -0.05, 0.05), 0.1);
   c.ph = c.h;
 }
@@ -4444,10 +4442,10 @@ function drawCar(c, M, far) {
   const inside = m.shell && R.detail && !(c.camD > 45);
   R.draw(inside ? m.shell : m.body, M);
   if (inside) R.draw(driverMesh(c.drv, 'car'), M4.mul(M, m.seatM, DRM));
-  const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6);
+  const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6), frontSteer = m.bike ? steer : -steer;
   R.setRim(c.rimC || RIM0);
   const wm = c.wm || (c.wm = getWheel(c.rimS || m.rim, m.wr, m.ww));
-  for (const w of m.wheels) { M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? -steer * 0.42 : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
+  for (const w of m.wheels) { M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? frontSteer * 0.42 : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
   if (inside && m.glass) { R.glassOn(); R.draw(m.glass, M); R.glassOff(); }
 }
 const UNDER0 = [0.05, 0.05, 0.06], RIM0 = [0.78, 0.79, 0.82];
@@ -4785,13 +4783,13 @@ const UI = {
       const own = SAVE.drivers.includes(d.id), cur = SAVE.driver === d.id;
       const b = document.createElement('button');
       b.className = 'dcard' + (this.viewDriver === d.id ? ' on' : '') + (cur ? ' cur' : '') + (!own ? ' lock' : '');
-      b.innerHTML = `${driverSVG(d, 48)}<span><b>${d.name}</b><small>${cur ? t('selected') : own ? t('perkT_' + d.perk) : money(d.price)}</small></span>`;
+      b.innerHTML = `${driverSVG(d, 48)}<span><b>${d.name}</b><small>${d.role || (cur ? t('selected') : own ? t('perkT_' + d.perk) : money(d.price))}</small></span>`;
       b.onclick = () => { this.viewDriver = d.id; AU.shot(820, 0.04, 'sine', 0.05); this.renderDrivers(); };
       list.appendChild(b);
     }
     const d = DRIVERS[drvIndex(this.viewDriver || SAVE.driver)], own = SAVE.drivers.includes(d.id);
     const pan = $('drvpanel');
-    pan.innerHTML = `<div class="dhead">${driverSVG(d, 104)}<div><h2>${d.name}</h2><p class="perkt">${t('perkT_' + d.perk)}</p></div></div><p class="desc">${t('perk_' + d.perk)}</p><p class="note">${t('driverNote')}</p><button id="d-action" class="cta"></button>`;
+    pan.innerHTML = `<div class="dhead">${driverSVG(d, 104)}<div><h2>${d.name}</h2><p class="perkt">${d.role || t('perkT_' + d.perk)}</p></div></div><p class="desc">${t('perk_' + d.perk)}</p><p class="note">${t('driverNote')}</p><button id="d-action" class="cta"></button>`;
     const act = $('d-action');
     if (!own) { act.textContent = t('buy', money(d.price)); act.disabled = SAVE.money < d.price; act.onclick = () => this.confirm(t('buyConfirm', d.name, money(d.price)), () => { SAVE.money -= d.price; SAVE.drivers.push(d.id); SAVE.driver = d.id; saveGame(); AU.chime(); this.updMoney(); this.renderDrivers(); }); }
     else if (SAVE.driver === d.id) { act.textContent = t('isSelected'); act.disabled = true; }
@@ -4866,12 +4864,14 @@ const UI = {
   renderCareer() {
     const done = SAVE.careerDone.length;
     $('c-prog').innerHTML = `<span>${t('progress')}</span><div class="pb"><i style="transform:scaleX(${done / CAREER.length})"></i></div><span>${done} / ${CAREER.length}</span>`;
+    const phases = LANG === 'en' ? ['QUALIFIERS · STAGES 01–05','ELIMINATION · STAGES 06–10','PLAYOFFS · STAGES 11–15','CHAMPIONSHIP FINAL · STAGES 16–20'] : ['QUALIFICATIONS · ÉTAPES 01–05','ÉLIMINATOIRES · ÉTAPES 06–10','PLAY-OFFS · ÉTAPES 11–15','FINALE DU CHAMPIONNAT · ÉTAPES 16–20'];
     $('c-list').innerHTML = CAREER.map((e, i) => {
       const isDone = SAVE.careerDone.includes(i), lock = i > SAVE.career, next = i === SAVE.career, tc = tierCars(e.tier)[0].cls;
-      const SEP = LANG === 'ar' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');
-      return `<button class="ev ${isDone ? 'done' : ''} ${lock ? 'lock' : ''} ${next ? 'next' : ''}" data-i="${i}" ${lock ? 'aria-disabled="true"' : ''}><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="st">${isDone ? t('done') : lock ? t('locked') : t('available')}</span><b>${tEvName(i)}</b><span class="meta">${meta}</span><small>${tEvDesc(i)}</small><div class="rw"><span>${t('advised')} <b class="cls ${tc} mini">${tc}</b></span><em>${money(isDone ? e.reward * 0.3 : e.reward)}</em></div></button>`;
+      const SEP = LANG === 'ar' || LANG === 'tn' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');
+      const phase = i % 5 === 0 ? `<h3 class="evphase">${phases[Math.floor(i / 5)]}</h3>` : '';
+      return `${phase}<button class="ev ${isDone ? 'done' : ''} ${lock ? 'lock' : ''} ${next ? 'next' : ''}" data-i="${i}" data-track="${e.track}" ${lock ? 'aria-disabled="true"' : ''}><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="st">${isDone ? t('done') : lock ? t('locked') : t('available')}</span><canvas width="240" height="120" aria-hidden="true"></canvas><b>${tEvName(i)}</b><span class="meta">${meta}</span><small>${tEvDesc(i)}</small><div class="rw"><span>${t('advised')} <b class="cls ${tc} mini">${tc}</b></span><em>${money(isDone ? e.reward * 0.3 : e.reward)}</em></div></button>`;
     }).join('');
-    $('c-list').querySelectorAll('button').forEach(b => b.onclick = () => { const i = +b.dataset.i; if (i > SAVE.career) return; this.startRace(evCfg(i)); });
+    $('c-list').querySelectorAll('button.ev').forEach(b => { const i = +b.dataset.i; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.track], i === SAVE.career); b.onclick = () => { if (i > SAVE.career) return; this.startRace(evCfg(i)); }; });
   },
   /* ----- options ----- */
   renderOptions() {

@@ -759,7 +759,7 @@ void main(){
     float ndl0 = dot(n,uSunDir), ndl = max(ndl0,0.0);
     float sh = shadowF(ndl);
     vec3 sun = lin(uSunCol);
-    vec3 amb = (mix(lin(uGndCol)*0.6+lin(uHorCol)*0.2, lin(uSkyCol)*0.55+lin(uHorCol)*0.45, n.y*0.5+0.5)*1.85 + vec3(0.075)) * (uStudio > 0.5 ? 2.35 : 1.0);
+    vec3 amb = (mix(lin(uGndCol)*0.6+lin(uHorCol)*0.2, lin(uSkyCol)*0.55+lin(uHorCol)*0.45, n.y*0.5+0.5)*1.85 + vec3(0.075)) * (uStudio > 0.5 ? 2.8 : 1.0);
     col = base*(amb + sun*ndl*sh + uBakeCol*(mi == 24 ? 0.0 : vLight)*0.85);
     if (trans > 0.0) col += base*sun*trans*max(dot(-v,uSunDir),0.0)*sh*0.6 + base*sun*trans*0.15*max(-ndl0,0.0);
     vec3 h = normalize(uSunDir+v);
@@ -800,7 +800,7 @@ void main(){
     col += sc;
   }
   col = mix(col, fogC, clamp(fogF,0.0,1.0));
-  float sceneLift = uNight > 0.5 ? 1.72 : (uWet > 0.5 ? 1.42 : 1.30);
+  float sceneLift = uNight > 0.5 ? 1.85 : (uWet > 0.5 ? 1.55 : 1.38);
   gl_FragColor = vec4(outc(col, uExpo * sceneLift), uGlass > 0.5 ? ga : 1.0);
 }`;
 
@@ -3345,10 +3345,10 @@ function buildGarage() {
   // plateau tournant (réfléchissant, dessiné avec le sol) + anneau ambre
   for (let s = 0; s < seg; s++) {
     const a0 = s / seg * TAU, a1 = (s + 1) / seg * TAU, P = (r, a, y = 0) => [Math.cos(a) * r, y, Math.sin(a) * r];
-    fl.tri(P(0, 0, 0.005), P(4.2, a0, 0.005), P(4.2, a1, 0.005), [0.11, 0.11, 0.12], 4);
+    fl.tri(P(0, 0, 0.005), P(4.2, a0, 0.005), P(4.2, a1, 0.005), [0.19, 0.19, 0.21], 4);
     fl.quad(P(2.6, a0, 0.007), P(2.6, a1, 0.007), P(2.64, a1, 0.007), P(2.64, a0, 0.007), [0.3, 0.3, 0.32], 4);
     mb.quad(P(4.2, a0, 0.012), P(4.2, a1, 0.012), P(4.38, a1, 0.012), P(4.38, a0, 0.012), [0.55, 0.22, 0.03], 2);
-    fl.quad(P(4.38, a0, 0), P(4.38, a1, 0), P(40, a1, 0), P(40, a0, 0), [0.045, 0.045, 0.05], 18, [0.045, 0.045, 0.05], [0.02, 0.02, 0.025], [0.02, 0.02, 0.025]);
+    fl.quad(P(4.38, a0, 0), P(4.38, a1, 0), P(40, a1, 0), P(40, a0, 0), [0.105, 0.105, 0.12], 18, [0.105, 0.105, 0.12], [0.055, 0.055, 0.065], [0.055, 0.055, 0.065]);
   }
   // arcades en fer à cheval
   const NA = 12, RA = 13, PL = [0.62, 0.58, 0.52], hw = 1.45, hs = 3.3, rr = 1.62;
@@ -4440,7 +4440,7 @@ function renderGarage(dt) {
     // lumières et ambiance du garage préparées une fois, puis réutilisées à chaque image (zéro allocation)
     const lp = new Float32Array(24), lc = new Float32Array(24);
     sc.lights.forEach((l, k) => { lp.set([l[0], l[1], l[2]], k * 3); lc.set([l[3], l[4], l[5]], k * 3); });
-    GAR.env = Object.assign({}, sc.env, { time: 0, lp, lc, head: 0, expo: 1.65 });
+    GAR.env = Object.assign({}, sc.env, { time: 0, lp, lc, head: 0, expo: 1.9 });
     GAR.cam = { eye: [0, 0, 0], target: [0, 0, 0], fov: 42, fwd: [0, 0, 1] };
     GAR.M = new Float32Array(16);
     GAR.fake = { model: m, paint: null, brake: 0.3, under: null, kind: 'ai', dv: 0, spin: 0, rimS: null, rimC: null, wm: null, key: '', drv: 0, camD: 0 };

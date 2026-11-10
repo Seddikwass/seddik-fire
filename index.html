@@ -3799,7 +3799,55 @@ function buildArmory(){const order=['p','smg','sg','ar','dmr','sn'];const keys=O
   const TN=['','Commun','Peu commun','Rare','Largage'];$('#armGrid').innerHTML=keys.map(k=>{const W=WEAP[k],d=W.dmg*W.pel,r=1/W.rate;return'<article class="gun" style="--tc:'+TIER_COL[W.tier]+'"><span class="tier">'+TN[W.tier]+'</span><div class="gun-img"><img alt="" src="'+PURL[k]+'"></div><div class="gun-t"><b>'+W.n+'</b><span>'+CLS[W.cls]+'<br>'+AMMO[W.am].n+'</span></div>'+bar('Dégâts',d,115,String(d))+bar('Cadence',r,18,r.toFixed(1)+'/s')+bar('Portée',W.rg,2200,Math.round(W.rg/10)+' m')+bar('Chargeur',W.mag,30,String(W.mag))+(W.tier===4?'<p class="note">Uniquement dans les largages aériens</p>':'')+'</article>'}).join('')}
 $('#armBtn').addEventListener('click',()=>{$('#armory').hidden=false});$('#armClose').addEventListener('click',()=>{$('#armory').hidden=true});
 const skinCv=$('#skinCv'),sctx=skinCv.getContext('2d'),lobbyEl=$('#lobby');
-function drawPreview(){const S=Math.round((skinCv.clientWidth||150)*DPR);if(!S)return;if(skinCv.width!==S||skinCv.height!==S){skinCv.width=S;skinCv.height=S}drawShowcase(sctx,S,{sk:SOLDIERS[skinI],skin:'#c8946a',slot:{type:stats.sidearm,mag:1},vest:0,cust:stats.cust})}
+function drawPreview(){
+  const S=Math.round((skinCv.clientWidth||150)*DPR);if(!S)return;
+  if(skinCv.width!==S||skinCv.height!==S){skinCv.width=S;skinCv.height=S}
+  try{drawShowcase(sctx,S,{sk:SOLDIERS[skinI],skin:'#c8946a',slot:{type:stats.sidearm,mag:1},vest:0,cust:stats.cust})}catch(err){console.warn('Aperçu détaillé indisponible',err)}
+  // Repaint the lobby preview on a freshly reset canvas. This deliberately
+  // avoids inheriting a broken transform/clip/save stack from the legacy renderer.
+  drawLobbySoldierGuaranteed(S);
+}
+function drawLobbySoldierGuaranteed(S){
+  skinCv.width=S;skinCv.height=S;
+  const c=skinCv.getContext('2d');if(!c)return;
+  const t=(typeof TIME==='number'?TIME:0);
+  const sway=Math.sin(t*1.7)*1.8;
+  const bg=c.createRadialGradient(S*.5,S*.48,S*.03,S*.5,S*.5,S*.53);
+  bg.addColorStop(0,'rgba(255,105,35,.22)');bg.addColorStop(.62,'rgba(255,105,35,.07)');bg.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle=bg;c.fillRect(0,0,S,S);
+  c.save();c.translate(S*.5,S*.56);c.scale(S/220,S/220);c.translate(sway,0);
+  // ground shadow
+  c.fillStyle='rgba(0,0,0,.52)';c.beginPath();c.ellipse(0,78,48,9,0,0,Math.PI*2);c.fill();
+  // legs and boots
+  c.fillStyle='#20251f';c.beginPath();c.moveTo(-17,5);c.lineTo(-7,5);c.lineTo(-10,63);c.lineTo(-22,66);c.closePath();c.fill();
+  c.beginPath();c.moveTo(7,5);c.lineTo(17,5);c.lineTo(22,66);c.lineTo(10,63);c.closePath();c.fill();
+  c.fillStyle='#111613';c.fillRect(-24,62,17,10);c.fillRect(8,62,17,10);
+  c.fillStyle='#59634b';c.fillRect(-15,8,8,48);c.fillRect(7,8,8,48);
+  // torso, shoulders and tactical vest
+  c.fillStyle='#30392d';c.beginPath();c.moveTo(-18,-43);c.lineTo(18,-43);c.lineTo(27,-26);c.lineTo(22,15);c.lineTo(-22,15);c.lineTo(-27,-26);c.closePath();c.fill();
+  c.fillStyle='#667052';c.beginPath();c.moveTo(-16,-40);c.lineTo(16,-40);c.lineTo(21,-23);c.lineTo(17,12);c.lineTo(-17,12);c.lineTo(-21,-23);c.closePath();c.fill();
+  c.fillStyle='#333c30';c.fillRect(-17,-30,34,36);
+  c.strokeStyle='rgba(225,215,180,.5)';c.lineWidth=1.5;c.strokeRect(-17,-30,34,36);
+  for(let x=-12;x<=12;x+=12){c.fillStyle='#202820';c.fillRect(x-4,-24,8,16);c.fillStyle='#8b8d68';c.fillRect(x-2,-22,4,3)}
+  c.fillStyle='#a98b55';c.fillRect(-5,-7,10,5);
+  // arms, sleeves and gloves
+  c.lineCap='round';c.strokeStyle='#273027';c.lineWidth=15;c.beginPath();c.moveTo(-19,-34);c.lineTo(-31,-4);c.moveTo(19,-34);c.lineTo(30,-5);c.stroke();
+  c.strokeStyle='#788064';c.lineWidth=9;c.beginPath();c.moveTo(-19,-34);c.lineTo(-31,-4);c.moveTo(19,-34);c.lineTo(30,-5);c.stroke();
+  c.fillStyle='#171d18';c.beginPath();c.arc(-31,-2,6,0,Math.PI*2);c.arc(30,-3,6,0,Math.PI*2);c.fill();
+  // neck and face
+  c.fillStyle='#b9815f';c.fillRect(-6,-53,12,12);
+  c.fillStyle='#c8946a';c.beginPath();c.ellipse(0,-63,12,15,0,0,Math.PI*2);c.fill();
+  // helmet shell, brim and visor
+  c.fillStyle='#273128';c.beginPath();c.arc(0,-65,16,Math.PI,Math.PI*2);c.lineTo(16,-59);c.lineTo(-16,-59);c.closePath();c.fill();
+  c.fillStyle='#7c8968';c.beginPath();c.arc(0,-65,13,Math.PI,Math.PI*2);c.lineTo(13,-61);c.lineTo(-13,-61);c.closePath();c.fill();
+  c.fillStyle='#1c241d';c.fillRect(-17,-62,34,4);
+  c.fillStyle='#353a2f';c.fillRect(-11,-51,22,3);
+  // rifle held on the right side
+  c.save();c.translate(34,-25);c.rotate(.08);c.fillStyle='#171d19';c.fillRect(-3,-10,7,70);c.fillRect(-7,17,13,20);c.fillStyle='#69715e';c.fillRect(-1,-8,2,48);c.fillStyle='#252b23';c.fillRect(-5,28,4,18);c.restore();
+  // harness straps and highlights
+  c.strokeStyle='rgba(225,218,183,.65)';c.lineWidth=2;c.beginPath();c.moveTo(-14,-37);c.lineTo(-9,-20);c.lineTo(-13,7);c.moveTo(14,-37);c.lineTo(9,-20);c.lineTo(13,7);c.stroke();
+  c.restore();
+}
 /* ===== UI helpers (designer) ===== */
 let cmpBuilt=false;const CMP_PX=2.2;
 function buildCompass(){const el=$('#cmpS');if(!el)return;let h='';const N=['N','NE','E','SE','S','SO','O','NO'];for(let d=-360;d<=720;d+=15){const x=d*CMP_PX,m=((d%360)+360)%360;if(m%45===0)h+='<span class="'+(m%90===0?'c':'')+'" style="left:'+x+'px">'+N[m/45]+'</span>';else if(m%15===0)h+='<span style="left:'+x+'px;top:8px;font-size:9.5px">'+m+'</span>';h+='<i style="left:'+x+'px"></i>'}h+='<b class="cmp-z" id="cmpZ"></b>';el.innerHTML=h;cmpBuilt=true}

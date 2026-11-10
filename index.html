@@ -2866,6 +2866,21 @@ function buildTrack(def, quality) {
         mb.cyl(foot[0], foot[1], foot[2], 0.18, 0.12, 10, [0.28, 0.29, 0.3], 4);
       }
     }
+    // mobilier public : bancs de rue avec assise, dossier et piètements métalliques
+    for (let i = 30; i < N; i += 74) {
+      if (inTun(i, 8)) continue;
+      for (const side of [-1, 1]) {
+        if (r() < 0.28) continue;
+        const mb = ch(rk(i)), p = pos(i, side * (W + 3.0), 0.22), yaw = hd[i];
+        mb.box(p[0], p[1] + 0.48, p[2], 0.62, 0.12, 1.9, [0.34, 0.19, 0.1], 18, yaw);
+        mb.box(p[0], p[1] + 0.88, p[2] - Math.sin(yaw) * 0.72, 0.12, 0.72, 1.9, [0.3, 0.17, 0.09], 18, yaw);
+        for (const z of [-0.72, 0.72]) {
+          const lx = p[0] + Math.cos(yaw) * 0.38 + Math.sin(yaw) * z;
+          const lz = p[2] - Math.sin(yaw) * 0.38 + Math.cos(yaw) * z;
+          mb.box(lx, p[1] + 0.23, lz, 0.09, 0.46, 0.1, [0.13, 0.14, 0.15], 4, yaw);
+        }
+      }
+    }
     // ligne d'horizon
     for (let k = 0; k < 140; k++) {
       const x = cx + (r() - 0.5) * (rad * 2 + 900), z = cz + (r() - 0.5) * (rad * 2 + 900), s = 25 + r() * 35;

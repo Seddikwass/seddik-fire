@@ -4473,7 +4473,7 @@ const MODES={
   cup:{n:'Parcours',xp:1.3,
     get st(){return STAGES[Math.min(stats.stage|0,STAGES.length-1)]},
     get np(){return this.st.np},get zt(){return this.st.zt},get sk(){return this.st.sk},get map(){return this.st.map},
-    get d(){const i=Math.min(stats.stage|0,STAGES.length-1),t=this.st;return 'Étape '+(i+1)+'/'+STAGES.length+' · '+t.n+' · '+t.np+' joueurs · gagnez pour débloquer la suivante'}},
+    get d(){const i=Math.min(stats.stage|0,STAGES.length-1),t=this.st;return 'Étape '+(i+1)+'/'+STAGES.length+' · '+t.difficulty+' · menace '+t.threat+'/100 · '+t.np+' combattants · '+t.n+' · gagnez pour débloquer la suivante'}},
   train:{n:'Entraînement',d:'8 adversaires faibles · tempête lente · XP réduit, sans stats ni missions',np:8,zt:1.7,xp:.25,easy:1,nostat:1}};
 let MDcur=MODES.classic,ZTm=1;
 const GUNN=new Set(Object.values(WEAP).map(w=>w.n));

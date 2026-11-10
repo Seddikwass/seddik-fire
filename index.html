@@ -1731,6 +1731,16 @@ function buildCarModel(styleName, extra = {}) {
     // poignées de portes
     const hz = S.doors === 4 ? [G.zB + 0.32, G.zB - 0.32] : [G.zB + 0.3];
     for (const z of hz) { const sh = G.prof(z); nd.box(sx * (sh.w * 0.985 + 0.01), sh.ys - 0.09, z, 0.02, 0.03, 0.16, CHROME, 4); }
+    // serrure discrète et nervure latérale de carrosserie : reflet continu le long des portes
+    for (const z of hz) {
+      const sh = G.prof(z);
+      nd.box(sx * (sh.w * 0.998 + 0.012), sh.ys - 0.09, z - 0.105, 0.012, 0.012, 0.018, [0.48, 0.5, 0.53], 4);
+    }
+    const zLine0 = zR + rs * 0.18, zLine1 = zF - fs * 0.16, zLine = (zLine0 + zLine1) / 2;
+    const sideLine = G.prof(zLine);
+    nd.box(sx * (sideLine.w * 0.998 + 0.009), sideLine.ys - 0.235, zLine, 0.014, 0.022, zLine1 - zLine0, [0.34, 0.36, 0.39], 4);
+    // protection basse et baguette de bas de caisse, séparées de la peinture
+    nd.box(sx * (sideLine.w * 0.998 + 0.01), sideLine.yb + 0.105, zLine, 0.022, 0.075, zLine1 - zLine0, [0.055, 0.058, 0.064], 4);
   }
   // échappements
   const exhaust = [];

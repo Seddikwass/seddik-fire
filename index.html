@@ -2344,25 +2344,33 @@ function drawClouds(x0,y0,x1,y1){if(!CLOUD){CLOUD=document.createElement('canvas
     if(vis(LAKE.x,LAKE.y,LAKE.r)){ctx.fillStyle='rgba(255,255,240,.8)';for(let i=0;i<10;i++){const a=i*2.39996,d=LAKE.r*.85*Math.sqrt(((i*.618)%1)),x=LAKE.x+Math.cos(a)*d,y=LAKE.y+Math.sin(a)*d,tw=Math.sin(TIME*2.6+i*1.9);if(tw<.7)continue;const r=(tw-.7)*12;ctx.fillRect(x-r,y-.6,r*2,1.2);ctx.fillRect(x-.6,y-r*.6,1.2,r*1.2)}}}
   if(Q.hi&&x1>2900){ctx.fillStyle='rgba(255,255,240,.85)';for(let i=0;i<26;i++){const y=y0+((i*137.7)%(y1-y0+1)),cx=coastX(y)+40+((i*263.1)%Math.max(1,(x1-coastX(y)-40))),tw=Math.sin(TIME*3+i*1.7);if(tw<.75||cx>x1||cx<coastX(y)+30)continue;const r=(tw-.75)*10;ctx.fillRect(cx-r,y-.6,r*2,1.2);ctx.fillRect(cx-.6,y-r*.6,1.2,r*1.2)}}}
 let LOWD=false;
-/* 2D WORLD DETAIL PASS — procedural micro-texture for islands and urban areas. */
+/* 2D WORLD DETAIL PASS — deterministic ground wear, biome marks and city surface breakup. */
 function draw2DSurfaceDetail(x0,y0,x1,y1){
   if(!Q.hi||LOWD)return;
-  const step=38, gx0=Math.floor(x0/step)*step, gy0=Math.floor(y0/step)*step;
-  const desert=MAP.gen==='desert'||MAP.id==='sahara', forest=MAP.gen==='forest';
-  ctx.save();ctx.lineCap='round';
+  const step=42,gx0=Math.floor(x0/step)*step,gy0=Math.floor(y0/step)*step;
+  const desert=MAP.gen==='desert'||MAP.id==='sahara',forest=MAP.gen==='forest',city=MAP.gen==='city';
+  const noise=(x,y,s)=>{let n=(Math.imul((x/s)|0,374761393)+Math.imul((y/s)|0,668265263)+Math.imul(MAP.id.length,1442695041))|0;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295};
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
   for(let gx=gx0;gx<x1;gx+=step)for(let gy=gy0;gy<y1;gy+=step){
-    const h=Math.sin(gx*12.9898+gy*78.233+MAP.id.length*19.19)*43758.5453;
-    const f=h-Math.floor(h),px=gx+f*step,py=gy+((f*7.31)%1)*step;
-    if(px<0||py<0||px>WS||py>WS||isWater(px,py)||f<.24)continue;
-    const r=1.1+f*2.2;
-    if(desert){
-      ctx.globalAlpha=.08+f*.08;ctx.fillStyle=f>.72?'#fff0c7':'#8d673d';
-      ctx.beginPath();ctx.ellipse(px,py,r*2.1,r*.72,f*TAU,0,TAU);ctx.fill();
-      if(f>.82){ctx.globalAlpha=.13;ctx.strokeStyle='#fff0d0';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(px-4,py);ctx.lineTo(px+4,py-1);ctx.stroke()}
+    const f=noise(gx,gy,step),f2=noise(gx+19,gy-31,step*.5),px=gx+f*step,py=gy+f2*step;
+    if(px<0||py<0||px>WS||py>WS||isWater(px,py)||f<.19)continue;
+    const r=1+f2*2.8;
+    if(city){
+      /* Fine asphalt grain, worn aggregate and occasional hairline cracks. */
+      ctx.globalAlpha=.045+f*.045;ctx.fillStyle=f>.52?'#f0e5cf':'#171b20';
+      ctx.beginPath();ctx.ellipse(px,py,r*2.4,r*.55,f2*TAU,0,TAU);ctx.fill();
+      if(f>.84){ctx.globalAlpha=.12;ctx.strokeStyle='#17191c';ctx.lineWidth=.75;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+3+f2*5,py+2+f*4);ctx.lineTo(px+5+f2*7,py+1+f*7);ctx.stroke()}
+      if(f2>.91){ctx.globalAlpha=.11;ctx.fillStyle='#d4c7aa';ctx.beginPath();ctx.arc(px+5,py-3,1.1,0,TAU);ctx.fill()}
+    }else if(desert){
+      ctx.globalAlpha=.07+f*.09;ctx.fillStyle=f>.72?'#fff0c7':'#8d673d';
+      ctx.beginPath();ctx.ellipse(px,py,r*2.8,r*.62,f*TAU,0,TAU);ctx.fill();
+      if(f>.78){ctx.globalAlpha=.12;ctx.strokeStyle='#fff0d0';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(px-5,py);ctx.quadraticCurveTo(px,py-2,px+6,py-1);ctx.stroke()}
     }else if(forest){
-      ctx.globalAlpha=.12;ctx.fillStyle=f>.5?'#345d32':'#a0a66a';ctx.beginPath();ctx.arc(px,py,r,0,TAU);ctx.fill();
+      ctx.globalAlpha=.11;ctx.fillStyle=f>.5?'#345d32':'#a0a66a';ctx.beginPath();ctx.arc(px,py,r*1.25,0,TAU);ctx.fill();
+      if(f>.7){ctx.globalAlpha=.13;ctx.strokeStyle='#263f25';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px-2,py+2);ctx.lineTo(px,py-2);ctx.lineTo(px+3,py+1);ctx.stroke()}
     }else{
-      ctx.globalAlpha=.1;ctx.fillStyle=f>.5?'#557b45':'#b8a078';ctx.beginPath();ctx.ellipse(px,py,r*1.5,r*.7,f*TAU,0,TAU);ctx.fill();
+      ctx.globalAlpha=.085;ctx.fillStyle=f>.5?'#557b45':'#b8a078';ctx.beginPath();ctx.ellipse(px,py,r*1.8,r*.68,f*TAU,0,TAU);ctx.fill();
+      if(f>.83){ctx.globalAlpha=.12;ctx.fillStyle='#e3d0a6';ctx.beginPath();ctx.arc(px+4,py-2,1.25,0,TAU);ctx.fill()}
     }
   }
   ctx.restore();

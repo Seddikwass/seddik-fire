@@ -3419,8 +3419,8 @@ function sf3dPoseActor(g,e){
     const axis=new SF3D.THREE.Vector3(0,0,1),q=new SF3D.THREE.Quaternion();
     g.userData.limbs.forEach((part,i)=>{
       let swing;
-      if(i<4)swing=moving?Math.sin(phase+(i%2)*Math.PI)*.3:Math.sin(TIME*1.5+i)*.01;
-      else{const arm=i<6?1:-1;swing=(moving?Math.sin(phase+(i%2)*Math.PI)*.07:0)+arm*(fire*.17+reload*.2+using*.12)}
+      if(i<4)swing=airborne?.16+(i%2)*.08:(moving?Math.sin(phase+(i%2)*Math.PI)*.3:Math.sin(TIME*1.5+i)*.01);
+      else{const arm=i<6?1:-1;swing=airborne?arm*(.48+Math.sin(TIME*2+i)*.035):(moving?Math.sin(phase+(i%2)*Math.PI)*.07:0)+arm*(fire*.17+reload*.2+using*.12)}
       q.setFromAxisAngle(axis,swing);part.mesh.quaternion.copy(part.base).multiply(q);
     });
   }

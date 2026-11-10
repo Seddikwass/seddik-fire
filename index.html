@@ -2448,9 +2448,12 @@ function draw2DSurfaceDetail(x0,y0,x1,y1){
     }else if(forest){
       ctx.globalAlpha=.11;ctx.fillStyle=f>.5?'#345d32':'#a0a66a';ctx.beginPath();ctx.arc(px,py,r*1.25,0,TAU);ctx.fill();
       if(f>.7){ctx.globalAlpha=.13;ctx.strokeStyle='#263f25';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px-2,py+2);ctx.lineTo(px,py-2);ctx.lineTo(px+3,py+1);ctx.stroke()}
+      /* Tiny layered grass blades break up flat forest clearings. */
+      if(f2>.58){ctx.globalAlpha=.16+f2*.09;ctx.strokeStyle=f>.5?'#294d2a':'#9ca36a';ctx.lineWidth=.85;ctx.beginPath();for(let q=0;q<4;q++){const bx=px+(q-1.5)*1.8,lean=(q-1.5)*1.15;ctx.moveTo(bx,py+2.8);ctx.quadraticCurveTo(bx+lean*.4,py-.8,bx+lean,py-3.2-(q%2)*1.4)}ctx.stroke()}
     }else{
       ctx.globalAlpha=.085;ctx.fillStyle=f>.5?'#557b45':'#b8a078';ctx.beginPath();ctx.ellipse(px,py,r*1.8,r*.68,f*TAU,0,TAU);ctx.fill();
       if(f>.83){ctx.globalAlpha=.12;ctx.fillStyle='#e3d0a6';ctx.beginPath();ctx.arc(px+4,py-2,1.25,0,TAU);ctx.fill()}
+      if(f2>.73){ctx.globalAlpha=.13;ctx.strokeStyle=f>.5?'#4d713e':'#9a875e';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(px-2,py+2);ctx.lineTo(px-2.8,py-1.8);ctx.moveTo(px,py+2);ctx.lineTo(px+.8,py-2.8);ctx.moveTo(px+2,py+2);ctx.lineTo(px+3.5,py-.8);ctx.stroke()}
     }
   }
   ctx.restore();

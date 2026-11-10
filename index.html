@@ -3700,6 +3700,18 @@ const TXT = {
     circuit: ['Circuit pro • Après-midi', 'Pro circuit • Afternoon', 'حلبة احترافية • بعد الظهر'], port: ['Docks • Nuit', 'Docks • Night', 'الميناء • ليلاً'], aindraham: ['Forêt • Pluie et brouillard', 'Forest • Rain and fog', 'الغابة • مطر وضباب'],
   },
 };
+// التونسي: واجهة محلية باللهجة التونسية مع إبقاء بقية المحتوى متوافقاً مع الفرنسية.
+LANGS.tn = Object.assign({}, LANGS.fr, {
+  tagline: 'سباقات في تونس، من المدينة للصحراء ومن البحر للجبال.',
+  play: 'إلعب', career: 'المسيرة', quick: 'سباق سريع', garage: 'الكراج', options: 'الإعدادات', help: 'كيفاش تلعب',
+  careerSub: '24 مرحلة تستنّاك', quickSub: 'سباق، ضدّ الوقت ولا مطاردة', garageSub: 'كراهب، ألوان، جنوط وتطوير', optionsSub: 'اللغة، الصوت، الغرافيك والتحكّم', helpSub: 'كلافيي، لمس ولا مانيت',
+  back: '‹ رجوع', start: 'إنطلق ›', settings: 'الإعدادات', gameMode: 'نوع السباق', circuit: 'الحلبة', laps: 'الدورات', opponents: 'المنافسين', difficulty: 'الصعوبة', traffic: 'الترافيك', weather: 'الطقس',
+  no: 'لا', yes: 'إي', easy: 'ساهل', normal: 'عادي', hard: 'صعيب', sunny: 'صحو', rain: 'شتاء',
+  drivers: 'السواق', driver: 'السائق', driverNote: 'السائق يظهر ورا الفولان ويعطيك شوية امتيازات.',
+  progress: 'التقدّم', done: '✓ كملتها', locked: '🔒 مسكّرة', available: '▶ متاحة', selected: 'مختارة', inGarage: 'في الكراج', select: 'اختار', buy: 'اشري {0}',
+  o_lang: 'اللغة', o_music: 'الموسيقى', o_sfx: 'الأصوات', o_gfx: 'الغرافيك', o_low: 'ضعيف', o_med: 'متوسط', o_high: 'عالي', o_ultra: 'Ultra للأجهزة القوية', o_dyn: 'دقّة تتبدّل وحدها', o_fps: 'إظهار FPS', o_cam: 'الكاميرا', o_touch: 'أزرار اللمس', o_steer: 'طريقة التوجيه', o_buttons: 'أزرار', o_stick: 'Joystick', o_tilt: 'بالميلان', o_sens: 'الحساسية', o_opacity: 'شفافية الأزرار', o_vibe: 'اهتزاز', o_save: 'التقدّم', o_reset: 'فسخ التقدّم',
+  cancel: 'إلغاء', confirm: 'تأكيد', pause: 'وقفة', resume: 'كمّل', restart: 'عاود', quitRace: 'اخرج من السباق',
+});
 let LANG = 'fr';
 const LI = () => LANG === 'en' ? 1 : LANG === 'ar' ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
@@ -3708,7 +3720,7 @@ const tEvName = i => (TXT.ev[i] || [])[LI()] || CAREER[i].name;
 const tEvDesc = i => (TXT.ev[i] || [])[3 + LI()] || CAREER[i].desc;
 const tTrk = d => (TXT.trk[d.id] || [d.sub])[LI()] || d.sub;
 function applyI18n() {
-  document.documentElement.lang = LANG; document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = LANG === 'tn' ? 'ar-TN' : LANG; document.documentElement.dir = (LANG === 'ar' || LANG === 'tn') ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
 }
 
@@ -4643,7 +4655,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
 const SAVE_KEY = 'superjoud_save_v1';
-function detectLang() { const l = (navigator.language || 'fr').toLowerCase(); return l.startsWith('ar') ? 'ar' : l.startsWith('en') ? 'en' : 'fr'; }
+function detectLang() { const l = (navigator.language || 'fr').toLowerCase(); return l.includes('-tn') ? 'tn' : l.startsWith('ar') ? 'ar' : l.startsWith('en') ? 'en' : 'fr'; }
 function defaultSettings() { return { sfx: 80, music: 50, quality: IS_TOUCH ? 'medium' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
   return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], best: {}, settings: defaultSettings(), stats: { races: 0, wins: 0 } };
@@ -4658,7 +4670,7 @@ function loadGame() {
 }
 function saveGame() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SAVE)); } catch (e) { } }
 const fmtT = x => { if (!isFinite(x)) return '--:--.--'; const m = Math.floor(x / 60), s = x - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(2); };
-const money = v => '$ ' + Math.round(v).toLocaleString(LANG === 'en' ? 'en-US' : 'fr-FR');
+const money = v => LANG === 'tn' ? Math.round(v).toLocaleString('fr-TN') + ' د.ت' : '$ ' + Math.round(v).toLocaleString(LANG === 'en' ? 'en-US' : 'fr-FR');
 const modeName = m => t('m_' + m);
 const evCfg = i => { const e = CAREER[i]; return { mode: e.mode, track: e.track, laps: e.laps || 1, opp: e.opp || 0, diff: e.diff || 0, tier: e.tier, heat: e.heat, traffic: e.mode === 'chase' ? 1 : 0, event: i, weather: e.weather }; };
 
@@ -4801,7 +4813,7 @@ const UI = {
     const rng = (key, min, max) => `<input type="range" data-k="${key}" min="${min}" max="${max}" value="${s[key]}">`;
     const row = (l, c) => `<div class="orow"><label>${l}</label>${c}</div>`;
     $('o-panel').innerHTML = [
-      row(t('o_lang'), seg('lang', [['fr', 'Français'], ['en', 'English'], ['ar', 'العربية']])),
+      row(t('o_lang'), seg('lang', [['fr', 'Français'], ['tn', 'تونسي'], ['ar', 'العربية'], ['en', 'English']])),
       row(t('o_music'), rng('music', 0, 100)), row(t('o_sfx'), rng('sfx', 0, 100)),
       row(t('o_gfx'), seg('quality', [['low', t('o_low')], ['medium', t('o_med')], ['high', t('o_high')], ['ultra', t('o_ultra')]])),
       row(t('o_dyn'), seg('dyn', [[true, t('yes')], [false, t('no')]])), row(t('o_fps'), seg('fps', [[true, t('yes')], [false, t('no')]])),

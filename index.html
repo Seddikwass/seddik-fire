@@ -771,6 +771,15 @@ canvas{image-rendering:auto}
 .fire{filter:drop-shadow(0 5px 10px rgba(0,0,0,.34));}
 @media(max-width:760px){#lobby .card{box-shadow:0 8px 22px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,235,205,.045)}}
 @media(prefers-reduced-motion:reduce){#lobby::before,#lobby .stage::before{animation:none}#lobby .cta,#lobby #play,#lobby .ghost,#lobby .arrow,#lobby .sa{transition:none}}
+
+/* SEDDIK FIRE v125 — présentation renforcée des opérateurs modernes et de l’environnement */
+#lobby .stage{isolation:isolate}
+#lobby #skinCv{filter:drop-shadow(0 18px 22px rgba(0,0,0,.58)) drop-shadow(0 0 18px rgba(194,207,177,.12))}
+#lobby .pc-name b,#lobby #skinName{text-shadow:0 2px 3px rgba(0,0,0,.9),0 0 18px rgba(185,207,190,.18)}
+#lobby .card{backdrop-filter:blur(16px) saturate(1.16);-webkit-backdrop-filter:blur(16px) saturate(1.16)}
+#lobby .chips>*{box-shadow:inset 0 1px rgba(255,255,255,.09),0 5px 16px rgba(0,0,0,.2)}
+@media(max-width:760px){#lobby #skinCv{filter:drop-shadow(0 12px 15px rgba(0,0,0,.62))}}
+@media(prefers-reduced-motion:reduce){#lobby #skinCv{animation:none!important}}
 </style>
 </head>
 <body>
@@ -1185,6 +1194,12 @@ const SOLDIERS=[
   {id:'j_rouge',n:'Maillot Rouge & Or',d:'Maillot rouge à bandes dorées, short noir. Création originale.',jc:['#c8202b','#e0b030'],jp:'stripes',shorts:'#1b1b1d',lv:4,base:'#c8202b',hg:'shaved',hc:'#2a1a12',pack:'#1b1b1d',glove:'#d9a77b',cam:['#000','#000','#000']},
   {id:'j_vert',n:'Maillot Vert Émeraude',d:'Maillot vert à bandes blanches, short blanc. Création originale.',jc:['#17803d','#f1efe8'],jp:'stripes',shorts:'#f1efe8',lv:5,base:'#17803d',hg:'braids',hc:'#16100c',pack:'#f1efe8',glove:'#d9a77b',cam:['#000','#000','#000']},
   {id:'j_noir',n:'Maillot Noir & Rouge',d:'Maillot noir à épaulettes rouges, short noir. Création originale.',jc:['#1b1b1e','#c8202b'],jp:'plain',shorts:'#111113',lv:6,base:'#1b1b1e',hg:'mohawk',hc:'#c8202b',pack:'#111113',glove:'#d9a77b',cam:['#000','#000','#000']}
+,
+  {id:'raider',n:'Raider moderne',d:'Opérateur d’assaut contemporain : casque balistique, lunettes, gilet porte-plaques et camouflage multicam.',base:'#a98260',top:'#4c5948',shorts:'#3d4938',cam:['#4b5844','#8a7858','#343d32'],hg:'helmet',hc:'#4a5544',pack:'#343d32',glove:'#272b27',pat:'pix',blobs:26,ink:'#343a32'},
+  {id:'recon',n:'Éclaireur Delta',d:'Éclaireur léger équipé d’un casque moderne, radio, sac compact et tenue forêt.',base:'#bd9673',top:'#48513b',shorts:'#343d2e',cam:['#414d35','#7c7952','#2d382b'],hg:'helmet',hc:'#394431',pack:'#283126',glove:'#242820',blobs:34,ink:'#30382d'},
+  {id:'urban_ops',n:'Unité urbaine',d:'Combattant urbain en équipement gris, casque renforcé et protection balistique.',base:'#a87958',top:'#555b61',shorts:'#34383e',cam:['#555b61','#85878a','#30353b'],hg:'helmet',hc:'#363b42',pack:'#292e34',glove:'#20252a',pat:'pix',blobs:24,ink:'#30353a'},
+  {id:'desert_ops',n:'Patrouille du désert',d:'Soldat de reconnaissance désertique, casque sable, gilet modulaire et sac tactique.',base:'#c39872',top:'#8b7958',shorts:'#76664b',cam:['#a18b65','#c0a77a','#66583f'],hg:'boonie',hc:'#a18b65',pack:'#66583f',glove:'#514633',blobs:30,ink:'#65583f'},
+  {id:'navy_ops',n:'Commando naval',d:'Opérateur amphibie en camouflage bleu ardoise, casque balistique et équipement étanche.',base:'#a97d5d',top:'#34495a',shorts:'#263747',cam:['#34495a','#647989','#202e3a'],hg:'helmet',hc:'#263b4d',pack:'#1d2c39',glove:'#18232d',pat:'pix',blobs:24,ink:'#293c4b'}
 ];
 /* v52 : tous les personnages = opérateur tactique (gilet porte-plaques, maillot sombre, pantalon cargo, rangers) ; couleurs variées */
 (()=>{const PAL=[['Opérateur olive','#26282b','#4c5536','#5c5e57'],['Opérateur noir','#1d1f22','#2a2c2e','#4a4c4f'],['Opérateur sable','#3a3631','#8a7a5a','#8c8068'],['Opérateur forêt','#2b3324','#3f4a2e','#56603f'],['Opérateur urbain','#33363b','#5c6168','#62666c'],['Opérateur nuit','#1b2230','#262d3a','#3c4454'],['Opérateur coyote','#2d2a26','#7a6446','#7f6a4c'],['Opérateur ranger','#2f3a2a','#556147','#62704f'],['Opérateur ardoise','#2a2f36','#47505b','#58616c'],['Opérateur désert','#4a4236','#a08a64','#9a8766'],['Opérateur marine','#1c2638','#2c3a52','#3e4c66'],['Opérateur kaki','#35332a','#6b6440','#76704f'],['Opérateur graphite','#2b2b2b','#3c3c3c','#505050'],['Opérateur brousse','#30342a','#5f6a45','#6b7550'],['Opérateur terre','#33281f','#5e4a36','#6a5541'],['Opérateur toundra','#3a3d40','#7d8286','#81868a'],['Opérateur jungle','#22301f','#34482c','#4a5e3e'],['Opérateur acier','#262c33','#4b5662','#5a6570'],['Opérateur dune','#3d362c','#b39b72','#a8946f'],['Opérateur commando','#202420','#3b4436','#4d5848'],['Opérateur bordeaux','#2a1d1f','#4a2c30','#5a4044'],['Opérateur pierre','#38352f','#77705f','#7c7564'],['Opérateur lagune','#1f2c2e','#335055','#46646a'],['Opérateur charbon','#1a1a1a','#2f2f2f','#454545'],['Opérateur savane','#3a3426','#8a7b4a','#8d8056'],['Opérateur montagne','#2c3034','#55595c','#646a6e'],['Opérateur marais','#272b22','#4a5038','#5a6046'],['Opérateur aube','#30292a','#6a5552','#776362'],['Opérateur polaire','#3c4046','#9aa0a6','#8f969c']];

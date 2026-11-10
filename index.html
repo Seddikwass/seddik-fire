@@ -1116,7 +1116,7 @@ const R = {
     gl.uniformMatrix4fv(S.u.uProj, false, this.proj); gl.uniformMatrix4fv(S.u.uViewRot, false, vr);
     gl.uniform3fv(S.u.uSkyCol, env.sky); gl.uniform3fv(S.u.uHorCol, env.hor); gl.uniform3fv(S.u.uGndCol, env.gnd);
     gl.uniform3fv(S.u.uSunDir, env.sunDir); gl.uniform3fv(S.u.uSunCol, env.sunCol); gl.uniform3fv(S.u.uFogCol, env.fog);
-    gl.uniform1f(S.u.uNight, env.(!!def.env.night || def.weather === 'rain') ? 1 : 0); gl.uniform1f(S.u.uTime, env.time || 0); gl.uniform1f(S.u.uClouds, env.clouds || 0); gl.uniform1f(S.u.uSunSize, env.sunSize || 0.0012); gl.uniform1f(S.u.uExpo, expo);
+    gl.uniform1f(S.u.uNight, env.night ? 1 : 0); gl.uniform1f(S.u.uTime, env.time || 0); gl.uniform1f(S.u.uClouds, env.clouds || 0); gl.uniform1f(S.u.uSunSize, env.sunSize || 0.0012); gl.uniform1f(S.u.uExpo, expo);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.skyBuf);
     gl.enableVertexAttribArray(S.a.aPos); gl.vertexAttribPointer(S.a.aPos, 3, gl.FLOAT, false, 12, 0);
     gl.drawArrays(gl.TRIANGLES, 0, this.skyN);
@@ -1129,7 +1129,7 @@ const R = {
     gl.uniform3fv(u.uHorCol, env.hor); gl.uniform3fv(u.uGndCol, env.gnd); gl.uniform3fv(u.uFogCol, env.fog);
     gl.uniform3fv(u.uBakeCol, env.bake || C_ZERO); gl.uniform1f(u.uStudio, env.studio || 0); gl.uniform1f(u.uGlass, 0);
     gl.uniform1f(u.uFogDen, env.fogDen); gl.uniform1f(u.uTime, env.time || 0); gl.uniform1f(u.uWind, this.detail ? (env.time || 0.001) * (env.rain ? 1.6 : 1) : 0); gl.uniform1f(u.uWet, env.wet || 0);
-    gl.uniform1f(u.uNight, env.(!!def.env.night || def.weather === 'rain') ? 1 : 0); gl.uniform1f(u.uAlpha, 1); gl.uniform1f(u.uExpo, expo); gl.uniform1f(u.uDetail, this.detail);
+    gl.uniform1f(u.uNight, env.night ? 1 : 0); gl.uniform1f(u.uAlpha, 1); gl.uniform1f(u.uExpo, expo); gl.uniform1f(u.uDetail, this.detail);
     gl.uniform3fv(u.uLP, env.lp); gl.uniform3fv(u.uLC, env.lc);
     gl.uniform1f(u.uHead, env.head || 0); gl.uniform3fv(u.uHeadPos, env.headPos || C_FAR); gl.uniform3fv(u.uHeadDir, env.headDir || C_FWD);
     gl.uniform3fv(u.uPaint, C_ONE); gl.uniform3fv(u.uRim, C_RIM); gl.uniform3fv(u.uUnderCol, C_ZERO); gl.uniform1f(u.uBrake, 0); gl.uniform1f(u.uDyn, 0);
@@ -2739,7 +2739,7 @@ function buildTrack(def, quality) {
   // panneaux de distance et murs de pneus (circuit), passages piétons et feux (ville)
   function buildRoadside() {
     const night = !!def.env.night || def.weather === 'rain', POST = [0.2, 0.2, 0.22], WH = [0.9, 0.9, 0.88], BK = [0.03, 0.03, 0.035], RD = [0.78, 0.07, 0.05];
-    const REFL = (!!def.env.night || def.weather === 'rain') ? 2 : 0, reflC = (!!def.env.night || def.weather === 'rain') ? [0.55, 0.28, 0.05] : [1, 0.55, 0.1];
+    const REFL = night ? 2 : 0, reflC = night ? [0.55, 0.28, 0.05] : [1, 0.55, 0.1];
     const bend = i => { const j = (i + 6) % N, dl = (px[j] - px[i]) * rx[i] + (pz[j] - pz[i]) * rz[i]; return dl; };
     const at = (i, d, y) => pos(i, d, y);
     // panneau plat face aux pilotes qui arrivent (plan formé par la normale latérale et la verticale)
@@ -2796,7 +2796,7 @@ function buildTrack(def, quality) {
         for (const side of [-1, 1]) {
           const mb = ch(rk(i)), d = side * (W + 1.75), a0 = at(i, d, 0);
           mb.box(a0[0], a0[1], a0[2], 0.1, 0.95, 0.1, WH, 0, hd[i]); const a1 = at(i, d, 0.72); mb.box(a1[0], a1[1], a1[2], 0.105, 0.14, 0.105, BK, 0, hd[i]);
-          board(mb, i, d, 0.79, 0.03, 0.05, side > 0 ? reflC : ((!!def.env.night || def.weather === 'rain') ? [0.5, 0.5, 0.5] : WH), side > 0 ? REFL : ((!!def.env.night || def.weather === 'rain') ? 2 : 0), 0.055);
+          board(mb, i, d, 0.79, 0.03, 0.05, side > 0 ? reflC : (night ? [0.5, 0.5, 0.5] : WH), side > 0 ? REFL : (night ? 2 : 0), 0.055);
         }
         if (i % 247 < 13) {
           const mb = ch(rk(i)), d = W + 2.4, c = at(i, d, 0);
@@ -2861,7 +2861,7 @@ function buildTrack(def, quality) {
         const lamp = [armB[0], armB[1] - 0.08, armB[2]];
         mb.box(lamp[0], lamp[1], lamp[2], 0.34, 0.12, 0.72, [0.22, 0.24, 0.25], 4, hd[i]);
         const lens = [lamp[0], lamp[1] - 0.075, lamp[2]];
-        mb.box(lens[0], lens[1], lens[2], 0.25, 0.025, 0.55, [0.92, 0.82, 0.58], (!!def.env.night || def.weather === 'rain') ? 2 : 0, hd[i]);
+        mb.box(lens[0], lens[1], lens[2], 0.25, 0.025, 0.55, [0.92, 0.82, 0.58], night ? 2 : 0, hd[i]);
         const foot = pos(i, side * (W + 2.0), 0.28);
         mb.cyl(foot[0], foot[1], foot[2], 0.18, 0.12, 10, [0.28, 0.29, 0.3], 4);
       }
@@ -4268,7 +4268,7 @@ function pickLights(env) {
   LP.fill(0); LC.fill(0); for (let k = 0; k < 8; k++) LP[k * 3 + 1] = -9999;
   const T = G.T, e = G.cam.eye; let slots = 0;
   if (G.chase) {
-    const ph = Math.sin(G.time * 13) > 0, I = env.(!!def.env.night || def.weather === 'rain') ? 1.2 : 0.6;
+    const ph = Math.sin(G.time * 13) > 0, I = env.night ? 1.2 : 0.6;
     let c1 = null, d1 = 1e18, c2 = null, d2 = 1e18;
     for (const c of G.cars) { if (c.kind !== 'cop' || c.wreck) continue; const d = (c.x - e[0]) ** 2 + (c.z - e[2]) ** 2; if (d < d1) { c2 = c1; d2 = d1; c1 = c; d1 = d; } else if (d < d2) { c2 = c; d2 = d; } }
     for (let q = 0; q < 2; q++) { const c = q ? c2 : c1; if (!c) continue; const k = slots++; LP[k * 3] = c.x; LP[k * 3 + 1] = c.y + 2; LP[k * 3 + 2] = c.z; LC[k * 3] = ph ? I : 0.05; LC[k * 3 + 1] = 0.05; LC[k * 3 + 2] = ph ? 0.05 : I * 1.2; }
@@ -4304,13 +4304,13 @@ const UNDER0 = [0.05, 0.05, 0.06], RIM0 = [0.78, 0.79, 0.82];
 const WETM = new Float32Array(16);
 function makeEnv(b, weather) {
   const e = Object.assign({}, b);
-  e.expo = b.expo || (b.(!!def.env.night || def.weather === 'rain') ? 1.3 : 1.0);
+  e.expo = b.expo || (b.night ? 1.3 : 1.0);
   e.shadows = !b.night && !b.rain;
   if (weather === 'rain' && !b.rain) {
     const gray = (c, k, g) => { const m = (c[0] + c[1] + c[2]) / 3; return c.map(v => (v * (1 - g) + m * g) * k); };
     e.rain = true; e.wet = 1; e.clouds = 1.0; e.shadows = false; e.sunSize = 0.00001;
-    e.sky = gray(b.sky, b.(!!def.env.night || def.weather === 'rain') ? 0.8 : 0.5, 0.65); e.hor = gray(b.hor, b.(!!def.env.night || def.weather === 'rain') ? 0.9 : 0.58, 0.65); e.fog = gray(b.fog, b.(!!def.env.night || def.weather === 'rain') ? 0.85 : 0.6, 0.7); e.gnd = gray(b.gnd, 0.7, 0.4);
-    e.sunCol = b.sunCol.map(v => v * (b.(!!def.env.night || def.weather === 'rain') ? 0.8 : 0.42)); e.fogDen = b.fogDen * 1.45;
+    e.sky = gray(b.sky, b.night ? 0.8 : 0.5, 0.65); e.hor = gray(b.hor, b.night ? 0.9 : 0.58, 0.65); e.fog = gray(b.fog, b.night ? 0.85 : 0.6, 0.7); e.gnd = gray(b.gnd, 0.7, 0.4);
+    e.sunCol = b.sunCol.map(v => v * (b.night ? 0.8 : 0.42)); e.fogDen = b.fogDen * 1.45;
     e.grade = GR([0.0, 0.018, 0.028], [0.97, 1.0, 1.03], 0.27);
   }
   return e;
@@ -4358,7 +4358,7 @@ function renderWorld(dtv) {
     R.wetEnd();
   }
   for (let k = 0; k < nVis; k++) { const c = VIS[k]; if (G.camMode === 2 && c === p) continue; drawCar(c, c.M, c.camD > (G.lodNear || 30)); }
-  R.blendAlpha(); R.setAlpha(env.(!!def.env.night || def.weather === 'rain') ? 0.75 : env.shadows ? 0.55 : 0.9);
+  R.blendAlpha(); R.setAlpha(env.night ? 0.75 : env.shadows ? 0.55 : 0.9);
   for (let k = 0; k < nVis; k++) { const c = VIS[k]; if (c.camD < 90) R.draw(c.model.shadow, c.M); }
   R.blendAdd();
   const glow = env.night || env.rain;
@@ -4368,9 +4368,9 @@ function renderWorld(dtv) {
   }
   R.endMain();
   G.smoke.draw(); G.glow.draw();
-  if (env.rain && G.rainSys) { G.rainSys.update(dtv, G.cam.eye); G.rainSys.draw(env.(!!def.env.night || def.weather === 'rain') ? RAIN_N : RAIN_D); }
+  if (env.rain && G.rainSys) { G.rainSys.update(dtv, G.cam.eye); G.rainSys.draw(env.night ? RAIN_N : RAIN_D); }
   const sf = clamp(p.v / p.st.vmax, 0, 1.3), FX = G.fx || (G.fx = {});
-  FX.bloom = env.(!!def.env.night || def.weather === 'rain') ? 1.0 : env.rain ? 0.6 : 0.3; FX.blur = clamp((sf - 0.55) * 0.016, 0, 0.009) + (p.nitroOn ? 0.009 : 0); FX.vig = 0.6; FX.sat = env.rain ? 0.95 : (env.sat || 1.1);
+  FX.bloom = env.night ? 1.0 : env.rain ? 0.6 : 0.3; FX.blur = clamp((sf - 0.55) * 0.016, 0, 0.009) + (p.nitroOn ? 0.009 : 0); FX.vig = 0.6; FX.sat = env.rain ? 0.95 : (env.sat || 1.1);
   FX.flash = G.flash; FX.rain = env.rain ? (G.camMode !== 2 ? 1 : 0.6) : 0; FX.time = G.time;
   FX.grade = env.grade; FX.flare = 1; FX.speed = p.nitroOn ? 1 : clamp((sf - 0.8) * 3, 0, 0.6); FX.haze = env.haze || 0; FX.hit = G.hitFx || 0; FX.nos = p.nitroOn ? 1 : 0;
   R.finish(FX);

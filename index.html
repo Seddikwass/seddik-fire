@@ -3696,7 +3696,7 @@ const LANGS = {
     perk_speed: '+3٪ في السرعة القصوى.', perk_nitro: 'يُعاد شحن النيترو أسرع بـ25٪.', perk_accel: '+5٪ في التسارع.', perk_grip: '+4٪ في التماسك عند المنعطفات.', perk_tough: 'أثقل عند الاحتكاك (+25٪): يدفع المنافسين.', perk_drift: 'نقاط الأسلوب ×1.5 عند الانزلاق.', perk_ghost: 'يفلت من الشرطة أسرع بـ30٪.', perk_money: '+15٪ من المال في كل سباق.',
     loading: 'تشغيل المحرّك…', preparing: 'تجهيز الحلبة: {0}', webgl: 'تعذّر تشغيل محرّك الرسوم: المتصفح عطّل WebGL، غالبًا بعد عطل في الرسوميات.', webglHelp: 'أغلق Chrome تمامًا (أو أعد تشغيل الهاتف) ثم افتح اللعبة من جديد. إذا فتحتها من فيسبوك أو ماسنجر أو واتساب، افتح الرابط في Chrome. ستعمل اللعبة بجودة منخفضة.', retry: 'إعادة المحاولة', glLost: 'أُعيد تشغيل محرّك الرسوم. إعادة التشغيل بجودة منخفضة…', safeMode: 'الوضع الآمن: جودة منخفضة (لم يكتمل التشغيل السابق).',
     tagline: 'سباقات الشوارع عبر تونس، من المدينة العتيقة إلى الصحراء.', play: 'العب', career: 'المسيرة', quick: 'سباق سريع', garage: 'المرآب', options: 'الإعدادات', help: 'طريقة اللعب',
-    careerSub: '24 تحدّياً بانتظارك', quickSub: 'سباق، ضد الساعة أو مطاردة', garageSub: 'سيارات، طلاء، جنوط، نيون، تعديل', optionsSub: 'اللغة، الصوت، الرسوم، التحكم', helpSub: 'لوحة المفاتيح، اللمس، الذراع',
+    careerSub: '20 مرحلة للفوز بالبطولة', quickSub: 'سباق، ضد الساعة أو مطاردة', garageSub: 'سيارات، طلاء، جنوط، نيون، تعديل', optionsSub: 'اللغة، الصوت، الرسوم، التحكم', helpSub: 'لوحة المفاتيح، اللمس، الذراع',
     playNext: 'التحدي {0}: {1}', playQuick: 'سباق سريع: {0}', careerDone: 'انتهت المسيرة — أنت ملك الطريق!', careerStep: 'التحدي {0} / {1}',
     yourCar: 'سيارتك، الفئة {0}', back: 'رجوع ›', paint: 'الطلاء', rims: 'الجنوط', neons: 'النيون', tuning: 'التعديل',
     selected: 'مختارة', inGarage: 'في مرآبك', select: 'اختيار', isSelected: 'مختارة', buy: 'شراء {0}', buyConfirm: 'شراء {0} بسعر {1}؟',
@@ -4727,7 +4727,7 @@ let SAVE = defaultSave();
 function loadGame() {
   try {
     const s = localStorage.getItem(SAVE_KEY); if (!s) return;
-    const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {}; const oldDone = Array.isArray(SAVE.careerDone) ? SAVE.careerDone : []; SAVE.careerDone = [...new Set([...oldDone.filter(i => Number.isInteger(i) && i >= 0 && i < 16), ...oldDone.filter(i => Number.isInteger(i) && i >= 20 && i < 24).map(i => i - 4)])]; SAVE.career = clamp(Number(SAVE.career) || 0, 0, 20);
+    const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {}; const oldDone = Array.isArray(SAVE.careerDone) ? SAVE.careerDone : []; SAVE.careerDone = [...new Set([...oldDone.filter(i => Number.isInteger(i) && i >= 0 && i < 16), ...oldDone.filter(i => Number.isInteger(i) && i >= 20 && i < 24).map(i => i - 4)])]; const oldCareer = clamp(Number(SAVE.career) || 0, 0, 24); SAVE.career = oldCareer <= 16 ? oldCareer : oldCareer < 20 ? 16 : Math.min(20, 16 + oldCareer - 20);
     const st = Object.assign(defaultSettings(), o.settings || {}); if (o.settings && o.settings.vol !== undefined && o.settings.sfx === undefined) st.sfx = o.settings.vol; SAVE.settings = st;
   } catch (e) { }
 }
@@ -4862,7 +4862,7 @@ const UI = {
   renderCareer() {
     const done = SAVE.careerDone.length;
     $('c-prog').innerHTML = `<span>${t('progress')}</span><div class="pb"><i style="transform:scaleX(${done / CAREER.length})"></i></div><span>${done} / ${CAREER.length}</span>`;
-    const phases = LANG === 'en' ? ['QUALIFIERS · STAGES 01–05','ELIMINATION · STAGES 06–10','PLAYOFFS · STAGES 11–15','CHAMPIONSHIP FINAL · STAGES 16–20'] : ['QUALIFICATIONS · ÉTAPES 01–05','ÉLIMINATOIRES · ÉTAPES 06–10','PLAY-OFFS · ÉTAPES 11–15','FINALE DU CHAMPIONNAT · ÉTAPES 16–20'];
+    const phases = LANG === 'en' ? ['QUALIFIERS · STAGES 01–05','ELIMINATION · STAGES 06–10','PLAYOFFS · STAGES 11–15','CHAMPIONSHIP FINAL · STAGES 16–20'] : LANG === 'ar' ? ['التصفيات · المراحل 01–05','الإقصائيات · المراحل 06–10','الأدوار النهائية · المراحل 11–15','نهائي البطولة · المراحل 16–20'] : LANG === 'tn' ? ['التصفيات · مراحل 01–05','الإقصائيات · مراحل 06–10','البلاي أوف · مراحل 11–15','نهائي البطولة · مراحل 16–20'] : ['QUALIFICATIONS · ÉTAPES 01–05','ÉLIMINATOIRES · ÉTAPES 06–10','PLAY-OFFS · ÉTAPES 11–15','FINALE DU CHAMPIONNAT · ÉTAPES 16–20'];
     $('c-list').innerHTML = CAREER.map((e, i) => {
       const isDone = SAVE.careerDone.includes(i), lock = i > SAVE.career, next = i === SAVE.career, tc = tierCars(e.tier)[0].cls;
       const SEP = LANG === 'ar' || LANG === 'tn' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');

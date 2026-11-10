@@ -3077,15 +3077,16 @@ async function sf3dBoot(){
     const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js');
     SF3D.THREE=THREE;
     const el=document.getElementById('sf3d');
-    const renderer=new THREE.WebGLRenderer({canvas:el,antialias:true,alpha:false,powerPreference:'high-performance'});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+    const mobile=matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+    const renderer=new THREE.WebGLRenderer({canvas:el,antialias:!mobile,alpha:false,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobile?1.2:1.6));
     renderer.setSize(window.innerWidth,window.innerHeight,false);
     renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
     const scene=new THREE.Scene();scene.background=new THREE.Color(0x87b8cf);scene.fog=new THREE.Fog(0x9bb9b4,1050,4700);
     scene.add(new THREE.HemisphereLight(0xd9edff,0x62513a,1.85));
-    const sun=new THREE.DirectionalLight(0xffe4c2,2.15);sun.position.set(-900,1500,-700);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-1150;sun.shadow.camera.right=1150;sun.shadow.camera.top=1150;sun.shadow.camera.bottom=-1150;sun.shadow.bias=-.00018;sun.shadow.normalBias=.025;scene.add(sun);
+    const sun=new THREE.DirectionalLight(0xffe4c2,2.15);sun.position.set(-900,1500,-700);sun.castShadow=true;sun.shadow.mapSize.set(mobile?768:1536,mobile?768:1536);sun.shadow.camera.left=-1150;sun.shadow.camera.right=1150;sun.shadow.camera.top=1150;sun.shadow.camera.bottom=-1150;sun.shadow.bias=-.00018;sun.shadow.normalBias=.025;scene.add(sun);
     // A gentle sky fill softens harsh black shadows on mobile screens.
     const fill=new THREE.DirectionalLight(0xb8d4e8,.42);fill.position.set(700,520,850);scene.add(fill);
     const camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,.5,6500);
@@ -3485,7 +3486,7 @@ function sf3dShowError(message){
   if(!panel){panel=document.createElement('div');panel.id='sf3d-error';panel.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:99999;padding:12px 14px;background:#211b18;color:#fff;border:1px solid #e28b42;border-radius:8px;font:12px/1.45 system-ui;white-space:normal;overflow-wrap:anywhere;box-shadow:0 4px 24px #0009';document.body.appendChild(panel)}
   panel.textContent='Affichage 3D indisponible — '+message;
 }
-function render3DWorld(){
+function render3DWorld(dt=1/60){
   sf3dInstallControl();const toggle=document.getElementById('sf3d-toggle');if(toggle)toggle.style.display='block';
   if((game.mode!=='play'&&game.mode!=='paused')||!player){document.getElementById('sf3d').style.opacity='0';cv.style.opacity='1';return}
   if(!SF3D.user3D||document.hidden){document.getElementById('sf3d').style.opacity='0';cv.style.opacity='1';return}
@@ -3502,7 +3503,7 @@ function render3DWorld(){
     const target=new T.Vector3(focusX,p.inPlane?0:(p.air>0?42:12),focusZ);
     const dist=p.inPlane?760:(p.air>0?420:300),height=p.inPlane?620:(p.air>0?350:220);
     const desired=new T.Vector3(focusX-Math.cos(ang)*dist,height,focusZ-Math.sin(ang)*dist);
-    SF3D.camera.position.lerp(desired,.14);SF3D.camera.lookAt(target);
+    SF3D.camera.position.lerp(desired,1-Math.exp(-Math.min(.05,Math.max(0,dt))*8));SF3D.camera.lookAt(target);
     SF3D.renderer.render(SF3D.scene,SF3D.camera);
     if(SF3D.user3D){cv.style.opacity='0';document.getElementById('sf3d').style.opacity='1'}else{cv.style.opacity='1';document.getElementById('sf3d').style.opacity='0'}
     const panel=document.getElementById('sf3d-error');if(panel)panel.remove();
@@ -3517,7 +3518,7 @@ let RSZ=0;
 function frame(now){if((FR30||stats.fr30)&&game.mode==='play'){FRC^=1;if(FRC){requestAnimationFrame(frame);return}}const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;TIME+=dt;if((RSZ+=dt)>.4){RSZ=0;if(window.innerWidth!==VW||window.innerHeight!==VH)resize()}
   try{tutoTick(dt);adaptRes(dt);if(game.mode==='play'){if(HSTOP>0)HSTOP-=dt;else update(dt)}else if(game.mode==='lobby')updateLobby(dt);
     render();
-    render3DWorld();
+    render3DWorld(dt);
     if(game.mode==='lobby'&&!lobbyEl.hidden)drawPreview();
     else if(game.mode==='end')drawEndHero();
     if(game.mode==='play'&&player){drawMini();updateHUD();uiFire();if(bigOpen)drawMapView(bctx,bigcv.width,WS/2,WS/2,WS,true)}}catch(err){console.error(err)}

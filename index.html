@@ -3403,7 +3403,7 @@ function sf3dSyncActors(){
   const seen=new Set();
   for(const e of ents){if(!e.alive||e.inPlane||e.air>0||e.veh)continue;seen.add(e);
     let g=SF3D.actors.get(e);if(!g){g=sf3dActor(e);SF3D.actors.set(e,g);SF3D.world.add(g)}
-    g.visible=true;const moving=Math.hypot(e.vx||0,e.vy||0)>8,phase=TIME*10+(e.id||0);g.position.set(e.x,moving?Math.abs(Math.sin(phase))*.9:0,e.y);g.rotation.y=-e.angle;g.rotation.z=Math.sin(phase)*(moving?.025:.006);if(g.userData.limbs){g.userData.limbs.forEach((part,i)=>{const swing=moving?Math.sin(phase+(i%2)*Math.PI)*.24:Math.sin(TIME*1.5+i)*.008;part.mesh.quaternion.copy(part.base).multiply(new SF3D.THREE.Quaternion().setFromAxisAngle(new SF3D.THREE.Vector3(0,0,1),swing))})}
+    g.visible=true;const speed=Math.hypot(e.vx||0,e.vy||0),moving=speed>8,phase=TIME*(8+Math.min(5,speed*.018))+(e.id||0),fire=Math.max(0,Math.min(1,(e.firedT||0)/.16)),reload=e.reloadT>0?Math.sin((1-e.reloadT/Math.max(.01,e.reloadTot||1))*Math.PI):0,using=e.using?Math.sin(TIME*7)*.08:0;g.position.set(e.x,moving?Math.abs(Math.sin(phase))*(.65+Math.min(.45,speed*.001)):Math.sin(TIME*1.8+(e.id||0))*.12,e.y);g.rotation.y=-e.angle;g.rotation.z=Math.sin(phase)*(moving?.025:.006);if(g.userData.limbs){const T=SF3D.THREE,axis=new T.Vector3(0,0,1),q=new T.Quaternion();g.userData.limbs.forEach((part,i)=>{let swing;if(i<4)swing=moving?Math.sin(phase+(i%2)*Math.PI)*.3:Math.sin(TIME*1.5+i)*.01;else{const arm=i<6?1:-1;swing=(moving?Math.sin(phase+(i%2)*Math.PI)*.07:0)+arm*(fire*.17+reload*.2+using*.12)}q.setFromAxisAngle(axis,swing);part.mesh.quaternion.copy(part.base).multiply(q)})}
   }
   for(const [e,g] of SF3D.actors){if(!seen.has(e)){g.visible=false}}
   if(!SF3D.vehicleActors)SF3D.vehicleActors=new Map();

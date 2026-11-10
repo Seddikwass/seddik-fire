@@ -2649,6 +2649,17 @@ function draw2DSurfaceDetail(x0,y0,x1,y1){
       if(f2>.72){ctx.globalAlpha=.2;ctx.strokeStyle='#fff0d0';ctx.lineWidth=.8;ctx.beginPath();ctx.arc(px+2,py-1,1.8,Math.PI*1.05,Math.PI*1.8);ctx.stroke()}
       if(f>.91){ctx.globalAlpha=.17;ctx.strokeStyle='#536b42';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(px-2,py+2);ctx.quadraticCurveTo(px,py-2,px+3,py-3);ctx.stroke()}
     }else if(city){
+      /* v110: subtle rainwater patches with broken sky reflections on urban asphalt. */
+      if(f>.73&&f2>.38){
+        const pw=3+f2*8,ph=.8+f*1.35,wet=noise(gx-37,gy+61,step*.42);
+        ctx.globalAlpha=.075+wet*.085;ctx.fillStyle='#101d27';
+        ctx.beginPath();ctx.ellipse(px+2,py+1,pw,ph,f2*.45,0,TAU);ctx.fill();
+        if(wet>.56){
+          ctx.globalAlpha=.12+wet*.1;ctx.strokeStyle='#c5d6d9';ctx.lineWidth=.55;
+          ctx.beginPath();ctx.moveTo(px-pw*.48,py-ph*.15);ctx.quadraticCurveTo(px,py-ph*.8,px+pw*.34,py-ph*.1);ctx.stroke();
+          ctx.globalAlpha=.07;ctx.strokeStyle='#f2e9d4';ctx.beginPath();ctx.moveTo(px-pw*.22,py+ph*.45);ctx.lineTo(px+pw*.18,py+ph*.35);ctx.stroke();
+        }
+      }
       /* Fine asphalt grain, worn aggregate and occasional hairline cracks. */
       ctx.globalAlpha=.045+f*.045;ctx.fillStyle=f>.52?'#f0e5cf':'#171b20';
       ctx.beginPath();ctx.ellipse(px,py,r*2.4,r*.55,f2*TAU,0,TAU);ctx.fill();

@@ -743,6 +743,34 @@ canvas{image-rendering:auto}
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
+
+/* v124 — garage, HUD and control finish */
+#lobby{background:radial-gradient(ellipse 58% 48% at 50% 42%,rgba(255,157,76,.16),transparent 72%),radial-gradient(ellipse 90% 80% at 50% 100%,rgba(9,16,20,.94),rgba(20,15,10,.96) 68%),linear-gradient(135deg,#171b1d,#211810 58%,#10171b)}
+#lobby::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(115deg,transparent 0 78px,rgba(255,220,170,.018) 79px,transparent 81px),radial-gradient(ellipse at 50% 48%,transparent 25%,rgba(0,0,0,.36) 100%);animation:sfLobbyBreath 12s ease-in-out infinite alternate}
+@keyframes sfLobbyBreath{from{opacity:.34}to{opacity:.62}}
+#lobby .lob{position:relative;isolation:isolate}
+#lobby .prof,#lobby .card,#lobby .stats div,#lobby .how{backdrop-filter:blur(10px) saturate(1.18);-webkit-backdrop-filter:blur(10px) saturate(1.18);box-shadow:0 12px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,235,205,.055)}
+#lobby .card{background:linear-gradient(145deg,rgba(42,34,26,.88),rgba(13,17,19,.9));border-color:rgba(255,198,128,.19);border-radius:7px;transition:border-color .2s,transform .2s,box-shadow .2s}
+#lobby .card:focus-within{border-color:rgba(255,143,58,.62);box-shadow:0 14px 34px rgba(0,0,0,.34),0 0 0 1px rgba(255,143,58,.12)}
+#lobby .stage{position:relative;isolation:isolate;filter:drop-shadow(0 18px 26px rgba(0,0,0,.28))}
+#lobby .stage::before{content:"";position:absolute;z-index:-1;left:14%;right:14%;top:8%;bottom:2%;border-radius:50%;background:radial-gradient(ellipse,rgba(255,170,92,.2),rgba(255,130,48,.06) 48%,transparent 72%);filter:blur(12px);animation:sfStageGlow 4.8s ease-in-out infinite alternate;pointer-events:none}
+@keyframes sfStageGlow{from{transform:scale(.92);opacity:.58}to{transform:scale(1.08);opacity:1}}
+#skinCv{filter:drop-shadow(0 8px 12px rgba(0,0,0,.42)) saturate(1.12) contrast(1.04)}
+#lobby .logo{text-shadow:0 3px 0 rgba(0,0,0,.45),0 0 28px rgba(255,111,43,.16)}
+#lobby .logo span{filter:drop-shadow(0 0 16px rgba(255,103,39,.24))}
+#lobby .stamp{box-shadow:0 0 18px rgba(255,143,58,.08);background:rgba(255,143,58,.045)}
+#lobby .cta,#lobby #play{filter:drop-shadow(0 9px 16px rgba(0,0,0,.3));transition:filter .2s,transform .2s,background .2s}
+#lobby #play{border-radius:5px 5px 2px 2px;box-shadow:inset 0 1px 0 rgba(255,255,255,.36),0 6px 0 #96370d,0 12px 24px rgba(0,0,0,.28)}
+#lobby #play:hover{filter:brightness(1.09) drop-shadow(0 12px 20px rgba(255,104,35,.2));transform:translateY(-2px)}
+#lobby .ghost,#lobby .arrow,#lobby .sa{transition:background .18s,border-color .18s,transform .18s,box-shadow .18s}
+#lobby .ghost:hover,#lobby .sa:hover{border-color:rgba(255,164,91,.62);background:rgba(255,143,58,.1)}
+#lobby .sa[aria-checked="true"]{box-shadow:inset 0 -3px 0 var(--ember),0 0 16px rgba(255,112,44,.12)}
+.hud .count,.hud .zone,.hud .hint,.hud .usebar,.hud .act,.hud .iconbtn{backdrop-filter:blur(8px) saturate(1.18);-webkit-backdrop-filter:blur(8px) saturate(1.18);box-shadow:0 5px 18px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.08)}
+.hud .act{border-color:rgba(255,218,177,.2);background:linear-gradient(145deg,rgba(46,39,31,.9),rgba(15,18,20,.94))}
+.hud .act:active,.hud .iconbtn:active{filter:brightness(1.24);transform:translateY(1px)}
+.fire{filter:drop-shadow(0 5px 10px rgba(0,0,0,.34));}
+@media(max-width:760px){#lobby .card{box-shadow:0 8px 22px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,235,205,.045)}}
+@media(prefers-reduced-motion:reduce){#lobby::before,#lobby .stage::before{animation:none}#lobby .cta,#lobby #play,#lobby .ghost,#lobby .arrow,#lobby .sa{transition:none}}
 </style>
 </head>
 <body>
@@ -2830,6 +2858,34 @@ function draw2DSurfaceDetail(x0,y0,x1,y1){
   }
   ctx.restore();
 }
+
+/* v124 — cinematic atmosphere pass, adaptive and GPU-light. */
+let SF_GRAIN=null,SF_GRAIN_PATTERN=null;
+function drawSFAtmosphere(){
+  if(!Q.hi||LOWD||game.mode==='lobby')return;
+  ctx.save();
+  const k=clamp(.34+SUNK*.66,.34,1);
+  ctx.globalCompositeOperation='screen';
+  const warm=ctx.createRadialGradient(VW*.12,VH*.08,0,VW*.12,VH*.08,Math.max(VW,VH)*.9);
+  warm.addColorStop(0,'rgba(255,198,128,'+(.085*k)+')');
+  warm.addColorStop(.34,'rgba(255,160,92,'+(.035*k)+')');
+  warm.addColorStop(1,'rgba(255,160,92,0)');
+  ctx.fillStyle=warm;ctx.fillRect(0,0,VW,VH);
+  const cool=ctx.createLinearGradient(VW*.72,0,VW*.25,VH);
+  cool.addColorStop(0,'rgba(92,157,205,.035)');
+  cool.addColorStop(1,'rgba(92,157,205,0)');
+  ctx.fillStyle=cool;ctx.fillRect(0,0,VW,VH);
+  ctx.globalCompositeOperation='source-over';
+  if(!SF_GRAIN){
+    SF_GRAIN=document.createElement('canvas');SF_GRAIN.width=96;SF_GRAIN.height=96;
+    const g=SF_GRAIN.getContext('2d'),im=g.createImageData(96,96);
+    for(let i=0;i<im.data.length;i+=4){const n=105+Math.random()*100;im.data[i]=n;im.data[i+1]=n;im.data[i+2]=n;im.data[i+3]=34}
+    g.putImageData(im,0,0);
+  }
+  if(!SF_GRAIN_PATTERN)SF_GRAIN_PATTERN=ctx.createPattern(SF_GRAIN,'repeat');
+  if(SF_GRAIN_PATTERN){ctx.globalAlpha=.12;ctx.fillStyle=SF_GRAIN_PATTERN;ctx.fillRect(0,0,VW,VH)}
+  ctx.restore();
+}
 function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;{const pz=z/baseZoom();PK=.0021*pz;PTY=-.27*pz}const sh=reduceMotion?0:cam.shake*10;const ox=(Math.random()-.5)*sh,oy=(Math.random()-.5)*sh;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0e5f86';ctx.fillRect(0,0,VW,VH);
   const vw=VW/z,vh=VH/z,x0=cam.x-vw/2,y0=cam.y-vh/2,x1=x0+vw,y1=y0+vh;V.x0=x0;V.y0=y0;V.x1=x1;V.y1=y1;
@@ -2924,6 +2980,7 @@ function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;
   if(SUNK>0&&LOWD){ctx.fillStyle='rgba(255,128,48,'+(SUNK*.12).toFixed(3)+')';ctx.fillRect(0,0,VW,VH)}
   else if(SUNK>0){const k=SUNK;ctx.fillStyle='rgba(255,128,48,'+(k*.13).toFixed(3)+')';ctx.fillRect(0,0,VW,VH);const sg=ctx.createLinearGradient(0,0,0,VH);sg.addColorStop(0,'rgba(255,170,90,'+(k*.1).toFixed(3)+')');sg.addColorStop(1,'rgba(40,20,70,'+(k*.16).toFixed(3)+')');ctx.fillStyle=sg;ctx.fillRect(0,0,VW,VH)}
   if(Q.hi&&game.mode==='play'){if(!vigW||vigW._w!==VW||vigW._h!==VH){vigW=ctx.createLinearGradient(0,0,VW,VH);vigW.addColorStop(0,'rgba(255,214,150,.08)');vigW.addColorStop(.5,'rgba(255,214,150,0)');vigW.addColorStop(1,'rgba(40,70,120,.09)');vigW._w=VW;vigW._h=VH}ctx.fillStyle=vigW;ctx.fillRect(0,0,VW,VH)}
+  drawSFAtmosphere();
   // hurt vignette
   if(player.hurtT>0){const a=Math.min(.55,player.hurtT*1.6);if(!vigH||vigH._w!==VW||vigH._h!==VH){vigH=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.35,VW/2,VH/2,Math.max(VW,VH)*.7);vigH.addColorStop(0,'rgba(229,72,43,0)');vigH.addColorStop(1,'rgba(229,72,43,1)');vigH._w=VW;vigH._h=VH}ctx.globalAlpha=a;ctx.fillStyle=vigH;ctx.fillRect(0,0,VW,VH);ctx.globalAlpha=1}
   // sticks

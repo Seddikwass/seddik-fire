@@ -3465,15 +3465,30 @@ function sf3dSyncTracers(){
 }
 function sf3dSyncImpacts(){
   const T=SF3D.THREE;
-  if(!SF3D.impactMeshes){SF3D.impactMeshes=[];SF3D.impactGeometry=new T.SphereGeometry(1,6,5);SF3D.impactMaterial=new T.MeshBasicMaterial({color:0xffc66b,transparent:true,opacity:.9,depthWrite:false})}
-  const active=fxImpacts.filter(p=>matchT-p.t>=0&&matchT-p.t<.28);
+  if(!SF3D.impactMeshes){
+    SF3D.impactMeshes=[];SF3D.impactGeometry=new T.SphereGeometry(1,6,5);
+    SF3D.impactMaterial=new T.MeshBasicMaterial({color:0xffc66b,transparent:true,opacity:.9,depthWrite:false});
+    SF3D.impactSparks=[];SF3D.sparkGeometry=new T.CylinderGeometry(.28,.65,1,5);
+    SF3D.sparkMaterial=new T.MeshBasicMaterial({color:0xffdf9a,transparent:true,opacity:.9,depthWrite:false});
+  }
+  const active=fxImpacts.filter(p=>matchT-p.t>=0&&matchT-p.t<.32);
   for(let i=0;i<active.length;i++){
+    const p=active[i],age=(matchT-p.t)/.32,k=1-age;
     let m=SF3D.impactMeshes[i];
     if(!m){m=new T.Mesh(SF3D.impactGeometry,SF3D.impactMaterial);SF3D.impactMeshes[i]=m;SF3D.world.add(m)}
-    const p=active[i],age=(matchT-p.t)/.28,k=1-age;
-    m.visible=true;m.position.set(p.x,12+age*8,p.y);m.scale.set(2.2+k*2,2.2+k*2,2.2+k*2);m.material.opacity=.9*k;
+    m.visible=true;m.position.set(p.x,10+age*9,p.y);m.scale.set(1.8+k*2.8,1.8+k*2.8,1.8+k*2.8);m.material.opacity=.85*k;
+    // Three short, outward-flying fragments make bullet strikes read as sparks, not glowing dots.
+    for(let j=0;j<3;j++){
+      const index=i*3+j;let spark=SF3D.impactSparks[index];
+      if(!spark){spark=new T.Mesh(SF3D.sparkGeometry,SF3D.sparkMaterial);SF3D.impactSparks[index]=spark;SF3D.world.add(spark)}
+      const a=(j/3)*Math.PI*2+(p.x*.013+p.y*.009),travel=age*19;
+      spark.visible=k>.05;spark.position.set(p.x+Math.cos(a)*travel,11+age*13+j*1.2,p.y+Math.sin(a)*travel);
+      spark.scale.setScalar(.65+k*1.1);spark.scale.y=1.2+k*2.4;spark.rotation.z=-a;
+      spark.material.opacity=.9*k;
+    }
   }
   for(let i=active.length;i<SF3D.impactMeshes.length;i++)SF3D.impactMeshes[i].visible=false;
+  for(let i=active.length*3;i<SF3D.impactSparks.length;i++)SF3D.impactSparks[i].visible=false;
 }
 function sf3dSyncExplosions(){
   const T=SF3D.THREE;

@@ -2260,7 +2260,7 @@ function gpHeard(e,Wp){if(e.hearT>matchT)return;e.hearT=matchT+.5;const R=Wp.cls
   for(const o of ents){if(!o.bot||o===e||!o.alive||o.inPlane||o.air>0||o.ai.target)continue;if(dd2(o.x,o.y,e.x,e.y)<R2)o.ai.heard={x:e.x,y:e.y,t:matchT}}}
 /* ===== smarter bots: helpers ===== */
 const QC=[];
-function bsk(b){return Math.min(1.12,b.skill+(1-alive/30)*.2)}
+function bsk(b){return Math.min(1.25,b.skill+(1-alive/30)*.2)}
 function inBomb(e){return!!bomb&&dd2(e.x,e.y,bomb.x,bomb.y)<(bomb.r+50)**2&&!bldAt(e.x,e.y)}
 function canSee(b,o,q){if(o.bushed&&q>170*170&&o.firedT<=0)return false;if(smokes.length&&q>80*80&&smokeBlocks(b.x,b.y,o.x,o.y))return false;return los(b.x,b.y,o.x,o.y)}
 const COVK={rock:1,crate:1,bags:1,cont:1,silo:1,fount:1,wall:1};
@@ -2933,6 +2933,8 @@ function drawEnt(e){
   if(e===player){const a=e.angle;ctx.lineWidth=4;ctx.strokeStyle='rgba(20,12,4,.35)';ctx.beginPath();ctx.arc(e.x,e.y,R+5,0,TAU);ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=2;ctx.stroke();
     const tx=e.x+Math.cos(a)*(R+14),ty=e.y+Math.sin(a)*(R+14);ctx.fillStyle='#ff6b22';ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(e.x+Math.cos(a+.22)*(R+5),e.y+Math.sin(a+.22)*(R+5));ctx.lineTo(e.x+Math.cos(a-.22)*(R+5),e.y+Math.sin(a-.22)*(R+5));ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(28,16,4,.6)';ctx.lineWidth=1;ctx.stroke()}
   if(e!==player&&e.alive&&!(e.team&&player&&e.team===player.team)){ctx.lineWidth=2.4;ctx.strokeStyle='rgba(12,8,4,.38)';ctx.beginPath();ctx.arc(e.x,e.y,R+1.5,0,TAU);ctx.stroke()}
+  /* Contact shadow: anchors each soldier to the terrain and improves depth/readability. */
+  if(!e.veh&&e.air<=0){ctx.save();ctx.globalAlpha=.25;ctx.translate(e.x+R*.2,e.y+R*.42);ctx.scale(1.35,.62);const sg=ctx.createRadialGradient(0,0,1,0,0,R*1.15);sg.addColorStop(0,'rgba(5,7,8,.62)');sg.addColorStop(.58,'rgba(5,7,8,.28)');sg.addColorStop(1,'rgba(5,7,8,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(0,0,R*1.15,0,TAU);ctx.fill();ctx.restore()}
   ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.scale(VSC*PS,VSC*PS);drawBody(ctx,e);ctx.restore();
   if(!e.veh){if(!RIMS){RIMS=mkCv(96,96);const c=RIMS.getContext('2d'),g=c.createRadialGradient(36,34,4,48,48,46);g.addColorStop(0,'rgba(255,244,222,.34)');g.addColorStop(.45,'rgba(255,244,222,.10)');g.addColorStop(1,'rgba(255,244,222,0)');c.fillStyle=g;c.beginPath();c.arc(48,48,46,0,TAU);c.fill()}ctx.globalAlpha=.55;ctx.drawImage(RIMS,e.x-R*1.05,e.y-R*1.05,R*2.1,R*2.1);ctx.globalAlpha=1}
   if(e.hurtT>0){ctx.globalAlpha=Math.min(.5,e.hurtT*1.8);ctx.fillStyle='#fff4e4';ctx.beginPath();ctx.arc(e.x,e.y,R*.82,0,TAU);ctx.fill();ctx.globalAlpha=1}
@@ -3289,7 +3291,7 @@ function buildCust(){
   mk('#czBag','bag',BAGC,BAG_LV,(c,i)=>c?'<span class="sw" style="--c:'+c+'"></span>':'<span>Aucune</span>')}
 /* ===== modes, missions, succès (lot 3) ===== */
 const STAGES=(()=>{const mp=['seddik','ville','foret','cote','hautes','sahara'],nm=['Échauffement','Rue de la Médina','Bord de mer','Colline de Kairouan','Dunes de Douz','Plateau du Kef','Port de Bizerte','Oasis de Tozeur','Forêt de Tabarka','Vent de Gabès','Marché de Sousse','Crête de Kasserine','Sables de Nefta','Falaise de Carthage','Vallée de Béja','Désert de Tataouine','Ruelles de Hammamet','Mont de Siliana','Chott de Kébili','Phare de Monastir','Steppe de Sbeitla','Cap Bon','Montagne de Jendouba','Mer de Mahdia','Nuit de Matmata','Route de Sfax','Îles Kerkennah','Lac de Bizerte','Djerba la Douce','Ksar Ghilane','Jebel Chambi','Port El Kantaoui','Remparts de Sousse','Grand Erg Oriental','Thuburbo Majus','Dougga','Bulla Regia','Amphithéâtre d’El Jem','Source de Zaghouan','Fort de Kélibia','Côte de Korbous','Forêt d’Aïn Draham','Gafsa la Rouge','Médenine','Plage de Zarzis','Canyon de Tamerza','Oasis de Chebika','Gorges de Midès','Dernier rempart','Finale des champions'];
-  return nm.map((n,i)=>({n,map:mp[i%mp.length],np:Math.min(30,10+Math.round(i*.42)),sk:.58+i*.035,zt:Math.max(.58,1.12-i*.0105),rank:i+1,difficulty:i<10?'Recrue':i<20?'Soldat':i<30?'Vétéran':i<40?'Élite':'Légende'}))})();
+  return nm.map((n,i)=>({n,map:mp[i%mp.length],np:Math.min(30,10+Math.round(i*.42)),sk:.55+i*.0125,zt:Math.max(.58,1.12-i*.0105),rank:i+1,difficulty:i<10?'Recrue':i<20?'Soldat':i<30?'Vétéran':i<40?'Élite':'Légende'}))})();
 const CUPRW={5:'bottes violettes',10:'lunettes dorées et sac violet',15:'bottes turquoise',20:'la couronne',25:'le sac argenté',30:'la peinture de guerre',35:'les bottes argent',40:'le sac noir',45:'le sac flamme',50:'la couronne de feu et TOUT le contenu débloqué'};
 function cupAdv(){const i=stats.stage|0;stats.cupBest=Math.max(stats.cupBest|0,i+1);const rw=CUPRW[i+1]?' · récompense : '+CUPRW[i+1]:'';if(i>=STAGES.length-1){stats.stage=0;stats.champ=(stats.champ|0)+1;saveStats();try{buildCust()}catch(e){}return 'Champion des '+STAGES.length+' étapes ! Tout est débloqué'+rw}stats.stage=i+1;saveStats();return 'Étape réussie · étape '+(i+2)+' débloquée : '+STAGES[i+1].n+rw}
 const MODES={

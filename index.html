@@ -1789,7 +1789,7 @@ function environmentMaterialPass(c,Rg){
       if(q>.94){c.globalAlpha=.18;c.strokeStyle='#425b37';c.lineWidth=1.2;c.beginPath();c.moveTo(x,y+3);c.quadraticCurveTo(x+3,y-5,x+7,y-6);c.stroke()}}
   }else if(high){
     for(let i=0;i<3000;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const r=3+Rg()*16;c.globalAlpha=.1+Rg()*.13;c.fillStyle=Rg()>.5?'#8c8874':'#b5a98a';c.beginPath();c.moveTo(x-r,y+r*.2);c.lineTo(x-r*.2,y-r);c.lineTo(x+r,y-r*.3);c.lineTo(x+r*.4,y+r);c.closePath();c.fill()}}
-  }else{
+  else{
     /* Île principale : dalle et gravier de la base, terre ocre du ksar et du douar. */
     for(let i=0;i<3600;i++){const x=Rg()*WS,y=Rg()*WS;if(isWater(x,y))continue;const q=Rg();
       let col=q>.55?'#b6a17d':'#5f6844';

@@ -2116,6 +2116,11 @@ const DRIVERS = [
   { id: 'maya', name: 'Maya', price: 38000, skin: '#e2b28d', hair: 'bob', hairC: '#26150f', suit: '#8c36d9', helmet: '#8c36d9', perk: 'drift' },
   { id: 'kais', name: 'Kaïs', price: 45000, skin: '#8d5c40', hair: 'curly', hairC: '#17100d', beard: 'full', suit: '#e8e8e8', helmet: '#d51f2a', perk: 'tough' },
   { id: 'lina', name: 'Lina', price: 52000, skin: '#c98d68', hair: 'long', hairC: '#21130f', suit: '#16a6a0', helmet: '#16a6a0', perk: 'nitro' },
+  // Pilotes fictifs supplémentaires en combinaisons et casques de compétition.
+  { id: 'mehdi', name: 'Mehdi', price: 60000, skin: '#a87351', hair: 'short', hairC: '#17110e', beard: 'stubble', suit: '#c91e32', helmet: '#f0f0f0', perk: 'accel' },
+  { id: 'amira', name: 'Amira', price: 68000, skin: '#d8a27d', hair: 'pony', hairC: '#2a1912', suit: '#087d83', helmet: '#08a9b2', perk: 'grip' },
+  { id: 'walid', name: 'Walid', price: 76000, skin: '#87583f', hair: 'short', hairC: '#16110e', beard: 'full', suit: '#20242e', helmet: '#ffb020', perk: 'tough' },
+  { id: 'rim', name: 'Rim', price: 84000, skin: '#c98e6d', hair: 'bun', hairC: '#24140e', suit: '#8a2bba', helmet: '#f4f4f4', perk: 'drift' },
 ];
 // bonus volontairement modestes : le pilote donne un style, la voiture reste décisive
 const PERKS = {
@@ -2306,6 +2311,15 @@ TRACKS.push(
  Object.assign({}, TRACKS[0], {id:'sfax',name:'Sfax Industrial GP',sub:'Sfax • Quartier industriel',theme:'city',seed:117,pts:[[0,-420,0],[0,-120,0],[-90,110,1],[-40,330,2],[130,430,2],[350,390,1],[480,240,0],[420,40,0],[560,-130,1],[500,-350,2],[280,-460,1],[90,-500,0]],env:{sky:[0.2,0.25,0.34],hor:[0.62,0.56,0.46],gnd:[0.25,0.23,0.19],fog:[0.52,0.48,0.42],fogDen:0.0022,sunDir:nrm([-0.3,0.68,0.42]),sunCol:[1.08,0.98,0.84],wet:0.15,clouds:0.5,sunSize:0.0012,grade:GR([0.025,0.018,0.012],[1.02,0.98,0.92],0.32)},road:[0.13,0.13,0.135],cols:[[0.52,0.48,0.4],[0.46,0.44,0.39],[0.38,0.39,0.38],[0.58,0.52,0.43],[0.42,0.4,0.36],[0.48,0.45,0.4]]}),
  Object.assign({}, TRACKS[3], {id:'djerba',name:'Djerba Island Sprint',sub:'Djerba • Palmeraie et lagune',theme:'coast',seed:131,pts:[[0,-390,3],[0,-90,4],[80,180,5],[230,350,6],[430,360,5],[560,220,4],[520,40,3],[620,-130,4],[540,-340,5],[340,-470,4],[150,-480,3]],env:{sky:[0.18,0.42,0.82],hor:[0.78,0.82,0.86],gnd:[0.25,0.34,0.3],fog:[0.7,0.77,0.82],fogDen:0.0017,sunDir:nrm([-0.42,0.62,-0.28]),sunCol:[1.3,1.18,0.98],wet:0,clouds:0.25,sunSize:0.0018,grade:GR([0.012,0.025,0.035],[1.06,1.02,0.94],0.28)},road:[0.15,0.15,0.15],cols:[[0.66,0.62,0.48],[0.58,0.57,0.43],[0.48,0.5,0.4],[0.68,0.62,0.48],[0.56,0.5,0.4],[0.62,0.56,0.45]]})
 );
+
+/* Circuits tunisiens supplémentaires — tracés de jeu inspirés de lieux réels, non des reproductions routières exactes. */
+TRACKS.push(
+ Object.assign({}, TRACKS[3], {id:'hammamet',name:'Hammamet — Yasmine',sub:'Hammamet • Marina, plage et médina',theme:'coast',seed:149,pts:[[0,-390,2],[20,-100,2],[100,150,3],[240,340,4],[430,350,3],[560,220,2],[520,40,1],[640,-120,2],[540,-330,3],[330,-470,2],[130,-470,1]],env:{sky:[0.2,0.43,0.82],hor:[0.82,0.83,0.82],gnd:[0.26,0.34,0.29],fog:[0.72,0.79,0.82],fogDen:0.00165,sunDir:nrm([-0.42,0.66,-0.3]),sunCol:[1.34,1.2,1.02],wet:0,clouds:0.22,sunSize:0.0018,grade:GR([0.01,0.025,0.035],[1.07,1.03,0.96],0.27)},road:[0.15,0.15,0.155],cols:[[0.68,0.64,0.52],[0.61,0.58,0.48],[0.5,0.52,0.45],[0.7,0.65,0.53],[0.57,0.52,0.44],[0.64,0.58,0.48]]}),
+ Object.assign({}, TRACKS[3], {id:'bizerte',name:'Bizerte — Cap Blanc',sub:'Bizerte • Vieux port et côte nord',theme:'coast',seed:163,pts:[[0,-420,5],[0,-120,6],[-80,120,8],[-20,340,10],[170,430,9],[380,360,7],[510,190,5],[440,10,4],[560,-170,5],[470,-380,6],[250,-490,5],[70,-480,4]],env:{sky:[0.17,0.38,0.76],hor:[0.65,0.78,0.86],gnd:[0.2,0.29,0.27],fog:[0.62,0.73,0.8],fogDen:0.00185,sunDir:nrm([0.28,0.78,-0.25]),sunCol:[1.2,1.16,1.08],wet:0.18,clouds:0.48,sunSize:0.00135,grade:GR([0.0,0.018,0.03],[1.03,1.02,0.99],0.27)},road:[0.14,0.145,0.15],cols:[[0.52,0.58,0.54],[0.47,0.53,0.5],[0.38,0.46,0.43],[0.58,0.61,0.56],[0.48,0.5,0.47],[0.55,0.57,0.52]]}),
+ Object.assign({}, TRACKS[0], {id:'kairouan',name:'Kairouan — Médina',sub:'Kairouan • Remparts et vieille ville',theme:'city',seed:179,pts:[[0,-380,1],[0,-90,1],[90,150,2],[210,330,2],[390,350,1],[520,220,1],[480,40,0],[600,-130,1],[500,-340,2],[300,-450,1],[100,-450,0]],env:{sky:[0.28,0.4,0.65],hor:[0.78,0.68,0.53],gnd:[0.34,0.29,0.2],fog:[0.7,0.61,0.48],fogDen:0.0018,sunDir:nrm([-0.48,0.72,0.24]),sunCol:[1.35,1.14,0.86],wet:0,clouds:0.18,sunSize:0.0019,grade:GR([0.025,0.018,0.008],[1.06,1.0,0.9],0.31)},road:[0.16,0.15,0.14],cols:[[0.68,0.57,0.4],[0.62,0.52,0.37],[0.52,0.43,0.31],[0.72,0.61,0.43],[0.58,0.48,0.36],[0.65,0.54,0.4]]}),
+ Object.assign({}, TRACKS[3], {id:'monastir',name:'Monastir — Ribat & Marina',sub:'Monastir • Ribat, port et corniche',theme:'coast',seed:193,pts:[[0,-400,2],[0,-110,3],[70,160,4],[210,360,5],[410,370,4],[550,230,3],[510,50,2],[620,-140,3],[530,-350,4],[330,-480,3],[120,-470,2]],env:{sky:[0.19,0.42,0.8],hor:[0.78,0.81,0.84],gnd:[0.24,0.32,0.29],fog:[0.7,0.77,0.81],fogDen:0.0017,sunDir:nrm([-0.38,0.68,-0.24]),sunCol:[1.28,1.18,1.02],wet:0,clouds:0.3,sunSize:0.0017,grade:GR([0.012,0.022,0.034],[1.05,1.02,0.97],0.28)},road:[0.15,0.15,0.155],cols:[[0.66,0.62,0.52],[0.6,0.57,0.48],[0.5,0.51,0.44],[0.68,0.64,0.54],[0.56,0.52,0.44],[0.63,0.58,0.49]]})
+);
+
 function crPoint(p0, p1, p2, p3, t) {
   const d = (p, q) => Math.pow(Math.hypot(q[0] - p[0], q[1] - p[1], q[2] - p[2]), 0.5) || 1e-4;
   const t0 = 0, t1 = t0 + d(p0, p1), t2 = t1 + d(p1, p2), t3 = t2 + d(p2, p3);
@@ -3557,7 +3571,7 @@ const LANGS = {
     no: 'Non', yes: 'Oui', easy: 'Facile', normal: 'Normal', hard: 'Difficile', sunny: 'Beau temps', rain: 'Pluie', start: 'DÉMARRER ›', record: 'Record : {0}',
     m_race: 'Course', m_tt: 'Contre-la-montre', m_chase: 'Poursuite police', m_raceD: 'Affronte jusqu’à 7 pilotes. Termine sur le podium.', m_ttD: 'Seul sur la piste. Bats ton record au tour.', m_chaseD: 'La police te traque : sème-la avant d’être arrêté.',
     progress: 'Progression', done: '✓ Réussie', locked: '🔒 Verrouillée', available: '▶ Disponible', lap1: 'tour', lapN: 'tours', advised: 'Classe conseillée :', rainTag: 'Pluie',
-    o_lang: 'Langue', o_music: 'Musique', o_sfx: 'Effets sonores', o_gfx: 'Graphismes', o_low: 'Basse', o_med: 'Moyenne', o_high: 'Haute', o_dyn: 'Résolution dynamique', o_fps: 'Afficher les FPS', o_cam: 'Caméra', o_near: 'Proche', o_far: 'Éloignée', o_hood: 'Capot',
+    o_lang: 'Langue', o_music: 'Musique', o_sfx: 'Effets sonores', o_gfx: 'Graphismes', o_low: 'Basse', o_med: 'Moyenne', o_high: 'Haute', o_ultra: 'Ultra (puissant)', o_dyn: 'Résolution dynamique', o_fps: 'Afficher les FPS', o_cam: 'Caméra', o_near: 'Proche', o_far: 'Éloignée', o_hood: 'Capot',
     o_touch: 'Commandes tactiles', o_auto: 'Auto', o_steer: 'Direction tactile', o_buttons: 'Boutons', o_stick: 'Joystick', o_tilt: 'Inclinaison', o_sens: 'Sensibilité', o_opacity: 'Opacité des boutons', o_vibe: 'Vibration', o_save: 'Progression', o_reset: 'Réinitialiser la sauvegarde',
     o_note: 'La progression (argent, voitures, carrière) est enregistrée dans ce navigateur.', resetConfirm: 'Effacer toute ta progression (argent, voitures, carrière) ?', cancel: 'Annuler', confirm: 'CONFIRMER',
     tiltNo: 'L’inclinaison n’est pas disponible sur cet appareil.',
@@ -3592,7 +3606,7 @@ const LANGS = {
     no: 'No', yes: 'Yes', easy: 'Easy', normal: 'Normal', hard: 'Hard', sunny: 'Clear', rain: 'Rain', start: 'START ›', record: 'Record: {0}',
     m_race: 'Race', m_tt: 'Time trial', m_chase: 'Police chase', m_raceD: 'Take on up to 7 drivers. Finish on the podium.', m_ttD: 'Alone on track. Beat your best lap.', m_chaseD: 'The police are after you: lose them before you get busted.',
     progress: 'Progress', done: '✓ Completed', locked: '🔒 Locked', available: '▶ Available', lap1: 'lap', lapN: 'laps', advised: 'Recommended class:', rainTag: 'Rain',
-    o_lang: 'Language', o_music: 'Music', o_sfx: 'Sound effects', o_gfx: 'Graphics', o_low: 'Low', o_med: 'Medium', o_high: 'High', o_dyn: 'Dynamic resolution', o_fps: 'Show FPS', o_cam: 'Camera', o_near: 'Close', o_far: 'Far', o_hood: 'Hood',
+    o_lang: 'Language', o_music: 'Music', o_sfx: 'Sound effects', o_gfx: 'Graphics', o_low: 'Low', o_med: 'Medium', o_high: 'High', o_ultra: 'Ultra (high-end)', o_dyn: 'Dynamic resolution', o_fps: 'Show FPS', o_cam: 'Camera', o_near: 'Close', o_far: 'Far', o_hood: 'Hood',
     o_touch: 'Touch controls', o_auto: 'Auto', o_steer: 'Touch steering', o_buttons: 'Buttons', o_stick: 'Joystick', o_tilt: 'Tilt', o_sens: 'Sensitivity', o_opacity: 'Button opacity', o_vibe: 'Vibration', o_save: 'Progress', o_reset: 'Reset save data',
     o_note: 'Your progress (money, cars, career) is saved in this browser.', resetConfirm: 'Erase all your progress (money, cars, career)?', cancel: 'Cancel', confirm: 'CONFIRM',
     tiltNo: 'Tilt steering is not available on this device.',
@@ -3627,7 +3641,7 @@ const LANGS = {
     no: 'لا', yes: 'نعم', easy: 'سهل', normal: 'عادي', hard: 'صعب', sunny: 'صحو', rain: 'مطر', start: 'ابدأ ›', record: 'الرقم القياسي: {0}',
     m_race: 'سباق', m_tt: 'ضد الساعة', m_chase: 'مطاردة الشرطة', m_raceD: 'نافس حتى 7 سائقين واصعد إلى المنصة.', m_ttD: 'وحدك على الحلبة. حطّم رقمك في اللفة.', m_chaseD: 'الشرطة تلاحقك: أفلت منها قبل أن يُقبض عليك.',
     progress: 'التقدّم', done: '✓ منجز', locked: '🔒 مقفل', available: '▶ متاح', lap1: 'لفة', lapN: 'لفات', advised: 'الفئة المقترحة:', rainTag: 'مطر',
-    o_lang: 'اللغة', o_music: 'الموسيقى', o_sfx: 'المؤثرات الصوتية', o_gfx: 'الرسوم', o_low: 'منخفضة', o_med: 'متوسطة', o_high: 'عالية', o_dyn: 'دقة متغيّرة', o_fps: 'عرض عدد الإطارات', o_cam: 'الكاميرا', o_near: 'قريبة', o_far: 'بعيدة', o_hood: 'الغطاء',
+    o_lang: 'اللغة', o_music: 'الموسيقى', o_sfx: 'المؤثرات الصوتية', o_gfx: 'الرسوم', o_low: 'منخفضة', o_med: 'متوسطة', o_high: 'عالية', o_ultra: 'فائقة (للأجهزة القوية)', o_dyn: 'دقة متغيّرة', o_fps: 'عرض عدد الإطارات', o_cam: 'الكاميرا', o_near: 'قريبة', o_far: 'بعيدة', o_hood: 'الغطاء',
     o_touch: 'أزرار اللمس', o_auto: 'تلقائي', o_steer: 'التوجيه باللمس', o_buttons: 'أزرار', o_stick: 'عصا تحكم', o_tilt: 'الإمالة', o_sens: 'الحساسية', o_opacity: 'شفافية الأزرار', o_vibe: 'الاهتزاز', o_save: 'التقدّم', o_reset: 'مسح الحفظ',
     o_note: 'يُحفظ تقدّمك (المال، السيارات، المسيرة) في هذا المتصفح.', resetConfirm: 'مسح كل تقدّمك (المال، السيارات، المسيرة)؟', cancel: 'إلغاء', confirm: 'تأكيد',
     tiltNo: 'التوجيه بالإمالة غير متاح على هذا الجهاز.',
@@ -3778,6 +3792,10 @@ const CAREER = [
   { name: 'La police ne lâche rien', mode: 'chase', track: 9, tier: 4, heat: 5, diff: 8, reward: 95000, desc: 'Survis à la poursuite la plus intense le long de la corniche.' },
   { name: 'Tempête sur la corniche', mode: 'race', track: 9, laps: 5, opp: 7, tier: 4, diff: 9, reward: 110000, desc: 'Affronte les meilleurs sous une météo difficile.', weather: 'rain' },
   { name: 'SUPER SEDDIK & JOUD — Légende', mode: 'race', track: 0, laps: 6, opp: 7, tier: 4, diff: 10, reward: 150000, desc: 'La finale ultime : six tours, sept rivaux experts et la pluie. Deviens une légende.', weather: 'rain' },
+  { name: 'Nuit de Hammamet', mode: 'race', track: 10, laps: 4, opp: 7, tier: 3, diff: 5, reward: 98000, desc: 'Course côtière autour de Yasmine Hammamet, sous les lumières de la marina.' },
+  { name: 'Cap Blanc Challenge', mode: 'tt', track: 11, laps: 3, tier: 3, diff: 6, reward: 105000, desc: 'Un contre-la-montre rapide sur la côte de Bizerte.' },
+  { name: 'Rallye de Kairouan', mode: 'race', track: 12, laps: 4, opp: 7, tier: 4, diff: 8, reward: 118000, desc: 'Enchaîne les virages autour des remparts et de la médina.' },
+  { name: 'Grand Prix de Monastir', mode: 'race', track: 13, laps: 5, opp: 7, tier: 4, diff: 9, reward: 132000, desc: 'Finale côtière entre le Ribat et la marina.' },
 ];
 const DIFFS = [
   { name: 'Facile', v: 0.86, lat: 0.86, rb: 0.6 },
@@ -4785,7 +4803,7 @@ const UI = {
     $('o-panel').innerHTML = [
       row(t('o_lang'), seg('lang', [['fr', 'Français'], ['en', 'English'], ['ar', 'العربية']])),
       row(t('o_music'), rng('music', 0, 100)), row(t('o_sfx'), rng('sfx', 0, 100)),
-      row(t('o_gfx'), seg('quality', [['low', t('o_low')], ['medium', t('o_med')], ['high', t('o_high')]])),
+      row(t('o_gfx'), seg('quality', [['low', t('o_low')], ['medium', t('o_med')], ['high', t('o_high')], ['ultra', t('o_ultra')]])),
       row(t('o_dyn'), seg('dyn', [[true, t('yes')], [false, t('no')]])), row(t('o_fps'), seg('fps', [[true, t('yes')], [false, t('no')]])),
       row(t('o_cam'), seg('cam', [[0, t('o_near')], [1, t('o_far')], [2, t('o_hood')]])),
       row(t('o_touch'), seg('touch', [['auto', t('o_auto')], ['on', t('yes')], ['off', t('no')]])),
@@ -5029,7 +5047,8 @@ let PR = 1, DYN = 1;
 const FPS = { v: 60, acc: 0, n: 0 };
 function applySettings() {
   const s = SAVE.settings, dpr = window.devicePixelRatio || 1;
-  if (s.quality === 'high') { PR = Math.min(dpr, IS_TOUCH ? 1.25 : 1.75); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1; G.lodNear = 42; R.detail = 1; R.shadows = true; R.shadowSize = IS_TOUCH ? 1024 : 2048; }
+  if (s.quality === 'ultra') { PR = Math.min(dpr, IS_TOUCH ? 1.45 : 2.0); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1.08; G.lodNear = 56; R.detail = 1.2; R.shadows = true; R.shadowSize = IS_TOUCH ? 1536 : 3072; }
+  else if (s.quality === 'high') { PR = Math.min(dpr, IS_TOUCH ? 1.25 : 1.75); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1; G.lodNear = 42; R.detail = 1; R.shadows = true; R.shadowSize = IS_TOUCH ? 1024 : 2048; }
   else if (s.quality === 'medium') { PR = Math.min(dpr, 1.25); R.post = true; R.bloom = true; R.aa = true; R.rays = false; G.drawMul = 0.85; G.lodNear = 28; R.detail = 1; R.shadows = true; R.shadowSize = 1024; }
   else { PR = Math.min(dpr, 0.9); R.post = false; R.bloom = false; R.aa = false; R.rays = false; G.drawMul = 0.62; G.lodNear = 16; R.detail = 0; R.shadows = false; }
   R.setLite(s.quality === 'low');

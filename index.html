@@ -780,6 +780,14 @@ canvas{image-rendering:auto}
 #lobby .chips>*{box-shadow:inset 0 1px rgba(255,255,255,.09),0 5px 16px rgba(0,0,0,.2)}
 @media(max-width:760px){#lobby #skinCv{filter:drop-shadow(0 12px 15px rgba(0,0,0,.62))}}
 @media(prefers-reduced-motion:reduce){#lobby #skinCv{animation:none!important}}
+
+/* v126 — finition HUD et cartes tactiques */
+:root{--sf-accent:#d8b56b;--sf-panel:rgba(17,22,26,.88)}
+#lobby .card{border:1px solid rgba(218,194,139,.2);box-shadow:0 18px 46px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.08)}
+#lobby button,#lobby .btn{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+#lobby button:hover,#lobby .btn:hover{filter:brightness(1.12);box-shadow:0 8px 22px rgba(0,0,0,.28)}
+#lobby button:active,#lobby .btn:active{transform:translateY(1px) scale(.985)}
+@media(prefers-reduced-motion:reduce){#lobby button,#lobby .btn{transition:none}}
 </style>
 </head>
 <body>
@@ -1216,6 +1224,16 @@ const SOLDIERS=[
   SOLDIERS.forEach((sk,i)=>{const fk=ORD[i%ORD.length],[nm,base,cam,rig,pants,helm]=F[fk];seen[fk]=(seen[fk]||0)+1;const hg=HG[i%HG.length];
     Object.assign(sk,{n:'Soldat '+nm+(RN[seen[fk]]??' '+seen[fk]),d:'Treillis camouflé '+nm.toLowerCase()+', casque, gilet porte-plaques, sac et radio.',base,cam,pants,pack:rig,blobs:34,pat:(fk==='urban'||fk==='navy'||fk==='snow')?'pix':undefined,hg,hc:hg==='bala'?'#1d1f22':hg==='cap'?shade(base,.8):hg==='boonie'?base:helm,glove:'#2a2620'})});
 })();
+
+/* v126 — opérateurs spécialisés conservés après la normalisation du roster */
+SOLDIERS.push(
+{id:'sf_raider',n:'Raider tactique',d:'Opérateur d’assaut moderne, casque balistique, lunettes, radio et gilet modulaire multicam.',base:'#a98260',cam:['#4b5844','#8a7858','#343d32'],pants:'#3d4938',pack:'#343d32',hg:'helmet',hc:'#4a5544',glove:'#272b27',blobs:32,pat:'pix'},
+{id:'sf_recon',n:'Éclaireur Delta',d:'Éclaireur léger en tenue forêt, casque de combat, radio d’épaule et sac compact.',base:'#bd9673',cam:['#414d35','#7c7952','#2d382b'],pants:'#343d2e',pack:'#283126',hg:'helmet',hc:'#394431',glove:'#242820',blobs:34},
+{id:'sf_urban',n:'Unité urbaine',d:'Opérateur urbain en camouflage gris, casque renforcé, protections et équipement radio.',base:'#a87958',cam:['#555b61','#85878a','#30353b'],pants:'#34383e',pack:'#292e34',hg:'helmet',hc:'#363b42',glove:'#20252a',pat:'pix',blobs:28},
+{id:'sf_desert',n:'Patrouille du désert',d:'Soldat de reconnaissance désertique, équipement sable, lunettes et sac tactique.',base:'#c39872',cam:['#a18b65','#c0a77a','#66583f'],pants:'#76664b',pack:'#66583f',hg:'boonie',hc:'#a18b65',glove:'#514633',blobs:30},
+{id:'sf_naval',n:'Commando naval',d:'Opérateur amphibie en camouflage bleu ardoise, casque balistique et équipement côtier.',base:'#a97d5d',cam:['#34495a','#647989','#202e3a'],pants:'#263747',pack:'#1d2c39',hg:'helmet',hc:'#263b4d',glove:'#18232d',pat:'pix',blobs:26}
+);
+
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
 const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35'];
 const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a','#8e44ad','#dcdcdc','#1b1b1d','#ff6b22'],BAG_LV=[1,2,3,5,7,'S10','S25','S40','S45'];
@@ -1843,6 +1861,51 @@ function environmentMaterialPass(c,Rg){
   c.restore();
 }
 
+
+/* v126 — mobilier urbain, stationnement et signalétique tunisienne */
+function urbanDetailPass(c){
+  if(MAP.gen!=='city')return;
+  const X=XTRA.X||[],Y=XTRA.Y||[],R=mulberry32(12631);
+  const nearCross=(x,y)=>X.some(xx=>Math.abs(x-xx)<150)||Y.some(yy=>Math.abs(y-yy)<150);
+  const car=(x,y,a,col)=>{
+    c.save();c.translate(x,y);c.rotate(a);
+    c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(3,5,14,25,0,0,TAU);c.fill();
+    c.fillStyle='#17191b';for(const side of[-1,1])for(const end of[-1,1])c.fillRect(side*10-2,end*13-4,4,8);
+    c.fillStyle=col;rrect(c,-10,-22,20,44,5);c.fill();
+    c.fillStyle='rgba(28,42,52,.84)';rrect(c,-7,-10,14,13,2);c.fill();
+    c.fillStyle='rgba(225,237,242,.72)';rrect(c,-7,5,14,7,2);c.fill();
+    c.fillStyle='rgba(255,255,255,.55)';c.fillRect(-7,-18,2,7);c.fillRect(5,-18,2,7);
+    c.fillStyle='#e7d5a5';c.fillRect(-6,18,4,2);c.fillRect(2,18,4,2);
+    c.strokeStyle='rgba(255,255,255,.36)';c.lineWidth=.8;c.strokeRect(-8,-19,16,37);c.restore();
+  };
+  for(let ri=0;ri<roads.length;ri++){
+    const [a,b]=roads[ri],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,ang=Math.atan2(dy,dx),count=Math.floor(L/330);
+    for(let k=0;k<count;k++){
+      const t=(k+.45+R()*.2)/Math.max(1,count),x=a[0]+dx*t,y=a[1]+dy*t;
+      if(nearCross(x,y)||x>coastX(y)-240)continue;
+      const side=R()<.5?-1:1,px=x-Math.sin(ang)*side*55,py=y+Math.cos(ang)*side*55;
+      c.strokeStyle='rgba(240,238,225,.48)';c.lineWidth=1.8;c.setLineDash([5,5]);c.beginPath();c.moveTo(px-15*Math.cos(ang),py-15*Math.sin(ang));c.lineTo(px+15*Math.cos(ang),py+15*Math.sin(ang));c.stroke();c.setLineDash([]);
+      if(R()<.72){const cols=['#d8d9d6','#b9c1c8','#a83b32','#d6bd83','#455b6c','#ece9dd'];car(px,py,ang,cols[Math.floor(R()*cols.length)])}
+    }
+  }
+  for(let i=0;i<X.length;i++)for(let j=0;j<Y.length;j++){
+    const x=X[i],y=Y[j];if(x>coastX(y)-230)continue;
+    const side=(i+j)%2?1:-1,px=x+side*82,py=y-82;
+    c.save();c.translate(px,py);c.fillStyle='rgba(0,0,0,.22)';c.fillRect(2,3,31,15);
+    c.fillStyle='#285b48';rrect(c,0,0,31,14,2);c.fill();c.strokeStyle='rgba(226,236,214,.8)';c.lineWidth=.8;c.strokeRect(.6,.6,29.8,12.8);
+    c.fillStyle='#f0eee0';c.font='bold 5px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('CENTRE',15.5,7.2);
+    c.strokeStyle='#5b5b55';c.lineWidth=2;c.beginPath();c.moveTo(15,14);c.lineTo(15,25);c.stroke();c.restore();
+  }
+  for(const p of (XTRA.parks||[])){
+    c.fillStyle='rgba(28,58,35,.16)';c.fillRect(p.x0,p.rows[0]-12,p.x1-p.x0,Math.max(70,p.rows.length*55));
+    for(let x=p.x0+28;x<p.x1-20;x+=78)for(let y=p.rows[0]+18;y<p.rows[p.rows.length-1]+28;y+=82){
+      c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.ellipse(x+4,y+6,13,6,0,0,TAU);c.fill();c.fillStyle='#76583b';c.fillRect(x-2,y-2,4,9);
+      c.fillStyle='#477347';for(let q=0;q<7;q++){const a=q*TAU/7;c.beginPath();c.ellipse(x+Math.cos(a)*8,y+Math.sin(a)*5,7,3,a,0,TAU);c.fill()}
+      c.fillStyle='rgba(158,184,111,.6)';c.beginPath();c.arc(x-2,y-2,2,0,TAU);c.fill();
+    }
+  }
+}
+
 function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mid'?.72:.8;
   const gk=gKey(MAP.id),hit=GC.m.get(gk);if(hit){LAMPS=hit.lamps.map(o=>Object.assign({},o));ground=hit.bmp}else{
   const g=document.createElement('canvas');g.width=g.height=WS*GS;const c=g.getContext('2d');c.scale(GS,GS);
@@ -1866,6 +1929,7 @@ function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mi
   if(MAP.gen==='city')decoCity(c);
   c.lineCap='round';c.lineJoin='round';
   if(MAP.gen==='city')drawCityRoads(c);else dirtRoads(c);
+  if(MAP.gen==='city')urbanDetailPass(c);
   // sea
   const sea=new Path2D();sea.moveTo(WS+20,-20);for(let y=-20;y<=WS+20;y+=20)sea.lineTo(coastX(y),y);sea.lineTo(WS+20,WS+20);sea.closePath();
   c.lineWidth=80;c.strokeStyle=MAP.shore;c.stroke(sea);

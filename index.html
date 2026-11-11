@@ -5194,12 +5194,12 @@ const UNDER0 = [0.05, 0.05, 0.06], RIM0 = [0.78, 0.79, 0.82];
 const WETM = new Float32Array(16);
 function makeEnv(b, weather) {
   const e = Object.assign({}, b);
-  e.expo = b.expo || (b.night ? 1.68 : 1.0);
+  e.expo = b.expo || (b.night ? 1.74 : 1.0);
   e.shadows = !b.night && !b.rain;
   // Ambiance nocturne relevée : détails plus lisibles sur les carrosseries, chaussées et façades.
   if (b.night) {
-    e.bake = (b.bake || [0.2, 0.2, 0.2]).map(v => v * 1.14);
-    e.sunCol = (b.sunCol || [0.2, 0.2, 0.2]).map(v => v * 1.08);
+    e.bake = (b.bake || [0.2, 0.2, 0.2]).map(v => v * 1.19);
+    e.sunCol = (b.sunCol || [0.2, 0.2, 0.2]).map(v => v * 1.11);
   }
   if (weather === 'rain' && !b.rain) {
     const gray = (c, k, g) => { const m = (c[0] + c[1] + c[2]) / 3; return c.map(v => (v * (1 - g) + m * g) * k); };
@@ -5226,7 +5226,7 @@ function renderWorld(dtv) {
     R.shadowPass(SHC, env.sunDir, rad, CAS_M, CAS_X, n);
   } else R.shOn = false;
   const e = Object.assign(RENV, env);
-  e.time = G.time; e.lp = LP; e.lc = LC; e.head = env.night || env.rain ? 1.65 : 0;
+  e.time = G.time; e.lp = LP; e.lc = LC; e.head = env.night || env.rain ? 1.72 : 0;
   e.headPos[0] = p.x + Fx * (p.L / 2 + 0.3); e.headPos[1] = p.y + 0.7; e.headPos[2] = p.z + Fz * (p.L / 2 + 0.3);
   const hl = Math.hypot(Fx, 0.07, Fz); e.headDir[0] = Fx / hl; e.headDir[1] = -0.07 / hl; e.headDir[2] = Fz / hl;
   if (T.tunnel && p.i >= T.tunnel[0] && p.i <= T.tunnel[1]) e.head = 1.0;

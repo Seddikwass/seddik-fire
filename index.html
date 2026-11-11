@@ -507,179 +507,35 @@ button:disabled{pointer-events:none}
   #touch .tl { position:absolute!important; inset:0!important; pointer-events:none!important; }
   #touch .tl button {
     position:absolute!important; bottom:max(14px,env(safe-area-inset-bottom))!important;
-    top:auto!important; width:68px!important; height:68px!important; min-width:68px!important; min-height:68px!important;
-    font-size:26px!important; border-radius:17px!important;
+    top:auto!important; width:54px!important; height:54px!important; min-width:54px!important; min-height:54px!important;
+    font-size:21px!important; border-radius:14px!important;
   }
   #touch [data-t=left] { left:max(14px,env(safe-area-inset-left))!important; right:auto!important; }
-  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + 76px)!important; right:auto!important; }
+  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + 62px)!important; right:auto!important; }
   #touch .tr { position:absolute!important; inset:0!important; pointer-events:none!important; }
   #touch .tr button { pointer-events:auto!important; }
   #touch [data-t=gas] {
     right:max(16px,env(safe-area-inset-right))!important; left:auto!important;
     bottom:max(14px,env(safe-area-inset-bottom))!important; top:auto!important;
-    width:88px!important; height:128px!important; min-width:88px!important; min-height:88px!important;
+    width:76px!important; height:116px!important; min-width:76px!important; min-height:76px!important;
   }
   #touch [data-t=brake] {
-    right:calc(max(16px,env(safe-area-inset-right)) + 98px)!important; left:auto!important;
+    right:calc(max(16px,env(safe-area-inset-right)) + 86px)!important; left:auto!important;
     bottom:max(14px,env(safe-area-inset-bottom))!important; top:auto!important;
-    width:72px!important; height:72px!important; min-width:72px!important; min-height:72px!important;
+    width:62px!important; height:62px!important; min-width:62px!important; min-height:62px!important;
   }
   #touch [data-t=hand] {
     right:max(16px,env(safe-area-inset-right))!important; left:auto!important;
     bottom:calc(max(14px,env(safe-area-inset-bottom)) + 126px)!important; top:auto!important;
-    width:88px!important; height:54px!important; min-width:88px!important; min-height:54px!important;
+    width:76px!important; height:48px!important; min-width:76px!important; min-height:48px!important;
   }
   #touch [data-t=nitro] {
-    right:calc(max(16px,env(safe-area-inset-right)) + 98px)!important; left:auto!important;
-    bottom:calc(max(14px,env(safe-area-inset-bottom)) + 84px)!important; top:auto!important;
-    width:72px!important; height:54px!important; min-width:72px!important; min-height:54px!important;
+    right:calc(max(16px,env(safe-area-inset-right)) + 86px)!important; left:auto!important;
+    bottom:calc(max(14px,env(safe-area-inset-bottom)) + 74px)!important; top:auto!important;
+    width:62px!important; height:48px!important; min-width:62px!important; min-height:48px!important;
   }
 }
 
-
-
-/* SUPER JOUD v72 — correctifs écran mobile, menu et grandes commandes */
-@media (max-width: 900px), (max-height: 620px) {
-  html,body,#ui { min-height:100%; }
-  #ui { overflow-x:hidden; }
-  .screen { box-sizing:border-box; min-height:100dvh; min-height:100svh; }
-}
-@media (hover:none) and (pointer:coarse) and (orientation:landscape) {
-  #scr-main {
-    justify-content:flex-start!important;
-    align-items:flex-start!important;
-    gap:clamp(10px,2.2vh,20px)!important;
-    padding-top:max(66px,calc(env(safe-area-inset-top) + 58px))!important;
-    padding-bottom:max(18px,env(safe-area-inset-bottom))!important;
-    padding-inline-start:max(18px,env(safe-area-inset-left))!important;
-    padding-inline-end:max(18px,env(safe-area-inset-right))!important;
-    overflow-y:auto!important;
-    overscroll-behavior:contain;
-  }
-  #scr-main .hero .tag { max-width:42ch; font-size:clamp(12px,2.2vh,16px)!important; }
-  #scr-main .logo.big { font-size:clamp(27px,5.2vh,48px)!important; }
-  #scr-main .mainnav { width:min(54vw,620px)!important; max-width:620px; gap:clamp(5px,1.1vh,10px)!important; }
-  #scr-main .nbtn { padding-block:clamp(7px,1.5vh,13px)!important; padding-inline:clamp(14px,2vw,24px)!important; }
-  #scr-main .nbtn b { font-size:clamp(16px,2.8vh,23px)!important; }
-  #scr-main .nbtn small { font-size:clamp(10px,1.7vh,13px)!important; }
-  #scr-main .carline { max-width:36vw; bottom:max(14px,env(safe-area-inset-bottom)); }
-  #hud #touch [data-t=left],#hud #touch [data-t=right] {
-    width:clamp(78px,9vw,96px)!important;height:clamp(78px,9vw,96px)!important;
-    min-width:clamp(78px,9vw,96px)!important;min-height:clamp(78px,9vw,96px)!important;
-    font-size:34px!important;border-radius:20px!important;
-    bottom:max(18px,env(safe-area-inset-bottom))!important;
-  }
-  #hud #touch [data-t=right] { left:calc(max(18px,env(safe-area-inset-left)) + clamp(88px,10vw,108px))!important; }
-  #hud #touch [data-t=gas] {
-    width:clamp(100px,11vw,124px)!important;height:clamp(132px,18vh,158px)!important;
-    min-width:100px!important;min-height:132px!important;border-radius:22px!important;
-    bottom:max(18px,env(safe-area-inset-bottom))!important;
-    font-size:19px!important;
-  }
-  #hud #touch [data-t=brake] {
-    width:clamp(84px,9vw,104px)!important;height:clamp(84px,10vh,104px)!important;
-    min-width:84px!important;min-height:84px!important;border-radius:20px!important;
-    right:calc(max(18px,env(safe-area-inset-right)) + clamp(112px,12vw,142px))!important;
-    bottom:max(18px,env(safe-area-inset-bottom))!important;font-size:17px!important;
-  }
-  #hud #touch [data-t=hand] {
-    width:clamp(100px,11vw,124px)!important;height:64px!important;
-    min-width:100px!important;min-height:64px!important;border-radius:18px!important;
-    bottom:calc(max(18px,env(safe-area-inset-bottom)) + clamp(142px,19vh,168px))!important;
-    font-size:16px!important;
-  }
-  #hud #touch [data-t=nitro] {
-    width:clamp(84px,9vw,104px)!important;height:58px!important;
-    min-width:84px!important;min-height:58px!important;border-radius:17px!important;
-    right:calc(max(18px,env(safe-area-inset-right)) + clamp(112px,12vw,142px))!important;
-    bottom:calc(max(18px,env(safe-area-inset-bottom)) + 94px)!important;
-  }
-}
-@media (hover:none) and (pointer:coarse) and (orientation:portrait) {
-  #hud #touch [data-t=left],#hud #touch [data-t=right] {
-    width:clamp(68px,19vw,84px)!important;height:clamp(68px,19vw,84px)!important;
-    min-width:68px!important;min-height:68px!important;font-size:30px!important;
-  }
-  #hud #touch [data-t=gas] { width:clamp(82px,23vw,104px)!important;height:clamp(112px,31vw,136px)!important;min-width:82px!important;min-height:112px!important; }
-  #hud #touch [data-t=brake] { width:clamp(72px,20vw,90px)!important;height:clamp(72px,20vw,90px)!important;min-width:72px!important;min-height:72px!important; }
-  #hud #touch [data-t=hand] { width:clamp(82px,23vw,104px)!important;height:58px!important;min-width:82px!important;min-height:58px!important; }
-}
-
-
-
-/* v73 — finition mobile, conduite douce et commandes plus accessibles */
-@media (hover:none) and (pointer:coarse) {
-  #touch button {
-    font-weight:900!important;
-    text-shadow:0 2px 5px rgba(0,0,0,.65)!important;
-    border-width:2px!important;
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.22),0 7px 18px rgba(0,0,0,.42)!important;
-  }
-  #touch [data-t=left],#touch [data-t=right] {
-    width:clamp(82px,10vw,102px)!important;height:clamp(82px,10vw,102px)!important;
-    min-width:82px!important;min-height:82px!important;font-size:36px!important;
-  }
-  #touch [data-t=gas] {
-    width:clamp(108px,12vw,132px)!important;height:clamp(142px,19vh,166px)!important;
-    min-width:108px!important;min-height:142px!important;font-size:20px!important;
-  }
-  #touch [data-t=brake] {
-    width:clamp(92px,10vw,112px)!important;height:clamp(92px,10vw,112px)!important;
-    min-width:92px!important;min-height:92px!important;font-size:18px!important;
-  }
-  #touch [data-t=hand] {
-    width:clamp(108px,12vw,132px)!important;height:68px!important;
-    min-width:108px!important;min-height:68px!important;font-size:15px!important;
-  }
-  #touch [data-t=nitro] {
-    width:clamp(92px,10vw,112px)!important;height:62px!important;
-    min-width:92px!important;min-height:62px!important;font-size:15px!important;
-  }
-}
-@media (hover:none) and (pointer:coarse) and (orientation:landscape) {
-  #touch [data-t=right] { left:calc(max(18px,env(safe-area-inset-left)) + clamp(92px,11vw,114px))!important; }
-  #touch [data-t=brake] { right:calc(max(18px,env(safe-area-inset-right)) + clamp(122px,13vw,150px))!important; }
-  #touch [data-t=nitro] { right:calc(max(18px,env(safe-area-inset-right)) + clamp(122px,13vw,150px))!important; }
-  #touch [data-t=hand] { bottom:calc(max(18px,env(safe-area-inset-bottom)) + clamp(150px,20vh,176px))!important; }
-}
-#radio-team .radio-message {font-size:10px!important;line-height:1.35!important}
-#radio-team #radio-talk {min-height:34px!important;font-size:10px!important}
-
-
-/* v76 — cockpit premium, menu lisible et commandes tactiles généreuses */
-#scr-main {gap:clamp(14px,2.4vh,24px)!important;padding-top:max(74px,env(safe-area-inset-top) + 62px)!important;padding-bottom:max(20px,env(safe-area-inset-bottom))!important;overflow-y:auto!important;background:linear-gradient(90deg,rgba(4,9,18,.76),rgba(4,9,18,.20) 72%,transparent)!important}
-#scr-main .hero .tag{color:#e4edf8!important;text-shadow:0 2px 8px #000!important;max-width:38ch!important}
-#scr-main .mainnav{width:min(430px,88vw)!important;gap:11px!important}
-#scr-main .nbtn{min-height:58px!important;padding:14px 24px!important;background:linear-gradient(105deg,rgba(8,20,36,.97),rgba(16,36,58,.88))!important;border:1px solid rgba(120,190,240,.34)!important;border-inline-start:5px solid #ff8a2a!important;clip-path:none!important;border-radius:12px!important;box-shadow:0 8px 22px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.10)!important}
-#scr-main .nbtn b{font-size:clamp(18px,2.6vh,23px)!important;color:#fff!important;letter-spacing:.045em!important}
-#scr-main .nbtn small{color:#c5d4e5!important;font-size:13px!important}
-#scr-main .nbtn.hl{background:linear-gradient(105deg,rgba(115,49,13,.98),rgba(33,37,48,.95))!important;border-color:rgba(255,163,83,.65)!important}
-@media (hover:none) and (pointer:coarse){
- #touch button{min-height:60px!important;border:2px solid rgba(210,235,255,.78)!important;box-shadow:0 8px 22px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,.24)!important;font-weight:900!important;letter-spacing:.02em!important}
- #touch [data-t=left],#touch [data-t=right]{width:clamp(90px,12vw,112px)!important;height:clamp(90px,12vw,112px)!important;min-width:90px!important;min-height:90px!important;font-size:40px!important;border-radius:24px!important;background:linear-gradient(145deg,#238bd4,#092d58)!important;border:2px solid #9edaff!important;box-shadow:0 9px 22px rgba(0,0,0,.58),inset 0 3px 0 rgba(255,255,255,.28)!important}
- #touch [data-t=gas]{width:clamp(116px,13vw,142px)!important;height:clamp(150px,20vh,178px)!important;min-width:116px!important;min-height:150px!important;font-size:21px!important}
- #touch [data-t=brake]{width:clamp(100px,11vw,120px)!important;height:clamp(100px,11vw,120px)!important;min-width:100px!important;min-height:100px!important;font-size:19px!important}
- #touch [data-t=hand]{width:clamp(116px,13vw,140px)!important;height:72px!important;min-width:116px!important;min-height:72px!important;font-size:16px!important}
- #touch [data-t=nitro]{width:clamp(100px,11vw,120px)!important;height:66px!important;min-width:100px!important;min-height:66px!important;font-size:16px!important}
-}
-@media (hover:none) and (pointer:coarse) and (orientation:landscape){
- #touch [data-t=right]{left:calc(max(18px,env(safe-area-inset-left)) + clamp(100px,13vw,124px))!important}
- #touch [data-t=brake],#touch [data-t=nitro]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(132px,15vw,160px))!important}
-}
-
-
-/* v77 — commandes tactiles grand format et direction plus immédiate */
-@media (hover:none), (pointer:coarse){
-  #touch .tl button{width:clamp(82px,17vw,104px);height:clamp(82px,17vw,104px);min-width:82px;min-height:82px;border-width:2.5px;box-shadow:0 7px 20px rgba(0,0,0,.48),inset 0 2px 0 rgba(255,255,255,.24)}
-  #touch [data-t=left]{left:max(12px,env(safe-area-inset-left))}
-  #touch [data-t=right]{left:calc(max(12px,env(safe-area-inset-left)) + clamp(82px,17vw,104px) + 8px)}
-  #touch [data-t=gas]{width:clamp(86px,19vw,116px);height:clamp(126px,32vw,176px);min-width:86px;min-height:126px}
-  #touch [data-t=brake]{width:clamp(76px,16vw,98px);height:clamp(76px,16vw,98px);min-width:76px;min-height:76px}
-  #touch [data-t=nitro]{width:clamp(76px,16vw,98px);height:clamp(54px,11vw,70px);min-width:76px;min-height:54px}
-  #touch [data-t=hand]{width:clamp(86px,19vw,116px);height:clamp(54px,11vw,70px);min-width:86px;min-height:54px}
-  #touch button svg{width:55%;height:55%}
-}
-#touch button{ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none; }
 </style>
 </head>
 <body>
@@ -2492,25 +2348,6 @@ function radioAdvice() {
   if(G.cfg.mode==='chase') return LANG==='en'?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
   return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
 }
-let radioVoiceUnlocked = false;
-let radioVoiceReady = false;
-function unlockTeamVoice() {
-  try {
-    const synth = window.speechSynthesis;
-    if (!synth || !window.SpeechSynthesisUtterance) return false;
-    synth.resume();
-    if (!radioVoiceUnlocked) {
-      const primer = new SpeechSynthesisUtterance('Radio équipe activée.');
-      primer.lang = LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
-      primer.volume = 1; primer.rate = 1;
-      primer.onend = () => { radioVoiceUnlocked = true; };
-      primer.onerror = () => { radioVoiceUnlocked = true; };
-      synth.speak(primer);
-      radioVoiceUnlocked = true; radioVoiceReady = true;
-    }
-    return true;
-  } catch(e) { console.warn('Radio vocale indisponible:',e); return false; }
-}
 let radioAutoFold = 0;
 function radioCall(automatic = false) {
   if(!G.player||!G.T) return;
@@ -2522,23 +2359,16 @@ function radioCall(automatic = false) {
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
-  // Lecture de la consigne radio : moteur déverrouillé au premier toucher utilisateur.
+  // Lecture vocale facultative via la synthèse vocale native du navigateur.
   try {
-    const synth=window.speechSynthesis;
-    if(synth && window.SpeechSynthesisUtterance) {
-      synth.resume();
+    if(window.speechSynthesis && window.SpeechSynthesisUtterance) {
+      window.speechSynthesis.cancel();
       const voice=new SpeechSynthesisUtterance($('radio-message').textContent);
       voice.lang=LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
-      voice.rate=0.92;voice.pitch=0.96;voice.volume=1;
-      const voices=synth.getVoices();
-      const preferred=voices.find(v=>v.lang.toLowerCase()===voice.lang.toLowerCase())
-        || voices.find(v=>v.lang.toLowerCase().startsWith(voice.lang.slice(0,2).toLowerCase()));
-      if(preferred) voice.voice=preferred;
-      voice.onerror=e=>{console.warn('Erreur synthèse vocale radio:',e.error);};
-      voice.onstart=()=>{radioVoiceReady=true;};
-      synth.speak(voice);
+      voice.rate=0.96;voice.pitch=0.92;voice.volume=0.82;
+      window.speechSynthesis.speak(voice);
     }
-  } catch(e) { console.warn('Lecture radio impossible:',e); }
+  } catch(e) {}
 }
 // bonus volontairement modestes : le pilote donne un style, la voiture reste décisive
 const PERKS = {
@@ -2867,10 +2697,10 @@ function buildTrack(def, quality) {
   const W = W_HALF, theme = def.theme;
   const T = { def, W, theme, lamps: [] };
   const P = def.pts.map(p => [p[0], p[2], p[1]]), n = P.length, dense = [];
-  for (let i = 0; i < n; i++) { const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n]; const curveSteps = IS_TOUCH ? 18 : 40; for (let k = 0; k < curveSteps; k++) dense.push(crPoint(p0, p1, p2, p3, k / curveSteps)); }
+  for (let i = 0; i < n; i++) { const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n]; for (let k = 0; k < 40; k++) dense.push(crPoint(p0, p1, p2, p3, k / 40)); }
   const DN = dense.length, cum = new Float64Array(DN + 1);
   for (let i = 1; i <= DN; i++) { const a = dense[i - 1], b = dense[i % DN]; cum[i] = cum[i - 1] + Math.hypot(b[0] - a[0], b[2] - a[2]); }
-  const total = cum[DN], N = Math.round(total / (IS_TOUCH ? 2.65 : 2)), ds = total / N;
+  const total = cum[DN], N = Math.round(total / 2), ds = total / N;
   const px = new Float32Array(N), py = new Float32Array(N), pz = new Float32Array(N);
   let jj = 0;
   for (let i = 0; i < N; i++) {
@@ -4577,7 +4407,7 @@ function setupRace(cfg) {
   G.rb = diff.rb;
   const names = AI_NAMES.slice().sort(() => Math.random() - 0.5);
   if (cfg.mode === 'race') {
-    const total = Math.min(cfg.opp + 1, IS_TOUCH ? 4 : cfg.opp + 1), pslot = Math.min(total - 1, Math.max(1, Math.floor(total / 2)));
+    const total = cfg.opp + 1, pslot = Math.min(total - 1, Math.max(1, Math.floor(total / 2)));
     for (let k = 0; k < total; k++) {
       const s = T.L - 10 - Math.floor(k / 2) * 9, d = k % 2 ? 3.8 : -3.8;
       if (k === pslot) { placeOnTrack(p, s, d); p.progress = s - T.L; continue; }
@@ -4602,7 +4432,7 @@ function setupRace(cfg) {
   G.cars.unshift(p);
   if (cfg.traffic) {
     const models = ['sedan', 'louage', 'taxi', 'taxi', 'van', 'truck', 'sedan', 'louage'];
-    const n = IS_TOUCH ? (cfg.mode === 'chase' ? 5 : 3) : (cfg.mode === 'chase' ? 14 : 10);
+    const n = cfg.mode === 'chase' ? 14 : 10;
     for (let k = 0; k < n; k++) {
       const mn = models[k % models.length], lane = [-6, -2, 2, 6][Math.floor(Math.random() * 4)];
       const col = mn === 'taxi' ? [1, 0.8, 0.08] : mn === 'louage' ? [0.94, 0.94, 0.92] : hexToRgb(['#7a7f86', '#c9c9c9', '#3b4a63', '#6b2a2a', '#2e4d3a', '#e8e4dc', '#1c1c1e', '#8a6d3b'][Math.floor(Math.random() * 8)]);
@@ -4639,7 +4469,7 @@ function readInput(dt) {
   TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 1 : (TOUCH.rightPulse > 0 ? 0.72 : 0)) - (leftDown ? 1 : (TOUCH.leftPulse > 0 ? 0.72 : 0));
+  let st = (rightDown ? 0.94 : (TOUCH.rightPulse > 0 ? 0.22 : 0)) - (leftDown ? 0.94 : (TOUCH.leftPulse > 0 ? 0.22 : 0));
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4662,7 +4492,7 @@ function readInput(dt) {
   const digitalSteer = analog === null && st !== 0;
   // Montée rapide mais progressive : le véhicule répond au premier contact
   // sans passer brutalement d'un braquage nul au braquage maximal.
-  const steerRate = digitalSteer ? 14.5 : (steerTarget === 0 ? 10.5 : 11.5);
+  const steerRate = digitalSteer ? 11.5 : (steerTarget === 0 ? 8.0 : 9.0);
   G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));
@@ -4687,7 +4517,7 @@ function physPlayer(c, dt, inp) {
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   if (inp.hand > 0.08 && spd > 8) target *= 1 + 0.45 * inp.hand; else if (c.sliding) target *= 1.12;
-  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 12.5));
+  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));
   c.h += c.yaw * dt;
   const Fx = Math.sin(c.h), Fz = Math.cos(c.h), Rx = -Math.cos(c.h), Rz = Math.sin(c.h);
   vf = c.vx * Fx + c.vz * Fz; let vl = c.vx * Rx + c.vz * Rz;
@@ -4895,7 +4725,7 @@ function updateGame(dt) {
   if (!racing) { const fin = G.state === 'finish', rv = inp.gas; inp.gas = 0; inp.brake = fin ? 0.35 : 0; inp.steer = fin ? clamp(-p.d * 0.05, -0.3, 0.3) : 0; inp.hand = false; inp.nitro = false; inp.rev = fin ? 0 : rv; inp.hold = !fin; if (!fin) { G.steer = 0; G.inputGas = 0; G.inputBrake = 0; } }
   if (racing) {
     G.raceT += dt;
-    if (G.raceT >= (G.radioNext || 12)) { radioCall(true); G.radioNext = G.raceT + 18; }
+    if (G.raceT >= (G.radioNext || 12)) { radioCall(true); G.radioNext = G.raceT + 22; }
     if (G.raceT >= (G.crowdNext || 15)) { AU.crowdPulse(0.38 + Math.random() * 0.24); G.crowdNext = G.raceT + 15 + Math.random() * 7; }
   }
   // physique (sous-pas)
@@ -5631,14 +5461,14 @@ const UI = {
     $('results').classList.remove('show'); $('pause').classList.remove('show');
     this.show(null); $('ui').classList.add('hidden');
     $('loadtxt').textContent = t('preparing', TRACKS[cfg.track].name); $('loading').classList.add('show');
-    G.state = 'loading'; AU.init(); try { if (window.speechSynthesis) { window.speechSynthesis.cancel(); window.speechSynthesis.resume(); } } catch(e) {}
+    G.state = 'loading'; AU.init();
     setTimeout(() => {
       try {
         const def = TRACKS[cfg.track];
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
         G.camMode = SAVE.settings.cam; G.resultsShown = false;
         setupRace(cfg);
-        G.radioNext = 2; G.crowdNext = 8;
+        G.radioNext = 12; G.crowdNext = 8;
       } catch (e) { console.error(e); showErr(e.message); return; }
       $('loading').classList.remove('show'); $('hud').classList.remove('hidden');
       const tt = SAVE.settings.touch === 'on' || (SAVE.settings.touch === 'auto' && IS_TOUCH);
@@ -5858,13 +5688,13 @@ function applySettings() {
     const mem = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
     const modest = (mem > 0 && mem <= 4) || (cores > 0 && cores <= 4);
     // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
-    PR = Math.min(PR, modest ? 0.62 : 0.78);
+    PR = Math.min(PR, modest ? 0.48 : 0.62);
     R.shadowSize = 256;
     R.shadows = false;
     R.bloom = false; R.rays = false; R.post = false; R.aa = false;
-    R.detail = Math.min(R.detail, modest ? 0.32 : 0.48);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.42 : 0.56);
-    G.lodNear = Math.min(G.lodNear, modest ? 10 : 15);
+    R.detail = Math.min(R.detail, modest ? 0.18 : 0.28);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.32 : 0.40);
+    G.lodNear = Math.min(G.lodNear, modest ? 7 : 10);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;
@@ -5933,7 +5763,7 @@ function bindInputs() {
   document.addEventListener('visibilitychange', () => { if (document.hidden && (G.state === 'race' || G.state === 'countdown')) UI.pause(true); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
   addEventListener('pagehide', () => saveGame());
-  addEventListener('pointerdown', () => { AU.init(); unlockTeamVoice(); if (G.state === 'menu') MUS.play('menu'); }, { capture: true });
+  addEventListener('pointerdown', () => { AU.init(); if (G.state === 'menu') MUS.play('menu'); }, { capture: true });
   addEventListener('contextmenu', e => { if (G.state !== 'menu') e.preventDefault(); });
   // Pont tactile fiable : déclenche les mêmes gestionnaires click que la souris,
   // sans interférer avec les commandes maintenues (accélérateur, frein, joystick).
@@ -5965,7 +5795,7 @@ function bindInputs() {
     const off = e => {
       if (e && activePointer !== null && e.pointerId !== activePointer) return;
       activePointer = null; TOUCH[k] = false;
-      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.42;
+      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.22;
       b.classList.remove('on');
     };
     b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
@@ -5982,7 +5812,7 @@ function bindInputs() {
   const up = () => { GAR.drag = false; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
   cv.addEventListener('wheel', e => { if (G.state === 'menu') GAR.zoom = clamp(GAR.zoom + e.deltaY * 0.001, 0.7, 1.4); }, { passive: true });
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { AU.shot(700, 0.04, 'sine', 0.05); UI.show(b.dataset.go); }));
-  $('m-play').onclick = () => { unlockTeamVoice(); AU.shot(900, 0.06, 'sine', 0.07); UI.startRace(UI.nextCfg()); };
+  $('m-play').onclick = () => { AU.shot(900, 0.06, 'sine', 0.07); UI.startRace(UI.nextCfg()); };
   document.querySelectorAll('#langs button').forEach(b => b.onclick = () => { SAVE.settings.lang = LANG = b.dataset.l; saveGame(); UI.refresh(); });
   document.querySelectorAll('#g-tabs button').forEach(b => b.onclick = () => { UI.tab = b.dataset.tab; UI.renderGarage(); });
   $('q-laps').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.laps = clamp(UI.q.laps + +b.dataset.d, 1, 6); UI.renderQuick(); });
@@ -5990,7 +5820,7 @@ function bindInputs() {
   $('q-diff').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.diff = +b.dataset.v; UI.renderQuick(); });
   $('q-traf').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.traffic = +b.dataset.v; UI.renderQuick(); });
   $('q-wx').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.weather = +b.dataset.v; UI.renderQuick(); });
-  $('q-go').onclick = () => { unlockTeamVoice(); const q = UI.q; UI.startRace({ mode: q.mode, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined }); };
+  $('q-go').onclick = () => { const q = UI.q; UI.startRace({ mode: q.mode, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined }); };
   $('p-resume').onclick = () => UI.pause(false);
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };
   $('p-quit').onclick = () => UI.quit();

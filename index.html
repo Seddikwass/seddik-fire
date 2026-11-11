@@ -5586,8 +5586,8 @@ const FPS = { v: 60, acc: 0, n: 0 };
 function applySettings() {
   const s = SAVE.settings, dpr = window.devicePixelRatio || 1;
   if (s.quality === 'ultra') { R.bloomScale = 0; PR = Math.min(dpr, IS_TOUCH ? 1.55 : 2.0); R.post = true; R.bloom = false; R.aa = true; R.rays = false; G.drawMul = 1.12; G.lodNear = 64; R.detail = 1.3; R.shadows = true; R.shadowSize = IS_TOUCH ? 2048 : 3072; G.drawMul = 1.16; G.lodNear = 72; R.detail = 1.4; }
-  else if (s.quality === 'high') { R.bloomScale = 0; PR = Math.min(dpr, IS_TOUCH ? 1.25 : 1.75); R.post = true; R.bloom = false; R.aa = true; R.rays = false; G.drawMul = 1; G.lodNear = 42; R.detail = 1; R.shadows = true; R.shadowSize = IS_TOUCH ? 1536 : 2048; G.drawMul = 1.04; G.lodNear = 48; R.detail = 1.08; }
-  else if (s.quality === 'medium') { R.bloomScale = 0; PR = Math.min(dpr, 1.25); R.post = true; R.bloom = false; R.aa = true; R.rays = false; G.drawMul = 0.85; G.lodNear = 28; R.detail = 1; R.shadows = true; R.shadowSize = 1024; G.drawMul = 0.9; G.lodNear = 32; R.detail = 1.02; }
+  else if (s.quality === 'high') { R.bloomScale = 0; PR = Math.min(dpr, IS_TOUCH ? 1.3 : 1.75); R.post = true; R.bloom = false; R.aa = true; R.rays = false; G.drawMul = 1.06; G.lodNear = 50; R.detail = 1.12; R.shadows = true; R.shadowSize = IS_TOUCH ? 1536 : 2048; }
+  else if (s.quality === 'medium') { R.bloomScale = 0; PR = Math.min(dpr, 1.25); R.post = true; R.bloom = false; R.aa = true; R.rays = false; G.drawMul = 0.92; G.lodNear = 30; R.detail = 1.04; R.shadows = true; R.shadowSize = 1024; }
   else { R.bloomScale = 0; PR = Math.min(dpr, 0.9); R.post = false; R.bloom = false; R.aa = false; R.rays = false; G.drawMul = 0.62; G.lodNear = 16; R.detail = 0; R.shadows = false; }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;
@@ -5632,8 +5632,10 @@ function bindStick() {
     let v = dx / R0; if (Math.abs(v) < 0.12) v = 0; TOUCH.ax = v;
     knob.style.transform = `translate(${ox - r.left + dx}px,${e.clientY - r.top}px)`;
   });
-  const end = e => { if (e.pointerId !== id) return; id = null; TOUCH.ax = 0; TOUCH.axOn = false; st.classList.remove('act'); stickHome(); };
+  const end = e => { if (e && e.pointerId !== id) return; id = null; TOUCH.ax = 0; TOUCH.axOn = false; st.classList.remove('act'); stickHome(); };
   st.addEventListener('pointerup', end); st.addEventListener('pointercancel', end); st.addEventListener('lostpointercapture', end);
+  addEventListener('blur', () => end());
+  document.addEventListener('visibilitychange', () => { if (document.hidden) end(); });
 }
 
 /* ---------- entrées ---------- */
@@ -5691,6 +5693,10 @@ function bindInputs() {
     };
     b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
     b.addEventListener('pointercancel', off); b.addEventListener('lostpointercapture', off);
+    // Sécurité mobile : si le navigateur perd le pointeur (appel, changement d'application,
+    // verrouillage), libérer aussi l'état interne du bouton pour éviter une commande bloquée.
+    addEventListener('blur', () => off());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) off(); });
   });
   bindStick(); bindTilt();
   const cv = $('gl'); let lx = 0;

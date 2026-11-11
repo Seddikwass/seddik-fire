@@ -2468,7 +2468,7 @@ function radioCall(automatic = false) {
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
-  // Lecture vocale facultative via la synthèse vocale native du navigateur.
+  // Consignes vocales automatiques pendant la course (après le geste de démarrage du joueur).
   try {
     if(window.speechSynthesis && window.SpeechSynthesisUtterance) {
       window.speechSynthesis.cancel();
@@ -4834,7 +4834,7 @@ function updateGame(dt) {
   if (!racing) { const fin = G.state === 'finish', rv = inp.gas; inp.gas = 0; inp.brake = fin ? 0.35 : 0; inp.steer = fin ? clamp(-p.d * 0.05, -0.3, 0.3) : 0; inp.hand = false; inp.nitro = false; inp.rev = fin ? 0 : rv; inp.hold = !fin; if (!fin) { G.steer = 0; G.inputGas = 0; G.inputBrake = 0; } }
   if (racing) {
     G.raceT += dt;
-    if (G.raceT >= (G.radioNext || 12)) { radioCall(true); G.radioNext = G.raceT + 22; }
+    if (G.raceT >= (G.radioNext || 12)) { radioCall(true); G.radioNext = G.raceT + 18; }
     if (G.raceT >= (G.crowdNext || 15)) { AU.crowdPulse(0.38 + Math.random() * 0.24); G.crowdNext = G.raceT + 15 + Math.random() * 7; }
   }
   // physique (sous-pas)
@@ -5577,7 +5577,7 @@ const UI = {
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
         G.camMode = SAVE.settings.cam; G.resultsShown = false;
         setupRace(cfg);
-        G.radioNext = 12; G.crowdNext = 8;
+        G.radioNext = 4; G.crowdNext = 8;
       } catch (e) { console.error(e); showErr(e.message); return; }
       $('loading').classList.remove('show'); $('hud').classList.remove('hidden');
       const tt = SAVE.settings.touch === 'on' || (SAVE.settings.touch === 'auto' && IS_TOUCH);

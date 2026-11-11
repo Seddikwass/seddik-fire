@@ -3701,7 +3701,7 @@ function realify(cv,o){if(stats.perfC==='low')return;o=o||{};const w=cv.width,h=
 function torsoSpr(sk){let cv2=SPR[sk.id];if(cv2)return cv2;const K=4,S=56*K,R=mulberry32(9+SOLDIERS.indexOf(sk));cv2=mkCv(S,S);const c=cv2.getContext('2d');c.translate(S/2,S/2);c.scale(K,K);drawTorso(c,sk,R);realify(cv2,sk.sp?{noise:.05,weave:.012,spec:.22,bump:2.6}:sk.ftr||sk.jc?{noise:.03,weave:.02}:{noise:.07,weave:.05});return SPR[sk.id]=cv2}
 function warmSprites(){const L=SOLDIERS.slice();const sel=SOLDIERS[skinI];if(sel)torsoSpr(sel);const step=dl=>{let n=0;while(L.length&&(n++<1||(dl&&dl.timeRemaining&&dl.timeRemaining()>8)))torsoSpr(L.shift());if(L.length)(window.requestIdleCallback||(f=>setTimeout(f,60)))(step)};setTimeout(step,1200)}
 function buildSoldierSprites(){const R=mulberry32(9),K=4,S=56*K;
-  for(const sk of SOLDIERS){delete SPR[sk.id];sk.legs=sk.pants||(sk.sp?sk.base:sk.ftr||sk.jc?sk.shorts:shade(sk.base,.7));sk.arm=sk.ftr?sk.base:sk.jc?sk.jc[0]:shade(sk.base,.9)}
+  for(const sk of SOLDIERS){delete SPR[sk.id];sk.legs=sk.pants||(sk.sp?sk.base:sk.ftr||sk.jc?sk.shorts:shade(sk.base,.7));sk.arm=sk.criminal?sk.jacket:sk.ftr?sk.base:sk.jc?sk.jc[0]:shade(sk.base,.9)}
   for(let l=1;l<=3;l++){const cv2=mkCv(S,S),c=cv2.getContext('2d');c.translate(S/2,S/2);c.scale(K,K);drawVest(c,l);realify(cv2,{noise:.06,weave:.06,bump:2.6});VSPR[l]=cv2}
   for(const k in WEAP){const W=WEAP[k],w=W.len+26,h=20,raw=mkCv(w*K,h*K),c=raw.getContext('2d');c.scale(K,K);c.translate(12,8);drawGunTop(c,k,0,0);realify(raw,{noise:.03,weave:0,spec:.3,bump:2,r:.08});GSPR[k]={cv:bakeOutline(raw,4),ox:12,oy:8,w,h}}
   HSPR.clear();initGfx()}

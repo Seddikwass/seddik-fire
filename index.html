@@ -507,32 +507,32 @@ button:disabled{pointer-events:none}
   #touch .tl { position:absolute!important; inset:0!important; pointer-events:none!important; }
   #touch .tl button {
     position:absolute!important; bottom:max(14px,env(safe-area-inset-bottom))!important;
-    top:auto!important; width:54px!important; height:54px!important; min-width:54px!important; min-height:54px!important;
-    font-size:21px!important; border-radius:14px!important;
+    top:auto!important; width:68px!important; height:68px!important; min-width:68px!important; min-height:68px!important;
+    font-size:26px!important; border-radius:17px!important;
   }
   #touch [data-t=left] { left:max(14px,env(safe-area-inset-left))!important; right:auto!important; }
-  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + 62px)!important; right:auto!important; }
+  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + 76px)!important; right:auto!important; }
   #touch .tr { position:absolute!important; inset:0!important; pointer-events:none!important; }
   #touch .tr button { pointer-events:auto!important; }
   #touch [data-t=gas] {
     right:max(16px,env(safe-area-inset-right))!important; left:auto!important;
     bottom:max(14px,env(safe-area-inset-bottom))!important; top:auto!important;
-    width:76px!important; height:116px!important; min-width:76px!important; min-height:76px!important;
+    width:88px!important; height:128px!important; min-width:88px!important; min-height:88px!important;
   }
   #touch [data-t=brake] {
-    right:calc(max(16px,env(safe-area-inset-right)) + 86px)!important; left:auto!important;
+    right:calc(max(16px,env(safe-area-inset-right)) + 98px)!important; left:auto!important;
     bottom:max(14px,env(safe-area-inset-bottom))!important; top:auto!important;
-    width:62px!important; height:62px!important; min-width:62px!important; min-height:62px!important;
+    width:72px!important; height:72px!important; min-width:72px!important; min-height:72px!important;
   }
   #touch [data-t=hand] {
     right:max(16px,env(safe-area-inset-right))!important; left:auto!important;
     bottom:calc(max(14px,env(safe-area-inset-bottom)) + 126px)!important; top:auto!important;
-    width:76px!important; height:48px!important; min-width:76px!important; min-height:48px!important;
+    width:88px!important; height:54px!important; min-width:88px!important; min-height:54px!important;
   }
   #touch [data-t=nitro] {
-    right:calc(max(16px,env(safe-area-inset-right)) + 86px)!important; left:auto!important;
-    bottom:calc(max(14px,env(safe-area-inset-bottom)) + 74px)!important; top:auto!important;
-    width:62px!important; height:48px!important; min-width:62px!important; min-height:48px!important;
+    right:calc(max(16px,env(safe-area-inset-right)) + 98px)!important; left:auto!important;
+    bottom:calc(max(14px,env(safe-area-inset-bottom)) + 84px)!important; top:auto!important;
+    width:72px!important; height:54px!important; min-width:72px!important; min-height:54px!important;
   }
 }
 
@@ -4407,7 +4407,7 @@ function setupRace(cfg) {
   G.rb = diff.rb;
   const names = AI_NAMES.slice().sort(() => Math.random() - 0.5);
   if (cfg.mode === 'race') {
-    const total = cfg.opp + 1, pslot = Math.min(total - 1, Math.max(1, Math.floor(total / 2)));
+    const total = Math.min(cfg.opp + 1, IS_TOUCH ? 5 : cfg.opp + 1), pslot = Math.min(total - 1, Math.max(1, Math.floor(total / 2)));
     for (let k = 0; k < total; k++) {
       const s = T.L - 10 - Math.floor(k / 2) * 9, d = k % 2 ? 3.8 : -3.8;
       if (k === pslot) { placeOnTrack(p, s, d); p.progress = s - T.L; continue; }
@@ -4432,7 +4432,7 @@ function setupRace(cfg) {
   G.cars.unshift(p);
   if (cfg.traffic) {
     const models = ['sedan', 'louage', 'taxi', 'taxi', 'van', 'truck', 'sedan', 'louage'];
-    const n = cfg.mode === 'chase' ? 14 : 10;
+    const n = IS_TOUCH ? (cfg.mode === 'chase' ? 7 : 5) : (cfg.mode === 'chase' ? 14 : 10);
     for (let k = 0; k < n; k++) {
       const mn = models[k % models.length], lane = [-6, -2, 2, 6][Math.floor(Math.random() * 4)];
       const col = mn === 'taxi' ? [1, 0.8, 0.08] : mn === 'louage' ? [0.94, 0.94, 0.92] : hexToRgb(['#7a7f86', '#c9c9c9', '#3b4a63', '#6b2a2a', '#2e4d3a', '#e8e4dc', '#1c1c1e', '#8a6d3b'][Math.floor(Math.random() * 8)]);
@@ -4469,7 +4469,7 @@ function readInput(dt) {
   TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 0.94 : (TOUCH.rightPulse > 0 ? 0.22 : 0)) - (leftDown ? 0.94 : (TOUCH.leftPulse > 0 ? 0.22 : 0));
+  let st = (rightDown ? 0.78 : (TOUCH.rightPulse > 0 ? 0.30 : 0)) - (leftDown ? 0.78 : (TOUCH.leftPulse > 0 ? 0.30 : 0));
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4492,7 +4492,7 @@ function readInput(dt) {
   const digitalSteer = analog === null && st !== 0;
   // Montée rapide mais progressive : le véhicule répond au premier contact
   // sans passer brutalement d'un braquage nul au braquage maximal.
-  const steerRate = digitalSteer ? 11.5 : (steerTarget === 0 ? 8.0 : 9.0);
+  const steerRate = digitalSteer ? 7.2 : (steerTarget === 0 ? 6.8 : 7.8);
   G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));

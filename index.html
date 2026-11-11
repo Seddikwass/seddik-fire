@@ -627,6 +627,26 @@ body.touch .meter div{height:9px}
   body.touch .hud-br{transform:scale(.54)}
 }
 
+
+/* Mise à niveau mobile : commandes plus grandes et menus adaptés aux petits écrans. */
+@media (pointer:coarse), (max-width:760px) {
+  #touch .tl button { width:clamp(82px,18vw,108px); height:clamp(82px,18vw,108px); }
+  #touch [data-t=right] { left:calc(max(16px,env(safe-area-inset-left)) + clamp(82px,18vw,108px) + 10px); }
+  #touch [data-t=gas] { width:clamp(88px,19vw,118px); height:clamp(128px,31vw,176px); }
+  #touch [data-t=brake] { right:calc(max(18px,env(safe-area-inset-right)) + clamp(88px,19vw,118px) + 14px); width:clamp(78px,17vw,104px); height:clamp(78px,17vw,104px); }
+  #touch [data-t=nitro] { right:calc(max(18px,env(safe-area-inset-right)) + clamp(88px,19vw,118px) + 14px); width:clamp(78px,17vw,104px); height:clamp(56px,11vw,72px); }
+  #touch [data-t=hand] { width:clamp(88px,19vw,118px); height:clamp(56px,11vw,72px); bottom:calc(max(22px,env(safe-area-inset-bottom)) + clamp(128px,31vw,176px) + 14px); }
+  #touch button { font-size:18px; border-width:2px; opacity:.96; }
+  #touch button svg { width:54%; height:54%; }
+  .screen { overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; padding-top:max(64px,calc(env(safe-area-inset-top) + 58px)); padding-bottom:max(24px,env(safe-area-inset-bottom)); }
+  #scr-main { justify-content:center; gap:clamp(12px,3vh,24px); }
+  .mainnav { width:min(420px,92vw); gap:10px; }
+  .nbtn { min-height:58px; padding-block:15px; }
+  .nbtn b { font-size:clamp(18px,4.6vw,22px); }
+  .box { max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px); }
+}
+#loading { padding:24px; text-align:center; }
+#loading p { max-width:86vw; line-height:1.45; }
 </style>
 </head>
 <body>
@@ -2449,6 +2469,32 @@ function radioAdvice() {
   if(G.cfg.mode==='chase') return LANG==='en'?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
   return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
 }
+// Déverrouillage vocal au premier geste utilisateur (politique Android/Chrome).
+let RADIO_TTS_UNLOCKED = false;
+let RADIO_TTS_PENDING = '';
+function unlockCrewSpeech() {
+  if (RADIO_TTS_UNLOCKED || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+  try { const silent = new SpeechSynthesisUtterance(' '); silent.volume = 0; window.speechSynthesis.speak(silent); RADIO_TTS_UNLOCKED = true;
+    if (RADIO_TTS_PENDING) { const pending = RADIO_TTS_PENDING; RADIO_TTS_PENDING = ''; speakCrewAdvice(pending); }
+  } catch(e) { console.warn('Activation voix équipe impossible', e); }
+}
+function speakCrewAdvice(message) {
+  if (!message || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+  if (!RADIO_TTS_UNLOCKED) { RADIO_TTS_PENDING = message; return; }
+  const synth = window.speechSynthesis;
+  const lang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
+  const say = () => { try {
+    const utter = new SpeechSynthesisUtterance(message); utter.lang = lang; utter.rate = 0.91; utter.pitch = 0.96; utter.volume = 1;
+    const voices = synth.getVoices(), base = lang.slice(0,2).toLowerCase();
+    utter.voice = voices.find(v => v.lang && v.lang.toLowerCase() === lang.toLowerCase()) || voices.find(v => v.lang && v.lang.toLowerCase().startsWith(base)) || null;
+    synth.cancel(); synth.resume(); synth.speak(utter);
+  } catch(e) { console.warn('Lecture de la consigne vocale impossible', e); } };
+  if (synth.getVoices().length) say();
+  else { let done=false; const ready=()=>{if(done)return;done=true;synth.removeEventListener('voiceschanged',ready);say();}; synth.addEventListener('voiceschanged',ready); setTimeout(ready,900); }
+}
+document.addEventListener('pointerdown', unlockCrewSpeech, {capture:true, passive:true});
+document.addEventListener('touchstart', unlockCrewSpeech, {capture:true, passive:true});
+document.addEventListener('keydown', unlockCrewSpeech, {capture:true});
 let radioAutoFold = 0;
 function radioCall(automatic = false) {
   if(!G.player||!G.T) return;
@@ -2460,25 +2506,8 @@ function radioCall(automatic = false) {
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
-  // Consignes vocales automatiques de l'équipe : voix native du navigateur, sans micro.
-  try {
-    if(window.speechSynthesis && window.SpeechSynthesisUtterance) {
-      const synth=window.speechSynthesis;
-      const text=$('radio-message').textContent;
-      const lang=LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
-      const voice=new SpeechSynthesisUtterance(text);
-      voice.lang=lang; voice.rate=0.94; voice.pitch=0.94; voice.volume=1;
-      const voices=synth.getVoices();
-      const wanted=lang.toLowerCase().split('-')[0];
-      voice.voice=voices.find(v=>v.lang&&v.lang.toLowerCase()===lang.toLowerCase())
-        || voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(wanted+'-'))
-        || null;
-      // Une seule consigne à la fois : évite les annonces empilées pendant une course.
-      synth.cancel();
-      synth.resume();
-      synth.speak(voice);
-    }
-  } catch(e) { console.warn('Radio équipe : synthèse vocale indisponible',e); }
+  // Annonce parlée après déverrouillage audio du navigateur.
+  speakCrewAdvice($('radio-message').textContent);
 }
 
 /* Radio vocale WebRTC : le chef d'équipe ouvre un canal, les équipiers le rejoignent avec le même code. */
@@ -4681,11 +4710,11 @@ function readInput(dt) {
   // puis revient doucement au centre dès que le doigt est relâché.
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  const steerRise = 4.8, steerReturn = 7.2;
+  const steerRise = 7.2, steerReturn = 8.6;
   TOUCH.leftAmount = clamp((TOUCH.leftAmount || 0) + (leftDown ? steerRise : -steerReturn) * dt, 0, 1);
   TOUCH.rightAmount = clamp((TOUCH.rightAmount || 0) + (rightDown ? steerRise : -steerReturn) * dt, 0, 1);
   if (leftDown && rightDown) { TOUCH.leftAmount *= 0.82; TOUCH.rightAmount *= 0.82; }
-  let st = (TOUCH.rightAmount - TOUCH.leftAmount) * 0.98;
+  let st = (TOUCH.rightAmount - TOUCH.leftAmount) * 1.08;
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4708,9 +4737,9 @@ function readInput(dt) {
   // Progressivité spécifique aux flèches, douceur au relâchement et filtrage
   // des micro-mouvements pour garder la voiture stable à haute vitesse.
   const digitalSteer = analog === null && st !== 0;
-  const steerRate = digitalSteer ? 8.2 : (steerTarget === 0 ? 6.4 : 9.2);
+  const steerRate = digitalSteer ? 11.5 : (steerTarget === 0 ? 7.4 : 10.5);
   const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 48, 0, 1);
-  const stability = 1 - speedFactor * 0.22;
+  const stability = 1 - speedFactor * 0.16;
   G.steer += (steerTarget * stability - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));
@@ -4730,7 +4759,7 @@ function physPlayer(c, dt, inp) {
   // Direction assistée renforcée : davantage d'angle utile à vitesse élevée,
   // sans rendre le véhicule incontrôlable à faible vitesse.
   // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
-  let yawMax = Math.min(3.1, (st.lat * 2.35) / Math.max(spd, 5));
+  let yawMax = Math.min(3.25, (st.lat * 2.55) / Math.max(spd, 4.5));
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
@@ -5688,7 +5717,7 @@ const UI = {
     this.show(null); $('ui').classList.add('hidden');
     $('loadtxt').textContent = t('preparing', TRACKS[cfg.track].name); $('loading').classList.add('show');
     G.state = 'loading'; AU.init();
-    setTimeout(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       try {
         const def = TRACKS[cfg.track];
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
@@ -5717,7 +5746,7 @@ const UI = {
       $('radio-team').querySelector('.radio-head span:first-child').textContent=LANG==='en'?'TEAM RADIO · BOX':(LANG==='ar'||LANG==='tn'?'اتصال الفريق · الحلبة':'RADIO ÉQUIPE · STAND');
       radioVoiceAutoReconnect();
       MUS.play('race'); MUS.muffle(false);
-    }, 60);
+    }));
   },
   quit() {
     radioVoiceCleanup();

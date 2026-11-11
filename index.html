@@ -4829,7 +4829,7 @@ function armBack(){try{if(!histArmed){history.pushState({sf:1},'');histArmed=tru
 addEventListener('popstate',()=>{histArmed=false;if(bigOpen){toggleMap();armBack();return}if(game.mode==='play'){setPause(true);armBack()}else if(game.mode==='paused'){setPause(false);armBack()}});
 function start(){preStart();genWorld();buildSidearms();buildArmory();setSkin(skinI);sndLabel();fillStats();window.__sfReady=1;requestAnimationFrame(t=>{last=t;frame(t)});warmSprites();adsLater()}
 requestAnimationFrame(()=>{const gp=gcBoot();setTimeout(()=>{try{preStart()}catch(e){console.error(e)}gp.then(()=>setTimeout(start,0),()=>setTimeout(start,0))},0)});
-if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()))addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(reg=>reg.update()).catch(()=>{})});
+if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())){let swReloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!swReloading){swReloading=true;location.reload()}});addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(reg=>reg.update()).catch(()=>{})})}
 })();
 </script>
 

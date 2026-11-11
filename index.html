@@ -4924,7 +4924,23 @@ if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePl
   const resize=()=>{const w=Math.max(180,canvas.clientWidth||290),h=Math.max(180,canvas.clientHeight||290);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe(canvas);resize();
   canvas.hidden=false;old.style.display='none';
   const badge=document.querySelector('#lobby .env-mode');if(badge){badge.textContent='APERÇU 3D WEBGL · SOLDAT · ARME · 4×4';badge.classList.add('sf3d-mode')}
-  let raf=0;const tick=()=>{raf=requestAnimationFrame(tick);if(!document.hidden){root.rotation.y=rotation+Math.sin(performance.now()*.00022)*.08;renderer.render(scene,camera)}};tick();
+  // Interactive inspection controls: drag to orbit, wheel/pinch-style pointer gesture to zoom.
+  let wheelZoom=0;
+  canvas.addEventListener('wheel',e=>{e.preventDefault();wheelZoom=THREE.MathUtils.clamp(wheelZoom+Math.sign(e.deltaY)*.35,-2.2,3.5);camera.position.setLength(10+wheelZoom)},{passive:false});
+  const soldierBody=soldier.children.find(o=>o.geometry&&o.geometry.type==='BoxGeometry'&&Math.abs(o.position.y-1.05)<.02);
+  const headMesh=soldier.children.find(o=>o.geometry&&o.geometry.type==='SphereGeometry'&&o.position.y>1.7);
+  const wheelMeshes=car.children.filter(o=>o.geometry&&o.geometry.type==='CylinderGeometry'&&o.geometry.parameters.radiusTop<.2);
+  const lamps=car.children.filter(o=>o.material===head);
+  const clock=new THREE.Clock();
+  let raf=0;const tick=()=>{raf=requestAnimationFrame(tick);if(!document.hidden){
+   const t=clock.getElapsedTime();
+   root.rotation.y=rotation+Math.sin(t*.42)*.035;
+   if(soldierBody)soldierBody.position.y=1.05+Math.sin(t*2.1)*.018;
+   if(headMesh)headMesh.rotation.y=Math.sin(t*.48)*.07;
+   wheelMeshes.forEach((w,i)=>{w.rotation.x=Math.PI/2+Math.sin(t*1.2+i)*.018});
+   lamps.forEach(l=>{l.material.emissive.setHex(0xffa64d);l.material.emissiveIntensity=.15+.12*(.5+.5*Math.sin(t*2))});
+   renderer.render(scene,camera)
+  }};tick();
   window.__sf3dShowroom={renderer,scene,camera,root,dispose(){cancelAnimationFrame(raf);renderer.dispose()}};
  }catch(error){console.warn('Aperçu 3D indisponible, retour au rendu classique',error);canvas.hidden=true;old.style.display='block'}
 })();

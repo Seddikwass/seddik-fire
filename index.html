@@ -208,14 +208,15 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 #touch{position:absolute;inset:0;pointer-events:none}
 #touch button{pointer-events:auto;position:absolute;background:linear-gradient(145deg,rgba(28,31,40,.78),rgba(8,10,15,.62));border:1.5px solid rgba(255,255,255,.34);color:#fff;font-family:var(--fh);font-size:15px;touch-action:none;border-radius:22px;opacity:var(--touch-op,.82);display:flex;align-items:center;justify-content:center;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;transition:background .08s,border-color .08s,box-shadow .08s,filter .08s}
 #touch button svg{width:48%;height:48%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+#touch .tl button.on{background:linear-gradient(145deg,rgba(35,155,245,.98),rgba(10,75,150,.96));border-color:#d5f0ff;box-shadow:0 0 0 4px rgba(35,155,245,.28),0 9px 28px rgba(0,0,0,.5)}
 #touch button.on{background:linear-gradient(145deg,rgba(255,139,47,.92),rgba(205,74,12,.82));border-color:#ffd0a6;box-shadow:0 0 0 3px rgba(255,122,24,.22),0 8px 24px rgba(0,0,0,.38);filter:brightness(1.12)}
 #touch button:active{transform:scale(.975);filter:brightness(1.16)}
 #touch button{will-change:transform;transition:transform .09s ease-out,background .1s,border-color .1s,box-shadow .1s}
 #touch button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media(hover:none){#touch button{backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);box-shadow:0 5px 18px rgba(0,0,0,.24)}}
-#touch .tl button{bottom:max(22px,env(safe-area-inset-bottom));width:clamp(88px,20vw,128px);height:clamp(88px,20vw,128px);font-size:36px;border-radius:50%;border-width:2px;box-shadow:0 6px 22px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.14)}
-#touch [data-t=left]{left:max(18px,env(safe-area-inset-left))}
-#touch [data-t=right]{left:calc(max(18px,env(safe-area-inset-left)) + clamp(88px,20vw,128px) + 10px)}
+#touch .tl button{bottom:max(26px,env(safe-area-inset-bottom));width:clamp(104px,23vw,144px);height:clamp(104px,23vw,144px);font-size:42px;border-radius:50%;border-width:2px;box-shadow:0 7px 25px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.2);touch-action:none;user-select:none;-webkit-user-select:none}
+#touch [data-t=left]{left:max(22px,env(safe-area-inset-left));background:linear-gradient(145deg,rgba(17,91,150,.9),rgba(6,27,54,.88));border-color:rgba(100,190,255,.85)}
+#touch [data-t=right]{left:calc(max(22px,env(safe-area-inset-left)) + clamp(104px,23vw,144px) + 12px);background:linear-gradient(145deg,rgba(17,91,150,.9),rgba(6,27,54,.88));border-color:rgba(100,190,255,.85)}
 #touch [data-t=gas]{right:max(18px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));width:clamp(72px,17vw,104px);height:clamp(112px,29vw,164px);border-radius:24px}
 #touch [data-t=brake]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(72px,17vw,104px) + 12px);bottom:max(22px,env(safe-area-inset-bottom));width:clamp(66px,15vw,92px);height:clamp(66px,15vw,92px);border-radius:50%}
 #touch [data-t=nitro]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(72px,17vw,104px) + 12px);bottom:calc(max(22px,env(safe-area-inset-bottom)) + clamp(66px,15vw,92px) + 12px);width:clamp(66px,15vw,92px);height:clamp(48px,10vw,64px);color:#9ef;border-color:rgba(25,211,255,.62);border-radius:16px}
@@ -2639,6 +2640,18 @@ function buildTrack(def, quality) {
           }
         } else mb.quad(pos(i, side * W, 0), pos(j, side * W, 0), pos(j, side * (W + 1.2), -0.02), pos(i, side * (W + 1.2), -0.02), jit(cols[3], r, 0.04), TMAT);
       }
+      // Balises réfléchissantes régulières : meilleure lecture des virages, de nuit et sous la pluie.
+      if (i % 18 === 0) {
+        const rp = pos(i, side * (W + 1.65), 0.02), rb = ch(rk(i));
+        const postCol = theme === 'desert' ? [0.92, 0.72, 0.38] : [0.72, 0.76, 0.8];
+        rb.box(rp[0], rp[1] + 0.38, rp[2], 0.14, 0.76, 0.14, [0.12, 0.14, 0.17], 0, hd[i]);
+        rb.box(rp[0], rp[1] + 0.58, rp[2], 0.16, 0.12, 0.16, postCol, 18, hd[i]);
+        if (i % 36 === 0) {
+          const sign = pos(i, side * (W + 2.15), 1.25);
+          rb.box(sign[0], sign[1] + 0.78, sign[2], 0.08, 1.55, 0.08, [0.24, 0.26, 0.29], 0, hd[i]);
+          rb.box(sign[0], sign[1] + 1.48, sign[2], 0.72, 0.48, 0.12, theme === 'desert' ? [0.72, 0.38, 0.12] : [0.08, 0.32, 0.48], 8, hd[i]);
+        }
+      }
       // terrain
       // terrain lissé : normales calculées sur la grille (voisins le long de la piste et en travers)
       const pa = prof[side][i], pb = prof[side][j];
@@ -3880,6 +3893,46 @@ const CARS = [
   { id: 'elysium_gt', name: 'Elysium GT-R', cls: 'S', tier: 4, style: 'hyper_gt', price: 204000, vmax: 356, acc: 13.2, lat: 28.2, nos: 1.48, desc: 'Grand tourisme de luxe, châssis long et freinage haute performance.' },
   { id: 'voltaris_one', name: 'Voltaris One', cls: 'S', tier: 4, style: 'hyper_ev', price: 226000, vmax: 360, acc: 15.2, lat: 29.0, nos: 1.42, desc: 'Hyper-électrique à quatre moteurs, accélération instantanée.' },
   { id: 'desert_venom', name: 'Desert Venom R', cls: 'S', tier: 4, style: 'sport_wide', price: 232000, vmax: 372, acc: 13.9, lat: 28.7, nos: 1.62, desc: 'Sportive extrême, carrosserie large et aérodynamique active.' },
+  // Sept nouveaux coupés et supercars.
+  { id:'tunis_raptor',name:'Tunis Raptor GT',cls:'A',tier:3,style:'sports',price:98000,vmax:326,acc:11.8,lat:25.2,nos:1.32,desc:'Coupé sportif à moteur avant et châssis affûté.' },
+  { id:'capbon_spyder',name:'Cap Bon Spyder',cls:'A',tier:3,style:'gt',price:112000,vmax:332,acc:12.1,lat:25.8,nos:1.36,desc:'Grand tourisme découvrable, équilibre et vitesse.' },
+  { id:'medina_coupe_rs',name:'Médina Coupé RS',cls:'B',tier:2,style:'coupe',price:62000,vmax:296,acc:10.2,lat:24.8,nos:1.24,desc:'Coupé compact, léger et précis.' },
+  { id:'sahara_x8',name:'Sahara X8',cls:'A',tier:3,style:'suv',price:104000,vmax:306,acc:10.9,lat:23.2,nos:1.38,mass:1.4,desc:'SUV sportif huit cylindres et transmission intégrale.' },
+  { id:'carthage_muscle',name:'Carthage Muscle 70',cls:'B',tier:2,style:'muscle',price:74000,vmax:302,acc:10.4,lat:22.8,nos:1.28,desc:'Muscle car rétro moderne au couple généreux.' },
+  { id:'ifriqiya_proto',name:'Ifriqiya Prototype',cls:'S',tier:4,style:'prototype',price:248000,vmax:378,acc:14.2,lat:29.1,nos:1.66,desc:'Prototype de compétition à appui aérodynamique extrême.' },
+  { id:'blue_coast_ev',name:'Blue Coast EV',cls:'A',tier:3,style:'hyper_ev',price:126000,vmax:340,acc:14.5,lat:28.5,nos:1.4,desc:'Sportive électrique à accélération instantanée.' },
+  // Sept motos : sport, trail et scooters premium.
+  { id:'zembra_600',name:'Zembra 600 RR',cls:'A',tier:3,cat:'moto',style:'moto_sport',price:58000,vmax:286,acc:12.1,lat:23.5,nos:1.22,mass:0.48,desc:'Moto sportive carénée, moteur quatre cylindres.' },
+  { id:'sidi_bou_naked',name:'Sidi Bou Naked 900',cls:'A',tier:3,cat:'moto',style:'moto_sport',price:52000,vmax:274,acc:12.4,lat:24.2,nos:1.2,mass:0.49,desc:'Roadster nerveux, position droite et couple puissant.' },
+  { id:'matmata_trail',name:'Matmata Trail 750',cls:'B',tier:2,cat:'moto',style:'moto_trail',price:39000,vmax:238,acc:10.8,lat:22,nos:1.16,mass:0.54,desc:'Trail polyvalent pour les routes et pistes du Sud.' },
+  { id:'gammarth_racer',name:'Gammarth Racer 1000',cls:'S',tier:4,cat:'moto',style:'moto_sport',price:96000,vmax:324,acc:13.8,lat:25,nos:1.34,mass:0.47,desc:'Moto hypersport de circuit.' },
+  { id:'nabeul_scoot_gt',name:'Nabeul Scooter GT',cls:'C',tier:1,cat:'moto',style:'moto_scoot',price:12500,vmax:184,acc:8.8,lat:20.8,nos:1.04,mass:0.43,desc:'Maxi-scooter GT confortable et rapide.' },
+  { id:'kasserine_enduro',name:'Kasserine Enduro X',cls:'B',tier:2,cat:'moto',style:'moto_trail',price:34500,vmax:232,acc:10.5,lat:22.4,nos:1.13,mass:0.52,desc:'Enduro légère pour les chemins accidentés.' },
+  { id:'carthage_tourer',name:'Carthage Tourer 1200',cls:'A',tier:3,cat:'moto',style:'moto_trail',price:68000,vmax:268,acc:11.4,lat:22.8,nos:1.18,mass:0.58,desc:'Moto de tourisme puissante et stable.' },
+  // Sept 4x4 et pick-up.
+  { id:'jebel_raptor',name:'Jebel Raptor 4x4',cls:'A',tier:3,cat:'offroad',style:'offroad',price:69000,vmax:248,acc:9.4,lat:21,nos:1.24,mass:1.58,desc:'Tout-terrain à garde au sol haute et pneus renforcés.' },
+  { id:'ksar_explorer',name:'Ksar Explorer',cls:'B',tier:2,cat:'offroad',style:'offroad',price:48000,vmax:226,acc:8.6,lat:20.5,nos:1.18,mass:1.62,desc:'4x4 familial préparé pour les pistes du désert.' },
+  { id:'dunes_pickup_x',name:'Dunes Pickup X',cls:'A',tier:3,cat:'offroad',style:'pickup',price:61000,vmax:242,acc:9.1,lat:20.8,nos:1.22,mass:1.65,desc:'Pick-up sportif double cabine et benne renforcée.' },
+  { id:'sahara_rescue',name:'Sahara Rescue 6x6',cls:'A',tier:3,cat:'offroad',style:'offroad',price:78000,vmax:236,acc:9.6,lat:19.8,nos:1.3,mass:1.9,desc:'6x6 d’intervention, robuste et puissant.' },
+  { id:'atlas_overland',name:'Atlas Overland',cls:'B',tier:2,cat:'offroad',style:'pickup',price:55000,vmax:230,acc:8.8,lat:20.2,nos:1.2,mass:1.7,desc:'Pick-up d’expédition avec suspension longue course.' },
+  { id:'djerba_4x4_gt',name:'Djerba 4x4 GT',cls:'A',tier:3,cat:'offroad',style:'offroad',price:72000,vmax:252,acc:9.7,lat:21.6,nos:1.28,mass:1.6,desc:'SUV tout-terrain de luxe.' },
+  { id:'capbon_utility',name:'Cap Bon Utility',cls:'C',tier:1,cat:'offroad',style:'pickup',price:33000,vmax:214,acc:8.0,lat:19.9,nos:1.14,mass:1.64,desc:'Utilitaire tout-terrain compact.' },
+  // Sept poids lourds et véhicules de service.
+  { id:'tunis_city_bus',name:'Tunis City Bus',cls:'D',tier:0,cat:'heavy',style:'bus',price:22000,vmax:154,acc:4.8,lat:15.4,nos:1.2,mass:4.4,desc:'Autobus urbain à grande capacité.' },
+  { id:'sahel_coach',name:'Sahel Grand Coach',cls:'C',tier:1,cat:'heavy',style:'bus',price:39000,vmax:176,acc:5.8,lat:16.2,nos:1.22,mass:4.8,desc:'Autocar de tourisme longue distance.' },
+  { id:'medjerda_cargo',name:'Medjerda Cargo XL',cls:'C',tier:1,cat:'heavy',style:'truck',price:32000,vmax:168,acc:5.2,lat:15.8,nos:1.2,mass:4.2,desc:'Camion cargo à caisse longue.' },
+  { id:'sfax_delivery',name:'Sfax Delivery Van',cls:'D',tier:0,cat:'heavy',style:'van',price:17000,vmax:166,acc:5.8,lat:17.2,nos:1.12,mass:2.4,desc:'Fourgon de livraison urbain.' },
+  { id:'louage_express',name:'Louage Express',cls:'C',tier:1,cat:'heavy',style:'louage',price:26000,vmax:184,acc:6.3,lat:17.5,nos:1.18,mass:2.7,desc:'Minibus interurbain tunisien.' },
+  { id:'police_interceptor_van',name:'Police Interceptor Van',cls:'C',tier:1,cat:'heavy',style:'police',price:34000,vmax:190,acc:6.8,lat:18,nos:1.22,mass:2.8,desc:'Fourgon d’intervention rapide.' },
+  { id:'port_terminal_truck',name:'Port Terminal Truck',cls:'D',tier:0,cat:'heavy',style:'truck',price:24000,vmax:160,acc:5.0,lat:15.2,nos:1.2,mass:4.6,desc:'Tracteur de terminal portuaire.' },
+  // Sept modèles rétro : berlines classiques et coupés sportifs.
+  { id:'tunis_classic_60',name:'Tunis Classic 60',cls:'D',tier:0,cat:'retro',style:'retro70',price:16000,vmax:218,acc:7.1,lat:19.8,nos:1.02,desc:'Berline classique à chromes et phares ronds.' },
+  { id:'sousse_fastback',name:'Sousse Fastback 72',cls:'B',tier:2,cat:'retro',style:'retro70',price:42000,vmax:268,acc:9.1,lat:21.8,nos:1.16,desc:'Fastback musclé des années soixante-dix.' },
+  { id:'monastir_turbo_84',name:'Monastir Turbo 84',cls:'B',tier:2,cat:'retro',style:'retro80',price:47000,vmax:278,acc:9.4,lat:22.2,nos:1.18,desc:'Coupé turbo des années quatre-vingt.' },
+  { id:'bizerte_rally_88',name:'Bizerte Rally 88',cls:'A',tier:3,cat:'retro',style:'retro80',price:64000,vmax:292,acc:10.2,lat:22.8,nos:1.22,desc:'Coupé rallye à carrosserie anguleuse.' },
+  { id:'kairouan_lux_75',name:'Kairouan Luxe 75',cls:'C',tier:1,cat:'retro',style:'retro70',price:28000,vmax:242,acc:8.0,lat:20.6,nos:1.08,desc:'Grande berline de collection.' },
+  { id:'sfax_turbo_89',name:'Sfax Turbo 89',cls:'A',tier:3,cat:'retro',style:'retro80',price:68000,vmax:298,acc:10.4,lat:23,nos:1.24,desc:'Coupé rétro à turbo haute pression.' },
+  { id:'carthage_classic_gt',name:'Carthage Classic GT',cls:'A',tier:3,cat:'retro',style:'retro70',price:72000,vmax:304,acc:10.6,lat:23.2,nos:1.26,desc:'Grand tourisme classique restauré et préparé.' },
 ];
 const CATS = ['car', 'moto', 'offroad', 'heavy', 'retro'];
 const catOf = c => c.cat || 'car';
@@ -4048,13 +4101,11 @@ function spawnCop(s, d, v, state) {
 const KEYS = {}, TOUCH = {};
 function readInput(dt) {
   let gas = (KEYS.ArrowUp || KEYS.KeyW || KEYS.KeyZ || TOUCH.gas) ? 1 : 0, brake = (KEYS.ArrowDown || KEYS.KeyS || TOUCH.brake) ? 1 : 0;
-  let st = 0;
-  // Les flèches tactiles ont une course progressive : moins de braquage brutal,
-  // tout en gardant une réponse franche dès l'appui.
-  if (KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ) st -= 1;
-  else if (KEYS.ArrowRight || KEYS.KeyD) st += 1;
-  else if (TOUCH.left) st -= 0.78;
-  else if (TOUCH.right) st += 0.78;
+  // Direction digitale directe : les deux flèches sont indépendantes.
+  // Un appui maintenu donne immédiatement toute l'amplitude de braquage.
+  const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
+  const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
+  let st = (rightDown ? 1 : 0) - (leftDown ? 1 : 0);
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4067,14 +4118,17 @@ function readInput(dt) {
     }
   } catch (e) { }
   if (TOUCH.axOn) analog = clamp(TOUCH.ax * (SAVE.settings.sens || 100) / 100, -1, 1);
-  // Courbe progressive : zone morte réduite, réponse douce au centre et précise aux extrémités.
+  // Flèches tactiles : réponse quasi immédiate, sans rampe qui retarde le virage.
+  // Joystick/manette : courbe analogique conservée pour les petits ajustements.
   let steerTarget = st;
   if (analog !== null) {
-    const dz = 0.055, a = Math.abs(analog);
-    steerTarget = a <= dz ? 0 : Math.sign(analog) * Math.pow((a - dz) / (1 - dz), 1.22);
+    const dz = 0.035, a = Math.abs(analog);
+    steerTarget = a <= dz ? 0 : Math.sign(analog) * Math.pow((a - dz) / (1 - dz), 1.08);
   }
-  const steerRate = steerTarget === 0 ? 8.2 : (Math.sign(steerTarget) !== Math.sign(G.steer) && Math.abs(G.steer) > 0.02 ? 7.0 : 4.7);
+  const digitalSteer = analog === null && st !== 0;
+  const steerRate = digitalSteer ? 22 : (steerTarget === 0 ? 12 : 10);
   G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
+  if (digitalSteer && Math.abs(steerTarget - G.steer) < 0.018) G.steer = steerTarget;
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.105 : 0.145)));
   G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.085 : 0.16)));
@@ -4090,11 +4144,13 @@ function physPlayer(c, dt, inp) {
   const vmax = st.vmax * (nitroOn ? 1.22 : 1) * (c.draftT > 0.6 ? 1.04 : 1);
   let vf = c.vx * Math.sin(c.h) + c.vz * Math.cos(c.h);
   const spd = Math.abs(vf);
-  let yawMax = Math.min(2.3, st.lat / Math.max(spd, 3));
+  // Direction assistée renforcée : davantage d'angle utile à vitesse élevée,
+  // sans rendre le véhicule incontrôlable à faible vitesse.
+  let yawMax = Math.min(3.0, (st.lat * 2.05) / Math.max(spd, 5));
   if (spd < 3) yawMax *= spd / 3;
-  let target = (c.model.bike ? 1 : -1) * inp.steer * yawMax * 1.10 * (vf >= 0 ? 1 : -1);
-  if (inp.hand && spd > 8) target *= 1.75; else if (c.sliding) target *= 1.22;
-  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 11.5));
+  let target = (c.model.bike ? 1 : -1) * inp.steer * yawMax * (vf >= 0 ? 1 : -1);
+  if (inp.hand && spd > 8) target *= 1.45; else if (c.sliding) target *= 1.12;
+  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));
   c.h += c.yaw * dt;
   const Fx = Math.sin(c.h), Fz = Math.cos(c.h), Rx = -Math.cos(c.h), Rz = Math.sin(c.h);
   vf = c.vx * Fx + c.vz * Fz; let vl = c.vx * Rx + c.vz * Rz;

@@ -803,6 +803,28 @@ canvas{image-rendering:auto}
 }
 #lobby .stamp{max-width:100%;text-align:center;}
 
+
+/* v149 — cartes de sélection d'environnements, lisibles et tactiles sur mobile. */
+#lobby #maps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
+#lobby #maps .map-card{position:relative;display:flex;flex-direction:column;min-width:0;min-height:112px;overflow:hidden;text-align:left;padding:0;border:1px solid rgba(225,232,235,.18);border-radius:13px;color:#f8f4e9;background:linear-gradient(145deg,#34464a,#17232a);box-shadow:inset 0 1px rgba(255,255,255,.1),0 5px 14px rgba(0,0,0,.22);transition:transform .16s,border-color .16s,box-shadow .16s}
+#lobby #maps .map-art{height:66px;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(120deg,rgba(10,20,25,.08),rgba(5,12,18,.62)),linear-gradient(145deg,#477d83,#193b4a)}
+#lobby #maps .map-art i{font-style:normal;font-size:31px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.45))}
+#lobby #maps .map-art em{font-style:normal;font-size:8px;letter-spacing:1.3px;font-weight:900;color:rgba(255,255,255,.82)}
+#lobby #maps .map-copy{display:flex;flex-direction:column;gap:3px;padding:8px 10px 9px;background:linear-gradient(180deg,rgba(12,18,22,.88),rgba(9,14,18,.98))}
+#lobby #maps .map-copy b{font-size:12px;line-height:1.2;color:#fff}
+#lobby #maps .map-copy small{font-size:9px;line-height:1.3;color:rgba(241,239,226,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lobby #maps .map-check{position:absolute;right:8px;top:8px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;font-size:11px;font-weight:900;background:rgba(5,10,12,.55);color:transparent;border:1px solid rgba(255,255,255,.45)}
+#lobby #maps .map-card[aria-checked="true"]{border:2px solid #ffc16a;box-shadow:0 0 0 2px rgba(255,157,64,.18),0 8px 22px rgba(0,0,0,.3)}
+#lobby #maps .map-card[aria-checked="true"] .map-check{background:#e8752f;color:#fff;border-color:#ffd19a}
+#lobby #maps .map-seddik .map-art{background:linear-gradient(120deg,rgba(10,20,25,.05),rgba(5,12,18,.5)),linear-gradient(135deg,#55b6b1,#1c526b)}
+#lobby #maps .map-cote .map-art{background:linear-gradient(120deg,rgba(10,20,25,.05),rgba(5,12,18,.5)),linear-gradient(135deg,#56c6d0,#17658c)}
+#lobby #maps .map-sahara .map-art{background:linear-gradient(120deg,rgba(35,20,8,.05),rgba(35,20,8,.5)),linear-gradient(135deg,#e6bd77,#8b5732)}
+#lobby #maps .map-ville .map-art{background:linear-gradient(120deg,rgba(5,12,22,.05),rgba(5,12,22,.55)),linear-gradient(135deg,#8297a9,#303e57)}
+#lobby #maps .map-foret .map-art{background:linear-gradient(120deg,rgba(5,18,5,.05),rgba(5,18,5,.55)),linear-gradient(135deg,#79975a,#263d2c)}
+#lobby #maps .map-hautes .map-art{background:linear-gradient(120deg,rgba(15,18,10,.05),rgba(15,18,10,.55)),linear-gradient(135deg,#a5a58b,#4b5c4d)}
+#lobby #maps .map-djerba .map-art,#lobby #maps .map-capbon .map-art{background:linear-gradient(120deg,rgba(5,15,20,.05),rgba(5,15,20,.55)),linear-gradient(135deg,#6cb8a6,#23586b)}
+@media(max-width:420px){#lobby #maps{gap:7px}#lobby #maps .map-card{min-height:104px}#lobby #maps .map-art{height:58px}}
+@media(prefers-reduced-motion:reduce){#lobby #maps .map-card{transition:none}}
 </style>
 </head>
 <body>
@@ -1278,6 +1300,10 @@ SOLDIERS.push(
 {id:'mafia_syndicate',n:'Syndicat — Exécuteur',d:'Exécuteur urbain fictif : manteau graphite, col haut, gants noirs et équipement discret.',lv:10,base:'#a8795e',cam:['#25272d','#484b52','#15171c'],pants:'#202228',pack:'#181a20',hg:'h2',hc:'#22252b',glove:'#15171b',pat:'pix',blobs:12}
 );
 
+/* v149 — les factions modernes apparaissent en tête du carrousel. */
+const FEATURED_FACTIONS=['unit_tunis_assault','unit_desert_guard','unit_night_ops','police_intervention','police_swat','police_patrol','mafia_don','mafia_enforcer','mafia_syndicate'];
+SOLDIERS.sort((a,b)=>{const ia=FEATURED_FACTIONS.indexOf(a.id),ib=FEATURED_FACTIONS.indexOf(b.id);return (ia<0?999:ia)-(ib<0?999:ib)});
+
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
 const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35'];
 const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a','#8e44ad','#dcdcdc','#1b1b1d','#ff6b22'],BAG_LV=[1,2,3,5,7,'S10','S25','S40','S45'];
@@ -1304,7 +1330,7 @@ const LSK='seddikfire.v1';
 const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,pSize:1.25,camZoom:1,mode:'classic',map:'seddik',stage:0,cupBest:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'raider',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
 if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';if(!stats.photoSk){stats.photoSk=1;stats.skin='spartiate'}if(!stats.hanSk){stats.hanSk=1;stats.skin='hannibal'}if(!stats.ombSk){stats.ombSk=1;stats.skin='ombre'}
-if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
+if(!stats.factionShowcaseV){stats.skin='unit_tunis_assault';stats.factionShowcaseV=1;try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
 function saveStats(){try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}
 
 /* ===== audio ===== */
@@ -4697,10 +4723,10 @@ function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();const 
   document.querySelectorAll('#modes .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.m===id)))}
 function buildModes(){const box=$('#modes');box.innerHTML=Object.keys(MODES).map(k=>'<button class="chip" role="radio" data-m="'+k+'" aria-checked="false">'+MODES[k].n+'</button>').join('');
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));setMode(stats.mode);buildMaps()}
-function buildMaps(){const box=$('#maps');box.innerHTML=Object.keys(MAPS).map(k=>'<button class="chip" role="radio" data-k="'+k+'" aria-checked="false">'+MAPS[k].n+'</button>').join('');
-  box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
+function buildMaps(){const box=$('#maps');const glyph={seddik:'🏝️',cote:'🌊',sahara:'🏜️',ville:'🌆',foret:'🌲',hautes:'⛰️',djerba:'🐚',capbon:'🌅'};box.innerHTML=Object.keys(MAPS).map(k=>{const m=MAPS[k];return '<button class="map-card map-'+k+'" role="radio" data-k="'+k+'" aria-checked="false"><span class="map-art" aria-hidden="true"><i>'+ (glyph[k]||'🗺️') +'</i><em>ZONE DE COMBAT</em></span><span class="map-copy"><b>'+m.n+'</b><small>'+m.poi.slice(0,3).join(' · ')+'</small></span><span class="map-check" aria-hidden="true">✓</span></button>'}).join('');
+  box.querySelectorAll('.map-card').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
 function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mode];return MAPS[(M&&M.map)||stats.map]}
-function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
+function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .map-card').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
 function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby'){const go=()=>{if(stats.map===id&&MAP.id!==id&&game.mode==='lobby'){genWorld(id);markMap()}};Promise.race([gcLoad(id),new Promise(r=>setTimeout(r,1200))]).then(go,go)}markMap();const stamp=document.querySelector('.stamp');if(stamp){const M=MODES[stats.mode]||MODES.classic,active=selMap();stamp.textContent=active.n+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant')}}
 const MPOOL=[
   {id:'kills',n:k=>'Éliminez '+k+' adversaires',g:[2,3,5],xp:[120,180,280],key:'kills'},

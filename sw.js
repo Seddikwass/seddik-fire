@@ -1,5 +1,5 @@
 /* SUPER SEDDIK@JOUD — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'super-joud-v83';
+const VERSION = 'super-joud-v84';
 const FONTS = 'super-joud-fonts';
 const CORE = [
   './',
@@ -48,7 +48,7 @@ self.addEventListener('fetch', (event) => {
   // Pages : réseau d'abord (pour recevoir les mises à jour), cache si hors ligne.
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req).then((res) => {
+      fetch(new Request(req, { cache: 'reload' })).then((res) => {
         const copy = res.clone();
         caches.open(VERSION).then((c) => c.put(req, copy));
         return res;

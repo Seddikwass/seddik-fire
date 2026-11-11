@@ -4604,40 +4604,8 @@ function drawShowcase(c,S,o){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,S,S);co
     try{const px=c.getImageData(Math.floor(S*.2),Math.floor(S*.08),Math.ceil(S*.6),Math.ceil(S*.82)).data;
       for(let i=3;i<px.length;i+=4)if(px[i]>238&&++visible>90)break;
     }catch(_){}
-    // Always draw a guaranteed visible full-body lobby soldier over the showcase.
-    // The current preview renderer is leaving only its orange halo on some devices.
-    if(true){
-      c.save();c.translate(S*.5,S*.47);c.scale(S/220,S/220);
-      const metal=c.createLinearGradient(-22,0,22,0);metal.addColorStop(0,'#222a27');metal.addColorStop(.45,'#65705b');metal.addColorStop(1,'#252c27');
-      const cloth=c.createLinearGradient(-18,-35,18,35);cloth.addColorStop(0,'#87906a');cloth.addColorStop(.5,'#424d3a');cloth.addColorStop(1,'#252d25');
-      // boots and articulated legs
-      c.fillStyle='#171b19';rrect(c,-17,30,13,39,4);c.fill();rrect(c,5,30,13,39,4);c.fill();
-      c.strokeStyle='#161a18';c.lineWidth=13;c.lineCap='round';c.beginPath();c.moveTo(-10,2);c.lineTo(-11,43);c.moveTo(10,2);c.lineTo(11,43);c.stroke();
-      c.strokeStyle=cloth;c.lineWidth=9;c.beginPath();c.moveTo(-10,2);c.lineTo(-11,43);c.moveTo(10,2);c.lineTo(11,43);c.stroke();
-      c.fillStyle='#171a18';rrect(c,-18,63,17,9,3);c.fill();rrect(c,2,63,17,9,3);c.fill();
-      // torso, plate carrier and shoulder armour
-      c.fillStyle='rgba(0,0,0,.45)';c.beginPath();c.ellipse(0,-10,25,32,0,0,TAU);c.fill();
-      c.fillStyle=cloth;rrect(c,-22,-39,44,58,12);c.fill();
-      c.fillStyle=metal;rrect(c,-19,-28,38,39,8);c.fill();
-      c.strokeStyle='rgba(220,220,185,.5)';c.lineWidth=1.4;c.stroke();
-      for(let x=-13;x<=13;x+=13){c.fillStyle='#252d27';rrect(c,x-4,-22,8,18,2);c.fill();c.strokeStyle='rgba(220,210,170,.35)';c.stroke()}
-      c.fillStyle='#a99a66';rrect(c,-5,-6,10,5,1);c.fill();
-      // arms and gloves
-      c.strokeStyle='#1a201b';c.lineWidth=12;c.beginPath();c.moveTo(-18,-29);c.lineTo(-31,-3);c.moveTo(18,-29);c.lineTo(28,-4);c.stroke();
-      c.strokeStyle=cloth;c.lineWidth=8;c.beginPath();c.moveTo(-18,-29);c.lineTo(-31,-3);c.moveTo(18,-29);c.lineTo(28,-4);c.stroke();
-      c.fillStyle='#20251f';c.beginPath();c.arc(-31,-1,6,0,TAU);c.arc(28,-1,6,0,TAU);c.fill();
-      // neck, face and helmet
-      c.fillStyle='#bd8c68';rrect(c,-7,-49,14,14,4);c.fill();
-      c.fillStyle='#c99b75';c.beginPath();c.ellipse(0,-58,12,15,0,0,TAU);c.fill();
-      c.fillStyle='#252d29';c.beginPath();c.arc(0,-61,15,Math.PI,TAU);c.quadraticCurveTo(17,-52,12,-49);c.lineTo(-12,-49);c.quadraticCurveTo(-17,-54,-15,-61);c.fill();
-      c.fillStyle='#8d9b77';c.beginPath();c.arc(0,-62,13,Math.PI,TAU);c.quadraticCurveTo(13,-52,10,-51);c.lineTo(-10,-51);c.quadraticCurveTo(-13,-55,-13,-62);c.fill();
-      c.fillStyle='#252a24';rrect(c,-16,-57,32,4,2);c.fill();
-      // compact rifle silhouette alongside the soldier
-      c.save();c.translate(31,-24);c.rotate(.12);c.fillStyle='#161b19';rrect(c,-3,-8,7,67,2);c.fill();c.fillStyle='#626b61';rrect(c,-1.5,-7,3,49,1);c.fill();c.fillStyle='#171b18';rrect(c,-5,15,11,17,2);c.fill();c.fillStyle='#9b8c62';rrect(c,-2,4,5,8,1);c.fill();c.restore();
-      // edge highlights, straps and subtle ground shadow
-      c.strokeStyle='rgba(231,218,175,.42)';c.lineWidth=1.2;c.beginPath();c.moveTo(-14,-32);c.lineTo(-10,-19);c.lineTo(-13,4);c.moveTo(14,-32);c.lineTo(10,-19);c.lineTo(13,4);c.stroke();
-      c.restore();
-    }
+    // v181: ne pas recouvrir le personnage choisi par un soldat générique.
+
   }catch(showErr){console.error('Vitrine soldat:',showErr);try{c.restore()}catch(_){}}
   for(let i=0;i<(Q.hi?10:4);i++){const ph=(t*.25+i*.37)%1,x=S*(.2+.6*((i*.618)%1))+Math.sin(t+i)*S*.02,y=S*(.85-ph*.7);c.globalAlpha=Math.sin(ph*Math.PI)*.7;c.fillStyle=i%2?'#ffc061':'#ff6b22';c.beginPath();c.arc(x,y,S*.006+S*.004*(i%3),0,TAU);c.fill()}c.globalAlpha=1}
 const endCv=$('#endCv'),ectx=endCv.getContext('2d');

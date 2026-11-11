@@ -451,6 +451,20 @@ button:disabled{pointer-events:none}
 #q-track-filters button{flex:0 0 auto;border:1px solid var(--line);border-radius:20px;padding:6px 11px;background:var(--pan);color:var(--mut);font:700 10px var(--fh);letter-spacing:.04em}
 #q-track-filters button.on{color:#10131a;background:linear-gradient(90deg,var(--acc),var(--acc2));border-color:transparent}
 @media(max-width:700px){#radio-team{left:5px;top:40%;width:142px;max-width:37vw;padding:5px 6px}#radio-team.radio-collapsed{width:92px;max-height:31px}#radio-team .radio-members{max-height:58px}#radio-team .radio-members span{font-size:7px}#radio-team .radio-message{font-size:8px;max-height:38px}#radio-team button{padding:5px 4px;font-size:7px}}
+
+/* Menu principal : commandes larges, contrastées et immédiatement repérables. */
+#scr-main .mainnav{width:min(390px,88vw);gap:11px}
+#scr-main .nbtn{min-height:64px;padding:13px 20px 12px 23px;border:1px solid rgba(255,255,255,.16);border-inline-start:5px solid rgba(25,211,255,.58);border-radius:7px;background:linear-gradient(105deg,rgba(18,27,43,.97),rgba(12,15,23,.9));box-shadow:0 7px 18px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.09)}
+#scr-main .nbtn b{font-size:clamp(18px,2vw,22px);color:#fff;text-shadow:0 2px 8px #000}
+#scr-main .nbtn small{color:#c4ccda;font-weight:600;letter-spacing:.035em}
+#scr-main .nbtn.play{border-color:rgba(255,176,32,.65);border-inline-start-color:#ffb020;background:linear-gradient(100deg,rgba(255,122,24,.98),rgba(193,74,13,.92));box-shadow:0 8px 26px rgba(255,122,24,.27),inset 0 1px 0 rgba(255,255,255,.35)}
+#scr-main .nbtn.play b,#scr-main .nbtn.play small{color:#fff}
+#scr-main .nbtn:not(.play):hover,#scr-main .nbtn:not(.play):focus-visible{border-color:rgba(25,211,255,.75);border-inline-start-color:#19d3ff;background:linear-gradient(100deg,rgba(25,95,128,.88),rgba(15,22,34,.96));transform:translateX(3px)}
+#scr-main .nbtn.play:hover,#scr-main .nbtn.play:focus-visible{filter:brightness(1.12);transform:translateX(3px);outline:2px solid rgba(255,210,120,.55);outline-offset:2px}
+#scr-main .nbtn:active{filter:brightness(1.2);transform:scale(.985)}
+#scr-main .nbtn .ic{width:19px;height:19px;vertical-align:-3px;margin-inline-end:7px}
+@media(max-width:700px){#scr-main{gap:16px;padding-inline-start:18px;padding-inline-end:18px}#scr-main .mainnav{width:min(390px,92vw);gap:8px}#scr-main .nbtn{min-height:57px;padding:10px 15px 9px 18px}#scr-main .nbtn b{font-size:18px}#scr-main .nbtn small{font-size:11px}}
+
 </style>
 </head>
 <body>
@@ -2261,8 +2275,14 @@ function radioAdvice() {
   if(G.cfg.mode==='race'&&rankOf(p)>1) return LANG==='en'?'STRATEGIST: Keep a clean line; use the slipstream before attempting an overtake.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: حافظ على خط قيادة نظيف واستفد من تيار الهواء قبل التجاوز.':'STRATÈGE : garde une trajectoire propre et profite de l’aspiration avant de dépasser.');
   return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
 }
-function radioCall() {
+let radioAutoFold = 0;
+function radioCall(automatic = false) {
   if(!G.player||!G.T) return;
+  if(automatic){
+    const panel=$('radio-team');panel.classList.remove('radio-collapsed');
+    $('radio-toggle').textContent='−';$('radio-toggle').setAttribute('aria-expanded','true');
+    clearTimeout(radioAutoFold);radioAutoFold=setTimeout(()=>{if(G.state==='race'){panel.classList.add('radio-collapsed');$('radio-toggle').textContent='＋';$('radio-toggle').setAttribute('aria-expanded','false');}},8500);
+  }
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
@@ -2837,13 +2857,13 @@ function buildTrack(def, quality) {
   // Public 3D : gradins et silhouettes de spectateurs sur les circuits urbains, côtiers et au stade.
   // Les personnages sont regroupés dans les chunks du décor pour préserver les performances mobiles.
   if (theme === 'circuit' || theme === 'city' || theme === 'coast') {
-    const crowdStep = theme === 'circuit' ? 26 : 48;
+    const crowdStep = theme === 'circuit' ? 22 : 40;
     const crowdSides = theme === 'circuit' ? [-1, 1] : [-1, 1];
     const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55]];
     const shirts = [[0.78,0.12,0.1],[0.08,0.22,0.48],[0.9,0.82,0.65],[0.12,0.42,0.28],[0.88,0.48,0.08],[0.22,0.2,0.24]];
     for (let i = 20; i < N; i += crowdStep) for (const side of crowdSides) {
       const mb = ch(rk(i)), stadium = theme === 'circuit', baseD = stadium ? W + 12 : W + 7.5;
-      const count = stadium ? 12 : 7, rows = stadium ? 4 : 2;
+      const count = stadium ? 14 : 9, rows = stadium ? 5 : 3;
       // Gradins simples, béton clair et garde-corps rouge/blanc.
       if (stadium) {
         for (let row = 0; row < rows; row++) {
@@ -4554,7 +4574,10 @@ function updateGame(dt) {
   const racing = G.state === 'race';
   let inp = readInput(dt);
   if (!racing) { const fin = G.state === 'finish', rv = inp.gas; inp.gas = 0; inp.brake = fin ? 0.35 : 0; inp.steer = fin ? clamp(-p.d * 0.05, -0.3, 0.3) : 0; inp.hand = false; inp.nitro = false; inp.rev = fin ? 0 : rv; inp.hold = !fin; if (!fin) { G.steer = 0; G.inputGas = 0; G.inputBrake = 0; } }
-  if (racing) G.raceT += dt;
+  if (racing) {
+    G.raceT += dt;
+    if (G.raceT >= (G.radioNext || 12)) { radioCall(true); G.radioNext = G.raceT + 22; }
+  }
   // physique (sous-pas)
   const h = 1 / 120; G.acc = Math.min(0.1, (G.acc || 0) + dt);
   while (G.acc >= h) {
@@ -5294,6 +5317,7 @@ const UI = {
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
         G.camMode = SAVE.settings.cam; G.resultsShown = false;
         setupRace(cfg);
+        G.radioNext = 12;
       } catch (e) { console.error(e); showErr(e.message); return; }
       $('loading').classList.remove('show'); $('hud').classList.remove('hidden');
       const tt = SAVE.settings.touch === 'on' || (SAVE.settings.touch === 'auto' && IS_TOUCH);

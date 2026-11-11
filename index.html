@@ -17,9 +17,9 @@
 :root{--acc:#ff7a18;--acc2:#ffb020;--cy:#19d3ff;--blue:#2f7de1;--bg:#0b0e17;--pan:rgba(11,14,23,.8);--line:rgba(233,225,211,.1);--txt:#ece6da;--mut:#8d93a3;--red:#ff3b3b;--ok:#39e07a;
 --fh:'Russo One','Arial Black',Impact,sans-serif;--fb:'Chakra Petch','Segoe UI',Roboto,Arial,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--fb);user-select:none;-webkit-user-select:none;touch-action:none}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--fb);user-select:none;-webkit-user-select:none;touch-action:pan-y;overscroll-behavior:none}
 button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none}
-#gl{position:fixed;inset:0;width:100%;height:100%;height:100dvh;display:block}
+#gl{position:fixed;inset:0;width:100%;height:100%;height:100dvh;display:block;touch-action:none;overscroll-behavior:none}
 .hidden{display:none!important}
 /* ---------- logo ---------- */
 .logo{font-family:var(--fh);font-size:34px;letter-spacing:.02em;font-style:italic;line-height:.9;color:#fff;text-shadow:0 0 18px rgba(255,122,24,.35)}
@@ -205,7 +205,7 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .hbtn{width:48px;height:44px;background:rgba(10,11,15,.6);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}.hbtn svg{width:22px;height:22px}
 #h-tt{position:absolute;top:max(14px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);margin-top:48px;font-family:var(--fb);font-weight:700;font-size:15px;color:#fff;background:rgba(0,0,0,.4);padding:4px 12px}
 /* tactile */
-#touch{position:absolute;inset:0;pointer-events:none}
+#touch{position:absolute;inset:0;pointer-events:none;touch-action:none;overscroll-behavior:none}
 #touch button{pointer-events:auto;position:absolute;background:linear-gradient(145deg,rgba(28,31,40,.78),rgba(8,10,15,.62));border:1.5px solid rgba(255,255,255,.34);color:#fff;font-family:var(--fh);font-size:15px;touch-action:none;border-radius:22px;opacity:var(--touch-op,.82);display:flex;align-items:center;justify-content:center;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;transition:background .08s,border-color .08s,box-shadow .08s,filter .08s}
 #touch button svg{width:48%;height:48%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
 #touch .tl button.on{background:linear-gradient(145deg,rgba(35,155,245,.98),rgba(10,75,150,.96));border-color:#d5f0ff;box-shadow:0 0 0 4px rgba(35,155,245,.28),0 9px 28px rgba(0,0,0,.5)}
@@ -284,7 +284,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 #rotate .rotic svg{width:72px;height:72px;color:#fff}
 /* joystick tactile */
 body[data-steer=stick] #touch .tl,body[data-steer=tilt] #touch .tl{display:none}
-#stick{position:absolute;left:0;top:64px;bottom:0;width:46%;pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:0;top:64px;bottom:0;width:46%;pointer-events:auto;touch-action:none;overscroll-behavior:none}
 #stick .ring,#stick .knob{position:absolute;left:0;top:0;border-radius:50%;pointer-events:none}
 #stick .ring{width:128px;height:128px;margin:-64px 0 0 -64px;border:3px solid rgba(255,255,255,.35);background:rgba(10,11,15,.25);opacity:calc(var(--touch-op,.75)*.7)}
 #stick .knob{width:58px;height:58px;margin:-29px 0 0 -29px;background:rgba(255,255,255,.55);box-shadow:0 0 0 3px rgba(255,122,24,.6);opacity:var(--touch-op,.75)}
@@ -5627,6 +5627,19 @@ function applySettings() {
   else if (s.quality === 'high') { R.bloomScale = 0; PR = Math.min(dpr, IS_TOUCH ? 1.3 : 1.75); R.post = true; R.bloom = false; R.aa = true; R.rays = false; G.drawMul = 1.06; G.lodNear = 50; R.detail = 1.12; R.shadows = true; R.shadowSize = IS_TOUCH ? 1536 : 2048; }
   else if (s.quality === 'medium') { R.bloomScale = 0; PR = Math.min(dpr, 1.25); R.post = true; R.bloom = false; R.aa = true; R.rays = false; G.drawMul = 0.92; G.lodNear = 30; R.detail = 1.04; R.shadows = true; R.shadowSize = 1024; }
   else { R.bloomScale = 0; PR = Math.min(dpr, 0.9); R.post = false; R.bloom = false; R.aa = false; R.rays = false; G.drawMul = 0.62; G.lodNear = 16; R.detail = 0; R.shadows = false; }
+  // Profil mobile adaptatif : évite les saccades et pertes WebGL sur les téléphones modestes.
+  // Les réglages graphiques choisis restent respectés sur ordinateur.
+  if (IS_TOUCH) {
+    const mem = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
+    const modest = (mem > 0 && mem <= 4) || (cores > 0 && cores <= 4);
+    PR = Math.min(PR, modest ? 0.92 : 1.08);
+    R.shadowSize = modest ? 512 : 768;
+    R.shadows = s.quality !== 'low';
+    R.bloom = false; R.rays = false;
+    R.detail = Math.min(R.detail, modest ? 0.65 : 0.9);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.72 : 0.86);
+    G.lodNear = Math.min(G.lodNear, modest ? 20 : 28);
+  }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;
   if (R.post && !R.fbo) R.makeFBOs();

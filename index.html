@@ -3272,6 +3272,20 @@ function buildTrack(def, quality) {
         }
       }
     }
+    // Traversées piétonnes urbaines : passages zébrés et lignes d'arrêt,
+    // espacés pour donner une vraie lecture de boulevard sans surcharger le GPU.
+    for (let i = 48; i < N - 8; i += 156) {
+      if (inTun(i, 10) || Math.abs(kk[i]) > 0.012) continue;
+      const mb = ch(rk(i)), j = i + 2;
+      for (let lane = -3; lane <= 3; lane++) {
+        const d = lane * 2.15;
+        mb.quad(pos(i, d - 0.34, 0.045), pos(i, d + 0.34, 0.045),
+          pos(j, d + 0.34, 0.045), pos(j, d - 0.34, 0.045), [0.88, 0.89, 0.87], 2);
+      }
+      const a = i - 2, b = i - 1;
+      mb.quad(pos(a, -W + 0.35, 0.052), pos(a, W - 0.35, 0.052),
+        pos(b, W - 0.35, 0.052), pos(b, -W + 0.35, 0.052), [0.92, 0.92, 0.9], 2);
+    }
     // ligne d'horizon
     for (let k = 0; k < 140; k++) {
       const x = cx + (r() - 0.5) * (rad * 2 + 900), z = cz + (r() - 0.5) * (rad * 2 + 900), s = 25 + r() * 35;

@@ -2457,6 +2457,24 @@ function radioAdvice() {
   if(G.cfg.mode==='chase') return LANG==='en'?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
   return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
 }
+let radioVoiceUnlocked = false;
+function unlockTeamVoice() {
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth || !window.SpeechSynthesisUtterance) return false;
+    synth.resume();
+    if (!radioVoiceUnlocked) {
+      const primer = new SpeechSynthesisUtterance(' ');
+      primer.lang = LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
+      primer.volume = 0; primer.rate = 1;
+      primer.onend = () => { radioVoiceUnlocked = true; };
+      primer.onerror = () => { radioVoiceUnlocked = true; };
+      synth.speak(primer);
+      radioVoiceUnlocked = true;
+    }
+    return true;
+  } catch(e) { console.warn('Radio vocale indisponible:',e); return false; }
+}
 let radioAutoFold = 0;
 function radioCall(automatic = false) {
   if(!G.player||!G.T) return;
@@ -2468,16 +2486,22 @@ function radioCall(automatic = false) {
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
-  // Consignes vocales automatiques pendant la course (après le geste de démarrage du joueur).
+  // Lecture de la consigne radio : moteur déverrouillé au premier toucher utilisateur.
   try {
-    if(window.speechSynthesis && window.SpeechSynthesisUtterance) {
-      window.speechSynthesis.cancel();
+    const synth=window.speechSynthesis;
+    if(synth && window.SpeechSynthesisUtterance) {
+      synth.resume();
       const voice=new SpeechSynthesisUtterance($('radio-message').textContent);
       voice.lang=LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
       voice.rate=0.92;voice.pitch=0.96;voice.volume=1;
-      window.speechSynthesis.speak(voice);
+      const voices=synth.getVoices();
+      const preferred=voices.find(v=>v.lang.toLowerCase()===voice.lang.toLowerCase())
+        || voices.find(v=>v.lang.toLowerCase().startsWith(voice.lang.slice(0,2).toLowerCase()));
+      if(preferred) voice.voice=preferred;
+      voice.onerror=e=>console.warn('Erreur synthèse vocale radio:',e.error);
+      synth.speak(voice);
     }
-  } catch(e) {}
+  } catch(e) { console.warn('Lecture radio impossible:',e); }
 }
 // bonus volontairement modestes : le pilote donne un style, la voiture reste décisive
 const PERKS = {
@@ -5872,7 +5896,7 @@ function bindInputs() {
   document.addEventListener('visibilitychange', () => { if (document.hidden && (G.state === 'race' || G.state === 'countdown')) UI.pause(true); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
   addEventListener('pagehide', () => saveGame());
-  addEventListener('pointerdown', () => { AU.init(); if (G.state === 'menu') MUS.play('menu'); }, { capture: true });
+  addEventListener('pointerdown', () => { AU.init(); unlockTeamVoice(); if (G.state === 'menu') MUS.play('menu'); }, { capture: true });
   addEventListener('contextmenu', e => { if (G.state !== 'menu') e.preventDefault(); });
   // Pont tactile fiable : déclenche les mêmes gestionnaires click que la souris,
   // sans interférer avec les commandes maintenues (accélérateur, frein, joystick).
@@ -5921,7 +5945,7 @@ function bindInputs() {
   const up = () => { GAR.drag = false; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
   cv.addEventListener('wheel', e => { if (G.state === 'menu') GAR.zoom = clamp(GAR.zoom + e.deltaY * 0.001, 0.7, 1.4); }, { passive: true });
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { AU.shot(700, 0.04, 'sine', 0.05); UI.show(b.dataset.go); }));
-  $('m-play').onclick = () => { AU.shot(900, 0.06, 'sine', 0.07); UI.startRace(UI.nextCfg()); };
+  $('m-play').onclick = () => { unlockTeamVoice(); AU.shot(900, 0.06, 'sine', 0.07); UI.startRace(UI.nextCfg()); };
   document.querySelectorAll('#langs button').forEach(b => b.onclick = () => { SAVE.settings.lang = LANG = b.dataset.l; saveGame(); UI.refresh(); });
   document.querySelectorAll('#g-tabs button').forEach(b => b.onclick = () => { UI.tab = b.dataset.tab; UI.renderGarage(); });
   $('q-laps').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.laps = clamp(UI.q.laps + +b.dataset.d, 1, 6); UI.renderQuick(); });
@@ -5929,7 +5953,7 @@ function bindInputs() {
   $('q-diff').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.diff = +b.dataset.v; UI.renderQuick(); });
   $('q-traf').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.traffic = +b.dataset.v; UI.renderQuick(); });
   $('q-wx').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.weather = +b.dataset.v; UI.renderQuick(); });
-  $('q-go').onclick = () => { const q = UI.q; UI.startRace({ mode: q.mode, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined }); };
+  $('q-go').onclick = () => { unlockTeamVoice(); const q = UI.q; UI.startRace({ mode: q.mode, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined }); };
   $('p-resume').onclick = () => UI.pause(false);
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };
   $('p-quit').onclick = () => UI.quit();

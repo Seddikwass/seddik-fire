@@ -501,6 +501,41 @@ button:disabled{pointer-events:none}
   #hud #touch [data-t=gas]{height:clamp(82px,12vw,104px)!important}
 }
 
+
+/* Mobile landscape controls: compact steering pair on the left, all driving pedals on the right */
+@media (hover:none) and (orientation:landscape) {
+  #touch .tl { position:absolute!important; inset:0!important; pointer-events:none!important; }
+  #touch .tl button {
+    position:absolute!important; bottom:max(14px,env(safe-area-inset-bottom))!important;
+    top:auto!important; width:54px!important; height:54px!important; min-width:54px!important; min-height:54px!important;
+    font-size:21px!important; border-radius:14px!important;
+  }
+  #touch [data-t=left] { left:max(14px,env(safe-area-inset-left))!important; right:auto!important; }
+  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + 62px)!important; right:auto!important; }
+  #touch .tr { position:absolute!important; inset:0!important; pointer-events:none!important; }
+  #touch .tr button { pointer-events:auto!important; }
+  #touch [data-t=gas] {
+    right:max(16px,env(safe-area-inset-right))!important; left:auto!important;
+    bottom:max(14px,env(safe-area-inset-bottom))!important; top:auto!important;
+    width:76px!important; height:116px!important; min-width:76px!important; min-height:76px!important;
+  }
+  #touch [data-t=brake] {
+    right:calc(max(16px,env(safe-area-inset-right)) + 86px)!important; left:auto!important;
+    bottom:max(14px,env(safe-area-inset-bottom))!important; top:auto!important;
+    width:62px!important; height:62px!important; min-width:62px!important; min-height:62px!important;
+  }
+  #touch [data-t=hand] {
+    right:max(16px,env(safe-area-inset-right))!important; left:auto!important;
+    bottom:calc(max(14px,env(safe-area-inset-bottom)) + 126px)!important; top:auto!important;
+    width:76px!important; height:48px!important; min-width:76px!important; min-height:48px!important;
+  }
+  #touch [data-t=nitro] {
+    right:calc(max(16px,env(safe-area-inset-right)) + 86px)!important; left:auto!important;
+    bottom:calc(max(14px,env(safe-area-inset-bottom)) + 74px)!important; top:auto!important;
+    width:62px!important; height:48px!important; min-width:62px!important; min-height:48px!important;
+  }
+}
+
 </style>
 </head>
 <body>

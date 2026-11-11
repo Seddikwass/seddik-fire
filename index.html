@@ -214,9 +214,9 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 #touch button{will-change:transform;transition:transform .09s ease-out,background .1s,border-color .1s,box-shadow .1s}
 #touch button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media(hover:none){#touch button{backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);box-shadow:0 5px 18px rgba(0,0,0,.24)}}
-#touch .tl button{bottom:max(26px,env(safe-area-inset-bottom));width:clamp(104px,23vw,144px);height:clamp(104px,23vw,144px);font-size:42px;border-radius:50%;border-width:2px;box-shadow:0 7px 25px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.2);touch-action:none;user-select:none;-webkit-user-select:none}
-#touch [data-t=left]{left:max(22px,env(safe-area-inset-left));background:linear-gradient(145deg,rgba(17,91,150,.9),rgba(6,27,54,.88));border-color:rgba(100,190,255,.85)}
-#touch [data-t=right]{left:calc(max(22px,env(safe-area-inset-left)) + clamp(104px,23vw,144px) + 12px);background:linear-gradient(145deg,rgba(17,91,150,.9),rgba(6,27,54,.88));border-color:rgba(100,190,255,.85)}
+#touch .tl button{bottom:max(22px,env(safe-area-inset-bottom));width:clamp(68px,14vw,86px);height:clamp(68px,14vw,86px);font-size:28px;border-radius:50%;border-width:2px;box-shadow:0 5px 16px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.2);touch-action:none;user-select:none;-webkit-user-select:none; -webkit-tap-highlight-color:transparent}
+#touch [data-t=left]{left:max(16px,env(safe-area-inset-left));background:linear-gradient(145deg,rgba(17,91,150,.94),rgba(6,27,54,.92));border-color:rgba(100,190,255,.9)}
+#touch [data-t=right]{left:calc(max(16px,env(safe-area-inset-left)) + clamp(68px,14vw,86px) + 7px);background:linear-gradient(145deg,rgba(17,91,150,.94),rgba(6,27,54,.92));border-color:rgba(100,190,255,.9)}
 #touch [data-t=gas]{right:max(18px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));width:clamp(72px,17vw,104px);height:clamp(112px,29vw,164px);border-radius:24px}
 #touch [data-t=brake]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(72px,17vw,104px) + 12px);bottom:max(22px,env(safe-area-inset-bottom));width:clamp(66px,15vw,92px);height:clamp(66px,15vw,92px);border-radius:50%}
 #touch [data-t=nitro]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(72px,17vw,104px) + 12px);bottom:calc(max(22px,env(safe-area-inset-bottom)) + clamp(66px,15vw,92px) + 12px);width:clamp(66px,15vw,92px);height:clamp(48px,10vw,64px);color:#9ef;border-color:rgba(25,211,255,.62);border-radius:16px}
@@ -4126,9 +4126,13 @@ function readInput(dt) {
     steerTarget = a <= dz ? 0 : Math.sign(analog) * Math.pow((a - dz) / (1 - dz), 1.08);
   }
   const digitalSteer = analog === null && st !== 0;
-  const steerRate = digitalSteer ? 22 : (steerTarget === 0 ? 12 : 10);
-  G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
-  if (digitalSteer && Math.abs(steerTarget - G.steer) < 0.018) G.steer = steerTarget;
+  // Les flèches tactiles sont une commande numérique franche : appliquer l'angle dès la frame du toucher.
+  // Le lissage physique reste dans le lacet du véhicule, pas dans la lecture du bouton.
+  if (digitalSteer) G.steer = steerTarget;
+  else {
+    const steerRate = steerTarget === 0 ? 14 : 12;
+    G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
+  }
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.105 : 0.145)));
   G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.085 : 0.16)));
@@ -4146,8 +4150,8 @@ function physPlayer(c, dt, inp) {
   const spd = Math.abs(vf);
   // Direction assistée renforcée : davantage d'angle utile à vitesse élevée,
   // sans rendre le véhicule incontrôlable à faible vitesse.
-  let yawMax = Math.min(3.0, (st.lat * 2.05) / Math.max(spd, 5));
-  if (spd < 3) yawMax *= spd / 3;
+  let yawMax = Math.min(3.4, (st.lat * 2.65) / Math.max(spd, 4));
+  if (spd < 2.5) yawMax *= spd / 2.5;
   let target = (c.model.bike ? 1 : -1) * inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   if (inp.hand && spd > 8) target *= 1.45; else if (c.sliding) target *= 1.12;
   c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));

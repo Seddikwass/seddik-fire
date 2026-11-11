@@ -4533,7 +4533,7 @@ function drawPreview(){
   try{drawShowcase(sctx,S,{sk:SOLDIERS[skinI],skin:'#c8946a',slot:{type:stats.sidearm,mag:1},vest:0,cust:stats.cust})}catch(err){console.warn('Aperçu détaillé indisponible',err)}
   // Repaint the lobby preview on a freshly reset canvas. This deliberately
   // avoids inheriting a broken transform/clip/save stack from the legacy renderer.
-  drawLobbySoldierGuaranteed(S);
+  // v180: preserve the selected character preview instead of overwriting it with a fixed generic soldier.
 }
 function drawLobbySoldierGuaranteed(S){
   skinCv.width=S;skinCv.height=S;

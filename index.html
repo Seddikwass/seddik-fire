@@ -2697,7 +2697,7 @@ function buildTrack(def, quality) {
   const W = W_HALF, theme = def.theme;
   const T = { def, W, theme, lamps: [] };
   const P = def.pts.map(p => [p[0], p[2], p[1]]), n = P.length, dense = [];
-  for (let i = 0; i < n; i++) { const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n]; for (let k = 0; k < 40; k++) dense.push(crPoint(p0, p1, p2, p3, k / 40)); }
+  for (let i = 0; i < n; i++) { const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n]; const curveSteps = IS_TOUCH ? 24 : 40; for (let k = 0; k < curveSteps; k++) dense.push(crPoint(p0, p1, p2, p3, k / curveSteps)); }
   const DN = dense.length, cum = new Float64Array(DN + 1);
   for (let i = 1; i <= DN; i++) { const a = dense[i - 1], b = dense[i % DN]; cum[i] = cum[i - 1] + Math.hypot(b[0] - a[0], b[2] - a[2]); }
   const total = cum[DN], N = Math.round(total / 2), ds = total / N;
@@ -4407,7 +4407,7 @@ function setupRace(cfg) {
   G.rb = diff.rb;
   const names = AI_NAMES.slice().sort(() => Math.random() - 0.5);
   if (cfg.mode === 'race') {
-    const total = Math.min(cfg.opp + 1, IS_TOUCH ? 5 : cfg.opp + 1), pslot = Math.min(total - 1, Math.max(1, Math.floor(total / 2)));
+    const total = Math.min(cfg.opp + 1, IS_TOUCH ? 4 : cfg.opp + 1), pslot = Math.min(total - 1, Math.max(1, Math.floor(total / 2)));
     for (let k = 0; k < total; k++) {
       const s = T.L - 10 - Math.floor(k / 2) * 9, d = k % 2 ? 3.8 : -3.8;
       if (k === pslot) { placeOnTrack(p, s, d); p.progress = s - T.L; continue; }
@@ -4432,7 +4432,7 @@ function setupRace(cfg) {
   G.cars.unshift(p);
   if (cfg.traffic) {
     const models = ['sedan', 'louage', 'taxi', 'taxi', 'van', 'truck', 'sedan', 'louage'];
-    const n = IS_TOUCH ? (cfg.mode === 'chase' ? 7 : 5) : (cfg.mode === 'chase' ? 14 : 10);
+    const n = IS_TOUCH ? (cfg.mode === 'chase' ? 5 : 3) : (cfg.mode === 'chase' ? 14 : 10);
     for (let k = 0; k < n; k++) {
       const mn = models[k % models.length], lane = [-6, -2, 2, 6][Math.floor(Math.random() * 4)];
       const col = mn === 'taxi' ? [1, 0.8, 0.08] : mn === 'louage' ? [0.94, 0.94, 0.92] : hexToRgb(['#7a7f86', '#c9c9c9', '#3b4a63', '#6b2a2a', '#2e4d3a', '#e8e4dc', '#1c1c1e', '#8a6d3b'][Math.floor(Math.random() * 8)]);
@@ -5688,13 +5688,13 @@ function applySettings() {
     const mem = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
     const modest = (mem > 0 && mem <= 4) || (cores > 0 && cores <= 4);
     // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
-    PR = Math.min(PR, modest ? 0.48 : 0.62);
+    PR = Math.min(PR, modest ? 0.62 : 0.78);
     R.shadowSize = 256;
     R.shadows = false;
     R.bloom = false; R.rays = false; R.post = false; R.aa = false;
-    R.detail = Math.min(R.detail, modest ? 0.18 : 0.28);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.32 : 0.40);
-    G.lodNear = Math.min(G.lodNear, modest ? 7 : 10);
+    R.detail = Math.min(R.detail, modest ? 0.32 : 0.48);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.42 : 0.56);
+    G.lodNear = Math.min(G.lodNear, modest ? 10 : 15);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;

@@ -2863,14 +2863,14 @@ function buildTrack(def, quality) {
   // Public 3D : gradins et silhouettes de spectateurs sur les circuits urbains, côtiers et au stade.
   // Les personnages sont regroupés dans les chunks du décor pour préserver les performances mobiles.
   { // Public présent sur tous les environnements de course.
-    const crowdStep = theme === 'circuit' ? 20 : 26;
-    const crowdSides = theme === 'circuit' ? [-1, 1] : [-1, 1];
-    const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55],[0.72,0.52,0.37],[0.34,0.22,0.16]];
+    const crowdStep = theme === 'circuit' ? 24 : 30;
+    const crowdSides = [-1, 1];
+    const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55],[0.72,0.52,0.37],[0.34,0.22,0.16],[0.76,0.57,0.42]];
     const shirts = [[0.78,0.12,0.1],[0.08,0.22,0.48],[0.9,0.82,0.65],[0.12,0.42,0.28],[0.88,0.48,0.08],[0.22,0.2,0.24],[0.04,0.55,0.62],[0.58,0.12,0.62],[0.92,0.76,0.12]];
+    const hair = [[0.09,0.055,0.035],[0.22,0.12,0.065],[0.38,0.22,0.1],[0.055,0.045,0.04],[0.62,0.42,0.2]];
     for (let i = 20; i < N; i += crowdStep) for (const side of crowdSides) {
       const mb = ch(rk(i)), stadium = theme === 'circuit', baseD = stadium ? W + 12 : W + 7.5;
-      const count = stadium ? 16 : 14, rows = stadium ? 5 : 3;
-      // Gradins simples, béton clair et garde-corps rouge/blanc.
+      const count = stadium ? 12 : 10, rows = stadium ? 4 : 3;
       if (stadium) {
         for (let row = 0; row < rows; row++) {
           const d = side * (baseD + row * 1.65), p = pos(i, d, 0.55 + row * 0.62);
@@ -2880,18 +2880,30 @@ function buildTrack(def, quality) {
         mb.box(rail[0], rail[1], rail[2], 17, 0.12, 0.12, [0.82,0.12,0.1], 4, hd[i]);
       }
       for (let row = 0; row < rows; row++) for (let n = 0; n < count; n++) {
-        const along = (n - (count - 1) / 2) * (stadium ? 1.42 : 1.25) + ((row % 2) * 0.28);
+        const along = (n - (count - 1) / 2) * (stadium ? 1.52 : 1.38) + ((row % 2) * 0.3);
         const d = side * (baseD + (stadium ? row * 1.65 : row * 1.15));
         const pp = pos(i, d, stadium ? 0.95 + row * 0.62 : 0.7 + row * 0.72);
         const x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
+        const female = (n + row + Math.floor(i / crowdStep)) % 2 === 0;
         const shirt = shirts[(i + n * 3 + row * 2) % shirts.length], tone = skin[(n + i + row) % skin.length];
-        // Silhouette assise : torse, tête et bras levés pour animer visuellement les tribunes.
-        mb.box(x, y + 0.52, z, 0.42, 0.72, 0.34, shirt, 3, hd[i]);
-        mb.box(x, y + 1.02, z, 0.31, 0.31, 0.31, tone, 3, hd[i]);
-        if ((n + row + i) % 2 === 0) {
-          const arm = pos(i, d + side * 0.18, (stadium ? 1.65 + row * 0.62 : 1.35 + row * 0.72));
-          mb.box(arm[0] + tx[i] * along, arm[1], arm[2] + tz[i] * along, 0.13, 0.62, 0.13, tone, 3, hd[i]);
-        }
+        const hc = hair[(n * 2 + row + i) % hair.length];
+        // Personnages 3D : têtes, cous, bustes, bassins et membres individualisés.
+        sphere(mb, x, y + 1.18, z, female ? 0.155 : 0.17, tone, 3, -Math.PI / 2, Math.PI / 2, 9, 1.12, 0.92);
+        sphere(mb, x, y + 1.29, z - 0.025, 0.17, hc, 3, -0.05, Math.PI / 2, 8, 0.78, 0.95);
+        bar(mb, [x, y + 0.97, z], [x, y + 0.82, z], 0.065, tone, 3, 0.06, 6);
+        sphere(mb, x, y + 0.61, z, female ? 0.235 : 0.25, shirt, 3, -Math.PI / 2, Math.PI / 2, 9, 1.35, 0.78);
+        sphere(mb, x, y + 0.34, z, 0.19, shirt, 3, -Math.PI / 2, Math.PI / 2, 8, 0.72, 0.78);
+        const shoulderL = [x - 0.19, y + 0.78, z], shoulderR = [x + 0.19, y + 0.78, z];
+        const waving = (n + row + i) % 3 !== 1;
+        const handL = waving ? [x - 0.34, y + 1.28, z] : [x - 0.36, y + 0.48, z + 0.02];
+        const handR = [x + 0.36, y + (waving ? 1.22 : 0.5), z + 0.02];
+        bar(mb, shoulderL, handL, 0.065, shirt, 3, 0.055, 6);
+        bar(mb, shoulderR, handR, 0.065, shirt, 3, 0.055, 6);
+        sphere(mb, handL[0], handL[1], handL[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 6);
+        sphere(mb, handR[0], handR[1], handR[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 6);
+        const legC = [0.09,0.09,0.1];
+        bar(mb, [x - 0.1, y + 0.28, z], [x - 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 6);
+        bar(mb, [x + 0.1, y + 0.28, z], [x + 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 6);
       }
       // Panneaux publicitaires de course, espacés pour préserver les performances mobiles.
       if (Math.floor(i / crowdStep) % 4 === 1) {
@@ -2907,12 +2919,15 @@ function buildTrack(def, quality) {
           mb.box(sp[0] + tx[i] * off, sp[1], sp[2], 0.16, 2.3, 0.16, [0.16,0.19,0.23], 2, hd[i]);
         }
       }
-      // Petit drapeau tunisien stylisé sur les zones de tribunes.
-      if (i % (crowdStep * 3) === 20) {
-        const fp = pos(i, side * (baseD + 6), 4.3);
-        mb.box(fp[0], fp[1] + 1.1, fp[2], 0.09, 2.2, 0.09, [0.82,0.82,0.8], 0, hd[i]);
-        mb.box(fp[0], fp[1] + 2.0, fp[2], 1.05, 0.68, 0.08, [0.82,0.06,0.08], 2, hd[i]);
-        mb.box(fp[0], fp[1] + 2.0, fp[2] + 0.055, 0.38, 0.38, 0.04, [0.96,0.94,0.9], 2, hd[i]);
+      // Drapeau tunisien rouge et blanc répété le long de tous les circuits.
+      if (Math.floor(i / crowdStep) % 2 === 0) {
+        const fp = pos(i, side * (baseD + 6.2), 4.45);
+        mb.box(fp[0], fp[1] + 1.18, fp[2], 0.085, 2.36, 0.085, [0.72,0.73,0.75], 0, hd[i]);
+        mb.box(fp[0], fp[1] + 2.18, fp[2], 1.42, 0.9, 0.09, [0.82,0.035,0.055], 2, hd[i]);
+        mb.box(fp[0], fp[1] + 2.18, fp[2] + 0.055, 0.53, 0.53, 0.045, [0.98,0.96,0.91], 2, hd[i]);
+        mb.box(fp[0] - 0.045, fp[1] + 2.18, fp[2] + 0.083, 0.24, 0.29, 0.025, [0.82,0.035,0.055], 2, hd[i]);
+        mb.box(fp[0] + 0.095, fp[1] + 2.18, fp[2] + 0.1, 0.12, 0.16, 0.025, [0.82,0.035,0.055], 2, hd[i]);
+        mb.box(fp[0] + 0.19, fp[1] + 2.18, fp[2] + 0.12, 0.09, 0.09, 0.025, [0.98,0.96,0.91], 2, hd[i]);
       }
     }
   }

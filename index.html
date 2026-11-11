@@ -2487,9 +2487,9 @@ function unlockTeamVoice() {
     if (!synth || !window.SpeechSynthesisUtterance) return false;
     synth.resume();
     if (!radioVoiceUnlocked) {
-      const primer = new SpeechSynthesisUtterance(' ');
+      const primer = new SpeechSynthesisUtterance('Radio équipe activée.');
       primer.lang = LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
-      primer.volume = 1; primer.rate = 1; primer.text = 'Radio équipe activée.';
+      primer.volume = 1; primer.rate = 1;
       primer.onend = () => { radioVoiceUnlocked = true; };
       primer.onerror = () => { radioVoiceUnlocked = true; };
       synth.speak(primer);

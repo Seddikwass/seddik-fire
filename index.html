@@ -414,6 +414,21 @@ button:disabled{pointer-events:none}
 #hud .hud-br:has(#speedo){filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))}
 #hud .nos{filter:drop-shadow(0 2px 3px rgba(0,0,0,.65))}
 
+
+/* Habillage premium et interface radio de l'équipe de course. */
+#radio-team{position:absolute;left:max(18px,env(safe-area-inset-left));top:170px;width:min(292px,34vw);pointer-events:auto;color:#f5f7fb;background:linear-gradient(135deg,rgba(8,15,25,.95),rgba(17,27,41,.88));border:1px solid rgba(91,190,235,.42);border-left:3px solid #21b9dc;border-radius:10px;padding:10px 12px;box-shadow:0 10px 32px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(10px);font-family:'Chakra Petch',sans-serif}
+#radio-team .radio-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;letter-spacing:1.4px;font-weight:800;color:#7edcf5}
+#radio-team .radio-live{display:inline-flex;align-items:center;gap:5px;color:#ff7777;font-size:9px;letter-spacing:1px}
+#radio-team .radio-live i{width:6px;height:6px;border-radius:50%;background:#ff5252;box-shadow:0 0 9px #ff5252}
+#radio-team .radio-members{display:grid;grid-template-columns:1fr 1fr;gap:4px 9px;margin:7px 0 8px}
+#radio-team .radio-members span{font-size:10px;color:#d0d8e4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#radio-team .radio-members b{color:#fff;font-weight:700}
+#radio-team .radio-message{font:600 11px/1.4 'Chakra Petch',sans-serif;color:#fff;background:rgba(255,255,255,.07);border-radius:6px;padding:7px 8px;min-height:31px;margin-bottom:7px}
+#radio-team button{width:100%;border:1px solid rgba(74,205,240,.65);border-radius:6px;background:linear-gradient(180deg,#176b83,#104253);color:#fff;font:800 10px 'Chakra Petch',sans-serif;letter-spacing:1px;padding:8px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+#radio-team button:active{transform:translateY(1px);filter:brightness(1.2)}
+#radio-team.radio-ping{animation:radioPing .35s ease}
+@keyframes radioPing{50%{border-color:#fff;box-shadow:0 0 18px rgba(65,205,245,.65)}}
+@media(max-width:700px){#radio-team{top:142px;left:8px;width:min(226px,43vw);padding:7px 8px}#radio-team .radio-members{gap:2px 5px;margin:5px 0}#radio-team .radio-members span{font-size:9px}#radio-team .radio-message{font-size:10px;padding:5px 6px;min-height:28px}#radio-team button{padding:6px;font-size:9px}}
 </style>
 </head>
 <body>
@@ -508,6 +523,12 @@ button:disabled{pointer-events:none}
     <div class="nos" id="h-nosbox"><svg viewBox="0 0 24 24" class="ic"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="currentColor"/></svg><div class="nosbar"><i id="h-nos"></i></div></div>
   </div>
   <div id="h-chase" class="hud-bl hidden"><div class="heat" id="h-heat"></div><div class="meter"><label data-i18n="evade">ÉVASION</label><div><i id="h-evade"></i></div></div><div class="meter red"><label data-i18n="bust">ARRESTATION</label><div><i id="h-bust"></i></div></div><div id="h-bounty" class="bounty"></div></div>
+  <section id="radio-team" aria-label="Équipe et conseils radio">
+    <div class="radio-head"><span>TEAM RADIO · BOX</span><span class="radio-live"><i></i> LIVE</span></div>
+    <div class="radio-members" id="radio-members"></div>
+    <div class="radio-message" id="radio-message" aria-live="polite">Équipe prête. Appuie pour recevoir un conseil de course.</div>
+    <button id="radio-talk" type="button">◉ CONTACTER MON ÉQUIPE</button>
+  </section>
   <div id="h-msgs"></div>
   <div id="h-count"></div>
   <div id="h-wrong" class="hidden" data-i18n="wrongWay">MAUVAIS SENS !</div>
@@ -2202,6 +2223,27 @@ const DRIVERS = [
   { id: 'walid', name: 'Lists', role: 'Technicien · réglages fins', price: 76000, skin: '#87583f', hair: 'short', hairC: '#16110e', beard: 'full', suit: '#20242e', helmet: '#ffb020', perk: 'tough' },
   { id: 'rim', name: 'The Navigator', role: 'Maître des circuits · lecture de piste', price: 84000, skin: '#c98e6d', hair: 'bun', hairC: '#24140e', suit: '#8a2bba', helmet: '#f4f4f4', perk: 'drift' },
 ];
+function radioCrew(driver) {
+  const ix=Math.max(0,DRIVERS.findIndex(d=>d.id===driver.id));
+  const names=[['Hatem','Inès','Fares','Aymen'],['Sana','Walid','Mouna','Tarek'],['Bilel','Rim','Anis','Nour'],['Khalil','Amira','Mehdi','Yassine']];
+  const roles=['INGÉNIEUR','STRATÈGE','MÉCANICIEN','SPOTTER'];
+  return roles.map((role,i)=>({name:names[ix%names.length][i],role}));
+}
+function radioAdvice() {
+  const p=G.player,d=Math.abs(p.d),kmh=Math.round(Math.abs(p.vfw)*3.6);
+  if(G.wrongT>0.8) return LANG==='en'?'SPOTTER: Wrong way! Slow down and turn around safely.':(LANG==='ar'||LANG==='tn'?'المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.':'SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.');
+  if(d>G.T.lim-1.2) return LANG==='en'?'ENGINEER: You are near the track edge. Ease off and return smoothly.':(LANG==='ar'||LANG==='tn'?'المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.':'INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.');
+  if(p.nitro<0.18) return LANG==='en'?'STRATEGIST: Nitro is low. Save it for the exit of the next turn.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.':'STRATÈGE : réserve ton nitro pour la sortie du prochain virage.');
+  if(p.sliding&&kmh>90) return LANG==='en'?'ENGINEER: Reduce steering input and gently stabilize the car.':(LANG==='ar'||LANG==='tn'?'المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.':'INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.');
+  if(G.cfg.mode==='race'&&rankOf(p)>1) return LANG==='en'?'STRATEGIST: Keep a clean line; use the slipstream before attempting an overtake.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: حافظ على خط قيادة نظيف واستفد من تيار الهواء قبل التجاوز.':'STRATÈGE : garde une trajectoire propre et profite de l’aspiration avant de dépasser.');
+  return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
+}
+function radioCall() {
+  if(!G.player||!G.T) return;
+  $('radio-message').textContent=radioAdvice();
+  const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
+  try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
+}
 // bonus volontairement modestes : le pilote donne un style, la voiture reste décisive
 const PERKS = {
   speed: { vmax: 1.03 }, nitro: { nitroGain: 1.25 }, accel: { acc: 1.05 }, grip: { lat: 1.04 },
@@ -5225,11 +5267,16 @@ const UI = {
       $('h-chase').classList.toggle('hidden', cfg.mode !== 'chase'); $('h-posbox').classList.toggle('hidden', cfg.mode !== 'race');
       $('h-tt').classList.toggle('hidden', !G.target);
       if (IS_TOUCH && innerHeight > innerWidth && !this.rotOk) $('rotate').classList.add('show');
-      this.hudCache = {}; MUS.play('race'); MUS.muffle(false);
+      this.hudCache = {};
+      const crew=radioCrew(DRIVERS[drvIndex(SAVE.driver)]);
+      $('radio-members').innerHTML=crew.map(m=>'<span><b>'+m.role+'</b> · '+m.name+'</span>').join('');
+      $('radio-message').textContent=LANG==='en'?'Race control connected. Your crew is ready.':(LANG==='ar'||LANG==='tn'?'تم الاتصال بالفريق. نحن جاهزون لمساعدتك.':'Liaison établie. Ton équipe est prête à te conseiller.');
+      $('radio-team').classList.remove('hidden');
+      MUS.play('race'); MUS.muffle(false);
     }, 60);
   },
   quit() {
-    G.state = 'menu'; AU.silence(); $('hud').classList.add('hidden'); $('pause').classList.remove('show'); $('results').classList.remove('show'); $('h-count').className = '';
+    G.state = 'menu'; AU.silence(); $('hud').classList.add('hidden'); $('radio-team').classList.add('hidden'); $('pause').classList.remove('show'); $('results').classList.remove('show'); $('h-count').className = '';
     this.show('main');
   },
   pause(on) {
@@ -5541,6 +5588,7 @@ function bindInputs() {
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };
   $('p-quit').onclick = () => UI.quit();
   $('h-pause').onclick = () => UI.pause(true);
+  $('radio-talk').onclick = () => radioCall();
   $('h-cam').onclick = () => { G.camMode = (G.camMode + 1) % 3; };
   $('rot-ok').onclick = () => { UI.rotOk = true; $('rotate').classList.remove('show'); };
   addEventListener('resize', () => { if (IS_TOUCH && innerWidth > innerHeight) $('rotate').classList.remove('show'); });

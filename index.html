@@ -415,6 +415,22 @@ button:disabled{pointer-events:none}
 #hud .nos{filter:drop-shadow(0 2px 3px rgba(0,0,0,.65))}
 
 
+
+/* Finition compétition : contrastes, états actifs et profondeur cohérente. */
+#ui .nbtn,#ui .mode,#ui .trk,#ui .dcard,#ui .panel,#ui .garpanel{box-shadow:0 9px 28px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.045)}
+#ui .nbtn{border:1px solid rgba(255,255,255,.09);border-inline-start:3px solid rgba(255,255,255,.14);border-radius:5px;background:linear-gradient(105deg,rgba(25,31,43,.96),rgba(12,16,24,.78))}
+#ui .nbtn:hover,#ui .nbtn:focus-visible{border-inline-start-color:var(--acc);background:linear-gradient(105deg,rgba(56,42,30,.98),rgba(17,22,31,.94));transform:translateX(3px);outline:none}
+#ui .nbtn.play{border-inline-start-color:var(--acc);box-shadow:0 0 22px rgba(255,122,24,.12),inset 0 1px 0 rgba(255,255,255,.1)}
+#ui .mode,#ui .trk,#ui .dcard{border-radius:7px;background:linear-gradient(145deg,rgba(30,35,47,.94),rgba(12,15,22,.96))}
+#ui .mode:hover,#ui .trk:hover,#ui .dcard:hover{border-color:rgba(255,166,78,.55);transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.34),0 0 16px rgba(255,122,24,.09)}
+#ui button:focus-visible{outline:2px solid #66d8f4;outline-offset:3px}
+#ui .panel,#ui .garpanel{border-radius:12px;background:linear-gradient(145deg,rgba(24,29,40,.97),rgba(10,13,20,.97));border-color:rgba(210,220,240,.17)}
+#ui .cta{box-shadow:0 7px 22px rgba(255,122,24,.2),inset 0 1px 0 rgba(255,255,255,.3);font-weight:800}
+#ui .cta:hover{filter:brightness(1.13);transform:translateY(-1px)}
+.scr-head h1{text-shadow:0 3px 18px rgba(0,0,0,.5);letter-spacing:.06em}
+#hud .hud-tl .pos,#hud .lap,#hud .time,#hud .best{text-shadow:0 2px 8px rgba(0,0,0,.9)}
+@media(prefers-reduced-motion:reduce){#ui .nbtn,#ui .mode,#ui .trk,#ui .dcard,#ui .cta{transition:none}}
+
 /* Habillage premium et interface radio de l'équipe de course. */
 #radio-team{position:absolute;left:max(18px,env(safe-area-inset-left));top:170px;width:min(292px,34vw);pointer-events:auto;color:#f5f7fb;background:linear-gradient(135deg,rgba(8,15,25,.95),rgba(17,27,41,.88));border:1px solid rgba(91,190,235,.42);border-left:3px solid #21b9dc;border-radius:10px;padding:10px 12px;box-shadow:0 10px 32px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(10px);font-family:'Chakra Petch',sans-serif}
 #radio-team .radio-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;letter-spacing:1.4px;font-weight:800;color:#7edcf5}
@@ -5283,6 +5299,7 @@ const UI = {
       $('radio-message').textContent=LANG==='en'?'Race control connected. Your crew is ready.':(LANG==='ar'||LANG==='tn'?'تم الاتصال بالفريق. نحن جاهزون لمساعدتك.':'Liaison établie. Ton équipe est prête à te conseiller.');
       $('radio-team').classList.remove('hidden');
       $('radio-talk').textContent=LANG==='en'?'◉ CONTACT RACE TEAM':(LANG==='ar'||LANG==='tn'?'◉ اتصل بفريقك':'◉ CONTACTER MON ÉQUIPE');
+      $('radio-team').querySelector('.radio-head span:first-child').textContent=LANG==='en'?'TEAM RADIO · BOX':(LANG==='ar'||LANG==='tn'?'اتصال الفريق · الحلبة':'RADIO ÉQUIPE · STAND');
       MUS.play('race'); MUS.muffle(false);
     }, 60);
   },

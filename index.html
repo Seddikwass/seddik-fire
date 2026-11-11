@@ -481,6 +481,26 @@ button:disabled{pointer-events:none}
 #ui .nbtn,#ui .mode,#ui .trk,#ui .ev{backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
 @media(prefers-reduced-motion:reduce){#touch button,#hud .hbtn{transition:none}}
 
+
+/* Correctif mobile paysage : commandes ancrées au viewport, sans dépendre du layout du HUD. */
+@media (hover:none) and (pointer:coarse) {
+  #hud #touch{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:45!important;pointer-events:none!important;overflow:hidden!important;transform:none!important}
+  #hud #touch .tl,#hud #touch .tr{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;pointer-events:none!important;transform:none!important}
+  #hud #touch button{position:fixed!important;min-width:0!important;min-height:0!important;pointer-events:auto!important;touch-action:none!important}
+  #hud #touch [data-t=left],#hud #touch [data-t=right]{bottom:max(14px,env(safe-area-inset-bottom))!important;top:auto!important;width:clamp(54px,7.2vw,76px)!important;height:clamp(54px,7.2vw,76px)!important;border-radius:15px!important}
+  #hud #touch [data-t=left]{left:max(14px,env(safe-area-inset-left))!important;right:auto!important}
+  #hud #touch [data-t=right]{left:calc(max(14px,env(safe-area-inset-left)) + clamp(54px,7.2vw,76px) + 9px)!important;right:auto!important}
+  #hud #touch [data-t=gas]{right:max(14px,env(safe-area-inset-right))!important;left:auto!important;bottom:max(14px,env(safe-area-inset-bottom))!important;top:auto!important;width:clamp(62px,8vw,84px)!important;height:clamp(94px,14vw,124px)!important;border-radius:18px!important}
+  #hud #touch [data-t=brake]{right:calc(max(14px,env(safe-area-inset-right)) + clamp(62px,8vw,84px) + 10px)!important;left:auto!important;bottom:max(14px,env(safe-area-inset-bottom))!important;top:auto!important;width:clamp(58px,7vw,72px)!important;height:clamp(58px,7vw,72px)!important}
+  #hud #touch [data-t=hand]{right:max(14px,env(safe-area-inset-right))!important;left:auto!important;bottom:calc(max(14px,env(safe-area-inset-bottom)) + clamp(94px,14vw,124px) + 10px)!important;top:auto!important;width:clamp(62px,8vw,84px)!important;height:48px!important}
+  #hud #touch [data-t=nitro]{right:calc(max(14px,env(safe-area-inset-right)) + clamp(58px,7vw,72px) + 10px)!important;left:auto!important;bottom:calc(max(14px,env(safe-area-inset-bottom)) + clamp(58px,7vw,72px) + 10px)!important;top:auto!important;width:clamp(58px,7vw,72px)!important;height:44px!important}
+}
+@media (hover:none) and (pointer:coarse) and (max-height:520px) {
+  #hud #touch [data-t=hand]{bottom:calc(max(10px,env(safe-area-inset-bottom)) + clamp(82px,12vw,104px) + 8px)!important}
+  #hud #touch [data-t=nitro]{bottom:calc(max(10px,env(safe-area-inset-bottom)) + clamp(52px,6.5vw,66px) + 8px)!important}
+  #hud #touch [data-t=gas]{height:clamp(82px,12vw,104px)!important}
+}
+
 </style>
 </head>
 <body>
@@ -5632,13 +5652,14 @@ function applySettings() {
   if (IS_TOUCH) {
     const mem = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
     const modest = (mem > 0 && mem <= 4) || (cores > 0 && cores <= 4);
-    PR = Math.min(PR, modest ? 0.92 : 1.08);
-    R.shadowSize = modest ? 512 : 768;
-    R.shadows = s.quality !== 'low';
-    R.bloom = false; R.rays = false;
-    R.detail = Math.min(R.detail, modest ? 0.65 : 0.9);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.72 : 0.86);
-    G.lodNear = Math.min(G.lodNear, modest ? 20 : 28);
+    // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
+    PR = Math.min(PR, modest ? 0.62 : 0.78);
+    R.shadowSize = 256;
+    R.shadows = false;
+    R.bloom = false; R.rays = false; R.post = false; R.aa = false;
+    R.detail = Math.min(R.detail, modest ? 0.32 : 0.46);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.48 : 0.58);
+    G.lodNear = Math.min(G.lodNear, modest ? 11 : 15);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;

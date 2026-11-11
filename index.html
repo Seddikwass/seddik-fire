@@ -5165,7 +5165,7 @@ const UI = {
     let evLine = '';
     if (ev !== null) evLine = res.success ? `<p class="okline">${res.firstWin ? t('r_evOk', tEvName(ev)) : t('r_evAgain')}</p>` : `<p class="failline">${t('r_evFail', tEvName(ev))}</p>`;
     const next = ev !== null && res.success && ev + 1 < CAREER.length;
-    $('res-body').innerHTML = `<div class="res-title ${cls}">${title}</div><div class="note">${modeName(res.mode)}, ${T.name}${res.record ? ` — <b class="rec">${t('r_record')}</b>` : ''}</div><div class="rcols"><div class="rcol1">${body}${evLine}</div><div class="rcol2">
+    $('res-body').innerHTML = `<div class="res-title ${cls}">${title}</div><div class="note">${modeName(res.mode)}, ${T.name}${res.record ? ` — <b class="rec">${t('r_record')}</b>` : ''}</div><div class="note" style="color:#63dba0;font-weight:700">✓ ${LANG === 'en' ? 'RACE, REWARD & BALANCE SAVED' : LANG === 'ar' ? '✓ تم حفظ السباق والجائزة والرصيد' : 'PARCOURS, RÉCOMPENSE ET SOLDE ENREGISTRÉS AUTOMATIQUEMENT'}</div><div class="rcols"><div class="rcol1">${body}${evLine}</div><div class="rcol2">
       <div class="rgrid"><span>${t('r_reward')}</span><b>${money(res.reward)}</b><span>${t('r_style', res.style)}</span><b>${money(res.styleBonus)}</b><span>${t('r_gain')}</span><b class="tot">${money(res.total)}</b><span>${t('r_money')}</span><b id="r-money">${money(SAVE.money)}</b></div>
       ${ADS.on && res.total > 0 ? `<button id="r-ad" class="adbtn"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg>${t('adDouble', money(res.total))}</button>` : ''}
       <div class="rbtns"><button id="r-menu">${t('r_menu')}</button><button id="r-garage">${t('r_garage')}</button><button id="r-again" class="${next ? '' : 'cta'}">${t('r_again')}</button>${next ? `<button id="r-next" class="cta">${t('r_next')}</button>` : ''}</div></div></div>`;
@@ -5374,6 +5374,8 @@ function bindInputs() {
   addEventListener('keyup', e => { KEYS[e.code] = false; });
   addEventListener('blur', () => { for (const k in KEYS) KEYS[k] = false; for (const k in TOUCH) TOUCH[k] = false; if (G.state === 'race') UI.pause(true); });
   document.addEventListener('visibilitychange', () => { if (document.hidden && (G.state === 'race' || G.state === 'countdown')) UI.pause(true); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
+  addEventListener('pagehide', () => saveGame());
   addEventListener('pointerdown', () => { AU.init(); if (G.state === 'menu') MUS.play('menu'); }, { capture: true });
   addEventListener('contextmenu', e => { if (G.state !== 'menu') e.preventDefault(); });
   // Pont tactile fiable : déclenche les mêmes gestionnaires click que la souris,

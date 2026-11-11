@@ -2272,7 +2272,7 @@ function radioAdvice() {
   if(d>G.T.lim-1.2) return LANG==='en'?'ENGINEER: You are near the track edge. Ease off and return smoothly.':(LANG==='ar'||LANG==='tn'?'المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.':'INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.');
   if(p.nitro<0.18) return LANG==='en'?'STRATEGIST: Nitro is low. Save it for the exit of the next turn.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.':'STRATÈGE : réserve ton nitro pour la sortie du prochain virage.');
   if(p.sliding&&kmh>90) return LANG==='en'?'ENGINEER: Reduce steering input and gently stabilize the car.':(LANG==='ar'||LANG==='tn'?'المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.':'INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.');
-  if(G.cfg.mode==='race'&&rankOf(p)>1) return LANG==='en'?'STRATEGIST: Keep a clean line; use the slipstream before attempting an overtake.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: حافظ على خط قيادة نظيف واستفد من تيار الهواء قبل التجاوز.':'STRATÈGE : garde une trajectoire propre et profite de l’aspiration avant de dépasser.');
+  if(G.cfg.mode==='race'&&rankOf(p)>1) return LANG==='en'?'STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.':'STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.');
   if(G.cfg.mode==='tt') return LANG==='en'?'RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.':(LANG==='ar'||LANG==='tn'?'مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.':'INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.');
   if(G.cfg.mode==='chase') return LANG==='en'?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
   return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
@@ -2859,13 +2859,13 @@ function buildTrack(def, quality) {
   // Public 3D : gradins et silhouettes de spectateurs sur les circuits urbains, côtiers et au stade.
   // Les personnages sont regroupés dans les chunks du décor pour préserver les performances mobiles.
   { // Public présent sur tous les environnements de course.
-    const crowdStep = theme === 'circuit' ? 22 : 40;
+    const crowdStep = theme === 'circuit' ? 22 : 30;
     const crowdSides = theme === 'circuit' ? [-1, 1] : [-1, 1];
     const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55]];
     const shirts = [[0.78,0.12,0.1],[0.08,0.22,0.48],[0.9,0.82,0.65],[0.12,0.42,0.28],[0.88,0.48,0.08],[0.22,0.2,0.24]];
     for (let i = 20; i < N; i += crowdStep) for (const side of crowdSides) {
       const mb = ch(rk(i)), stadium = theme === 'circuit', baseD = stadium ? W + 12 : W + 7.5;
-      const count = stadium ? 14 : 9, rows = stadium ? 5 : 3;
+      const count = stadium ? 14 : 11, rows = stadium ? 5 : 3;
       // Gradins simples, béton clair et garde-corps rouge/blanc.
       if (stadium) {
         for (let row = 0; row < rows; row++) {
@@ -2890,7 +2890,7 @@ function buildTrack(def, quality) {
         }
       }
       // Petit drapeau tunisien stylisé sur les zones de tribunes.
-      if (stadium && i % (crowdStep * 2) === 20) {
+      if (i % (crowdStep * 3) === 20) {
         const fp = pos(i, side * (baseD + 6), 4.3);
         mb.box(fp[0], fp[1] + 1.1, fp[2], 0.09, 2.2, 0.09, [0.82,0.82,0.8], 0, hd[i]);
         mb.box(fp[0], fp[1] + 2.0, fp[2], 1.05, 0.68, 0.08, [0.82,0.06,0.08], 2, hd[i]);

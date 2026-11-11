@@ -2347,31 +2347,31 @@ const W_HALF = 8;
 const nrm = a => V3.norm(a);
 const TRACKS = [
   {
-    id: 'tunis', name: 'Tunis by Night', sub: 'Centre-ville • Nuit', theme: 'city', seed: 11,
+    id: 'tunis', name: 'Tunis — Médina & Lac', sub: 'Tunis • Médina, avenue Habib-Bourguiba et lac', theme: 'city', seed: 11,
     pts: [[0, -300, 2], [0, -40, 0], [0, 250, 4], [40, 410, 6], [160, 470, 8], [320, 460, 6], [420, 380, 4], [440, 250, 2], [380, 150, 0], [400, 40, 2], [520, -20, 6], [600, -150, 10], [560, -300, 8], [420, -380, 4], [250, -360, 2], [140, -420, 0], [40, -420, 1]],
     env: { sky: [0.012, 0.016, 0.05], hor: [0.13, 0.08, 0.19], gnd: [0.03, 0.03, 0.04], fog: [0.09, 0.065, 0.14], fogDen: 0.0039, sunDir: nrm([0.35, 0.55, -0.4]), sunCol: [0.14, 0.16, 0.27], wet: 1, clouds: 0, night: true, bake: [2.6, 1.55, 0.75], sunSize: 0.0006, grade: GR([0.0, 0.025, 0.06], [1.07, 0.99, 0.9], 0.32) },
     road: [0.095, 0.095, 0.105], cols: [[0.1, 0.1, 0.11], [0.085, 0.085, 0.095], [0.06, 0.06, 0.07], [0.3, 0.3, 0.3], [0.3, 0.3, 0.3], [0.3, 0.3, 0.3]],
   },
   {
-    id: 'sahara', name: 'Sahara Sunset', sub: 'Désert • Coucher de soleil', theme: 'desert', seed: 23,
+    id: 'sahara', name: 'Douz — Chott el-Jérid', sub: 'Douz • Dunes et lac salé', theme: 'desert', seed: 23,
     pts: [[0, -500, 0], [0, 0, 4], [100, 350, 10], [350, 500, 16], [650, 420, 12], [800, 150, 6], [700, -50, 2], [850, -300, 8], [750, -600, 14], [450, -700, 10], [250, -600, 6], [100, -700, 2]],
     env: { sky: [0.16, 0.24, 0.52], hor: [1.0, 0.55, 0.3], gnd: [0.5, 0.32, 0.2], fog: [0.9, 0.56, 0.38], fogDen: 0.0021, sunDir: nrm([-0.65, 0.1, 0.55]), sunCol: [1.5, 0.82, 0.42], wet: 0, clouds: 0.5, sunSize: 0.0028, haze: 1, dust: [0.86, 0.64, 0.42], sat: 1.02, grade: GR([0.02, 0.008, 0.012], [1.03, 0.98, 0.92], 0.3) },
     road: [0.21, 0.19, 0.18], cols: [[0.8, 0.56, 0.35], [0.76, 0.52, 0.32], [0.7, 0.47, 0.29], [0.62, 0.46, 0.31], [0.55, 0.33, 0.2], [0.6, 0.38, 0.24]],
   },
   {
-    id: 'atlas', name: "Col de l'Atlas", sub: 'Montagne • Grand soleil', theme: 'mountain', seed: 37,
+    id: 'atlas', name: 'Djebel Chambi — Kasserine', sub: 'Kasserine • Parc national et montagne', theme: 'mountain', seed: 37,
     pts: [[0, -200, 10], [0, 100, 20], [-80, 260, 32], [-20, 420, 45], [150, 480, 55], [300, 400, 48], [280, 250, 38], [420, 180, 30], [560, 260, 36], [680, 160, 42], [640, -40, 30], [500, -120, 22], [420, -300, 14], [250, -380, 8], [100, -330, 6]],
     env: { sky: [0.18, 0.4, 0.85], hor: [0.68, 0.78, 0.92], gnd: [0.25, 0.3, 0.2], fog: [0.66, 0.75, 0.86], fogDen: 0.0023, sunDir: nrm([0.4, 0.75, 0.3]), sunCol: [1.25, 1.15, 1.0], wet: 0, clouds: 0.8, sunSize: 0.0012, sat: 0.98, grade: GR([0.0, 0.012, 0.03], [1.02, 1.0, 0.97], 0.3) },
     road: [0.16, 0.16, 0.17], cols: [[0.25, 0.37, 0.15], [0.22, 0.33, 0.13], [0.2, 0.3, 0.12], [0.36, 0.33, 0.28], [0.42, 0.39, 0.35], [0.5, 0.48, 0.45]],
   },
   {
-    id: 'corniche', name: 'Corniche Sidi Bou', sub: 'Bord de mer • Matin', theme: 'coast', seed: 51,
+    id: 'corniche', name: 'Sidi Bou Saïd — La Marsa', sub: 'Banlieue nord • Village bleu et corniche', theme: 'coast', seed: 51,
     pts: [[0, -400, 6], [0, -100, 10], [30, 200, 14], [150, 380, 18], [350, 420, 12], [520, 330, 8], [560, 150, 4], [480, 0, 3], [520, -180, 5], [640, -320, 8], [600, -480, 6], [420, -560, 4], [220, -520, 3], [80, -560, 4]],
     env: { sky: [0.16, 0.4, 0.88], hor: [0.72, 0.84, 0.95], gnd: [0.3, 0.35, 0.35], fog: [0.72, 0.82, 0.93], fogDen: 0.0018, sunDir: nrm([-0.35, 0.55, -0.6]), sunCol: [1.18, 1.08, 0.94], wet: 0, clouds: 0.55, sunSize: 0.0013, grade: GR([0.0, 0.018, 0.035], [1.03, 1.01, 0.97], 0.26) },
     road: [0.15, 0.15, 0.16], cols: [[0.62, 0.6, 0.42], [0.55, 0.56, 0.36], [0.5, 0.5, 0.34], [0.6, 0.56, 0.45], [0.5, 0.45, 0.4], [0.55, 0.5, 0.45]],
   },
   {
-    id: 'circuit', name: 'Circuit de Carthage', sub: 'Circuit pro • Après-midi', theme: 'circuit', seed: 63,
+    id: 'circuit', name: 'Grand Prix de Carthage', sub: 'Carthage • Circuit automobile', theme: 'circuit', seed: 63,
     pts: [[0, -350, 2], [0, 350, 2], [60, 460, 3], [200, 470, 4], [260, 400, 4], [200, 300, 3], [260, 180, 3], [420, 160, 4], [520, 240, 5], [620, 180, 5], [640, 20, 4], [540, -80, 3], [560, -220, 3], [480, -380, 2], [300, -430, 2], [150, -380, 2], [60, -460, 2]],
     env: { sky: [0.18, 0.4, 0.86], hor: [0.7, 0.8, 0.92], gnd: [0.28, 0.32, 0.22], fog: [0.7, 0.78, 0.88], fogDen: 0.0019, sunDir: nrm([0.55, 0.6, 0.35]), sunCol: [1.3, 1.18, 1.0], wet: 0, clouds: 0.45, sunSize: 0.0012, grade: GR([0.012, 0.01, 0.022], [1.03, 1.0, 0.95], 0.33) },
     road: [0.15, 0.15, 0.16], cols: [[0.27, 0.44, 0.16], [0.25, 0.41, 0.15], [0.22, 0.36, 0.14], [0.3, 0.42, 0.18], [0.45, 0.42, 0.38], [0.5, 0.48, 0.45]],
@@ -3897,7 +3897,8 @@ const TXT = {
   trk: {
     tunis: ['Centre-ville • Nuit', 'Downtown • Night', 'وسط المدينة • ليلاً'], sahara: ['Désert • Coucher de soleil', 'Desert • Sunset', 'الصحراء • الغروب'],
     atlas: ['Montagne • Grand soleil', 'Mountains • Bright sun', 'الجبال • شمس ساطعة'], corniche: ['Bord de mer • Matin', 'Seaside • Morning', 'شاطئ البحر • صباحاً'],
-    circuit: ['Circuit pro • Après-midi', 'Pro circuit • Afternoon', 'حلبة احترافية • بعد الظهر'], port: ['Docks • Nuit', 'Docks • Night', 'الميناء • ليلاً'], aindraham: ['Forêt • Pluie et brouillard', 'Forest • Rain and fog', 'الغابة • مطر وضباب'],
+    circuit: ['Circuit automobile • Carthage', 'Carthage race circuit', 'حلبة قرطاج للسيارات'], port: ['Port de Radès • Nuit', 'Rades port • Night', 'ميناء رادس • الليل'], aindraham: ['Aïn Draham • Pluie et brouillard', 'Ain Draham • Rain and fog', 'عين دراهم • مطر وضباب'],
+    sousse: ['سوسة • بوجعفر والمدينة العتيقة', 'Sousse • Boujaafar and medina', 'سوسة • بوجعفر والمدينة العتيقة'], sfax: ['صفاقس • طريق قرمدة والمنطقة الصناعية', 'Sfax • Gremda industrial road', 'صفاقس • طريق قرمدة والمنطقة الصناعية'], djerba: ['جربة • حومة السوق والبحيرة', 'Djerba • Houmt Souk and lagoon', 'جربة • حومة السوق والبحيرة'], hammamet: ['الحمامات • ياسمين والمارينا', 'Hammamet • Yasmine and marina', 'الحمامات • ياسمين والمارينا'], bizerte: ['بنزرت • الميناء القديم وكاب بلان', 'Bizerte • Old port and Cap Blanc', 'بنزرت • الميناء القديم وكاب بلان'], kairouan: ['القيروان • المدينة العتيقة والأسوار', 'Kairouan • Medina and ramparts', 'القيروان • المدينة العتيقة والأسوار'], monastir: ['المنستير • الرباط والمارينا', 'Monastir • Ribat and marina', 'المنستير • الرباط والمارينا'], tunis: ['تونس • المدينة العتيقة والبحيرة', 'Tunis • Medina and lake', 'تونس • المدينة العتيقة والبحيرة'], sahara: ['دوز • كثبان شط الجريد', 'Douz • Chott el-Jerid dunes', 'دوز • كثبان شط الجريد'], atlas: ['القصرين • جبل الشعانبي', 'Kasserine • Djebel Chambi', 'القصرين • جبل الشعانبي'], corniche: ['سيدي بوسعيد • المرسى والكورنيش', 'Sidi Bou Said • La Marsa corniche', 'سيدي بوسعيد • المرسى والكورنيش'],
   },
 };
 // التونسي: واجهة محلية باللهجة التونسية مع إبقاء بقية المحتوى متوافقاً مع الفرنسية.

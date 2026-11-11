@@ -3909,6 +3909,14 @@ const CARS = [
   { id:'nabeul_scoot_gt',name:'Nabeul Scooter GT',cls:'C',tier:1,cat:'moto',style:'moto_scoot',price:12500,vmax:184,acc:8.8,lat:20.8,nos:1.04,mass:0.43,desc:'Maxi-scooter GT confortable et rapide.' },
   { id:'kasserine_enduro',name:'Kasserine Enduro X',cls:'B',tier:2,cat:'moto',style:'moto_trail',price:34500,vmax:232,acc:10.5,lat:22.4,nos:1.13,mass:0.52,desc:'Enduro légère pour les chemins accidentés.' },
   { id:'carthage_tourer',name:'Carthage Tourer 1200',cls:'A',tier:3,cat:'moto',style:'moto_trail',price:68000,vmax:268,acc:11.4,lat:22.8,nos:1.18,mass:0.58,desc:'Moto de tourisme puissante et stable.' },
+  // Sept motos haut de gamme supplémentaires : superbike, naked et adventure.
+  { id:'sahara_apex_1100',name:'Sahara Apex 1100',cls:'S',tier:4,cat:'moto',style:'moto_sport',price:118000,vmax:336,acc:14.2,lat:25.8,nos:1.42,mass:0.46,desc:'Superbike haut de gamme, moteur quatre cylindres et aérodynamique de piste.' },
+  { id:'carthage_vortex_900',name:'Carthage Vortex 900',cls:'A',tier:3,cat:'moto',style:'moto_sport',price:89000,vmax:312,acc:13.1,lat:25.2,nos:1.34,mass:0.47,desc:'Sportive premium légère, freinage radial et châssis précis.' },
+  { id:'bizerte_titan_1300',name:'Bizerte Titan 1300',cls:'S',tier:4,cat:'moto',style:'moto_trail',price:126000,vmax:298,acc:12.6,lat:23.8,nos:1.38,mass:0.62,desc:'Maxi-trail de luxe, grand tourisme et suspensions pilotées.' },
+  { id:'gulf_nightblade_1000',name:'Gulf Nightblade 1000',cls:'A',tier:3,cat:'moto',style:'moto_sport',price:94000,vmax:318,acc:13.5,lat:25.5,nos:1.36,mass:0.48,desc:'Naked premium au couple généreux et à la réponse vive.' },
+  { id:'djerba_tourer_1600',name:'Djerba Tourer 1600',cls:'S',tier:4,cat:'moto',style:'moto_trail',price:139000,vmax:286,acc:12.2,lat:22.8,nos:1.32,mass:0.68,desc:'Routière de prestige, carénage protecteur et confort longue distance.' },
+  { id:'atlas_rally_850',name:'Atlas Rally 850 Pro',cls:'A',tier:3,cat:'moto',style:'moto_trail',price:82000,vmax:274,acc:11.8,lat:23.6,nos:1.28,mass:0.52,desc:'Adventure rallye avec grande garde au sol et suspensions longues courses.' },
+  { id:'tunis_eclipse_750',name:'Tunis Eclipse 750',cls:'B',tier:2,cat:'moto',style:'moto_sport',price:67000,vmax:258,acc:11.4,lat:23.2,nos:1.2,mass:0.49,desc:'Sportive premium polyvalente, équilibre entre accélération et maniabilité.' },
   // Sept 4x4 et pick-up.
   { id:'jebel_raptor',name:'Jebel Raptor 4x4',cls:'A',tier:3,cat:'offroad',style:'offroad',price:69000,vmax:248,acc:9.4,lat:21,nos:1.24,mass:1.58,desc:'Tout-terrain à garde au sol haute et pneus renforcés.' },
   { id:'ksar_explorer',name:'Ksar Explorer',cls:'B',tier:2,cat:'offroad',style:'offroad',price:48000,vmax:226,acc:8.6,lat:20.5,nos:1.18,mass:1.62,desc:'4x4 familial préparé pour les pistes du désert.' },
@@ -3925,6 +3933,14 @@ const CARS = [
   { id:'louage_express',name:'Louage Express',cls:'C',tier:1,cat:'heavy',style:'louage',price:26000,vmax:184,acc:6.3,lat:17.5,nos:1.18,mass:2.7,desc:'Minibus interurbain tunisien.' },
   { id:'police_interceptor_van',name:'Police Interceptor Van',cls:'C',tier:1,cat:'heavy',style:'police',price:34000,vmax:190,acc:6.8,lat:18,nos:1.22,mass:2.8,desc:'Fourgon d’intervention rapide.' },
   { id:'port_terminal_truck',name:'Port Terminal Truck',cls:'D',tier:0,cat:'heavy',style:'truck',price:24000,vmax:160,acc:5.0,lat:15.2,nos:1.2,mass:4.6,desc:'Tracteur de terminal portuaire.' },
+  // Sept poids lourds premium supplémentaires : tracteurs routiers et camions spécialisés.
+  { id:'atlas_haulmaster_8x4',name:'Atlas Haulmaster 8x4',cls:'S',tier:4,cat:'heavy',style:'truck',price:186000,vmax:178,acc:6.4,lat:15.8,nos:1.3,mass:7.8,desc:'Camion porteur premium 8x4, cabine grand confort et châssis renforcé.' },
+  { id:'sahara_longhaul_x',name:'Sahara Longhaul X',cls:'S',tier:4,cat:'heavy',style:'truck',price:224000,vmax:192,acc:6.8,lat:16.2,nos:1.34,mass:8.2,desc:'Tracteur longue distance haut de gamme, moteur coupleux et cabine couchette.' },
+  { id:'mediterranee_cargo_500',name:'Méditerranée Cargo 500',cls:'A',tier:3,cat:'heavy',style:'truck',price:148000,vmax:184,acc:6.2,lat:16.5,nos:1.28,mass:6.4,desc:'Camion cargo premium à grande capacité et suspension pneumatique.' },
+  { id:'carthage_tanker_6x4',name:'Carthage Tanker 6x4',cls:'A',tier:3,cat:'heavy',style:'truck',price:162000,vmax:172,acc:6.0,lat:15.2,nos:1.3,mass:7.4,desc:'Camion-citerne haut de gamme, stabilité renforcée et freinage lourd.' },
+  { id:'tunis_royal_coach',name:'Tunis Royal Coach',cls:'S',tier:4,cat:'heavy',style:'bus',price:198000,vmax:202,acc:7.1,lat:17.2,nos:1.38,mass:6.8,desc:'Autocar de tourisme premium, cabine panoramique et confort grand luxe.' },
+  { id:'sfax_heavy_duty_10x4',name:'Sfax Heavy Duty 10x4',cls:'S',tier:4,cat:'heavy',style:'truck',price:238000,vmax:166,acc:6.5,lat:14.8,nos:1.42,mass:9.4,desc:'Porteur lourd 10x4 pour charges exceptionnelles, châssis multi-essieux.' },
+  { id:'bizerte_roadtrain_6x4',name:'Bizerte Roadtrain 6x4',cls:'A',tier:3,cat:'heavy',style:'truck',price:174000,vmax:188,acc:6.6,lat:15.6,nos:1.32,mass:8.0,desc:'Tracteur routier premium, transmission renforcée et cabine aérodynamique.' },
   // Sept modèles rétro : berlines classiques et coupés sportifs.
   { id:'tunis_classic_60',name:'Tunis Classic 60',cls:'D',tier:0,cat:'retro',style:'retro70',price:16000,vmax:218,acc:7.1,lat:19.8,nos:1.02,desc:'Berline classique à chromes et phares ronds.' },
   { id:'sousse_fastback',name:'Sousse Fastback 72',cls:'B',tier:2,cat:'retro',style:'retro70',price:42000,vmax:268,acc:9.1,lat:21.8,nos:1.16,desc:'Fastback musclé des années soixante-dix.' },
@@ -4103,9 +4119,13 @@ function readInput(dt) {
   let gas = (KEYS.ArrowUp || KEYS.KeyW || KEYS.KeyZ || TOUCH.gas) ? 1 : 0, brake = (KEYS.ArrowDown || KEYS.KeyS || TOUCH.brake) ? 1 : 0;
   // Direction digitale directe : les deux flèches sont indépendantes.
   // Un appui maintenu donne immédiatement toute l'amplitude de braquage.
+  // Une impulsion courte est conservée après un tap mobile : un effleurement
+  // déclenche un virage perceptible, sans exiger de maintenir le doigt.
+  TOUCH.leftPulse = Math.max(0, (TOUCH.leftPulse || 0) - dt);
+  TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 1 : 0) - (leftDown ? 1 : 0);
+  let st = (rightDown ? 1 : (TOUCH.rightPulse > 0 ? 0.72 : 0)) - (leftDown ? 1 : (TOUCH.leftPulse > 0 ? 0.72 : 0));
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4126,13 +4146,10 @@ function readInput(dt) {
     steerTarget = a <= dz ? 0 : Math.sign(analog) * Math.pow((a - dz) / (1 - dz), 1.08);
   }
   const digitalSteer = analog === null && st !== 0;
-  // Les flèches tactiles sont une commande numérique franche : appliquer l'angle dès la frame du toucher.
-  // Le lissage physique reste dans le lacet du véhicule, pas dans la lecture du bouton.
-  if (digitalSteer) G.steer = steerTarget;
-  else {
-    const steerRate = steerTarget === 0 ? 14 : 12;
-    G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
-  }
+  // Montée rapide mais progressive : le véhicule répond au premier contact
+  // sans passer brutalement d'un braquage nul au braquage maximal.
+  const steerRate = digitalSteer ? 19 : (steerTarget === 0 ? 11 : 9);
+  G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.105 : 0.145)));
   G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.085 : 0.16)));
@@ -4150,8 +4167,9 @@ function physPlayer(c, dt, inp) {
   const spd = Math.abs(vf);
   // Direction assistée renforcée : davantage d'angle utile à vitesse élevée,
   // sans rendre le véhicule incontrôlable à faible vitesse.
-  let yawMax = Math.min(3.4, (st.lat * 2.65) / Math.max(spd, 4));
-  if (spd < 2.5) yawMax *= spd / 2.5;
+  // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
+  let yawMax = Math.min(3.1, (st.lat * 2.35) / Math.max(spd, 5));
+  if (spd < 1.2) yawMax *= 0.45 + 0.55 * (spd / 1.2);
   let target = (c.model.bike ? 1 : -1) * inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   if (inp.hand && spd > 8) target *= 1.45; else if (c.sliding) target *= 1.12;
   c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));
@@ -5381,7 +5399,9 @@ function bindInputs() {
     };
     const off = e => {
       if (e && activePointer !== null && e.pointerId !== activePointer) return;
-      activePointer = null; TOUCH[k] = false; b.classList.remove('on');
+      activePointer = null; TOUCH[k] = false;
+      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.22;
+      b.classList.remove('on');
     };
     b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);
     b.addEventListener('pointercancel', off); b.addEventListener('lostpointercapture', off);

@@ -4882,6 +4882,43 @@ if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePl
   const head=mat(0xffd58a,.25,.15);for(const z of [-.23,.23])sphere(car,new THREE.SphereGeometry(.07,12,10),head,.59,.34,z);
   // Small trees and rocks bring depth to the island diorama.
   for(let i=0;i<7;i++){const a=i*2.4,x=Math.cos(a)*2.05,z=Math.sin(a)*2.05; cyl(root,.045,.06,.35,mat(0x59452d),x,.58,z);sphere(root,new THREE.ConeGeometry(.28,.72,8),mat(0x38583a),x,.98,z)}
+  // v2 detail pass: tactical silhouette, weapon optics, vehicle fittings and a miniature city block.
+  const backpack=box(soldier,.34,.48,.23,dark,0,1.12,-.29);
+  box(soldier,.39,.08,.26,olive,0,.79,-.28);
+  for(const x of [-.24,.24]){
+   box(soldier,.12,.18,.12,olive,x,1.36,.015);
+   box(soldier,.13,.13,.1,dark,x,.78,.02);
+   box(soldier,.22,.09,.12,black,x,.22,.04);
+   box(soldier,.065,.34,.075,dark,x*.55,1.12,.245);
+  }
+  for(let i=0;i<3;i++){box(soldier,.11,.12,.08,olive,-.23+i*.23,.91,.24);box(soldier,.1,.1,.08,dark,-.23+i*.23,1.25,-.42)}
+  // Weapon rail, optic, front sight, handguard grooves and sling.
+  box(rifle,.46,.045,.15,black,.02,.085,0);
+  cyl(rifle,.055,.055,.12,metal,-.02,.17,0);
+  cyl(rifle,.042,.042,.08,glass,-.02,.235,0);
+  box(rifle,.045,.12,.07,metal,.39,.1,0);
+  for(let i=0;i<5;i++)box(rifle,.035,.025,.16,dark,-.04+i*.085,-.015,.02);
+  const sling=sphere(rifle,new THREE.TorusGeometry(.23,.018,6,24),olive,-.03,-.12,-.09,1,1.45,.6);sling.rotation.z=.25;
+  // Vehicle details: bumpers, grille, mirrors, spare wheel and rear rack.
+  box(car,1.25,.11,.12,black,-.02,.13,.39);
+  box(car,1.25,.11,.12,black,-.02,.13,-.39);
+  for(let i=0;i<6;i++)box(car,.035,.13,.018,metal,.38+i*.055,.34,.374);
+  for(const z of [-.39,.39]){box(car,.12,.07,.12,black,-.34,.84,z*1.04);box(car,.1,.1,.08,glass,-.34,.84,z*1.13)}
+  const spare=sphere(car,new THREE.TorusGeometry(.145,.055,8,20),black,-.48,.48,-.02);spare.rotation.y=Math.PI/2;
+  box(car,.72,.045,.48,metal,-.03,.83,0);
+  // Additional miniature settlement on the island, with layered roofs and lit windows.
+  for(let i=0;i<5;i++){
+   const a=i*1.257+.4,x=Math.cos(a)*1.15,z=Math.sin(a)*1.15;
+   const h=.55+(i%3)*.18,w=.38+(i%2)*.12;
+   const house=box(root,w,h,w,mat(i%2?0xc1ad8a:0x9b927d),x,.39+h/2,z);
+   box(root,w*1.12,.08,w*1.12,mat(0x65594c),x,.39+h+.04,z);
+   for(const side of [-1,1])box(root,.07,.11,.018,mat(0x263c48,.4,.25),x+side*w*.22,.48+h*.38,z+w/2+.012);
+  }
+  // Low vegetation, rocks and shoreline boulders add scale to the map diorama.
+  for(let i=0;i<18;i++){
+   const a=i*2.4,r=2.28+(i%3)*.08,x=Math.cos(a)*r,z=Math.sin(a)*r;
+   sphere(root,new THREE.DodecahedronGeometry(.09+(i%4)*.025,0),mat(i%2?0x77715d:0x8b8068),x,.43,z,1.3,.7,1);
+  }
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),mat(0x101820));floor.rotation.x=-Math.PI/2;floor.position.y=-.29;floor.receiveShadow=true;scene.add(floor);
   let dragging=false,lastX=0,rotation=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(dragging){rotation+=(e.clientX-lastX)*.012;lastX=e.clientX}});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointercancel',()=>dragging=false);
   const resize=()=>{const w=Math.max(180,canvas.clientWidth||290),h=Math.max(180,canvas.clientHeight||290);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe(canvas);resize();

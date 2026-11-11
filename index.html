@@ -2460,16 +2460,25 @@ function radioCall(automatic = false) {
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
-  // Lecture vocale facultative via la synthèse vocale native du navigateur.
+  // Consignes vocales automatiques de l'équipe : voix native du navigateur, sans micro.
   try {
     if(window.speechSynthesis && window.SpeechSynthesisUtterance) {
-      window.speechSynthesis.cancel();
-      const voice=new SpeechSynthesisUtterance($('radio-message').textContent);
-      voice.lang=LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
-      voice.rate=0.96;voice.pitch=0.92;voice.volume=0.82;
-      window.speechSynthesis.speak(voice);
+      const synth=window.speechSynthesis;
+      const text=$('radio-message').textContent;
+      const lang=LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
+      const voice=new SpeechSynthesisUtterance(text);
+      voice.lang=lang; voice.rate=0.94; voice.pitch=0.94; voice.volume=1;
+      const voices=synth.getVoices();
+      const wanted=lang.toLowerCase().split('-')[0];
+      voice.voice=voices.find(v=>v.lang&&v.lang.toLowerCase()===lang.toLowerCase())
+        || voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(wanted+'-'))
+        || null;
+      // Une seule consigne à la fois : évite les annonces empilées pendant une course.
+      synth.cancel();
+      synth.resume();
+      synth.speak(voice);
     }
-  } catch(e) {}
+  } catch(e) { console.warn('Radio équipe : synthèse vocale indisponible',e); }
 }
 
 /* Radio vocale WebRTC : le chef d'équipe ouvre un canal, les équipiers le rejoignent avec le même code. */

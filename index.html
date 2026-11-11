@@ -575,6 +575,58 @@ button:disabled{pointer-events:none}
   #radio-team{top:42%;max-height:40vh}
 }
 
+
+/* Refonte conduite/HUD : priorité à la lisibilité et à la précision tactile Android. */
+#touch{z-index:24}
+#touch .tl{display:flex;gap:12px;align-items:flex-end}
+#touch .tl button{width:clamp(84px,16vw,108px);height:clamp(84px,16vw,108px);border-radius:24px;border:2px solid rgba(160,218,255,.95);background:linear-gradient(145deg,rgba(24,104,171,.98),rgba(5,29,61,.98));box-shadow:0 7px 22px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.24);font-size:32px;font-weight:900;touch-action:none}
+#touch .tl button::after{display:block;position:absolute;bottom:9px;font:900 9px 'Chakra Petch',sans-serif;letter-spacing:.1em;color:#fff;text-shadow:0 2px 4px #000}
+#touch [data-t=left]::after{content:"GAUCHE"}
+#touch [data-t=right]::after{content:"DROITE"}
+#touch .tl button.on{background:linear-gradient(145deg,#48b9ff,#07539c);border-color:#fff;box-shadow:0 0 0 4px rgba(70,180,255,.28),0 9px 26px #0009}
+#touch [data-t=gas]{width:clamp(90px,19vw,122px);height:clamp(138px,32vw,190px);border:3px solid #ffe0ad;border-radius:26px;background:linear-gradient(155deg,#ffad48,#c64a0b 72%,#7c2608);box-shadow:0 0 0 4px rgba(255,143,43,.2),0 10px 28px #000b,inset 0 2px 0 #ffffff66;flex-direction:column;gap:8px}
+#touch [data-t=gas]::after{content:"ACCÉLÉRER";font:900 10px 'Chakra Petch',sans-serif;letter-spacing:.08em;color:#fff;text-shadow:0 2px 4px #542000}
+#touch [data-t=brake]{width:clamp(78px,16vw,102px);height:clamp(78px,16vw,102px);border:3px solid #ffd1d1;border-radius:23px;background:linear-gradient(145deg,#ed5353,#851c28);box-shadow:0 0 0 3px #f4433626,0 9px 24px #000a;flex-direction:column;gap:3px}
+#touch [data-t=brake]::after{content:"FREIN";font:900 10px 'Chakra Petch',sans-serif;letter-spacing:.1em}
+#touch [data-t=hand]{width:clamp(86px,17vw,112px);height:clamp(52px,11vw,70px);border:2px solid #ffd47d;border-radius:17px;background:linear-gradient(145deg,#a95c16,#63300c);color:#fff;font:900 10px 'Chakra Petch',sans-serif;letter-spacing:.04em}
+#touch [data-t=hand]::after{content:"DRIFT";font:900 9px 'Chakra Petch',sans-serif;letter-spacing:.1em}
+#touch [data-t=hand].on{background:linear-gradient(145deg,#f2a52e,#9b3b0d);border-color:#fff2c7;box-shadow:0 0 0 4px #ffbd4933,0 0 18px #ff8b25aa}
+#touch [data-t=nitro]{font-size:13px;font-weight:900;letter-spacing:.08em;background:linear-gradient(145deg,#176f94,#09334e);border:2px solid #75e6ff}
+#touch button:focus-visible{outline:3px solid #fff;outline-offset:4px}
+#touch button svg{width:46%;height:46%}
+body.touch .hud-br{top:max(8px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));bottom:auto;transform:scale(.68);transform-origin:top right}
+body.touch #minimap{width:116px;height:116px;top:auto;right:auto;left:max(14px,env(safe-area-inset-left));bottom:calc(max(18px,env(safe-area-inset-bottom)) + min(19vw,126px) + 14px);border:2px solid rgba(124,216,255,.62);box-shadow:0 5px 20px #0009}
+body.touch .hud-tl{top:max(10px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));padding:7px 10px;border-radius:9px;background:linear-gradient(120deg,#07101bd9,#07101b88);border:1px solid #ffffff25}
+body.touch .hud-bl{top:calc(max(10px,env(safe-area-inset-top)) + 105px);left:max(12px,env(safe-area-inset-left));width:180px;transform:none;padding:7px 9px;border-radius:8px;background:#07101bbd;border:1px solid #ffffff20}
+body.touch .pos b{font-size:clamp(34px,7vw,46px)}
+body.touch .pos span{font-size:17px}
+body.touch .lap,body.touch .time{font-size:13px}
+body.touch .meter label{font-size:10px}
+body.touch .meter div{height:9px}
+#radio-team{width:248px;max-width:36vw;padding:9px 10px;border-radius:12px;background:linear-gradient(145deg,rgba(5,15,28,.96),rgba(9,22,37,.93));border-color:#5ab8dc77;box-shadow:0 10px 28px #0008}
+#radio-team .radio-head{font-size:10px;letter-spacing:1px}
+#radio-team .radio-members{max-height:78px}
+#radio-team .radio-members span{font-size:9px}
+#radio-team .radio-message{font-size:10px;line-height:1.4;max-height:62px}
+#radio-team button{min-height:38px;font-size:9px;letter-spacing:.06em}
+#radio-team #radio-ptt{min-height:46px;font-size:10px}
+#radio-voice-status{font-size:9px;line-height:1.4}
+@media(max-width:700px){
+  #touch .tl{gap:8px}
+  #touch .tl button{width:clamp(76px,17vw,94px);height:clamp(76px,17vw,94px);border-radius:21px}
+  #touch [data-t=gas]{width:clamp(84px,19vw,108px);height:clamp(124px,31vw,158px)}
+  #touch [data-t=brake]{width:clamp(72px,16vw,88px);height:clamp(72px,16vw,88px)}
+  #touch [data-t=hand]{width:82px;height:50px}
+  #radio-team{width:204px;max-width:47vw;max-height:42vh}
+  body.touch .hud-br{transform:scale(.58)}
+  body.touch #minimap{width:94px;height:94px}
+  body.touch .hud-bl{top:calc(max(10px,env(safe-area-inset-top)) + 91px);width:158px}
+}
+@media(max-width:700px) and (orientation:landscape){
+  #radio-team{top:43%;max-height:38vh}
+  body.touch .hud-br{transform:scale(.54)}
+}
+
 </style>
 </head>
 <body>
@@ -695,8 +747,8 @@ button:disabled{pointer-events:none}
   </div>
   <div id="touch" class="hidden">
     <div id="stick" class="hidden"><i class="ring"></i><i class="knob"></i></div>
-    <div class="tl"><button data-t="left" aria-label="Gauche"><svg viewBox="0 0 24 24"><path d="M15 4L7 12l8 8" fill="none" stroke="currentColor" stroke-width="3"/></svg></button><button data-t="right" aria-label="Droite"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3"/></svg></button></div>
-    <div class="tr"><button data-t="nitro">N₂O</button><button data-t="hand" aria-label="Frein à main"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><path d="M10.2 15.2V8.8h2.3a1.9 1.9 0 0 1 0 3.8h-2.3"/><path d="M4.2 6.5a9 9 0 0 0 0 11M19.8 6.5a9 9 0 0 1 0 11"/></svg></button><button data-t="brake" aria-label="Frein"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="2.5" fill="currentColor"/><path d="M7 10.2h10M7 13.8h10" stroke="#000" stroke-opacity=".45" stroke-width="1.4"/></svg></button><button data-t="gas" aria-label="Accélérer"><svg viewBox="0 0 24 24"><path d="M8.5 2.5h7l-1.6 19h-3.8z" fill="currentColor"/><path d="M9.6 7h4.8M9.9 11h4.2M10.2 15h3.6" stroke="#000" stroke-opacity=".45" stroke-width="1.3"/></svg></button></div>
+    <div class="tl"><button data-t="left" aria-label="Tourner à gauche en maintenant"><svg viewBox="0 0 24 24"><path d="M15 4L7 12l8 8" fill="none" stroke="currentColor" stroke-width="3"/></svg></button><button data-t="right" aria-label="Tourner à droite en maintenant"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3"/></svg></button></div>
+    <div class="tr"><button data-t="nitro">N₂O</button><button data-t="hand" aria-label="Frein à main et drift, maintenir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><path d="M10.2 15.2V8.8h2.3a1.9 1.9 0 0 1 0 3.8h-2.3"/><path d="M4.2 6.5a9 9 0 0 0 0 11M19.8 6.5a9 9 0 0 1 0 11"/></svg></button><button data-t="brake" aria-label="Frein"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="2.5" fill="currentColor"/><path d="M7 10.2h10M7 13.8h10" stroke="#000" stroke-opacity=".45" stroke-width="1.4"/></svg></button><button data-t="gas" aria-label="Accélérer"><svg viewBox="0 0 24 24"><path d="M8.5 2.5h7l-1.6 19h-3.8z" fill="currentColor"/><path d="M9.6 7h4.8M9.9 11h4.2M10.2 15h3.6" stroke="#000" stroke-opacity=".45" stroke-width="1.3"/></svg></button></div>
   </div>
 </div>
 
@@ -2483,6 +2535,7 @@ async function radioVoiceStart(mode) {
     });
     peer.on('call',call=>{call.answer(stream);radioVoiceAttach(call);});
     peer.on('open',()=>{
+      try { localStorage.setItem('sj_radio_room',room); localStorage.setItem('sj_radio_mode',mode); localStorage.setItem('sj_radio_auto','1'); } catch(e) {}
       $('radio-ptt').disabled=false;
       if(mode==='host'){
         radioVoiceStatus('Canal ouvert · partage ce code avec ton équipe : '+room.toUpperCase(),'connected');
@@ -2499,6 +2552,22 @@ async function radioVoiceStart(mode) {
       err&&err.name==='NotFoundError'?'Aucun microphone détecté.':(err.message||'Impossible d’activer la radio vocale.');
     radioVoiceStatus(msg,'error');
   }
+}
+async function radioVoiceAutoReconnect() {
+  try {
+    if(localStorage.getItem('sj_radio_auto')!=='1') return;
+    const room=localStorage.getItem('sj_radio_room'), mode=localStorage.getItem('sj_radio_mode');
+    if(!room || !['host','guest'].includes(mode)) return;
+    // Reconnexion sans demande surprise : permission micro déjà accordée seulement.
+    if(!navigator.permissions || !navigator.permissions.query) {
+      radioVoiceStatus('Radio mémorisée : touche OUVRIR/REJOINDRE pour réactiver le micro.'); return;
+    }
+    const permission=await navigator.permissions.query({name:'microphone'});
+    if(permission.state==='granted') {
+      $('radio-room').value=room; radioVoiceStatus('Reconnexion automatique à la radio…');
+      await radioVoiceStart(mode);
+    } else radioVoiceStatus('Radio prête : une activation manuelle du micro est nécessaire.');
+  } catch(e) { radioVoiceStatus('Radio prête : touche REJOINDRE pour réactiver le canal.'); }
 }
 function radioVoiceTalk(active) {
   if(!RADIO_VOICE.stream)return;
@@ -4599,15 +4668,15 @@ function spawnCop(s, d, v, state) {
 const KEYS = {}, TOUCH = {};
 function readInput(dt) {
   let gas = (KEYS.ArrowUp || KEYS.KeyW || KEYS.KeyZ || TOUCH.gas) ? 1 : 0, brake = (KEYS.ArrowDown || KEYS.KeyS || TOUCH.brake) ? 1 : 0;
-  // Direction digitale directe : les deux flèches sont indépendantes.
-  // Un appui maintenu donne immédiatement toute l'amplitude de braquage.
-  // Une impulsion courte est conservée après un tap mobile : un effleurement
-  // déclenche un virage perceptible, sans exiger de maintenir le doigt.
-  TOUCH.leftPulse = Math.max(0, (TOUCH.leftPulse || 0) - dt);
-  TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
+  // Direction tactile progressive : le braquage monte avec la durée d'appui,
+  // puis revient doucement au centre dès que le doigt est relâché.
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 0.94 : (TOUCH.rightPulse > 0 ? 0.22 : 0)) - (leftDown ? 0.94 : (TOUCH.leftPulse > 0 ? 0.22 : 0));
+  const steerRise = 4.8, steerReturn = 7.2;
+  TOUCH.leftAmount = clamp((TOUCH.leftAmount || 0) + (leftDown ? steerRise : -steerReturn) * dt, 0, 1);
+  TOUCH.rightAmount = clamp((TOUCH.rightAmount || 0) + (rightDown ? steerRise : -steerReturn) * dt, 0, 1);
+  if (leftDown && rightDown) { TOUCH.leftAmount *= 0.82; TOUCH.rightAmount *= 0.82; }
+  let st = (TOUCH.rightAmount - TOUCH.leftAmount) * 0.98;
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4627,11 +4696,13 @@ function readInput(dt) {
     const dz = 0.035, a = Math.abs(analog);
     steerTarget = a <= dz ? 0 : Math.sign(analog) * Math.pow((a - dz) / (1 - dz), 1.08);
   }
+  // Progressivité spécifique aux flèches, douceur au relâchement et filtrage
+  // des micro-mouvements pour garder la voiture stable à haute vitesse.
   const digitalSteer = analog === null && st !== 0;
-  // Montée rapide mais progressive : le véhicule répond au premier contact
-  // sans passer brutalement d'un braquage nul au braquage maximal.
-  const steerRate = digitalSteer ? 11.5 : (steerTarget === 0 ? 8.0 : 9.0);
-  G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
+  const steerRate = digitalSteer ? 8.2 : (steerTarget === 0 ? 6.4 : 9.2);
+  const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 48, 0, 1);
+  const stability = 1 - speedFactor * 0.22;
+  G.steer += (steerTarget * stability - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));
   G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.17 : 0.25)));
@@ -4654,7 +4725,8 @@ function physPlayer(c, dt, inp) {
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
-  if (inp.hand > 0.08 && spd > 8) target *= 1 + 0.45 * inp.hand; else if (c.sliding) target *= 1.12;
+  const handActive = inp.hand > 0.08 && spd > 7;
+  if (handActive) target *= 1 + 0.72 * inp.hand; else if (c.sliding) target *= 1.10;
   c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));
   c.h += c.yaw * dt;
   const Fx = Math.sin(c.h), Fz = Math.cos(c.h), Rx = -Math.cos(c.h), Rz = Math.sin(c.h);
@@ -4664,7 +4736,7 @@ function physPlayer(c, dt, inp) {
   if (r > 1) a -= (r - 1) * 30;
   if (inp.brake > 0) { if (vf > 0.8) a -= 27 * (st.brake || 1) * inp.brake; else if (vf > -13) a -= 8 * inp.brake; }
   if (inp.gas === 0 && inp.brake === 0) a -= Math.sign(vf) * (0.7 + 0.0005 * vf * vf);
-  if (inp.hand > 0) a -= Math.sign(vf) * 4.5 * inp.hand;
+  if (inp.hand > 0) a -= Math.sign(vf) * (6.8 + Math.min(2.2, spd * 0.025)) * inp.hand;
   a -= 9.81 * (c.slopeF || 0) * 0.65;
   if (inp.hold) { a = 0; c.vx = c.vz = 0; c.yaw = 0; }
   if (c.burnT > 0) { c.burnT -= dt; if (a > 0) a *= 0.4; c.burn = true; } else c.burn = false;
@@ -4677,8 +4749,15 @@ function physPlayer(c, dt, inp) {
   const aeroLoad = 1 + Math.min(0.22, spd * spd * 0.000035);
   let grip = 10 * (st.lat / 22) * aeroLoad * (1 - 0.38 * surfaceWet);
   if (G.env && G.env.dust) grip *= 0.86;
-  c.sliding = Math.abs(vl) > (3.2 - surfaceWet * 0.55) && spd > 10;
-  if (inp.hand) grip = 1.3 * (1 - 0.18 * surfaceWet); else if (c.sliding) grip = 3.3 * (1 - 0.22 * surfaceWet);
+  // Le frein à main libère surtout l'arrière : la voiture pivote et glisse,
+  // mais la récupération d'adhérence reste progressive à la relâche.
+  const driftGrip = 2.15 * (1 - 0.22 * surfaceWet);
+  const handGrip = 0.72 * (1 - 0.16 * surfaceWet);
+  c.sliding = Math.abs(vl) > (3.0 - surfaceWet * 0.5) && spd > 9;
+  if (handActive) grip = lerp(grip, handGrip, clamp(inp.hand * 1.18, 0, 1));
+  else if (c.sliding) grip = Math.min(grip, driftGrip);
+  const driftYaw = handActive ? inp.steer * inp.hand * Math.min(1.8, spd * 0.022) : 0;
+  if (handActive) vl += driftYaw * dt * 5.5;
   const q = 1 - Math.exp(-grip * dt), rem = vl * q; vl -= rem;
   if (vf > 0) vf += Math.abs(rem) * 0.3;
   c.vx = Fx * vf + Rx * vl; c.vz = Fz * vf + Rz * vl;
@@ -5627,10 +5706,12 @@ const UI = {
       $('radio-toggle').setAttribute('aria-expanded','false');
       $('radio-talk').textContent=LANG==='en'?'◉ CONTACT RACE TEAM':(LANG==='ar'||LANG==='tn'?'◉ اتصل بفريقك':'◉ CONTACTER MON ÉQUIPE');
       $('radio-team').querySelector('.radio-head span:first-child').textContent=LANG==='en'?'TEAM RADIO · BOX':(LANG==='ar'||LANG==='tn'?'اتصال الفريق · الحلبة':'RADIO ÉQUIPE · STAND');
+      radioVoiceAutoReconnect();
       MUS.play('race'); MUS.muffle(false);
     }, 60);
   },
   quit() {
+    radioVoiceCleanup();
     G.state = 'menu'; AU.silence(); $('hud').classList.add('hidden'); $('radio-team').classList.add('hidden'); $('pause').classList.remove('show'); $('results').classList.remove('show'); $('h-count').className = '';
     this.show('main');
   },

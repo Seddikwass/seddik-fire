@@ -834,6 +834,7 @@ canvas{image-rendering:auto}
 
 #sf3dBattle{position:fixed;inset:0;width:100%;height:100%;display:none;z-index:0;touch-action:none;pointer-events:none}
 body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hidden}
+/* v183 — détails 3D renforcés pour l'unité d'intervention tactique. */
 /* v182 — retour immédiat et anti-double-tap sur le lancement de partie. */
 #play{min-height:76px;touch-action:manipulation;cursor:pointer;transition:filter .16s,transform .16s,opacity .16s}
 #play:disabled{opacity:.82;filter:saturate(.72);cursor:wait;transform:none}
@@ -4884,6 +4885,70 @@ if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePl
    box(soldier,.065,.34,.075,dark,x*.55,1.12,.245);
   }
   for(let i=0;i<3;i++){box(soldier,.11,.12,.08,olive,-.23+i*.23,.91,.24);box(soldier,.1,.1,.08,dark,-.23+i*.23,1.25,-.42)}
+  // v3 — intervention-police equipment pass: helmet, goggles, face cover, carrier and protective pads.
+  const policeBlack=mat(0x11191a,.52,.18),rubber=mat(0x171b1b,.88),oliveEdge=mat(0x9aa184,.72),lens= new THREE.MeshStandardMaterial({color:0x152a32,roughness:.16,metalness:.68,emissive:0x07141a,emissiveIntensity:.22});
+  // Tactical helmet shell with reinforced rim and side rails.
+  sphere(soldier,new THREE.SphereGeometry(.255,24,16,0,Math.PI*2,0,Math.PI*.58),policeBlack,0,1.94,-.015,1.12,.82,1.06);
+  box(soldier,.48,.045,.28,oliveEdge,0,1.79,.015);
+  box(soldier,.53,.055,.055,black,0,1.77,.035);
+  for(const x of[-.245,.245]){
+    sphere(soldier,new THREE.SphereGeometry(.075,12,10),metal,x,1.82,.015,.85,1,.55);
+    box(soldier,.055,.16,.08,policeBlack,x,1.86,-.015);
+    box(soldier,.035,.19,.045,oliveEdge,x*1.04,1.88,.02);
+  }
+  // Wide dual-lens ballistic goggles and bridge.
+  for(const x of[-.105,.105]){
+    const g=sphere(soldier,new THREE.BoxGeometry(.19,.105,.045),lens,x,1.84,.225);
+    g.rotation.z=x<0?-.06:.06;
+    box(soldier,.205,.018,.055,policeBlack,x,1.895,.225);
+    box(soldier,.018,.12,.05,metal,x+(x<0?-.105:.105),1.84,.218);
+  }
+  box(soldier,.045,.035,.052,metal,0,1.84,.252);
+  // Balaclava / lower-face protection and reinforced collar.
+  sphere(soldier,new THREE.SphereGeometry(.16,18,12,0,Math.PI*2,0,Math.PI*.58),policeBlack,0,1.69,.11,1,.76,.72);
+  box(soldier,.32,.09,.12,black,0,1.57,.12);
+  box(soldier,.68,.12,.39,policeBlack,0,1.43,.035);
+  // Plate carrier panels, shoulder straps and reinforced webbing.
+  box(soldier,.53,.48,.075,policeBlack,0,1.08,.405);
+  for(const x of[-.22,.22]){
+    const strap=box(soldier,.075,.5,.085,oliveEdge,x,1.13,.445);strap.rotation.z=x<0?-.12:.12;
+    box(soldier,.12,.2,.09,policeBlack,x*1.7,1.36,.39);
+    box(soldier,.1,.12,.1,metal,x*1.7,1.36,.445);
+  }
+  box(soldier,.39,.045,.035,metal,0,1.32,.455);
+  for(let i=0;i<3;i++){
+    const x=-.17+i*.17;
+    box(soldier,.135,.15,.09,olive,x,1.08,.465);
+    box(soldier,.11,.025,.018,oliveEdge,x,1.15,.515);
+    box(soldier,.135,.105,.09,dark,x,.88,.455);
+    box(soldier,.11,.018,.018,metal,x,.91,.505);
+  }
+  // Shoulder insignia, radio, antenna, belt and utility pouches.
+  box(soldier,.13,.12,.06,metal,-.32,1.32,.12);
+  box(soldier,.105,.17,.075,policeBlack,.34,1.2,.12);
+  cyl(soldier,.012,.012,.34,black,.39,1.45,.1).rotation.z=-.08;
+  box(soldier,.66,.095,.39,black,0,.72,.035);
+  for(const x of[-.27,-.12,.12,.27])box(soldier,.105,.13,.11,olive,x,.69,.25);
+  // Forearm guards, gloves, elbow and knee protection.
+  for(const x of[-.43,.43]){
+    const fore=box(soldier,.17,.23,.18,policeBlack,x,.79,.12);fore.rotation.z=x<0?-.18:.18;
+    sphere(soldier,new THREE.SphereGeometry(.105,12,10),rubber,x,.62,.16);
+    box(soldier,.19,.11,.19,oliveEdge,x,.59,.16);
+  }
+  for(const x of[-.19,.19]){
+    box(soldier,.23,.18,.09,policeBlack,x,.38,.12);
+    box(soldier,.19,.045,.025,oliveEdge,x,.4,.17);
+    box(soldier,.22,.14,.36,black,x,.18,.04);
+    box(soldier,.21,.045,.34,oliveEdge,x,.105,.055);
+  }
+  // High-ankle boots, toe caps and visible tread.
+  for(const x of[-.19,.19]){
+    box(soldier,.22,.12,.38,policeBlack,x,.065,.1);
+    box(soldier,.23,.035,.39,rubber,x,.018,.105);
+    for(let i=0;i<3;i++)box(soldier,.09,.018,.012,metal,x-.045+i*.045,.105,.295);
+  }
+  // Stitching and reflective trim make the dark tactical uniform legible.
+  for(const x of[-.31,.31])box(soldier,.025,.58,.018,oliveEdge,x,1.04,.205);
   // Weapon rail, optic, front sight, handguard grooves and sling.
   box(rifle,.46,.045,.15,black,.02,.085,0);
   cyl(rifle,.055,.055,.12,metal,-.02,.17,0);

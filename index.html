@@ -373,6 +373,42 @@ button:disabled{pointer-events:none}
 .upg{padding:10px 0}
 .upg button{border-radius:7px;min-height:38px}
 #touch button{transition:transform .07s ease-out,background .12s,border-color .12s,box-shadow .12s}
+
+/* ---------- commandes de course : cockpit racing premium ---------- */
+#hud .hud-tc{gap:10px;top:max(16px,env(safe-area-inset-top))}
+#hud .hbtn{width:52px;height:48px;border-radius:8px;background:linear-gradient(180deg,rgba(31,36,47,.96),rgba(8,11,17,.96));border:1px solid rgba(220,230,245,.3);border-bottom:3px solid rgba(0,0,0,.8);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 5px 14px rgba(0,0,0,.38);color:#f3f5f8;transition:transform .08s,background .08s,border-color .08s}
+#hud .hbtn svg{width:23px;height:23px;filter:none}
+#hud .hbtn:active{transform:translateY(2px);background:#303744;border-bottom-width:1px}
+#touch{isolation:isolate}
+#touch .tl,#touch .tr{position:absolute;inset:0;pointer-events:none}
+#touch button{border-radius:13px;background:linear-gradient(180deg,rgba(37,43,54,.96),rgba(9,12,18,.97));border:1px solid rgba(220,230,245,.3);border-bottom:4px solid rgba(0,0,0,.82);box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 7px 16px rgba(0,0,0,.42);backdrop-filter:none;-webkit-backdrop-filter:none;opacity:1;color:#f5f7fa;font-weight:700}
+#touch button svg{filter:none}
+#touch .tl button{border-radius:12px;background:linear-gradient(180deg,#1b4669,#10283f);border-color:rgba(105,185,235,.7);border-bottom-color:#061522}
+#touch [data-t=left],#touch [data-t=right]{background:linear-gradient(180deg,#1b4669,#10283f)}
+#touch [data-t=gas]{background:linear-gradient(180deg,#d87920,#873b0d);border-color:#f5b66f;border-bottom-color:#3b1b08}
+#touch [data-t=brake]{background:linear-gradient(180deg,#a43d3d,#591b22);border-color:#e58b8b;border-bottom-color:#260b0e}
+#touch [data-t=hand]{background:linear-gradient(180deg,#3b526b,#1a293b);border-color:#8ba9c7;border-bottom-color:#0a121d}
+#touch [data-t=nitro]{background:linear-gradient(180deg,#167d9c,#104054);border-color:#66d9ef;border-bottom-color:#061d27;color:#e4fbff}
+#touch button.on,#touch .tl button.on{transform:translateY(3px) scale(.98);filter:brightness(1.12);border-bottom-width:1px;box-shadow:inset 0 2px 5px rgba(0,0,0,.3),0 2px 5px rgba(0,0,0,.35)}
+#touch button:active{transform:translateY(3px) scale(.98);filter:brightness(1.1)}
+#touch [data-t=gas]::after,#touch [data-t=brake]::after,#touch [data-t=hand]::after,#touch [data-t=nitro]::after{position:absolute;bottom:7px;left:0;right:0;text-align:center;font:700 9px 'Chakra Petch',sans-serif;letter-spacing:.14em;color:rgba(255,255,255,.88);pointer-events:none}
+#touch [data-t=gas]::after{content:'ACCÉLÉRER'}
+#touch [data-t=brake]::after{content:'FREIN'}
+#touch [data-t=hand]::after{content:'FREIN À MAIN'}
+#touch [data-t=nitro]::after{content:'NITRO'}
+#touch [data-t=gas] svg,#touch [data-t=brake] svg,#touch [data-t=hand] svg{transform:translateY(-5px)}
+#touch [data-t=nitro]{font:italic 900 18px 'Russo One',sans-serif;letter-spacing:.04em}
+#touch .tl button svg{width:42%;height:42%;stroke-width:3}
+@media(max-width:700px){
+ #hud .hud-tc{gap:7px}
+ #hud .hbtn{width:44px;height:42px;border-radius:7px}
+ #touch .tl button{width:clamp(66px,13vw,82px);height:clamp(66px,13vw,82px)}
+}
+@media(hover:hover) and (pointer:fine){
+ #hud .hbtn:hover{background:linear-gradient(180deg,#3a4351,#171d27);border-color:rgba(255,255,255,.55)}
+ #touch button:hover{filter:brightness(1.08)}
+}
+
 </style>
 </head>
 <body>

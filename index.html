@@ -536,6 +536,45 @@ button:disabled{pointer-events:none}
   }
 }
 
+
+/* Commandes de conduite renforcées : lisibles, contrastées et faciles à toucher. */
+#touch .tl button{width:clamp(76px,15vw,94px);height:clamp(76px,15vw,94px);border:3px solid rgba(174,220,255,.95);font-size:30px;font-weight:900}
+#touch [data-t=gas]{width:clamp(86px,18vw,118px);height:clamp(130px,32vw,180px);border:3px solid #ffd09b;border-radius:25px;background:linear-gradient(155deg,rgba(255,145,47,.98),rgba(143,48,7,.97));box-shadow:0 0 0 4px rgba(255,133,35,.22),0 10px 28px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.32);flex-direction:column;gap:7px}
+#touch [data-t=gas]::after{content:"ACCÉLÉRER";font:900 10px/1 'Chakra Petch',sans-serif;letter-spacing:.06em;color:#fff;text-shadow:0 2px 4px #542000}
+#touch [data-t=brake]{width:clamp(76px,15vw,96px);height:clamp(76px,15vw,96px);border:3px solid rgba(255,255,255,.86);background:linear-gradient(145deg,rgba(213,52,52,.98),rgba(91,15,23,.97));box-shadow:0 0 0 3px rgba(225,45,45,.2),0 9px 24px rgba(0,0,0,.5);flex-direction:column;gap:3px}
+#touch [data-t=brake]::after{content:"FREIN";font:900 10px/1 'Chakra Petch',sans-serif;letter-spacing:.1em;color:#fff}
+#touch [data-t=hand]{border:2px solid rgba(255,206,119,.9);font-weight:900}
+#touch button:focus-visible{outline:3px solid #fff;outline-offset:4px}
+#radio-team{width:236px;max-width:34vw;padding:9px 10px;border-width:1px 1px 1px 4px}
+#radio-team .radio-head{font-size:10px}
+#radio-team .radio-members span{font-size:9px}
+#radio-team .radio-message{font-size:10px;max-height:58px}
+#radio-team button{font-size:10px;padding:8px 7px;min-height:34px}
+#radio-team.radio-collapsed .radio-voice-controls{display:none}
+.radio-voice-controls{display:flex;flex-direction:column;gap:6px;margin-top:7px;padding-top:7px;border-top:1px solid rgba(126,220,245,.2)}
+.radio-voice-controls label{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#9de6f7;font:800 9px 'Chakra Petch',sans-serif;letter-spacing:.06em}
+.radio-voice-controls input{width:105px;min-width:0;padding:6px 7px;border:1px solid rgba(126,220,245,.4);border-radius:4px;background:rgba(0,0,0,.38);color:#fff;font:800 11px 'Chakra Petch',sans-serif;text-transform:uppercase}
+.radio-voice-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+#radio-team .radio-voice-actions button{font-size:9px;min-height:36px;padding:6px 4px}
+#radio-team #radio-ptt{min-height:43px;border:2px solid rgba(255,190,88,.85);background:linear-gradient(180deg,#b85c17,#78340c);font-size:10px;font-weight:900;letter-spacing:.06em}
+#radio-team #radio-ptt:disabled{opacity:.45;filter:grayscale(.6)}
+#radio-team #radio-ptt.ptt-active{background:linear-gradient(180deg,#e33e32,#8b1717);border-color:#ffd4cb;box-shadow:0 0 0 3px rgba(255,70,55,.2),0 0 18px rgba(255,70,55,.35)}
+#radio-voice-status{font:600 9px/1.35 'Chakra Petch',sans-serif;color:#b9c8d7;overflow-wrap:anywhere}
+#radio-voice-status.connected{color:#72efae}
+#radio-voice-status.error{color:#ff9a91}
+#radio-audios{display:none}
+@media(max-width:700px){
+  #radio-team{width:194px;max-width:45vw;padding:7px 8px}
+  #radio-team .radio-message{font-size:9px}
+  .radio-voice-controls input{width:88px}
+  #touch .tl button{width:clamp(72px,16vw,88px);height:clamp(72px,16vw,88px)}
+  #touch [data-t=gas]{width:clamp(84px,19vw,106px);height:clamp(126px,31vw,158px)}
+  #touch [data-t=brake]{width:clamp(72px,16vw,88px);height:clamp(72px,16vw,88px)}
+}
+@media(max-width:700px) and (orientation:landscape){
+  #radio-team{top:42%;max-height:40vh}
+}
+
 </style>
 </head>
 <body>
@@ -634,6 +673,16 @@ button:disabled{pointer-events:none}
     <div class="radio-head"><span>TEAM RADIO · BOX</span><span class="radio-live"><i></i> LIVE</span><button id="radio-toggle" class="radio-toggle" type="button" aria-label="Afficher ou réduire la radio">＋</button></div>
     <div class="radio-members" id="radio-members"></div>
     <div class="radio-message" id="radio-message" aria-live="polite">Équipe prête. Appuie pour recevoir un conseil de course.</div>
+    <div id="radio-voice-controls" class="radio-voice-controls">
+      <label for="radio-room">CANAL ÉQUIPE <input id="radio-room" type="text" value="SEDDIKJOUD" maxlength="20" autocomplete="off" spellcheck="false"></label>
+      <div class="radio-voice-actions">
+        <button id="radio-open" type="button">OUVRIR LE CANAL</button>
+        <button id="radio-join" type="button">REJOINDRE</button>
+      </div>
+      <button id="radio-ptt" type="button" disabled>MAINTENIR POUR PARLER</button>
+      <small id="radio-voice-status" role="status">Radio vocale désactivée · micro requis</small>
+      <div id="radio-audios" aria-hidden="true"></div>
+    </div>
     <button id="radio-talk" type="button">◉ CONTACTER MON ÉQUIPE</button>
   </section>
   <div id="h-msgs"></div>
@@ -2370,6 +2419,95 @@ function radioCall(automatic = false) {
     }
   } catch(e) {}
 }
+
+/* Radio vocale WebRTC : le chef d'équipe ouvre un canal, les équipiers le rejoignent avec le même code. */
+const RADIO_VOICE = { peer:null, stream:null, calls:new Set(), audios:new Set(), mode:null, room:null };
+function radioVoiceStatus(message, state='') {
+  const el=$('radio-voice-status'); if(!el) return;
+  el.textContent=message; el.classList.remove('connected','error');
+  if(state) el.classList.add(state);
+}
+function loadPeerLibrary() {
+  if(window.Peer) return Promise.resolve();
+  if(window.__sjPeerLoading) return window.__sjPeerLoading;
+  window.__sjPeerLoading=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+    script.async=true; script.onload=()=>window.Peer?resolve():reject(new Error('Bibliothèque audio indisponible'));
+    script.onerror=()=>reject(new Error('Impossible de charger le service radio'));
+    document.head.appendChild(script);
+  });
+  return window.__sjPeerLoading;
+}
+function radioVoiceCleanup() {
+  RADIO_VOICE.calls.forEach(call=>{try{call.close();}catch(e){}});
+  RADIO_VOICE.calls.clear();
+  RADIO_VOICE.audios.forEach(audio=>{try{audio.pause();audio.srcObject=null;audio.remove();}catch(e){}});
+  RADIO_VOICE.audios.clear();
+  if(RADIO_VOICE.peer){try{RADIO_VOICE.peer.destroy();}catch(e){}}
+  if(RADIO_VOICE.stream) RADIO_VOICE.stream.getTracks().forEach(track=>track.stop());
+  Object.assign(RADIO_VOICE,{peer:null,stream:null,mode:null,room:null});
+  const ptt=$('radio-ptt'); if(ptt){ptt.disabled=true;ptt.classList.remove('ptt-active');ptt.textContent='MAINTENIR POUR PARLER';}
+}
+function radioVoiceAttach(call) {
+  call.on('stream', remote=>{
+    const audio=document.createElement('audio');audio.autoplay=true;audio.playsInline=true;audio.srcObject=remote;
+    $('radio-audios').appendChild(audio);RADIO_VOICE.audios.add(audio);
+    audio.play().catch(()=>radioVoiceStatus('Flux reçu : touche l’écran pour autoriser le son.'));
+    radioVoiceStatus('Liaison vocale active · micro en attente du bouton PTT','connected');
+  });
+  call.on('close',()=>radioVoiceStatus('Un membre a quitté le canal.'));
+  call.on('error',err=>radioVoiceStatus('Erreur audio : '+(err.message||'connexion interrompue'),'error'));
+  RADIO_VOICE.calls.add(call);
+}
+async function radioVoiceStart(mode) {
+  if(!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    radioVoiceStatus('Micro indisponible : ouvre le jeu en HTTPS sur un navigateur compatible.','error');return;
+  }
+  const room=($('radio-room').value||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,20);
+  if(room.length<3){radioVoiceStatus('Choisis un code de canal d’au moins 3 caractères.','error');return;}
+  radioVoiceCleanup();radioVoiceStatus('Autorise le microphone puis connexion au canal…');
+  try{
+    await loadPeerLibrary();
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+    stream.getAudioTracks().forEach(track=>track.enabled=false);
+    RADIO_VOICE.stream=stream;RADIO_VOICE.mode=mode;RADIO_VOICE.room=room;
+    const hostId='sj-radio-'+room;
+    const peer=mode==='host'?new Peer(hostId):new Peer();
+    RADIO_VOICE.peer=peer;
+    peer.on('error',err=>{
+      const msg=err.type==='unavailable-id'?'Ce canal est déjà ouvert : rejoins-le depuis un autre appareil.':
+        err.type==='peer-unavailable'?'Canal introuvable : demande au chef d’équipe de l’ouvrir d’abord.':
+        (err.message||'connexion interrompue');
+      radioVoiceStatus(msg,'error');
+    });
+    peer.on('call',call=>{call.answer(stream);radioVoiceAttach(call);});
+    peer.on('open',()=>{
+      $('radio-ptt').disabled=false;
+      if(mode==='host'){
+        radioVoiceStatus('Canal ouvert · partage ce code avec ton équipe : '+room.toUpperCase(),'connected');
+      }else{
+        radioVoiceStatus('Canal trouvé · connexion à l’équipe…');
+        const call=peer.call(hostId,stream);
+        if(!call){radioVoiceStatus('Impossible de joindre le canal. Réessaie.','error');return;}
+        radioVoiceAttach(call);
+      }
+    });
+  }catch(err){
+    radioVoiceCleanup();
+    const msg=err&&err.name==='NotAllowedError'?'Accès au micro refusé. Autorise le microphone dans ton navigateur.':
+      err&&err.name==='NotFoundError'?'Aucun microphone détecté.':(err.message||'Impossible d’activer la radio vocale.');
+    radioVoiceStatus(msg,'error');
+  }
+}
+function radioVoiceTalk(active) {
+  if(!RADIO_VOICE.stream)return;
+  RADIO_VOICE.stream.getAudioTracks().forEach(track=>track.enabled=!!active);
+  $('radio-ptt').classList.toggle('ptt-active',!!active);
+  $('radio-ptt').textContent=active?'● EN TRANSMISSION — RELÂCHER POUR COUPER':'MAINTENIR POUR PARLER';
+  radioVoiceStatus(active?'Tu transmets à ton équipe. Relâche pour couper le micro.':'Radio connectée · micro coupé','connected');
+}
+
 // bonus volontairement modestes : le pilote donne un style, la voiture reste décisive
 const PERKS = {
   speed: { vmax: 1.03 }, nitro: { nitroGain: 1.25 }, accel: { acc: 1.05 }, grip: { lat: 1.04 },
@@ -5826,6 +5964,15 @@ function bindInputs() {
   $('p-quit').onclick = () => UI.quit();
   $('h-pause').onclick = () => UI.pause(true);
   $('radio-talk').onclick = () => radioCall();
+  $('radio-open').onclick = () => radioVoiceStart('host');
+  $('radio-join').onclick = () => radioVoiceStart('guest');
+  const ptt=$('radio-ptt');
+  ptt.addEventListener('pointerdown',e=>{if(ptt.disabled)return;e.preventDefault();try{ptt.setPointerCapture(e.pointerId);}catch(x){}radioVoiceTalk(true);});
+  const releasePtt=()=>radioVoiceTalk(false);
+  ptt.addEventListener('pointerup',releasePtt);ptt.addEventListener('pointercancel',releasePtt);ptt.addEventListener('lostpointercapture',releasePtt);
+  addEventListener('blur',releasePtt);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)releasePtt();});
+  addEventListener('pagehide',radioVoiceCleanup);
   $('radio-toggle').onclick = () => {
     const box=$('radio-team'), closed=box.classList.toggle('radio-collapsed');
     $('radio-toggle').textContent=closed?'＋':'−';

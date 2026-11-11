@@ -2656,7 +2656,7 @@ function buildTrack(def, quality) {
     // usure : le centre de chaque voie (passage des roues, gomme) est plus sombre que près des lignes
     const cs8 = [-W, -W * 0.75, -W * 0.5, -W * 0.25, 0, W * 0.25, W * 0.5, W * 0.75, W], kw = [1.07, 0.8, 1.0, 0.8, 0.97, 0.8, 1.0, 0.8, 1.07];
     for (let c = 0; c < 8; c++) { const ca = V3.sc(rc, kw[c]), cb = V3.sc(rc, kw[c + 1]); mb.quad(pos(i, cs8[c]), pos(i, cs8[c + 1]), pos(j, cs8[c + 1]), pos(j, cs8[c]), ca, 8, cb, cb, ca); }
-    const lm = [0.82, 0.82, 0.78];
+    const lm = [0.94, 0.94, 0.90];
     if (i % 6 < 2) for (const d of [-W * 0.5, 0, W * 0.5]) mb.quad(pos(i, d - 0.07, 0.025), pos(i, d + 0.07, 0.025), pos(j, d + 0.07, 0.025), pos(j, d - 0.07, 0.025), lm, 22);
     for (const sd of [-1, 1]) { const d = sd * (W - 0.4); mb.quad(pos(i, d - 0.09, 0.025), pos(i, d + 0.09, 0.025), pos(j, d + 0.09, 0.025), pos(j, d - 0.09, 0.025), lm, 22); }
     for (const side of [-1, 1]) {
@@ -4231,9 +4231,13 @@ function physPlayer(c, dt, inp) {
   const old = vf; vf += a * dt;
   if (old > 0 && vf < 0 && inp.gas === 0) vf = 0;
   if (old < 0 && vf > 0 && inp.brake === 0) vf = 0;
-  let grip = 10 * (st.lat / 22);
-  c.sliding = Math.abs(vl) > 3.2 && spd > 10;
-  if (inp.hand) grip = 1.3; else if (c.sliding) grip = 3.3;
+  // Adhérence progressive : appui aérodynamique à haute vitesse, perte de grip sous la pluie.
+  const surfaceWet = clamp((G.env && G.env.wet) || 0, 0, 1);
+  const aeroLoad = 1 + Math.min(0.22, spd * spd * 0.000035);
+  let grip = 10 * (st.lat / 22) * aeroLoad * (1 - 0.38 * surfaceWet);
+  if (G.env && G.env.dust) grip *= 0.86;
+  c.sliding = Math.abs(vl) > (3.2 - surfaceWet * 0.55) && spd > 10;
+  if (inp.hand) grip = 1.3 * (1 - 0.18 * surfaceWet); else if (c.sliding) grip = 3.3 * (1 - 0.22 * surfaceWet);
   const q = 1 - Math.exp(-grip * dt), rem = vl * q; vl -= rem;
   if (vf > 0) vf += Math.abs(rem) * 0.3;
   c.vx = Fx * vf + Rx * vl; c.vz = Fz * vf + Rz * vl;
@@ -4267,7 +4271,7 @@ function physPlayer(c, dt, inp) {
   c.slopeF = A.slope * along;
   c.pitch = Math.atan(A.slope * along);
   if (c.model.bike) c.roll = lerp(c.roll, clamp(Math.atan(-c.yaw * spd / 9.81) * 0.95, -0.8, 0.8), Math.min(1, dt * 7)); // la moto se couche dans le virage
-  else c.roll = lerp(c.roll, clamp(-vl * 0.012 - c.yaw * spd * 0.0025, -0.07, 0.07), Math.min(1, dt * 6));
+  else c.roll = lerp(c.roll, clamp(-vl * 0.014 - c.yaw * spd * 0.0038, -0.095, 0.095), Math.min(1, dt * 5.5));
   c.along = along;
 }
 
@@ -4610,7 +4614,9 @@ function updateCamera(dt, inp) {
     const bx = -Fcx * ca - Fcz * sa, bz = -Fcz * ca + Fcx * sa;
     eye[0] = p.x + bx * ex; eye[1] = p.y + ey; eye[2] = p.z + bz * ex;
     const gy = T.at(p.s - dist, G.camTmp || (G.camTmp = {})).y; if (eye[1] < gy + 1.2) eye[1] = gy + 1.2;
-    tgt[0] = p.x + Fx * 3; tgt[1] = p.y + 1.05; tgt[2] = p.z + Fz * 3;
+    // Le regard anticipe légèrement la trajectoire et accompagne le glissement sans secousses.
+    const driftLook = clamp(p.vl * 0.075, -1.15, 1.15);
+    tgt[0] = p.x + Fx * 3 - Math.cos(p.h) * driftLook; tgt[1] = p.y + 1.05; tgt[2] = p.z + Fz * 3 + Math.sin(p.h) * driftLook;
     cam.eyeY = cam.eyeY === undefined ? eye[1] : lerp(cam.eyeY, eye[1], Math.min(1, dt * 6)); eye[1] = cam.eyeY;
   }
   const tr = G.shake * G.shake, sh = tr * 0.45 + (p.nitroOn ? 0.035 : 0);

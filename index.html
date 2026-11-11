@@ -1304,6 +1304,21 @@ SOLDIERS.push(
 const FEATURED_FACTIONS=['unit_tunis_assault','unit_desert_guard','unit_night_ops','police_intervention','police_swat','police_patrol','mafia_don','mafia_enforcer','mafia_syndicate'];
 SOLDIERS.sort((a,b)=>{const ia=FEATURED_FACTIONS.indexOf(a.id),ib=FEATURED_FACTIONS.indexOf(b.id);return (ia<0?999:ia)-(ib<0?999:ib)});
 
+
+/* v150 — roster exclusif : les 9 nouveaux personnages remplacent intégralement l'ancien catalogue. */
+SOLDIERS.length=0;
+SOLDIERS.push(
+{id:'unit_tunis_assault',n:'Unité Atlas — Assaut',d:'Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.',lv:1,base:'#b38a69',cam:['#3e5039','#8a7956','#29372c'],pants:'#394635',pack:'#35402f',hg:'helmet',hc:'#596044',glove:'#292a24',pat:'pix',blobs:42,ink:'#30372d',top:'#536044',arm:'#4d5942'},
+{id:'unit_desert_guard',n:'Patrouille du Sahara',d:'Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.',lv:1,base:'#c39876',cam:['#a88c62','#d2bd91','#6f5c3f'],pants:'#8b7651',pack:'#766343',hg:'boonie',hc:'#a58d64',glove:'#554832',blobs:36,ink:'#786544',top:'#b09a70',arm:'#9a835d'},
+{id:'unit_night_ops',n:'Section Spectre',d:'Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.',lv:1,base:'#9a735d',cam:['#1d242b','#424950','#10161d'],pants:'#20262d',pack:'#171e25',hg:'bala',hc:'#171b20',glove:'#15191e',pat:'pix',blobs:26,ink:'#252b32',top:'#252b32',arm:'#20252b'},
+{id:'police_intervention',n:'Police — Intervention',d:'Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.',lv:1,base:'#b88769',cam:['#142b49','#2d4b70','#101d33'],pants:'#1b3150',pack:'#192d49',hg:'h1',hc:'#172f50',glove:'#111b2b',blobs:18,ink:'#182c47',top:'#1d385a',arm:'#203b5b'},
+{id:'police_swat',n:'Police — Groupe tactique',d:'Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.',lv:1,base:'#a77a61',cam:['#252b32','#505963','#151a20'],pants:'#252b32',pack:'#1a2027',hg:'h2',hc:'#252c34',glove:'#151a20',pat:'pix',blobs:24,ink:'#303840',top:'#343b43',arm:'#2b323a'},
+{id:'police_patrol',n:'Police — Patrouille',d:'Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.',lv:1,base:'#c09172',cam:['#1c3a60','#385b80','#132945'],pants:'#203958',pack:'#203653',hg:'cap',hc:'#1c3453',glove:'#18283d',blobs:14,ink:'#213d60',top:'#294a70',arm:'#29476a'},
+{id:'mafia_don',n:'La Famille — Don',d:'Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.',lv:1,criminal:1,jacket:'#171719',shirt:'#d7d0c2',tie:'#76252a',chain:'#b9954c',base:'#b88768',pants:'#171719',pack:'#171719',hg:'short',hc:'#171719',glove:'#171719',arm:'#202024',legs:'#171719',cam:['#171719','#242428','#101012'],blobs:0},
+{id:'mafia_enforcer',n:'La Famille — Homme de main',d:'Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.',lv:1,criminal:1,jacket:'#38271f',shirt:'#49413a',tie:'#211b18',chain:'#927343',base:'#a8795d',pants:'#211b19',pack:'#211b19',hg:'shaved',hc:'#211a16',glove:'#201a17',arm:'#30231d',legs:'#211b19',cam:['#211b19','#30231d','#171311'],blobs:0},
+{id:'mafia_syndicate',n:'Syndicat — Exécuteur',d:'Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.',lv:1,criminal:1,jacket:'#25272d',shirt:'#44464c',tie:'#111216',chain:'#77736a',base:'#a8795e',pants:'#202228',pack:'#181a20',hg:'h2',hc:'#22252b',glove:'#15171b',arm:'#24262c',legs:'#202228',cam:['#202228','#30333a','#15171c'],blobs:0}
+);
+
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
 const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35'];
 const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a','#8e44ad','#dcdcdc','#1b1b1d','#ff6b22'],BAG_LV=[1,2,3,5,7,'S10','S25','S40','S45'];
@@ -1330,7 +1345,7 @@ const LSK='seddikfire.v1';
 const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,pSize:1.25,camZoom:1,mode:'classic',map:'seddik',stage:0,cupBest:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'raider',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
 if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';if(!stats.photoSk){stats.photoSk=1;stats.skin='spartiate'}if(!stats.hanSk){stats.hanSk=1;stats.skin='hannibal'}if(!stats.ombSk){stats.ombSk=1;stats.skin='ombre'}
-if(!stats.factionShowcaseV){stats.skin='unit_tunis_assault';stats.factionShowcaseV=1;try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
+if((stats.factionShowcaseV|0)<2){stats.skin='unit_tunis_assault';stats.factionShowcaseV=2;try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}if(!SOLDIERS.some(x=>x.id===stats.skin)){stats.skin='unit_tunis_assault';try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
 function saveStats(){try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}
 
 /* ===== audio ===== */
@@ -3697,7 +3712,8 @@ function drawJerseyTorso(c,sk){const a=sk.jc[0],b=sk.jc[1];
   const g=c.createRadialGradient(3,-2,1,0,0,17);g.addColorStop(0,'rgba(255,255,255,.22)');g.addColorStop(.5,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(0,0,0,.38)');c.fillStyle=g;c.fillRect(-12,-17,24,34);
   c.fillStyle=b;c.beginPath();c.arc(1.4,0,7.4,0,TAU);c.fill();c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.arc(1.4,0,6,0,TAU);c.fill();
   c.restore();c.strokeStyle=OUTL;c.lineWidth=1.5;c.beginPath();c.ellipse(0,0,10.5,15.5,0,0,TAU);c.stroke()}
-function drawTorso(c,sk,R){if(sk.jc){drawJerseyTorso(c,sk);return}if(sk.ftr){drawFighterTorso(c,sk);return}const pk=sk.pack;
+function drawMafiaTorso(c,sk){c.save();c.beginPath();c.ellipse(0,0,10,15,0,0,TAU);c.clip();const g=c.createLinearGradient(-9,-12,9,13);g.addColorStop(0,shade(sk.jacket,1.28));g.addColorStop(.48,sk.jacket);g.addColorStop(1,shade(sk.jacket,.58));c.fillStyle=g;c.fillRect(-11,-16,22,32);c.fillStyle=sk.shirt;c.beginPath();c.moveTo(-3.8,-13);c.lineTo(3.8,-13);c.lineTo(2.7,5);c.lineTo(0,8);c.lineTo(-2.7,5);c.closePath();c.fill();c.fillStyle=sk.tie;c.beginPath();c.moveTo(-1.4,-10);c.lineTo(1.4,-10);c.lineTo(2.1,5);c.lineTo(0,8);c.lineTo(-2.1,5);c.closePath();c.fill();c.fillStyle=shade(sk.jacket,.72);c.beginPath();c.moveTo(-9,-13);c.lineTo(-3.5,-10);c.lineTo(-1.7,1);c.lineTo(-7,5);c.closePath();c.fill();c.beginPath();c.moveTo(9,-13);c.lineTo(3.5,-10);c.lineTo(1.7,1);c.lineTo(7,5);c.closePath();c.fill();c.strokeStyle='rgba(235,225,205,.35)';c.lineWidth=.65;c.beginPath();c.moveTo(-7,-7);c.lineTo(-5,9);c.moveTo(7,-7);c.lineTo(5,9);c.stroke();c.fillStyle=sk.chain;c.strokeStyle=shade(sk.chain,.55);c.lineWidth=.45;c.beginPath();c.arc(0,-7,4.8,.2,Math.PI-.2);c.stroke();c.fillStyle=sk.chain;c.beginPath();c.arc(0,-2.1,1.1,0,TAU);c.fill();c.fillStyle='rgba(255,255,255,.22)';for(const y of[-7,-2,3]){c.fillRect(-8,y,1.1,.6);c.fillRect(7,y,1.1,.6)}c.restore();c.strokeStyle=OUTL;c.lineWidth=1.5;c.beginPath();c.ellipse(0,0,10,15,0,0,TAU);c.stroke()}
+function drawTorso(c,sk,R){if(sk.criminal){drawMafiaTorso(c,sk);return}if(sk.jc){drawJerseyTorso(c,sk);return}if(sk.ftr){drawFighterTorso(c,sk);return}const pk=sk.pack;
   // backpack + radio
   c.fillStyle=pk;rrect(c,-17.5,-9,12,18,3);c.fill();c.strokeStyle=OUTL;c.lineWidth=1.2;c.stroke();
   c.fillStyle=shade(pk,1.2);rrect(c,-16.6,-7.4,6.2,14.8,2.2);c.fill();

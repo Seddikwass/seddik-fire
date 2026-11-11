@@ -453,14 +453,18 @@ button:disabled{pointer-events:none}
 @media(max-width:700px){#radio-team{left:5px;top:40%;width:142px;max-width:37vw;padding:5px 6px}#radio-team.radio-collapsed{width:92px;max-height:31px}#radio-team .radio-members{max-height:58px}#radio-team .radio-members span{font-size:7px}#radio-team .radio-message{font-size:8px;max-height:38px}#radio-team button{padding:5px 4px;font-size:7px}}
 
 /* Menu principal : commandes larges, contrastées et immédiatement repérables. */
+#scr-main:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,rgba(3,6,12,.88) 0%,rgba(3,6,12,.62) 38%,rgba(3,6,12,.12) 76%,transparent 100%)}
+#scr-main .hero .tag{display:inline-flex;align-items:center;gap:9px;padding:8px 12px;margin-top:14px;border:1px solid rgba(25,211,255,.28);border-left:3px solid var(--acc);border-radius:3px;background:linear-gradient(90deg,rgba(8,18,30,.82),rgba(8,18,30,.2));color:#e8edf5;letter-spacing:.12em;text-transform:uppercase;font-size:11px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.24)}
 #scr-main .mainnav{width:min(390px,88vw);gap:11px}
-#scr-main .nbtn{min-height:64px;padding:13px 20px 12px 23px;border:1px solid rgba(255,255,255,.16);border-inline-start:5px solid rgba(25,211,255,.58);border-radius:7px;background:linear-gradient(105deg,rgba(18,27,43,.97),rgba(12,15,23,.9));box-shadow:0 7px 18px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.09)}
+#scr-main .nbtn{position:relative;overflow:hidden;min-height:64px;padding:13px 20px 12px 23px;border:1px solid rgba(255,255,255,.16);border-inline-start:5px solid rgba(25,211,255,.58);border-radius:7px;background:linear-gradient(105deg,rgba(18,27,43,.97),rgba(12,15,23,.9));box-shadow:0 7px 18px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.09)}
 #scr-main .nbtn b{font-size:clamp(18px,2vw,22px);color:#fff;text-shadow:0 2px 8px #000}
 #scr-main .nbtn small{color:#c4ccda;font-weight:600;letter-spacing:.035em}
 #scr-main .nbtn.play{border-color:rgba(255,176,32,.65);border-inline-start-color:#ffb020;background:linear-gradient(100deg,rgba(255,122,24,.98),rgba(193,74,13,.92));box-shadow:0 8px 26px rgba(255,122,24,.27),inset 0 1px 0 rgba(255,255,255,.35)}
 #scr-main .nbtn.play b,#scr-main .nbtn.play small{color:#fff}
 #scr-main .nbtn:not(.play):hover,#scr-main .nbtn:not(.play):focus-visible{border-color:rgba(25,211,255,.75);border-inline-start-color:#19d3ff;background:linear-gradient(100deg,rgba(25,95,128,.88),rgba(15,22,34,.96));transform:translateX(3px)}
 #scr-main .nbtn.play:hover,#scr-main .nbtn.play:focus-visible{filter:brightness(1.12);transform:translateX(3px);outline:2px solid rgba(255,210,120,.55);outline-offset:2px}
+#scr-main .nbtn:before{content:"";position:absolute;inset:0 auto 0 -70%;width:42%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent);transition:left .55s ease}
+#scr-main .nbtn:hover:before{left:135%}
 #scr-main .nbtn:active{filter:brightness(1.2);transform:scale(.985)}
 #scr-main .nbtn .ic{width:19px;height:19px;vertical-align:-3px;margin-inline-end:7px}
 @media(max-width:700px){#scr-main{gap:16px;padding-inline-start:18px;padding-inline-end:18px}#scr-main .mainnav{width:min(390px,92vw);gap:8px}#scr-main .nbtn{min-height:57px;padding:10px 15px 9px 18px}#scr-main .nbtn b{font-size:18px}#scr-main .nbtn small{font-size:11px}}
@@ -2859,13 +2863,13 @@ function buildTrack(def, quality) {
   // Public 3D : gradins et silhouettes de spectateurs sur les circuits urbains, côtiers et au stade.
   // Les personnages sont regroupés dans les chunks du décor pour préserver les performances mobiles.
   { // Public présent sur tous les environnements de course.
-    const crowdStep = theme === 'circuit' ? 22 : 30;
+    const crowdStep = theme === 'circuit' ? 20 : 26;
     const crowdSides = theme === 'circuit' ? [-1, 1] : [-1, 1];
     const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55]];
     const shirts = [[0.78,0.12,0.1],[0.08,0.22,0.48],[0.9,0.82,0.65],[0.12,0.42,0.28],[0.88,0.48,0.08],[0.22,0.2,0.24]];
     for (let i = 20; i < N; i += crowdStep) for (const side of crowdSides) {
       const mb = ch(rk(i)), stadium = theme === 'circuit', baseD = stadium ? W + 12 : W + 7.5;
-      const count = stadium ? 14 : 11, rows = stadium ? 5 : 3;
+      const count = stadium ? 16 : 14, rows = stadium ? 5 : 3;
       // Gradins simples, béton clair et garde-corps rouge/blanc.
       if (stadium) {
         for (let row = 0; row < rows; row++) {
@@ -2884,7 +2888,7 @@ function buildTrack(def, quality) {
         // Silhouette assise : torse, tête et bras levés pour animer visuellement les tribunes.
         mb.box(x, y + 0.52, z, 0.42, 0.72, 0.34, shirt, 3, hd[i]);
         mb.box(x, y + 1.02, z, 0.31, 0.31, 0.31, tone, 3, hd[i]);
-        if ((n + row + i) % 3 === 0) {
+        if ((n + row + i) % 2 === 0) {
           const arm = pos(i, d + side * 0.18, (stadium ? 1.65 + row * 0.62 : 1.35 + row * 0.72));
           mb.box(arm[0] + tx[i] * along, arm[1], arm[2] + tz[i] * along, 0.13, 0.62, 0.13, tone, 3, hd[i]);
         }
@@ -3742,6 +3746,14 @@ const AU = {
     this.so = ctx.createOscillator(); this.so.type = 'triangle'; this.so.frequency.value = 850;
     const lfo = ctx.createOscillator(); lfo.frequency.value = 0.55; const lg = ctx.createGain(); lg.gain.value = 380; lfo.connect(lg); lg.connect(this.so.frequency); lfo.start();
     this.sig = ctx.createGain(); this.sig.gain.value = 0; this.so.connect(this.sig); this.sig.connect(this.out); this.so.start();
+    // Ambiance de tribunes : grondement filtré, souffle de foule et variations lentes.
+    const cf = ctx.createBiquadFilter(); cf.type = 'bandpass'; cf.frequency.value = 980; cf.Q.value = 0.62;
+    this.cg = ctx.createGain(); this.cg.gain.value = 0; noise().connect(cf); cf.connect(this.cg); this.cg.connect(this.out);
+    const chf = ctx.createBiquadFilter(); chf.type = 'highpass'; chf.frequency.value = 1450;
+    this.chg = ctx.createGain(); this.chg.gain.value = 0; noise().connect(chf); chf.connect(this.chg); this.chg.connect(this.out);
+    this.clfo = ctx.createOscillator(); this.clfo.frequency.value = 0.19;
+    this.clfoGain = ctx.createGain(); this.clfoGain.gain.value = 0.009;
+    this.clfo.connect(this.clfoGain); this.clfoGain.connect(this.cg.gain); this.clfo.start();
     this.on = true;
   },
   setVol(v) { this.vol = v; if (this.master) this.master.gain.value = v * 0.7; },
@@ -3757,6 +3769,8 @@ const AU = {
     this.sg.gain.setTargetAtTime(p.mute ? 0 : p.skid * 0.16, t, 0.05);
     this.ng.gain.setTargetAtTime(p.mute ? 0 : (p.nitro ? 0.13 : 0), t, 0.05);
     this.sig.gain.setTargetAtTime(p.mute ? 0 : p.siren * 0.09, t, 0.1);
+    this.cg.gain.setTargetAtTime(p.mute ? 0 : (p.crowd ? 0.038 : 0), t, 0.45);
+    this.chg.gain.setTargetAtTime(p.mute ? 0 : (p.crowd ? 0.012 : 0), t, 0.6);
   },
   silence() { if (this.on) this.update({ rpm: 0, load: 0, speed: 0, skid: 0, nitro: 0, siren: 0, gear: 1, rain: 0, mute: true }); },
   shot(freq, dur, type = 'square', vol = 0.15) {
@@ -3764,6 +3778,17 @@ const AU = {
     const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.value = freq;
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     o.connect(g); g.connect(this.out); o.start(t); o.stop(t + dur + 0.05);
+  },
+  crowdPulse(strength = 1) {
+    if (!this.on) return;
+    const ctx = this.ctx, t = ctx.currentTime, src = ctx.createBufferSource();
+    const fl = ctx.createBiquadFilter(), g = ctx.createGain();
+    src.buffer = this.nb; fl.type = 'bandpass'; fl.frequency.value = 1250; fl.Q.value = 0.8;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.075 * clamp(strength, 0.2, 1.5), t + 0.18);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+    src.connect(fl); fl.connect(g); g.connect(this.out);
+    src.start(t, Math.random()); src.stop(t + 1.9);
   },
   hit(str) {
     if (!this.on) return; const ctx = this.ctx, t = ctx.currentTime;
@@ -4620,10 +4645,11 @@ function updateGame(dt) {
     if (racing && lapsDone > G.laps.length && lapsDone >= 1) {
       const lt = G.raceT - G.lapStart; G.laps.push(lt); G.lapStart = G.raceT;
       if (lt < G.best) G.best = lt;
+      AU.crowdPulse(0.8);
       if (lapsDone < G.cfg.laps) { popup(lapsDone === G.cfg.laps - 1 ? t('lastLap') : t('lapN2', lapsDone + 1), '#fff'); AU.chime(); }
     }
     for (const c of G.cars) if (c.kind === 'ai' && !c.finished && c.progress >= G.cfg.laps * T.L) { c.finished = true; c.finishT = G.raceT; c.finishedSlow = true; }
-    if (racing && p.progress >= G.cfg.laps * T.L) { p.finished = true; p.finishT = G.raceT; G.state = 'finish'; G.finishWait = 2.5; AU.chime(); UI.countdown(G.cfg.mode === 'tt' ? t('finish') : rankOf(p) === 1 ? t('victory') : t('finish')); }
+    if (racing && p.progress >= G.cfg.laps * T.L) { p.finished = true; p.finishT = G.raceT; G.state = 'finish'; G.finishWait = 2.5; AU.crowdPulse(1.25); AU.chime(); UI.countdown(G.cfg.mode === 'tt' ? t('finish') : rankOf(p) === 1 ? t('victory') : t('finish')); }
   } else if (G.chase) chaseLogic(dt);
   if (G.state === 'finish') { G.finishWait -= dt; if (G.finishWait <= 0 && !G.resultsShown) { G.resultsShown = true; endRace(); } }
   // particules
@@ -4639,7 +4665,7 @@ function updateGame(dt) {
   p.gear = p.vfw < -0.5 ? 'R' : gear; p.rpm = rpm;
   let siren = 0;
   if (G.chase) for (const c of G.cars) if (c.kind === 'cop' && !c.wreck) siren = Math.max(siren, clamp(1 - Math.hypot(c.x - p.x, c.z - p.z) / 250, 0, 1));
-  const ap = G.auP || (G.auP = {}); ap.rain = G.env && G.env.rain ? 1 : 0; ap.ev = p.car && p.car.style === 'ev'; ap.rpm = rpm; ap.gear = gear; ap.load = racing ? inp.gas : (inp.rev || 0); ap.speed = Math.min(1.2, sf); ap.skid = (p.sliding || (inp.hand && p.v > 6)) ? Math.min(1, Math.abs(p.vl) / 8 + 0.3) : 0; ap.nitro = p.nitroOn; ap.siren = siren; ap.mute = false;
+  const ap = G.auP || (G.auP = {}); ap.rain = G.env && G.env.rain ? 1 : 0; ap.ev = p.car && p.car.style === 'ev'; ap.rpm = rpm; ap.gear = gear; ap.load = racing ? inp.gas : (inp.rev || 0); ap.speed = Math.min(1.2, sf); ap.skid = (p.sliding || (inp.hand && p.v > 6)) ? Math.min(1, Math.abs(p.vl) / 8 + 0.3) : 0; ap.nitro = p.nitroOn; ap.siren = siren; ap.crowd = racing && G.state === 'race' ? 1 : 0; ap.mute = false;
   AU.update(ap);
   G.shake *= Math.exp(-dt * 3); G.flash *= Math.exp(-dt * 3); G.hitFx = (G.hitFx || 0) * Math.exp(-dt * 5);
   UI.hud(dt);

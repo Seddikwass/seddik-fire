@@ -4502,6 +4502,11 @@ function endRace() {
   }
   res.total = Math.round((res.reward + res.styleBonus) * ((p.perk && p.perk.money) || 1) / 10) * 10;
   SAVE.money += res.total; SAVE.stats.races++; if (res.success) SAVE.stats.wins++;
+  // Historique persistant : chaque parcours conserve résultat, gains et solde après paiement.
+  const trackDef = TRACKS[cfg.track];
+  SAVE.history = Array.isArray(SAVE.history) ? SAVE.history : [];
+  SAVE.history.unshift({ at: Date.now(), mode: cfg.mode, track: trackDef ? trackDef.id : cfg.track, trackName: trackDef ? trackDef.name : '', car: SAVE.car, earned: res.total, balance: SAVE.money, success: !!res.success, position: res.pos || null, duration: Number(G.raceT || (res.chase && res.chase.t) || res.time || 0), style: res.style });
+  SAVE.history = SAVE.history.slice(0, 100);
   saveGame();
   UI.results(res);
 }
@@ -4884,16 +4889,17 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
 const SAVE_KEY = 'superjoud_save_v1';
+const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 function detectLang() { const l = (navigator.language || 'fr').toLowerCase(); return l.includes('-tn') ? 'tn' : l.startsWith('ar') ? 'ar' : l.startsWith('en') ? 'en' : 'fr'; }
 function defaultSettings() { return { sfx: 80, music: 50, quality: IS_TOUCH ? 'medium' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
-  return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, settings: defaultSettings(), stats: { races: 0, wins: 0 } };
+  return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
 }
 let SAVE = defaultSave();
 function loadGame() {
   try {
-    const s = localStorage.getItem(SAVE_KEY); if (!s) return;
-    const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {};
+    const s = localStorage.getItem(SAVE_KEY) || localStorage.getItem(SAVE_BACKUP_KEY); if (!s) return;
+    const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {}; SAVE.history = Array.isArray(o.history) ? o.history.slice(0, 100) : [];
     if ((Number(o.careerVersion) || 0) < 2) {
       const oldDone = Array.isArray(o.careerDone) ? o.careerDone : [];
       SAVE.careerDone = [...new Set([...oldDone.filter(i => Number.isInteger(i) && i >= 0 && i < 16), ...oldDone.filter(i => Number.isInteger(i) && i >= 20 && i < 24).map(i => i - 4)])];
@@ -4907,7 +4913,7 @@ function loadGame() {
     const st = Object.assign(defaultSettings(), o.settings || {}); if (o.settings && o.settings.vol !== undefined && o.settings.sfx === undefined) st.sfx = o.settings.vol; SAVE.settings = st;
   } catch (e) { }
 }
-function saveGame() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SAVE)); } catch (e) { } }
+function saveGame() { try { const payload = JSON.stringify(SAVE); localStorage.setItem(SAVE_KEY, payload); localStorage.setItem(SAVE_BACKUP_KEY, payload); } catch (e) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SAVE)); } catch (err) { console.warn('Sauvegarde indisponible', err); } } }
 const fmtT = x => { if (!isFinite(x)) return '--:--.--'; const m = Math.floor(x / 60), s = x - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(2); };
 const money = v => LANG === 'tn' ? Math.round(v).toLocaleString('fr-TN') + ' د.ت' : '$ ' + Math.round(v).toLocaleString(LANG === 'en' ? 'en-US' : 'fr-FR');
 const modeName = m => t('m_' + m);
@@ -5301,9 +5307,9 @@ let PR = 1, DYN = 1;
 const FPS = { v: 60, acc: 0, n: 0 };
 function applySettings() {
   const s = SAVE.settings, dpr = window.devicePixelRatio || 1;
-  if (s.quality === 'ultra') { PR = Math.min(dpr, IS_TOUCH ? 1.55 : 2.0); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1.12; G.lodNear = 64; R.detail = 1.3; R.shadows = true; R.shadowSize = IS_TOUCH ? 2048 : 3072; }
-  else if (s.quality === 'high') { PR = Math.min(dpr, IS_TOUCH ? 1.25 : 1.75); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1; G.lodNear = 42; R.detail = 1; R.shadows = true; R.shadowSize = IS_TOUCH ? 1024 : 2048; }
-  else if (s.quality === 'medium') { PR = Math.min(dpr, 1.25); R.post = true; R.bloom = true; R.aa = true; R.rays = false; G.drawMul = 0.85; G.lodNear = 28; R.detail = 1; R.shadows = true; R.shadowSize = 1024; }
+  if (s.quality === 'ultra') { PR = Math.min(dpr, IS_TOUCH ? 1.55 : 2.0); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1.12; G.lodNear = 64; R.detail = 1.3; R.shadows = true; R.shadowSize = IS_TOUCH ? 2048 : 3072; G.drawMul = 1.16; G.lodNear = 72; R.detail = 1.4; }
+  else if (s.quality === 'high') { PR = Math.min(dpr, IS_TOUCH ? 1.25 : 1.75); R.post = true; R.bloom = true; R.aa = true; R.rays = true; G.drawMul = 1; G.lodNear = 42; R.detail = 1; R.shadows = true; R.shadowSize = IS_TOUCH ? 1536 : 2048; G.drawMul = 1.04; G.lodNear = 48; R.detail = 1.08; }
+  else if (s.quality === 'medium') { PR = Math.min(dpr, 1.25); R.post = true; R.bloom = true; R.aa = true; R.rays = false; G.drawMul = 0.85; G.lodNear = 28; R.detail = 1; R.shadows = true; R.shadowSize = 1024; G.drawMul = 0.9; G.lodNear = 32; R.detail = 1.02; }
   else { PR = Math.min(dpr, 0.9); R.post = false; R.bloom = false; R.aa = false; R.rays = false; G.drawMul = 0.62; G.lodNear = 16; R.detail = 0; R.shadows = false; }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;

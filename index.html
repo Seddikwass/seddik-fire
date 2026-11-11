@@ -536,6 +536,75 @@ button:disabled{pointer-events:none}
   }
 }
 
+
+
+/* SUPER JOUD v72 — correctifs écran mobile, menu et grandes commandes */
+@media (max-width: 900px), (max-height: 620px) {
+  html,body,#ui { min-height:100%; }
+  #ui { overflow-x:hidden; }
+  .screen { box-sizing:border-box; min-height:100dvh; min-height:100svh; }
+}
+@media (hover:none) and (pointer:coarse) and (orientation:landscape) {
+  #scr-main {
+    justify-content:flex-start!important;
+    align-items:flex-start!important;
+    gap:clamp(10px,2.2vh,20px)!important;
+    padding-top:max(66px,calc(env(safe-area-inset-top) + 58px))!important;
+    padding-bottom:max(18px,env(safe-area-inset-bottom))!important;
+    padding-inline-start:max(18px,env(safe-area-inset-left))!important;
+    padding-inline-end:max(18px,env(safe-area-inset-right))!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+  }
+  #scr-main .hero .tag { max-width:42ch; font-size:clamp(12px,2.2vh,16px)!important; }
+  #scr-main .logo.big { font-size:clamp(27px,5.2vh,48px)!important; }
+  #scr-main .mainnav { width:min(54vw,620px)!important; max-width:620px; gap:clamp(5px,1.1vh,10px)!important; }
+  #scr-main .nbtn { padding-block:clamp(7px,1.5vh,13px)!important; padding-inline:clamp(14px,2vw,24px)!important; }
+  #scr-main .nbtn b { font-size:clamp(16px,2.8vh,23px)!important; }
+  #scr-main .nbtn small { font-size:clamp(10px,1.7vh,13px)!important; }
+  #scr-main .carline { max-width:36vw; bottom:max(14px,env(safe-area-inset-bottom)); }
+  #hud #touch [data-t=left],#hud #touch [data-t=right] {
+    width:clamp(78px,9vw,96px)!important;height:clamp(78px,9vw,96px)!important;
+    min-width:clamp(78px,9vw,96px)!important;min-height:clamp(78px,9vw,96px)!important;
+    font-size:34px!important;border-radius:20px!important;
+    bottom:max(18px,env(safe-area-inset-bottom))!important;
+  }
+  #hud #touch [data-t=right] { left:calc(max(18px,env(safe-area-inset-left)) + clamp(88px,10vw,108px))!important; }
+  #hud #touch [data-t=gas] {
+    width:clamp(100px,11vw,124px)!important;height:clamp(132px,18vh,158px)!important;
+    min-width:100px!important;min-height:132px!important;border-radius:22px!important;
+    bottom:max(18px,env(safe-area-inset-bottom))!important;
+    font-size:19px!important;
+  }
+  #hud #touch [data-t=brake] {
+    width:clamp(84px,9vw,104px)!important;height:clamp(84px,10vh,104px)!important;
+    min-width:84px!important;min-height:84px!important;border-radius:20px!important;
+    right:calc(max(18px,env(safe-area-inset-right)) + clamp(112px,12vw,142px))!important;
+    bottom:max(18px,env(safe-area-inset-bottom))!important;font-size:17px!important;
+  }
+  #hud #touch [data-t=hand] {
+    width:clamp(100px,11vw,124px)!important;height:64px!important;
+    min-width:100px!important;min-height:64px!important;border-radius:18px!important;
+    bottom:calc(max(18px,env(safe-area-inset-bottom)) + clamp(142px,19vh,168px))!important;
+    font-size:16px!important;
+  }
+  #hud #touch [data-t=nitro] {
+    width:clamp(84px,9vw,104px)!important;height:58px!important;
+    min-width:84px!important;min-height:58px!important;border-radius:17px!important;
+    right:calc(max(18px,env(safe-area-inset-right)) + clamp(112px,12vw,142px))!important;
+    bottom:calc(max(18px,env(safe-area-inset-bottom)) + 94px)!important;
+  }
+}
+@media (hover:none) and (pointer:coarse) and (orientation:portrait) {
+  #hud #touch [data-t=left],#hud #touch [data-t=right] {
+    width:clamp(68px,19vw,84px)!important;height:clamp(68px,19vw,84px)!important;
+    min-width:68px!important;min-height:68px!important;font-size:30px!important;
+  }
+  #hud #touch [data-t=gas] { width:clamp(82px,23vw,104px)!important;height:clamp(112px,31vw,136px)!important;min-width:82px!important;min-height:112px!important; }
+  #hud #touch [data-t=brake] { width:clamp(72px,20vw,90px)!important;height:clamp(72px,20vw,90px)!important;min-width:72px!important;min-height:72px!important; }
+  #hud #touch [data-t=hand] { width:clamp(82px,23vw,104px)!important;height:58px!important;min-width:82px!important;min-height:58px!important; }
+}
+
 </style>
 </head>
 <body>

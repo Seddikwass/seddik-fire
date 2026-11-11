@@ -647,6 +647,20 @@ body.touch .meter div{height:9px}
 }
 #loading { padding:24px; text-align:center; }
 #loading p { max-width:86vw; line-height:1.45; }
+
+/* V84 : qualité mobile mieux équilibrée, menus lisibles et état vocal visible. */
+#build-tag{font:800 10px/1 var(--fh);letter-spacing:.08em;color:#9fe8ff;border:1px solid rgba(80,205,245,.5);background:rgba(5,18,28,.78);border-radius:5px;padding:5px 7px;white-space:nowrap}
+#radio-tts-status{display:block;margin-top:5px;color:#a9dce9;font:700 9px/1.35 var(--fh);letter-spacing:.035em}
+#radio-tts-status.error{color:#ff9a9a}
+#radio-talk{min-height:42px;font-size:10px!important}
+@media(max-width:760px){
+  #topbar{gap:6px;padding-inline:8px}
+  #build-tag{font-size:9px;padding:4px 5px}
+  #scr-main .carline{display:none}
+  #scr-main{padding-inline:14px}
+  .screen{min-height:0;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain}
+  .scr-head{position:sticky;top:0;background:linear-gradient(180deg,rgba(7,10,15,.96),rgba(7,10,15,.78));padding:8px 0;backdrop-filter:blur(8px)}
+}
 </style>
 </head>
 <body>
@@ -660,6 +674,7 @@ body.touch .meter div{height:9px}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
+    <span id="build-tag" aria-label="Version du jeu">V84</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -755,7 +770,8 @@ body.touch .meter div{height:9px}
       <small id="radio-voice-status" role="status">Radio vocale désactivée · micro requis</small>
       <div id="radio-audios" aria-hidden="true"></div>
     </div>
-    <button id="radio-talk" type="button">◉ CONTACTER MON ÉQUIPE</button>
+    <button id="radio-talk" type="button">◉ TESTER LA VOIX DE L’ÉQUIPE</button>
+    <small id="radio-tts-status" role="status" aria-live="polite">Voix automatique prête à être testée</small>
   </section>
   <div id="h-msgs"></div>
   <div id="h-count"></div>
@@ -2472,25 +2488,33 @@ function radioAdvice() {
 // Déverrouillage vocal au premier geste utilisateur (politique Android/Chrome).
 let RADIO_TTS_UNLOCKED = false;
 let RADIO_TTS_PENDING = '';
+function crewTtsStatus(message, error=false) {
+  const el = $('radio-tts-status'); if (!el) return;
+  el.textContent = message; el.classList.toggle('error', !!error);
+}
 function unlockCrewSpeech() {
-  if (RADIO_TTS_UNLOCKED || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
-  try { const silent = new SpeechSynthesisUtterance(' '); silent.volume = 0; window.speechSynthesis.speak(silent); RADIO_TTS_UNLOCKED = true;
-    if (RADIO_TTS_PENDING) { const pending = RADIO_TTS_PENDING; RADIO_TTS_PENDING = ''; speakCrewAdvice(pending); }
-  } catch(e) { console.warn('Activation voix équipe impossible', e); }
+  if (RADIO_TTS_UNLOCKED) return;
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { crewTtsStatus('Synthèse vocale indisponible sur ce navigateur', true); return; }
+  RADIO_TTS_UNLOCKED = true;
+  if (RADIO_TTS_PENDING) { const pending = RADIO_TTS_PENDING; RADIO_TTS_PENDING = ''; speakCrewAdvice(pending); }
 }
 function speakCrewAdvice(message) {
-  if (!message || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+  if (!message) return;
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { crewTtsStatus('Moteur vocal Android non disponible', true); return; }
   if (!RADIO_TTS_UNLOCKED) { RADIO_TTS_PENDING = message; return; }
   const synth = window.speechSynthesis;
   const lang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
   const say = () => { try {
     const utter = new SpeechSynthesisUtterance(message); utter.lang = lang; utter.rate = 0.91; utter.pitch = 0.96; utter.volume = 1;
+    utter.onstart = () => crewTtsStatus('VOIX ACTIVE · ' + lang.toUpperCase());
+    utter.onend = () => crewTtsStatus('Voix équipe prête · prochaine consigne automatique');
+    utter.onerror = (e) => crewTtsStatus('Voix bloquée : ' + (e.error || 'moteur vocal Android'), true);
     const voices = synth.getVoices(), base = lang.slice(0,2).toLowerCase();
     utter.voice = voices.find(v => v.lang && v.lang.toLowerCase() === lang.toLowerCase()) || voices.find(v => v.lang && v.lang.toLowerCase().startsWith(base)) || null;
     synth.cancel(); synth.resume(); synth.speak(utter);
   } catch(e) { console.warn('Lecture de la consigne vocale impossible', e); } };
   if (synth.getVoices().length) say();
-  else { let done=false; const ready=()=>{if(done)return;done=true;synth.removeEventListener('voiceschanged',ready);say();}; synth.addEventListener('voiceschanged',ready); setTimeout(ready,900); }
+  else { crewTtsStatus('Chargement des voix du téléphone…'); let done=false; const ready=()=>{if(done)return;done=true;synth.removeEventListener('voiceschanged',ready);say();}; synth.addEventListener('voiceschanged',ready); setTimeout(ready,1600); }
 }
 document.addEventListener('pointerdown', unlockCrewSpeech, {capture:true, passive:true});
 document.addEventListener('touchstart', unlockCrewSpeech, {capture:true, passive:true});
@@ -2945,7 +2969,7 @@ function buildTrack(def, quality) {
   for (let i = 0; i < n; i++) { const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n]; for (let k = 0; k < 40; k++) dense.push(crPoint(p0, p1, p2, p3, k / 40)); }
   const DN = dense.length, cum = new Float64Array(DN + 1);
   for (let i = 1; i <= DN; i++) { const a = dense[i - 1], b = dense[i % DN]; cum[i] = cum[i - 1] + Math.hypot(b[0] - a[0], b[2] - a[2]); }
-  const total = cum[DN], N = Math.round(total / 2), ds = total / N;
+  const total = cum[DN], N = Math.round(total / (IS_TOUCH ? 3.0 : 2.0)), ds = total / N;
   const px = new Float32Array(N), py = new Float32Array(N), pz = new Float32Array(N);
   let jj = 0;
   for (let i = 0; i < N; i++) {
@@ -5719,6 +5743,7 @@ const UI = {
     G.state = 'loading'; AU.init();
     requestAnimationFrame(() => requestAnimationFrame(() => {
       try {
+        $('loadtxt').textContent = LANG==='en'?'Building track and vehicles…':(LANG==='ar'||LANG==='tn'?'جارٍ تجهيز الحلبة والسيارات…':'Construction du circuit et des véhicules…');
         const def = TRACKS[cfg.track];
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
         G.camMode = SAVE.settings.cam; G.resultsShown = false;
@@ -5742,7 +5767,8 @@ const UI = {
       $('radio-team').classList.add('radio-collapsed');
       $('radio-toggle').textContent='＋';
       $('radio-toggle').setAttribute('aria-expanded','false');
-      $('radio-talk').textContent=LANG==='en'?'◉ CONTACT RACE TEAM':(LANG==='ar'||LANG==='tn'?'◉ اتصل بفريقك':'◉ CONTACTER MON ÉQUIPE');
+      $('radio-talk').textContent=LANG==='en'?'◉ TEST TEAM VOICE':(LANG==='ar'||LANG==='tn'?'◉ اختبر صوت الفريق':'◉ TESTER LA VOIX DE L’ÉQUIPE');
+      crewTtsStatus('Appuie une fois sur « TESTER LA VOIX » pour autoriser la voix automatique.');
       $('radio-team').querySelector('.radio-head span:first-child').textContent=LANG==='en'?'TEAM RADIO · BOX':(LANG==='ar'||LANG==='tn'?'اتصال الفريق · الحلبة':'RADIO ÉQUIPE · STAND');
       radioVoiceAutoReconnect();
       MUS.play('race'); MUS.muffle(false);
@@ -5909,7 +5935,7 @@ const BOOT_KEY = 'superjoud_boot';
 function bootGuardStart() {
   let safe = false;
   try { safe = localStorage.getItem(BOOT_KEY) === 'pending'; localStorage.setItem(BOOT_KEY, 'pending'); } catch (e) { }
-  if (safe && SAVE.settings.quality !== 'low') { SAVE.settings.quality = 'low'; saveGame(); return true; }
+  if (safe && SAVE.settings.quality !== 'low') { SAVE.settings.quality = 'low'; return true; }
   return false;
 }
 function toast(msg) {
@@ -5947,13 +5973,13 @@ function applySettings() {
     // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
     // Un peu plus de définition sur les téléphones, tout en gardant
     // les ombres/post-effets coûteux désactivés pour éviter les pertes WebGL.
-    PR = Math.min(PR, modest ? 0.56 : 0.70);
+    PR = Math.min(PR, modest ? 0.76 : 0.92);
     R.shadowSize = 256;
     R.shadows = false;
     R.bloom = false; R.rays = false; R.post = false; R.aa = false;
-    R.detail = Math.min(R.detail, modest ? 0.22 : 0.34);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.37 : 0.46);
-    G.lodNear = Math.min(G.lodNear, modest ? 8 : 12);
+    R.detail = Math.min(R.detail, modest ? 0.62 : 0.82);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.72 : 0.90);
+    G.lodNear = Math.min(G.lodNear, modest ? 20 : 34);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;
@@ -6083,7 +6109,7 @@ function bindInputs() {
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };
   $('p-quit').onclick = () => UI.quit();
   $('h-pause').onclick = () => UI.pause(true);
-  $('radio-talk').onclick = () => radioCall();
+  $('radio-talk').onclick = () => { unlockCrewSpeech(); if (!window.speechSynthesis) { crewTtsStatus('Active la synthèse vocale Android dans les paramètres', true); return; } radioCall(); };
   $('radio-open').onclick = () => radioVoiceStart('host');
   $('radio-join').onclick = () => radioVoiceStart('guest');
   const ptt=$('radio-ptt');

@@ -645,6 +645,28 @@ button:disabled{pointer-events:none}
 #radio-team .radio-message {font-size:10px!important;line-height:1.35!important}
 #radio-team #radio-talk {min-height:34px!important;font-size:10px!important}
 
+
+/* v76 — cockpit premium, menu lisible et commandes tactiles généreuses */
+#scr-main {gap:clamp(14px,2.4vh,24px)!important;padding-top:max(74px,env(safe-area-inset-top) + 62px)!important;padding-bottom:max(20px,env(safe-area-inset-bottom))!important;overflow-y:auto!important;background:linear-gradient(90deg,rgba(4,9,18,.76),rgba(4,9,18,.20) 72%,transparent)!important}
+#scr-main .hero .tag{color:#e4edf8!important;text-shadow:0 2px 8px #000!important;max-width:38ch!important}
+#scr-main .mainnav{width:min(430px,88vw)!important;gap:11px!important}
+#scr-main .nbtn{min-height:58px!important;padding:14px 24px!important;background:linear-gradient(105deg,rgba(8,20,36,.97),rgba(16,36,58,.88))!important;border:1px solid rgba(120,190,240,.34)!important;border-inline-start:5px solid #ff8a2a!important;clip-path:none!important;border-radius:12px!important;box-shadow:0 8px 22px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.10)!important}
+#scr-main .nbtn b{font-size:clamp(18px,2.6vh,23px)!important;color:#fff!important;letter-spacing:.045em!important}
+#scr-main .nbtn small{color:#c5d4e5!important;font-size:13px!important}
+#scr-main .nbtn.hl{background:linear-gradient(105deg,rgba(115,49,13,.98),rgba(33,37,48,.95))!important;border-color:rgba(255,163,83,.65)!important}
+@media (hover:none) and (pointer:coarse){
+ #touch button{min-height:60px!important;border:2px solid rgba(210,235,255,.78)!important;box-shadow:0 8px 22px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,.24)!important;font-weight:900!important;letter-spacing:.02em!important}
+ #touch [data-t=left],#touch [data-t=right]{width:clamp(90px,12vw,112px)!important;height:clamp(90px,12vw,112px)!important;min-width:90px!important;min-height:90px!important;font-size:40px!important;border-radius:24px!important;background:linear-gradient(145deg,#238bd4,#092d58)!important;border:2px solid #9edaff!important;box-shadow:0 9px 22px rgba(0,0,0,.58),inset 0 3px 0 rgba(255,255,255,.28)!important}
+ #touch [data-t=gas]{width:clamp(116px,13vw,142px)!important;height:clamp(150px,20vh,178px)!important;min-width:116px!important;min-height:150px!important;font-size:21px!important}
+ #touch [data-t=brake]{width:clamp(100px,11vw,120px)!important;height:clamp(100px,11vw,120px)!important;min-width:100px!important;min-height:100px!important;font-size:19px!important}
+ #touch [data-t=hand]{width:clamp(116px,13vw,140px)!important;height:72px!important;min-width:116px!important;min-height:72px!important;font-size:16px!important}
+ #touch [data-t=nitro]{width:clamp(100px,11vw,120px)!important;height:66px!important;min-width:100px!important;min-height:66px!important;font-size:16px!important}
+}
+@media (hover:none) and (pointer:coarse) and (orientation:landscape){
+ #touch [data-t=right]{left:calc(max(18px,env(safe-area-inset-left)) + clamp(100px,13vw,124px))!important}
+ #touch [data-t=brake],#touch [data-t=nitro]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(132px,15vw,160px))!important}
+}
+
 </style>
 </head>
 <body>
@@ -2458,6 +2480,7 @@ function radioAdvice() {
   return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
 }
 let radioVoiceUnlocked = false;
+let radioVoiceReady = false;
 function unlockTeamVoice() {
   try {
     const synth = window.speechSynthesis;
@@ -2466,11 +2489,11 @@ function unlockTeamVoice() {
     if (!radioVoiceUnlocked) {
       const primer = new SpeechSynthesisUtterance(' ');
       primer.lang = LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
-      primer.volume = 0; primer.rate = 1;
+      primer.volume = 1; primer.rate = 1; primer.text = 'Radio équipe activée.';
       primer.onend = () => { radioVoiceUnlocked = true; };
       primer.onerror = () => { radioVoiceUnlocked = true; };
       synth.speak(primer);
-      radioVoiceUnlocked = true;
+      radioVoiceUnlocked = true; radioVoiceReady = true;
     }
     return true;
   } catch(e) { console.warn('Radio vocale indisponible:',e); return false; }
@@ -2498,7 +2521,8 @@ function radioCall(automatic = false) {
       const preferred=voices.find(v=>v.lang.toLowerCase()===voice.lang.toLowerCase())
         || voices.find(v=>v.lang.toLowerCase().startsWith(voice.lang.slice(0,2).toLowerCase()));
       if(preferred) voice.voice=preferred;
-      voice.onerror=e=>console.warn('Erreur synthèse vocale radio:',e.error);
+      voice.onerror=e=>{console.warn('Erreur synthèse vocale radio:',e.error);};
+      voice.onstart=()=>{radioVoiceReady=true;};
       synth.speak(voice);
     }
   } catch(e) { console.warn('Lecture radio impossible:',e); }
@@ -4602,7 +4626,7 @@ function readInput(dt) {
   TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 0.72 : (TOUCH.rightPulse > 0 ? 0.26 : 0)) - (leftDown ? 0.72 : (TOUCH.leftPulse > 0 ? 0.26 : 0));
+  let st = (rightDown ? 0.84 : (TOUCH.rightPulse > 0 ? 0.46 : 0)) - (leftDown ? 0.84 : (TOUCH.leftPulse > 0 ? 0.46 : 0));
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4625,7 +4649,7 @@ function readInput(dt) {
   const digitalSteer = analog === null && st !== 0;
   // Montée rapide mais progressive : le véhicule répond au premier contact
   // sans passer brutalement d'un braquage nul au braquage maximal.
-  const steerRate = digitalSteer ? 5.6 : (steerTarget === 0 ? 5.2 : 6.4);
+  const steerRate = digitalSteer ? 8.2 : (steerTarget === 0 ? 7.0 : 8.0);
   G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));
@@ -5601,7 +5625,7 @@ const UI = {
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
         G.camMode = SAVE.settings.cam; G.resultsShown = false;
         setupRace(cfg);
-        G.radioNext = 4; G.crowdNext = 8;
+        G.radioNext = 2; G.crowdNext = 8;
       } catch (e) { console.error(e); showErr(e.message); return; }
       $('loading').classList.remove('show'); $('hud').classList.remove('hidden');
       const tt = SAVE.settings.touch === 'on' || (SAVE.settings.touch === 'auto' && IS_TOUCH);

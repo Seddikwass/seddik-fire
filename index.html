@@ -825,6 +825,12 @@ canvas{image-rendering:auto}
 #lobby #maps .map-djerba .map-art,#lobby #maps .map-capbon .map-art{background:linear-gradient(120deg,rgba(5,15,20,.05),rgba(5,15,20,.55)),linear-gradient(135deg,#6cb8a6,#23586b)}
 @media(max-width:420px){#lobby #maps{gap:7px}#lobby #maps .map-card{min-height:104px}#lobby #maps .map-art{height:58px}}
 @media(prefers-reduced-motion:reduce){#lobby #maps .map-card{transition:none}}
+/* SEDDIK FIRE 3D SHOWROOM — WebGL canvas layered in the character stage. */
+#lobby .stage{position:relative;isolation:isolate}
+#sf3dCanvas{width:100%;max-width:min(290px,40vh);aspect-ratio:1;justify-self:center;display:block;touch-action:pan-y;cursor:grab}
+#sf3dCanvas:active{cursor:grabbing}
+#sf3dCanvas[hidden]{display:none!important}
+#lobby .env-mode.sf3d-mode{border-color:rgba(82,190,255,.55)!important;color:#bfe9ff!important;background:rgba(35,125,190,.13)!important}
 </style>
 </head>
 <body>
@@ -905,6 +911,7 @@ canvas{image-rendering:auto}
       <div class="stage">
         <button id="skinPrev" class="arrow" aria-label="Soldat précédent">‹</button>
         <canvas id="skinCv" aria-label="Aperçu du soldat"></canvas>
+        <canvas id="sf3dCanvas" aria-label="Aperçu 3D du soldat, de son arme et du véhicule" hidden></canvas>
         <div id="lobbySoldierFallback" aria-hidden="true">
           <svg viewBox="0 0 220 260" role="presentation" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -4821,5 +4828,69 @@ if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePl
 })();
 </script>
 
+<script type="module">
+/* SEDDIK FIRE 3D SHOWROOM v1 — procedural WebGL assets, gracefully falls back to the 2D preview. */
+(async()=>{
+ const canvas=document.getElementById('sf3dCanvas'),old=document.getElementById('skinCv');
+ if(!canvas||!old)return;
+ try{
+  const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));renderer.setSize(290,290,false);
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x111820,10,23);
+  const camera=new THREE.PerspectiveCamera(34,1,.1,80);camera.position.set(5.7,4.2,8.4);camera.lookAt(0,1.15,0);
+  scene.add(new THREE.HemisphereLight(0xc8e5ff,0x453522,2.1));
+  const key=new THREE.DirectionalLight(0xffd1a0,3.1);key.position.set(4,8,5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);scene.add(key);
+  const rim=new THREE.PointLight(0x3d9dff,24,13);rim.position.set(-4,3,-3);scene.add(rim);
+  const mat=(color,roughness=.78,metalness=.05)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
+  const olive=mat(0x4d5c3e),dark=mat(0x202a25),cloth=mat(0x687456),metal=mat(0x39434a,.35,.78),black=mat(0x171b20,.38,.65),skin=mat(0xb98768),glass= new THREE.MeshStandardMaterial({color:0x182b35,roughness:.18,metalness:.5});
+  const root=new THREE.Group();scene.add(root);
+  const ground=new THREE.Mesh(new THREE.CylinderGeometry(3.5,3.7,.22,64),mat(0x424c42));ground.position.y=-.15;ground.receiveShadow=true;root.add(ground);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(3.05,.035,8,80),mat(0xe36c32,.45,.4));ring.rotation.x=Math.PI/2;ring.position.y=-.02;root.add(ring);
+  // Raised terrain island with rock strata and grass patches.
+  const island=new THREE.Mesh(new THREE.CylinderGeometry(2.65,2.35,.38,48),mat(0x8d7956));island.position.set(0,.12,0);island.castShadow=true;island.receiveShadow=true;root.add(island);
+  const turf=new THREE.Mesh(new THREE.CylinderGeometry(2.62,2.62,.08,48),mat(0x64764a));turf.position.y=.34;turf.receiveShadow=true;root.add(turf);
+  for(let i=0;i<9;i++){const b=new THREE.Mesh(new THREE.BoxGeometry(.48+Math.random()*.5,.45+Math.random()*.9,.48+Math.random()*.5),mat(i%2?0x8b8066:0x9b8b70));const a=i*2.399;b.position.set(Math.cos(a)*(1.5+(i%3)*.22),.45+b.geometry.parameters.height/2,Math.sin(a)*(1.5+(i%3)*.22));b.castShadow=true;b.receiveShadow=true;root.add(b)}
+  // Character rig: boots, articulated limbs, tactical torso, plate carrier and helmet.
+  const soldier=new THREE.Group();soldier.position.set(-.55,.42,.15);root.add(soldier);
+  const sphere=(parent,g,m,x,y,z,sx=1,sy=1,sz=1)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o};
+  const box=(p,w,h,d,m,x,y,z)=>sphere(p,new THREE.BoxGeometry(w,h,d),m,x,y,z);
+  const cyl=(p,r1,r2,h,m,x,y,z)=>sphere(p,new THREE.CylinderGeometry(r1,r2,h,12),m,x,y,z);
+  for(const x of [-.19,.19]){box(soldier,.2,.16,.34,black,x,.13,.03);cyl(soldier,.105,.12,.66,olive,x,.49,0)}
+  box(soldier,.62,.72,.34,cloth,0,1.05,0);
+  box(soldier,.49,.52,.37,olive,0,1.08,.2);
+  for(let i=0;i<4;i++)box(soldier,.09,.22,.08,dark,-.18+i*.12,1.04,.405);
+  for(const x of [-.38,.38]){const arm=cyl(soldier,.105,.14,.63,olive,x,1.02,.02);arm.rotation.z=x<0?-.22:.22; sphere(soldier,new THREE.SphereGeometry(.12,12,10),dark,x, .68,.13)}
+  cyl(soldier,.105,.11,.17,skin,0,1.52,0);
+  sphere(soldier,new THREE.SphereGeometry(.235,20,16),skin,0,1.79,0,1,1.15,.95);
+  sphere(soldier,new THREE.SphereGeometry(.25,20,12,0,Math.PI*2,0,Math.PI*.58),olive,0,1.91,-.015,1.06,.72,1.02);
+  box(soldier,.34,.08,.12,dark,0,1.82,.22);
+  // Detailed assault rifle held across the chest.
+  const rifle=new THREE.Group();rifle.position.set(.12,1.02,.48);rifle.rotation.z=-.18;soldier.add(rifle);
+  box(rifle,.82,.09,.11,metal,0,0,0);box(rifle,.34,.14,.13,olive,-.22,-.12,0);box(rifle,.22,.08,.1,dark,.34,-.02,0);
+  cyl(rifle,.035,.035,.48,black,.55,.015,0).rotation.z=Math.PI/2;
+  box(rifle,.16,.16,.12,dark,-.38,.06,0);box(rifle,.12,.18,.1,black,.02,-.13,0);
+  box(rifle,.12,.08,.08,metal,.05,.09,0);
+  // Tactical 4x4 vehicle, wheels and windows.
+  const car=new THREE.Group();car.position.set(1.35,.48,.25);car.rotation.y=-.5;root.add(car);
+  box(car,1.15,.32,.72,olive,0,.27,0);box(car,.67,.36,.62,dark,-.03,.59,0);
+  box(car,.58,.25,.025,glass,-.03,.62,.32);box(car,.58,.25,.025,glass,-.03,.62,-.32);
+  box(car,.22,.1,.75,metal,.52,.42,0);
+  for(const x of [-.39,.39])for(const z of [-.39,.39]){const w=sphere(car,new THREE.CylinderGeometry(.17,.17,.12,20),black,x,.16,z);w.rotation.x=Math.PI/2;const hub=sphere(car,new THREE.CylinderGeometry(.075,.075,.125,16),metal,x,.16,z);hub.rotation.x=Math.PI/2}
+  const head=mat(0xffd58a,.25,.15);for(const z of [-.23,.23])sphere(car,new THREE.SphereGeometry(.07,12,10),head,.59,.34,z);
+  // Small trees and rocks bring depth to the island diorama.
+  for(let i=0;i<7;i++){const a=i*2.4,x=Math.cos(a)*2.05,z=Math.sin(a)*2.05; cyl(root,.045,.06,.35,mat(0x59452d),x,.58,z);sphere(root,new THREE.ConeGeometry(.28,.72,8),mat(0x38583a),x,.98,z)}
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),mat(0x101820));floor.rotation.x=-Math.PI/2;floor.position.y=-.29;floor.receiveShadow=true;scene.add(floor);
+  let dragging=false,lastX=0,rotation=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(dragging){rotation+=(e.clientX-lastX)*.012;lastX=e.clientX}});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointercancel',()=>dragging=false);
+  const resize=()=>{const w=Math.max(180,canvas.clientWidth||290),h=Math.max(180,canvas.clientHeight||290);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe(canvas);resize();
+  canvas.hidden=false;old.style.display='none';
+  const badge=document.querySelector('#lobby .env-mode');if(badge){badge.textContent='APERÇU 3D WEBGL · SOLDAT · ARME · 4×4';badge.classList.add('sf3d-mode')}
+  let raf=0;const tick=()=>{raf=requestAnimationFrame(tick);if(!document.hidden){root.rotation.y=rotation+Math.sin(performance.now()*.00022)*.08;renderer.render(scene,camera)}};tick();
+  window.__sf3dShowroom={renderer,scene,camera,root,dispose(){cancelAnimationFrame(raf);renderer.dispose()}};
+ }catch(error){console.warn('Aperçu 3D indisponible, retour au rendu classique',error);canvas.hidden=true;old.style.display='block'}
+})();
+</script>
 </body>
 </html>

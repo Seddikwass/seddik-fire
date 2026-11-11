@@ -803,8 +803,6 @@ canvas{image-rendering:auto}
 }
 #lobby .stamp{max-width:100%;text-align:center;}
 
-/* v146 — photo documentaire tunisienne intégrée au profil opérateur. */
-.tn-photo-ref{display:grid;grid-template-columns:104px minmax(0,1fr);gap:10px;align-items:center;width:min(100%,390px);margin:10px auto 0;padding:8px;border:1px solid rgba(226,174,103,.35);border-radius:8px;background:linear-gradient(120deg,rgba(15,22,20,.92),rgba(37,32,23,.9));text-align:left}.tn-photo-ref img{display:block;width:104px;height:72px;object-fit:cover;object-position:35% 45%;border-radius:4px;border:1px solid rgba(255,255,255,.18);filter:saturate(.82) contrast(1.06)}.tn-photo-ref div{display:flex;flex-direction:column;gap:5px;min-width:0}.tn-photo-ref b{font-size:9px;letter-spacing:.1em;color:#f2c17d;line-height:1.35}.tn-photo-ref a{font-size:10px;line-height:1.35;color:#e8e0cf;text-decoration:underline;text-underline-offset:2px}@media(max-width:600px){.tn-photo-ref{grid-template-columns:88px minmax(0,1fr);gap:8px;padding:7px;margin-top:8px}.tn-photo-ref img{width:88px;height:62px}.tn-photo-ref b{font-size:8px}.tn-photo-ref a{font-size:9px}}
 </style>
 </head>
 <body>
@@ -935,7 +933,7 @@ canvas{image-rendering:auto}
         </div>
         <button id="skinNext" class="arrow" aria-label="Soldat suivant">›</button>
       </div>
-      <div class="pc-name"><span class="lbl">Votre personnage · <span id="skinIdx">2 / 7</span></span><b id="skinName">Forêt</b><span id="skinDesc"></span><div class="tn-photo-ref"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Tunisian_Armed_Forces_conduct_sniper_training_during_African_Lion_2025_250424-A-MF526-7640.jpg" alt="Militaire tunisien en entraînement à Ben Ghilouf, avril 2025" loading="lazy" decoding="async"><div><b>RÉFÉRENCE RÉELLE · ARMÉE TUNISIENNE</b><a href="https://commons.wikimedia.org/wiki/File:Tunisian_Armed_Forces_conduct_sniper_training_during_African_Lion_2025_250424-A-MF526-7640.jpg" target="_blank" rel="noopener noreferrer">Photo officielle · African Lion 2025 · domaine public</a></div></div></div>
+      <div class="pc-name"><span class="lbl">Votre personnage · <span id="skinIdx">2 / 7</span></span><b id="skinName">Forêt</b><span id="skinDesc"></span></div>
     </div>
     <div class="side">
       <div class="card">
@@ -1257,6 +1255,13 @@ SOLDIERS.push(
 {id:'sf_sanitaire',n:'Médecin de combat',d:'Secouriste tactique avec casque léger, sac médical et équipement de terrain sable et vert.',base:'#c09270',cam:['#777c58','#b0a27a','#3c4937'],pants:'#4c5942',pack:'#a18a60',hg:'h1',hc:'#8b7954',glove:'#33382d',blobs:24},
 {id:'sf_montagne',n:'Chasseur des montagnes',d:'Éclaireur des Hautes Terres, tenue gris-vert, protections renforcées et sac de randonnée tactique.',base:'#a87c5e',cam:['#555e50','#7b806d','#343d37'],pants:'#3b443d',pack:'#333d36',hg:'h3',hc:'#4b554b',glove:'#252c28',blobs:32},
 {id:'sf_cotier',n:'Fusilier côtier',d:'Combattant amphibie, équipement bleu ardoise, casque balistique et radio de patrouille.',base:'#ae8061',cam:['#344c5d','#71818a','#263643'],pants:'#263847',pack:'#1d2c39',hg:'h2',hc:'#304354',glove:'#1e2932',pat:'pix',blobs:26}
+);
+/* v147 — quatre opérateurs originaux animés par le moteur de marche existant. */
+SOLDIERS.push(
+{id:'sf_caucasus',n:'Le Colosse du Caucase',d:'Assaut lourd inspiré des combattants d’Europe de l’Est : casque balistique, plaques épaisses et camouflage montagne.',lv:3,base:'#aa8062',cam:['#454b40','#77745d','#30372f'],pants:'#353b34',pack:'#303830',hg:'h3',hc:'#4a4b40',glove:'#20251f',pat:'pix',blobs:34},
+{id:'sf_balkans',n:"L’Ombre des Balkans",d:'Éclaireur silencieux : tenue graphite, cagoule, lunettes tactiques et équipement léger.',lv:5,base:'#9b7359',cam:['#252b2c','#444b4d','#5b5e58'],pants:'#242a2b',pack:'#202628',hg:'h2',hc:'#222a2d',glove:'#171d20',pat:'pix',blobs:22},
+{id:'sf_kiev',n:'Le Lynx de Kiev',d:'Tireur de précision mobile : camouflage urbain froid, casque à rails et sac compact.',lv:7,base:'#b18466',cam:['#59616a','#8b8e8a','#353d47'],pants:'#454d55',pack:'#333b43',hg:'h1',hc:'#555c62',glove:'#242b32',pat:'pix',blobs:30},
+{id:'sf_titan',n:"Le Titan de l’Est",d:'Vétéran d’assaut : gilet renforcé, radio d’épaule, genouillères et treillis terre sombre.',lv:9,base:'#8f654d',cam:['#514333','#776348','#292e27'],pants:'#39352d',pack:'#282d27',hg:'helmet',hc:'#33372f',glove:'#1e211d',pat:'pix',blobs:36}
 );
 
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
@@ -3172,6 +3177,39 @@ function drawRegionalLandmarks(x0,y0,x1,y1){
  }
 }
 
+/* v147 — relief pseudo-3D tunisien : courbes de niveau, ombres portées et strates rocheuses. */
+function drawTunisianRelief(x0,y0,x1,y1){
+ if(!Q.hi||LOWD)return;
+ const id=MAP.id,desert=id==='sahara',coast=id==='cote'||id==='capbon',island=id==='djerba';
+ const hills=id==='hautes'||id==='foret'||id==='ville'||desert||coast||island;
+ if(!hills)return;
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ const bands=desert?15:coast?10:island?7:12;
+ for(let n=0;n<bands;n++){
+  const baseY=260+n*238+Math.sin(n*1.73)*42,phase=n*1.91+(MAP.seed%97)*.013;
+  if(baseY<y0-150||baseY>y1+150)continue;
+  const amp=desert?54:coast?30:island?18:68;
+  const start=Math.max(0,Math.floor(x0/24)*24),end=Math.min(WS,x1+24);
+  ctx.beginPath();let first=true;
+  for(let x=start;x<=end;x+=24){
+   const wave=Math.sin(x*.0032+phase)*amp+Math.sin(x*.0081-phase*1.7)*amp*.24;
+   const y=baseY+wave+(desert?Math.sin(x*.0015+n)*24:0);
+   if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle=desert?'rgba(113,72,39,.12)':coast?'rgba(67,91,63,.11)':island?'rgba(84,104,72,.09)':'rgba(48,58,47,.14)';ctx.lineWidth=desert?8:11;ctx.stroke();
+  ctx.strokeStyle=desert?'rgba(255,226,171,.20)':coast?'rgba(227,230,190,.19)':island?'rgba(225,220,174,.13)':'rgba(221,226,199,.18)';ctx.lineWidth=1.6;ctx.stroke();
+  if(n%3===0){ctx.beginPath();for(let x=start;x<=end;x+=24){const y=baseY+Math.sin(x*.0032+phase)*amp+Math.sin(x*.0081-phase*1.7)*amp*.24+(desert?Math.sin(x*.0015+n)*24:0)-10;if(x===start)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.strokeStyle='rgba(255,244,211,.12)';ctx.lineWidth=2.4;ctx.stroke()}
+ }
+ const step=190,gx0=Math.floor(Math.max(0,x0)/step)*step,gy0=Math.floor(Math.max(0,y0)/step)*step;
+ for(let x=gx0;x<x1;x+=step)for(let y=gy0;y<y1;y+=step){
+  const v=Math.abs(Math.sin(x*.017+y*.031+(MAP.seed%113)));if(v<(desert ? .69 : .83)||isWater(x,y)||nearRoad(x,y,30))continue;
+  const px=x+v*step*.65,py=y+((v*7.7)%1)*step*.7;if(px<x0-35||px>x1+35||py<y0-35||py>y1+35)continue;
+  const w=12+v*20,hh=5+v*8;ctx.fillStyle=desert?'rgba(92,59,37,.22)':'rgba(28,36,31,.20)';ctx.beginPath();ctx.moveTo(px-w,py);ctx.lineTo(px-w*.25,py-hh);ctx.lineTo(px+w,py-hh*.35);ctx.lineTo(px+w*.45,py+hh);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=desert?'rgba(239,194,130,.28)':'rgba(213,218,194,.23)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(px-w*.25,py-hh);ctx.lineTo(px+w,py-hh*.35);ctx.stroke();
+ }
+ ctx.restore();
+}
+
 function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;{const pz=z/baseZoom();PK=.0021*pz;PTY=-.27*pz}const sh=reduceMotion?0:cam.shake*10;const ox=(Math.random()-.5)*sh,oy=(Math.random()-.5)*sh;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0e5f86';ctx.fillRect(0,0,VW,VH);
   const vw=VW/z,vh=VH/z,x0=cam.x-vw/2,y0=cam.y-vh/2,x1=x0+vw,y1=y0+vh;V.x0=x0;V.y0=y0;V.x1=x1;V.y1=y1;
@@ -3179,7 +3217,7 @@ function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;
   const gx0=clamp(x0,0,WS),gy0=clamp(y0,0,WS),gx1=clamp(x1,0,WS),gy1=clamp(y1,0,WS);
   if(gx1>gx0&&gy1>gy0)ctx.drawImage(ground,gx0*GS,gy0*GS,(gx1-gx0)*GS,(gy1-gy0)*GS,gx0,gy0,gx1-gx0,gy1-gy0);
    draw2DSurfaceDetail(x0,y0,x1,y1);
-   drawRegionalLandmarks(x0,y0,x1,y1);
+   drawRegionalLandmarks(x0,y0,x1,y1);drawTunisianRelief(x0,y0,x1,y1);
    drawCoastalBoats(x0,y0,x1,y1);drawCityTrafficSignals(x0,y0,x1,y1);
   // waves
   ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=3;ctx.beginPath();const off=(TIME*24)%140;

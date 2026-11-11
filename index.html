@@ -841,6 +841,21 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
 #play[aria-busy="true"] small{opacity:1;animation:sfLaunchPulse .9s ease-in-out infinite alternate}
 @keyframes sfLaunchPulse{from{opacity:.55}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){#play[aria-busy="true"] small{animation:none}}
+
+/* v184 — galerie de neuf portraits jouables dans le lobby */
+#sf-portrait-roster{width:min(620px,100%);margin:10px auto 0;padding:10px;border:1px solid rgba(255,190,92,.28);border-radius:14px;background:linear-gradient(145deg,rgba(15,21,27,.94),rgba(33,25,20,.9));box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.sf-roster-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;color:#f5e7cf;font-size:12px;letter-spacing:.12em}
+.sf-roster-head span{font-size:10px;letter-spacing:.04em;color:#d6b98d}
+.sf-roster-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sf-portrait{min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 5px 8px;border:1px solid rgba(238,218,183,.18);border-radius:10px;background:linear-gradient(180deg,rgba(65,55,43,.56),rgba(12,17,21,.92));color:#f8ead2;touch-action:manipulation;transition:border-color .16s,transform .16s,background .16s}
+.sf-portrait:active{transform:scale(.97)}
+.sf-portrait[aria-pressed="true"]{border-color:#ff9b42;background:linear-gradient(180deg,rgba(138,66,28,.55),rgba(30,20,15,.96));box-shadow:inset 0 0 0 1px rgba(255,155,66,.28),0 0 15px rgba(255,112,34,.2)}
+.sf-portrait canvas{display:block;width:100%;height:92px;max-width:112px;object-fit:contain;border-radius:7px;background:radial-gradient(ellipse at 50% 75%,rgba(255,131,49,.17),rgba(6,10,13,.05) 72%)}
+.sf-portrait b{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;letter-spacing:.03em;text-align:center}
+.sf-portrait small{font-size:9px;color:#d0b995;letter-spacing:.08em;text-transform:uppercase}
+@media(max-width:480px){#sf-portrait-roster{padding:8px;margin-top:6px}.sf-roster-grid{gap:6px}.sf-portrait{padding:5px 3px 6px}.sf-portrait canvas{height:76px}.sf-portrait b{font-size:11px}.sf-roster-head{font-size:10px}}
+@media(min-width:760px){.sf-roster-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.sf-portrait canvas{height:108px}}
+
 </style>
 </head>
 <body>
@@ -974,6 +989,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
         <button id="skinNext" class="arrow" aria-label="Soldat suivant">›</button>
       </div>
       <div class="pc-name"><span class="lbl">Votre personnage · <span id="skinIdx">2 / 7</span></span><b id="skinName">Forêt</b><span id="skinDesc"></span></div>
+      <section id="sf-portrait-roster" aria-label="Choisir un combattant"><div class="sf-roster-head"><b>CHOISIR UN COMBATTANT</b><span>9 portraits · sélection directe</span></div><div class="sf-roster-grid" id="sfRosterGrid"></div></section>
     </div>
     <div class="side">
       <div class="card">
@@ -5022,5 +5038,38 @@ function resize(){r.setSize(innerWidth,innerHeight,false);camera.aspect=innerWid
 let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dBattleData;if(!d||d.mode!=="play"){document.body.classList.remove("sf3d-battle");return}document.body.classList.add("sf3d-battle");if(now-last>70){last=now;ground(d);sync(d);syncTracers(d);syncImpacts(d)}const frameDelta=Math.min(2,Math.max(.25,(now-(window.__sf3dAnimLast||now))/16.67));window.__sf3dAnimLast=now;const gait=now*.012;for(const o of cache.values()){if(o.userData.v){for(const w of (o.userData.wheels||[]))w.rotation.x+=(o.userData.vehicleSpeed||0)*.00014*frameDelta;o.position.y=terrainHeight(o.position.x,o.position.z)+Math.min(1.2,Math.abs(o.userData.vehicleSpeed||0)*.001)*Math.sin(now*.018);const fx=o.userData.damageFx,damage=o.userData.vehicleDamage||0;if(fx){fx.group.visible=damage>.32;fx.flame.visible=damage>.78;fx.glow.visible=damage>.78;fx.smoke.forEach((p,n)=>{p.visible=damage>.32;p.position.y=3.05+n*.34+((now*.001+n*.23)%1)*.55;p.scale.setScalar(.72+damage*.8+Math.sin(now*.004+n)*.12);p.material.opacity=Math.min(.68,.22+damage*.42)});fx.flame.scale.setScalar(.8+Math.sin(now*.025)*.22);fx.glow.material.opacity=.3+Math.sin(now*.03)*.22}}else{const p=o.userData.parts;if(p){const phase=o.userData.phase||0,move=Math.min(1,o.userData.moveMag||0),swing=Math.sin(gait+phase)*(.025+move*.43),idle=Math.sin(gait*.72+phase)*.012;p.legs[0].rotation.x=swing;p.legs[1].rotation.x=-swing;p.legs[0].rotation.z=Math.max(0,Math.cos(gait+phase))*.07*move;p.legs[1].rotation.z=Math.max(0,Math.cos(gait+phase+Math.PI))*.07*move;p.arms[0].rotation.x=-swing*.48+idle;p.arms[1].rotation.x=swing*.48-idle;p.arms[0].rotation.z=-.18-Math.abs(swing)*.08;p.arms[1].rotation.z=.18+Math.abs(swing)*.08;const hit=Math.min(1,Math.max(0,(o.userData.hurtT||0)/.3));p.torso.position.y=1.55+Math.abs(Math.sin(gait+phase))*.035*move+idle;p.torso.rotation.z=Math.sin(gait*2+phase)*(.006+move*.02)+hit*.16*Math.sin(now*.075);p.torso.rotation.x=idle*.7+hit*.12;p.head.rotation.y=Math.sin(gait*.4+phase)*.035-hit*.09;p.head.rotation.x=Math.sin(gait*.7+phase)*.012;if(p.hitPulse){p.hitPulse.visible=hit>.04;p.hitMat.opacity=hit*.82;p.hitPulse.scale.set(.9+hit*.3,1.15+hit*.2,.28)}if(p.rifle)p.rifle.rotation.x+=( (o.userData.recoil?-.19:0)-p.rifle.rotation.x)*(.18*frameDelta);if(p.flash){p.flash.visible=!!o.userData.flash;p.flash.scale.setScalar(.78+Math.sin(now*.11)*.18)}}}}}const p=d.player;if(p){const a=p.angle||0;camera.position.lerp(new T.Vector3(p.x-Math.cos(a)*105,82,p.y-Math.sin(a)*105),.16);camera.lookAt(p.x,10,p.y)}r.render(scene,camera)}tick(performance.now());window.__sf3dBattle={renderer:r,scene,camera};
 }catch(e){console.warn("3D combat non disponible, retour 2D",e);window.__sf3dBattleReady=false;document.body.classList.remove("sf3d-battle")}})();
 </script>
+
+<script>
+/* v184 — vrais aperçus de personnages issus du moteur de sprites du jeu */
+(function(){
+  const ids=['lion','vipere','ours','roc','vent','ombre','hannibal','mirmillon','spartiate'];
+  function paintRoster(){
+    const root=document.getElementById('sfRosterGrid');
+    if(!root || typeof SOLDIERS==='undefined' || typeof drawShowcase!=='function') return;
+    const chosen=ids.map(id=>SOLDIERS.findIndex(x=>x.id===id)).filter(i=>i>=0);
+    root.innerHTML='';
+    chosen.forEach(i=>{
+      const sk=SOLDIERS[i],btn=document.createElement('button');
+      btn.type='button';btn.className='sf-portrait';btn.dataset.index=String(i);
+      btn.setAttribute('aria-pressed',String(i===skinI));
+      const cv=document.createElement('canvas');cv.width=180;cv.height=190;cv.setAttribute('aria-label','Portrait '+sk.n);
+      const label=document.createElement('b');label.textContent=sk.n;
+      const tag=document.createElement('small');tag.textContent=sk.sp?'GLADIATEUR':'COMBATTANT';
+      btn.append(cv,label,tag);
+      try{const c=cv.getContext('2d');drawShowcase(c,180,{sk,skin:'#c8946a',slot:{type:stats.sidearm,mag:1},vest:0,cust:stats.cust})}catch(e){console.warn('Portrait non rendu:',sk.id,e)}
+      btn.addEventListener('click',()=>{
+        setSkin(i);
+        root.querySelectorAll('.sf-portrait').forEach(el=>el.setAttribute('aria-pressed',String(Number(el.dataset.index)===skinI)));
+        if(typeof drawPreview==='function')drawPreview();
+      });
+      root.appendChild(btn);
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(paintRoster,0),{once:true});
+  else setTimeout(paintRoster,0);
+  window.addEventListener('resize',()=>{if(!document.getElementById('sfRosterGrid')?.children.length)paintRoster()});
+})();
+</script>
+
 </body>
 </html>

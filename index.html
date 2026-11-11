@@ -409,6 +409,11 @@ button:disabled{pointer-events:none}
  #touch button:hover{filter:brightness(1.08)}
 }
 
+
+/* Finition visuelle motos : silhouette nette et cockpit lisible, sans bloom supplémentaire */
+#hud .hud-br:has(#speedo){filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))}
+#hud .nos{filter:drop-shadow(0 2px 3px rgba(0,0,0,.65))}
+
 </style>
 </head>
 <body>
@@ -4206,7 +4211,8 @@ function physPlayer(c, dt, inp) {
   // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
   let yawMax = Math.min(3.1, (st.lat * 2.35) / Math.max(spd, 5));
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
-  let target = (c.model.bike ? 1 : -1) * inp.steer * yawMax * (vf >= 0 ? 1 : -1);
+  // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
+  let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   if (inp.hand && spd > 8) target *= 1.45; else if (c.sliding) target *= 1.12;
   c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));
   c.h += c.yaw * dt;
@@ -4647,7 +4653,7 @@ function drawCar(c, M, far) {
   const inside = m.shell && R.detail && !(c.camD > 45);
   R.draw(inside ? m.shell : m.body, M);
   if (inside) R.draw(driverMesh(c.drv, 'car'), M4.mul(M, m.seatM, DRM));
-  const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6), frontSteer = m.bike ? steer : -steer;
+  const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6), frontSteer = -steer;
   R.setRim(c.rimC || RIM0);
   const wm = c.wm || (c.wm = getWheel(c.rimS || m.rim, m.wr, m.ww));
   for (const w of m.wheels) { M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? frontSteer * 0.42 : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }

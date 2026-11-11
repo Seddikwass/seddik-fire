@@ -834,6 +834,12 @@ canvas{image-rendering:auto}
 
 #sf3dBattle{position:fixed;inset:0;width:100%;height:100%;display:none;z-index:0;touch-action:none;pointer-events:none}
 body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hidden}
+/* v182 — retour immédiat et anti-double-tap sur le lancement de partie. */
+#play{min-height:76px;touch-action:manipulation;cursor:pointer;transition:filter .16s,transform .16s,opacity .16s}
+#play:disabled{opacity:.82;filter:saturate(.72);cursor:wait;transform:none}
+#play[aria-busy="true"] small{opacity:1;animation:sfLaunchPulse .9s ease-in-out infinite alternate}
+@keyframes sfLaunchPulse{from{opacity:.55}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){#play[aria-busy="true"] small{animation:none}}
 </style>
 </head>
 <body>
@@ -4612,7 +4618,20 @@ const endCv=$('#endCv'),ectx=endCv.getContext('2d');
 function drawEndHero(){if(!endSk)return;const S=Math.round((endCv.clientWidth||140)*DPR);if(!S)return;if(endCv.width!==S){endCv.width=S;endCv.height=S}drawShowcase(ectx,S,{sk:endSk.sk,skin:endSk.skin,slot:endSk.slot,win:endSk.win})}
 const pname=$('#pname');pname.value=stats.name||'';
 pname.addEventListener('input',()=>{stats.name=pname.value.trim().slice(0,14);saveStats()});
-$('#play').addEventListener('click',()=>{initAudio();stats.name=pname.value.trim().slice(0,14);saveStats();pname.blur();startMatch()});
+let launchPending=false;
+$('#play').addEventListener('click',()=>{
+  if(launchPending||game.mode==='play')return;
+  launchPending=true;
+  const btn=$('#play'),label=btn.innerHTML;
+  btn.disabled=true;btn.setAttribute('aria-busy','true');
+  btn.innerHTML='<span>PRÉPARATION…</span><small>CHARGEMENT DE LA PARTIE</small>';
+  initAudio();stats.name=pname.value.trim().slice(0,14);saveStats();pname.blur();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    try{startMatch()}
+    catch(err){console.error('Lancement de partie:',err);toast('Impossible de lancer la partie. Réessayez.',3)}
+    finally{launchPending=false;btn.disabled=false;btn.removeAttribute('aria-busy');btn.innerHTML=label}
+  }));
+});
 $('#again').addEventListener('click',()=>{initAudio();startMatch()});
 $('#toMenu').addEventListener('click',toLobby);
 function fillStats(){fillXP();$('#stG').textContent=stats.games;$('#stW').textContent=stats.wins;$('#stB').textContent=stats.best;$('#stK').textContent=stats.kills}

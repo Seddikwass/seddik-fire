@@ -4125,7 +4125,7 @@ function readInput(dt) {
   TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 1 : (TOUCH.rightPulse > 0 ? 0.72 : 0)) - (leftDown ? 1 : (TOUCH.leftPulse > 0 ? 0.72 : 0));
+  let st = (rightDown ? 1 : (TOUCH.rightPulse > 0 ? 0.92 : 0)) - (leftDown ? 1 : (TOUCH.leftPulse > 0 ? 0.92 : 0));
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4148,7 +4148,7 @@ function readInput(dt) {
   const digitalSteer = analog === null && st !== 0;
   // Montée rapide mais progressive : le véhicule répond au premier contact
   // sans passer brutalement d'un braquage nul au braquage maximal.
-  const steerRate = digitalSteer ? 19 : (steerTarget === 0 ? 11 : 9);
+  const steerRate = digitalSteer ? 29 : (steerTarget === 0 ? 13 : 12);
   G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.105 : 0.145)));
@@ -4169,7 +4169,7 @@ function physPlayer(c, dt, inp) {
   // sans rendre le véhicule incontrôlable à faible vitesse.
   // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
   let yawMax = Math.min(3.1, (st.lat * 2.35) / Math.max(spd, 5));
-  if (spd < 1.2) yawMax *= 0.45 + 0.55 * (spd / 1.2);
+  if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   let target = (c.model.bike ? 1 : -1) * inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   if (inp.hand && spd > 8) target *= 1.45; else if (c.sliding) target *= 1.12;
   c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));
@@ -5400,7 +5400,7 @@ function bindInputs() {
     const off = e => {
       if (e && activePointer !== null && e.pointerId !== activePointer) return;
       activePointer = null; TOUCH[k] = false;
-      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.22;
+      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.36;
       b.classList.remove('on');
     };
     b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);

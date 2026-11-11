@@ -6014,7 +6014,6 @@ function bindInputs() {
     const off = e => {
       if (e && activePointer !== null && e.pointerId !== activePointer) return;
       activePointer = null; TOUCH[k] = false;
-      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.22;
       b.classList.remove('on');
     };
     b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);

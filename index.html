@@ -2865,8 +2865,8 @@ function buildTrack(def, quality) {
   { // Public présent sur tous les environnements de course.
     const crowdStep = theme === 'circuit' ? 20 : 26;
     const crowdSides = theme === 'circuit' ? [-1, 1] : [-1, 1];
-    const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55]];
-    const shirts = [[0.78,0.12,0.1],[0.08,0.22,0.48],[0.9,0.82,0.65],[0.12,0.42,0.28],[0.88,0.48,0.08],[0.22,0.2,0.24]];
+    const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55],[0.72,0.52,0.37],[0.34,0.22,0.16]];
+    const shirts = [[0.78,0.12,0.1],[0.08,0.22,0.48],[0.9,0.82,0.65],[0.12,0.42,0.28],[0.88,0.48,0.08],[0.22,0.2,0.24],[0.04,0.55,0.62],[0.58,0.12,0.62],[0.92,0.76,0.12]];
     for (let i = 20; i < N; i += crowdStep) for (const side of crowdSides) {
       const mb = ch(rk(i)), stadium = theme === 'circuit', baseD = stadium ? W + 12 : W + 7.5;
       const count = stadium ? 16 : 14, rows = stadium ? 5 : 3;
@@ -2891,6 +2891,20 @@ function buildTrack(def, quality) {
         if ((n + row + i) % 2 === 0) {
           const arm = pos(i, d + side * 0.18, (stadium ? 1.65 + row * 0.62 : 1.35 + row * 0.72));
           mb.box(arm[0] + tx[i] * along, arm[1], arm[2] + tz[i] * along, 0.13, 0.62, 0.13, tone, 3, hd[i]);
+        }
+      }
+      // Panneaux publicitaires de course, espacés pour préserver les performances mobiles.
+      if (Math.floor(i / crowdStep) % 4 === 1) {
+        const bd = side * (baseD + (stadium ? 9.4 : 5.2));
+        const bp = pos(i, bd, stadium ? 3.55 : 3.0);
+        mb.box(bp[0], bp[1], bp[2], 7.4, 1.55, 0.2, [0.025,0.045,0.075], 4, hd[i]);
+        mb.box(bp[0], bp[1] + 0.57, bp[2] - 0.12, 7.4, 0.16, 0.08, [0.92,0.2,0.07], 4, hd[i]);
+        mb.box(bp[0] - 2.15, bp[1] - 0.02, bp[2] - 0.13, 1.25, 0.72, 0.08, [0.02,0.62,0.72], 4, hd[i]);
+        mb.box(bp[0] + 1.05, bp[1] - 0.02, bp[2] - 0.13, 2.8, 0.12, 0.08, [0.92,0.92,0.88], 4, hd[i]);
+        mb.box(bp[0] + 1.65, bp[1] - 0.29, bp[2] - 0.13, 1.65, 0.1, 0.08, [0.1,0.72,0.82], 4, hd[i]);
+        for (const off of [-3.0, 3.0]) {
+          const sp = pos(i, bd + side * 0.04, stadium ? 2.25 : 1.7);
+          mb.box(sp[0] + tx[i] * off, sp[1], sp[2], 0.16, 2.3, 0.16, [0.16,0.19,0.23], 2, hd[i]);
         }
       }
       // Petit drapeau tunisien stylisé sur les zones de tribunes.
@@ -4591,7 +4605,7 @@ function updateGame(dt) {
     const revNow = KEYS.ArrowUp || KEYS.KeyW || KEYS.KeyZ || TOUCH.gas;
     if (revNow && G.revT === undefined) G.revT = G.countdown; else if (!revNow) G.revT = undefined;
     if (G.countdown <= 0) {
-      G.state = 'race'; AU.shot(880, 0.45, 'square', 0.16); UI.countdown(t('go')); G.raceT = 0; G.lapStart = 0;
+      G.state = 'race'; AU.shot(880, 0.45, 'square', 0.16); AU.crowdPulse(0.9); UI.countdown(t('go')); G.raceT = 0; G.lapStart = 0; G.crowdNext = 9;
       if (G.revT !== undefined) {
         if (G.revT <= 0.9) { p.vx += Math.sin(p.h) * 7; p.vz += Math.cos(p.h) * 7; p.nitro = Math.min(1, p.nitro + 0.25); G.style += 200; popup(t('perfectStart'), '#5f5'); }
         else { p.burnT = 0.9; popup(t('wheelspin'), '#fa0'); }
@@ -4604,6 +4618,7 @@ function updateGame(dt) {
   if (racing) {
     G.raceT += dt;
     if (G.raceT >= (G.radioNext || 12)) { radioCall(true); G.radioNext = G.raceT + 22; }
+    if (G.raceT >= (G.crowdNext || 15)) { AU.crowdPulse(0.38 + Math.random() * 0.24); G.crowdNext = G.raceT + 15 + Math.random() * 7; }
   }
   // physique (sous-pas)
   const h = 1 / 120; G.acc = Math.min(0.1, (G.acc || 0) + dt);
@@ -5345,7 +5360,7 @@ const UI = {
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
         G.camMode = SAVE.settings.cam; G.resultsShown = false;
         setupRace(cfg);
-        G.radioNext = 12;
+        G.radioNext = 12; G.crowdNext = 8;
       } catch (e) { console.error(e); showErr(e.message); return; }
       $('loading').classList.remove('show'); $('hud').classList.remove('hidden');
       const tt = SAVE.settings.touch === 'on' || (SAVE.settings.touch === 'auto' && IS_TOUCH);

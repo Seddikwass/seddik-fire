@@ -6159,7 +6159,14 @@ function frame(now) {
   } catch (e) { console.error(e); if (!frame.errShown) { frame.errShown = true; showErr(e.message); } }
 }
 function boot() {
-  loadGame(); LANG = SAVE.settings.lang || 'fr'; applyI18n();
+  loadGame();
+  // V84 : certains anciens démarrages de secours avaient sauvegardé "low" à tort.
+  try {
+    if (IS_TOUCH && SAVE.settings.quality === 'low' && !localStorage.getItem('superjoud_v84_gfx_migrated')) {
+      SAVE.settings.quality = 'medium'; saveGame(); localStorage.setItem('superjoud_v84_gfx_migrated', '1');
+    }
+  } catch(e) {}
+  LANG = SAVE.settings.lang || 'fr'; applyI18n();
   const safe = bootGuardStart();
   let ok = false;
   R.liteWanted = SAVE.settings.quality === 'low';

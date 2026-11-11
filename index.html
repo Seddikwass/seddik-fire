@@ -2273,6 +2273,8 @@ function radioAdvice() {
   if(p.nitro<0.18) return LANG==='en'?'STRATEGIST: Nitro is low. Save it for the exit of the next turn.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.':'STRATÈGE : réserve ton nitro pour la sortie du prochain virage.');
   if(p.sliding&&kmh>90) return LANG==='en'?'ENGINEER: Reduce steering input and gently stabilize the car.':(LANG==='ar'||LANG==='tn'?'المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.':'INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.');
   if(G.cfg.mode==='race'&&rankOf(p)>1) return LANG==='en'?'STRATEGIST: Keep a clean line; use the slipstream before attempting an overtake.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: حافظ على خط قيادة نظيف واستفد من تيار الهواء قبل التجاوز.':'STRATÈGE : garde une trajectoire propre et profite de l’aspiration avant de dépasser.');
+  if(G.cfg.mode==='tt') return LANG==='en'?'RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.':(LANG==='ar'||LANG==='tn'?'مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.':'INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.');
+  if(G.cfg.mode==='chase') return LANG==='en'?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
   return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
 }
 let radioAutoFold = 0;
@@ -2856,7 +2858,7 @@ function buildTrack(def, quality) {
   }
   // Public 3D : gradins et silhouettes de spectateurs sur les circuits urbains, côtiers et au stade.
   // Les personnages sont regroupés dans les chunks du décor pour préserver les performances mobiles.
-  if (theme === 'circuit' || theme === 'city' || theme === 'coast') {
+  if (true) { // Public présent sur tous les environnements de course.
     const crowdStep = theme === 'circuit' ? 22 : 40;
     const crowdSides = theme === 'circuit' ? [-1, 1] : [-1, 1];
     const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55]];

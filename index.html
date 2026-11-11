@@ -2858,7 +2858,7 @@ function buildTrack(def, quality) {
   }
   // Public 3D : gradins et silhouettes de spectateurs sur les circuits urbains, côtiers et au stade.
   // Les personnages sont regroupés dans les chunks du décor pour préserver les performances mobiles.
-  if (true) { // Public présent sur tous les environnements de course.
+  { // Public présent sur tous les environnements de course.
     const crowdStep = theme === 'circuit' ? 22 : 40;
     const crowdSides = theme === 'circuit' ? [-1, 1] : [-1, 1];
     const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55]];

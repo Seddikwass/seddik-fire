@@ -5688,13 +5688,13 @@ function applySettings() {
     const mem = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
     const modest = (mem > 0 && mem <= 4) || (cores > 0 && cores <= 4);
     // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
-    PR = Math.min(PR, modest ? 0.62 : 0.78);
+    PR = Math.min(PR, modest ? 0.48 : 0.62);
     R.shadowSize = 256;
     R.shadows = false;
     R.bloom = false; R.rays = false; R.post = false; R.aa = false;
-    R.detail = Math.min(R.detail, modest ? 0.32 : 0.46);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.48 : 0.58);
-    G.lodNear = Math.min(G.lodNear, modest ? 11 : 15);
+    R.detail = Math.min(R.detail, modest ? 0.18 : 0.28);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.32 : 0.40);
+    G.lodNear = Math.min(G.lodNear, modest ? 7 : 10);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;
@@ -5855,7 +5855,7 @@ function frame(now) {
   FPS.acc += raw; FPS.n++;
   if (FPS.acc >= 1) {
     FPS.v = FPS.n / FPS.acc; FPS.acc = 0; FPS.n = 0;
-    if (SAVE.settings.dyn && (G.state === 'race' || G.state === 'countdown')) { if (FPS.v < 28 && DYN > 0.6) DYN = Math.max(0.6, DYN - 0.1); else if (FPS.v > 50 && DYN < 1) DYN = Math.min(1, DYN + 0.05); }
+    if (SAVE.settings.dyn && (G.state === 'race' || G.state === 'countdown')) { if (FPS.v < 24 && DYN > 0.38) DYN = Math.max(0.38, DYN - (FPS.v < 14 ? 0.14 : 0.08)); else if (FPS.v > 48 && DYN < 1) DYN = Math.min(1, DYN + 0.04); }
   }
   try {
     R.resize(PR * DYN);

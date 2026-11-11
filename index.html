@@ -2243,6 +2243,16 @@ function radioCall() {
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
+  // Lecture vocale facultative via la synthèse vocale native du navigateur.
+  try {
+    if(window.speechSynthesis && window.SpeechSynthesisUtterance) {
+      window.speechSynthesis.cancel();
+      const voice=new SpeechSynthesisUtterance($('radio-message').textContent);
+      voice.lang=LANG==='en'?'en-US':(LANG==='ar'||LANG==='tn'?'ar-TN':'fr-FR');
+      voice.rate=0.96;voice.pitch=0.92;voice.volume=0.82;
+      window.speechSynthesis.speak(voice);
+    }
+  } catch(e) {}
 }
 // bonus volontairement modestes : le pilote donne un style, la voiture reste décisive
 const PERKS = {
@@ -5272,6 +5282,7 @@ const UI = {
       $('radio-members').innerHTML=crew.map(m=>'<span><b>'+m.role+'</b> · '+m.name+'</span>').join('');
       $('radio-message').textContent=LANG==='en'?'Race control connected. Your crew is ready.':(LANG==='ar'||LANG==='tn'?'تم الاتصال بالفريق. نحن جاهزون لمساعدتك.':'Liaison établie. Ton équipe est prête à te conseiller.');
       $('radio-team').classList.remove('hidden');
+      $('radio-talk').textContent=LANG==='en'?'◉ CONTACT RACE TEAM':(LANG==='ar'||LANG==='tn'?'◉ اتصل بفريقك':'◉ CONTACTER MON ÉQUIPE');
       MUS.play('race'); MUS.muffle(false);
     }, 60);
   },

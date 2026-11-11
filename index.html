@@ -360,6 +360,17 @@ button:disabled{pointer-events:none}
 #touch [data-t=gas].on{background:linear-gradient(155deg,#ffd08a,#ed7418);border-color:#fff0d7}
 #touch [data-t=brake].on{background:linear-gradient(145deg,#ff9b9b,#d92332);border-color:#ffe1e1}
 #touch [data-t=left].on,#touch [data-t=right].on{background:linear-gradient(145deg,#9deaff,#168ac8);border-color:#e5faff}
+
+/* Refonte légère de l'interface carrière/garage : hiérarchie plus nette, lisible sur mobile. */
+.ev{border-radius:12px;overflow:hidden;background:linear-gradient(145deg,rgba(24,28,39,.97),rgba(9,11,17,.97));box-shadow:0 8px 24px rgba(0,0,0,.22);transition:transform .16s,border-color .16s,box-shadow .16s}
+.ev.next{box-shadow:0 0 0 1px rgba(255,122,24,.55),0 10px 28px rgba(255,122,24,.12)}
+.ev:not(.lock):active{transform:scale(.985)}
+.ev canvas{border:1px solid rgba(255,255,255,.09);border-radius:7px}
+.garpanel{border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.32)}
+.tabs button{border-radius:7px;transition:background .14s,color .14s,border-color .14s}
+.upg{padding:10px 0}
+.upg button{border-radius:7px;min-height:38px}
+#touch button{transition:transform .07s ease-out,background .12s,border-color .12s,box-shadow .12s}
 </style>
 </head>
 <body>
@@ -705,7 +716,8 @@ void main(){
     if (mi == 11) { gl_FragColor = vec4(0.0,0.0,0.0, vCol.r*uAlpha); return; }
     if (mi == 12) { gl_FragColor = vec4(uUnderCol*vCol.r*(1.0-fogF), 1.0); return; }
     vec3 nn = normalize(vN); float fv = abs(dot(nn, v));
-    gl_FragColor = vec4(vec3(1.0,0.93,0.78)*vCol.r*0.075*uNight*(1.0-fogF)*fv*fv, 1.0); return;
+    float beam = 0.16 + 0.04 * max(dot(nn, normalize(-uHeadDir)), 0.0);
+    gl_FragColor = vec4(vec3(1.0,0.94,0.82)*vCol.r*beam*uNight*(1.0-fogF)*fv*fv, 1.0); return;
   }
   vec3 n = normalize(vN); if (dot(n,v) < 0.0) n = -n;
   float spec=0.06, shin=10.0, refl=0.0, emis=0.0, trans=0.0, coat=0.0, ga=1.0;
@@ -3635,13 +3647,13 @@ const LANGS = {
     perk_speed: '+3 % de vitesse maximale.', perk_nitro: 'La nitro se recharge 25 % plus vite.', perk_accel: '+5 % d’accélération.', perk_grip: '+4 % d’adhérence en virage.', perk_tough: 'Plus lourd au contact (+25 %) : pousse les adversaires.', perk_drift: 'Points de style ×1,5 en dérapage.', perk_ghost: 'Sème la police 30 % plus vite.', perk_money: '+15 % d’argent gagné à chaque course.',
     loading: 'Démarrage du moteur…', preparing: 'Préparation du circuit : {0}', webgl: 'Le moteur 3D n’a pas pu démarrer : le navigateur a désactivé WebGL, souvent après un plantage graphique.', webglHelp: 'Ferme complètement Chrome (ou redémarre le téléphone), puis rouvre le jeu. Si tu l’as ouvert depuis Facebook, Messenger ou WhatsApp, ouvre le lien dans Chrome. Le jeu redémarrera en qualité basse.', retry: 'Réessayer', glLost: 'Le moteur graphique s’est réinitialisé. Redémarrage en qualité basse…', safeMode: 'Mode sans échec : qualité basse (le dernier lancement ne s’est pas terminé).',
     tagline: 'Courses de rue à travers la Tunisie, de la médina au Sahara.', play: 'JOUER', career: 'CARRIÈRE', quick: 'COURSE RAPIDE', garage: 'GARAGE', options: 'OPTIONS', help: 'COMMENT JOUER',
-    careerSub: '20 étapes pour remporter le tournoi', quickSub: 'Course, contre-la-montre ou poursuite', garageSub: 'Voitures, peinture, jantes, néons, tuning', optionsSub: 'Langue, son, graphismes, commandes', helpSub: 'Clavier, tactile, manette',
+    careerSub: '50 étapes pour remporter le tournoi', quickSub: 'Course, contre-la-montre ou poursuite', garageSub: 'Voitures, peinture, jantes, néons, tuning', optionsSub: 'Langue, son, graphismes, commandes', helpSub: 'Clavier, tactile, manette',
     playNext: 'Épreuve {0} : {1}', playQuick: 'Course rapide : {0}', careerDone: 'Carrière terminée — tu es le roi !', careerStep: 'Épreuve {0} / {1}',
     yourCar: 'Ta voiture, classe {0}', back: '‹ RETOUR', paint: 'Peinture', rims: 'Jantes', neons: 'Néons', tuning: 'Tuning',
     selected: 'Sélectionnée', inGarage: 'Dans ton garage', select: 'CHOISIR', isSelected: 'SÉLECTIONNÉE', buy: 'ACHETER {0}', buyConfirm: 'Acheter {0} pour {1} ?',
     preview: 'Aperçu — achète le véhicule pour garder ce style.', previewRims: 'Aperçu — achète le véhicule pour garder ces jantes.', buyFirst: 'Achète le véhicule pour l’améliorer.', model: 'Modèle', color: 'Couleur', max: 'MAX', none: 'Aucun',
     stSpeed: 'Vitesse max', stAccel: 'Accélération', stHandling: 'Maniabilité', stNitro: 'Nitro',
-    upEng: 'Moteur', upEngD: 'Vitesse max', upTur: 'Turbo', upTurD: 'Accélération', upTyr: 'Pneus', upTyrD: 'Adhérence', upNos: 'Nitro', upNosD: 'Durée et puissance',
+    upEng: 'Moteur', upEngD: 'Vitesse max', upTur: 'Turbo', upTurD: 'Accélération', upTyr: 'Pneus', upTyrD: 'Adhérence', upNos: 'Nitro', upNosD: 'Durée et puissance', upAero: 'Aérodynamique', upAeroD: 'Vitesse et stabilité', upBrk: 'Freins sport', upBrkD: 'Puissance de freinage',
     rim_five: '5 branches', rim_ten: '10 branches', rim_mesh: 'Multibranches', rim_disc: 'Turbine', rim_dish: 'Creuse',
     gameMode: 'Mode de jeu', circuit: 'Circuit', settings: 'Réglages', laps: 'Tours', opponents: 'Adversaires', difficulty: 'Difficulté', traffic: 'Trafic', weather: 'Météo',
     no: 'Non', yes: 'Oui', easy: 'Facile', normal: 'Normal', hard: 'Difficile', sunny: 'Beau temps', rain: 'Pluie', start: 'DÉMARRER ›', record: 'Record : {0}',
@@ -3670,13 +3682,13 @@ const LANGS = {
     perk_speed: '+3% top speed.', perk_nitro: 'Nitro recharges 25% faster.', perk_accel: '+5% acceleration.', perk_grip: '+4% cornering grip.', perk_tough: 'Heavier on contact (+25%): pushes rivals around.', perk_drift: 'Style points ×1.5 when drifting.', perk_ghost: 'Loses the police 30% faster.', perk_money: '+15% money from every race.',
     loading: 'Starting the engine…', preparing: 'Preparing track: {0}', webgl: 'The 3D engine could not start: the browser has disabled WebGL, often after a graphics crash.', webglHelp: 'Fully close Chrome (or restart the phone), then open the game again. If you opened it from Facebook, Messenger or WhatsApp, open the link in Chrome. The game will restart in low quality.', retry: 'Try again', glLost: 'The graphics engine was reset. Restarting in low quality…', safeMode: 'Safe mode: low quality (the last launch did not finish).',
     tagline: 'Street racing across Tunisia, from the medina to the Sahara.', play: 'PLAY', career: 'CAREER', quick: 'QUICK RACE', garage: 'GARAGE', options: 'OPTIONS', help: 'HOW TO PLAY',
-    careerSub: '20 stages to win the tournament', quickSub: 'Race, time trial or police chase', garageSub: 'Cars, paint, rims, neons, tuning', optionsSub: 'Language, sound, graphics, controls', helpSub: 'Keyboard, touch, gamepad',
+    careerSub: '50 stages to win the tournament', quickSub: 'Race, time trial or police chase', garageSub: 'Cars, paint, rims, neons, tuning', optionsSub: 'Language, sound, graphics, controls', helpSub: 'Keyboard, touch, gamepad',
     playNext: 'Event {0}: {1}', playQuick: 'Quick race: {0}', careerDone: 'Career complete — you are the king!', careerStep: 'Event {0} / {1}',
     yourCar: 'Your car, class {0}', back: '‹ BACK', paint: 'Paint', rims: 'Rims', neons: 'Neons', tuning: 'Tuning',
     selected: 'Selected', inGarage: 'In your garage', select: 'SELECT', isSelected: 'SELECTED', buy: 'BUY {0}', buyConfirm: 'Buy the {0} for {1}?',
     preview: 'Preview — buy the vehicle to keep this style.', previewRims: 'Preview — buy the vehicle to keep these rims.', buyFirst: 'Buy the vehicle to upgrade it.', model: 'Style', color: 'Color', max: 'MAX', none: 'None',
     stSpeed: 'Top speed', stAccel: 'Acceleration', stHandling: 'Handling', stNitro: 'Nitro',
-    upEng: 'Engine', upEngD: 'Top speed', upTur: 'Turbo', upTurD: 'Acceleration', upTyr: 'Tyres', upTyrD: 'Grip', upNos: 'Nitro', upNosD: 'Duration and power',
+    upEng: 'Engine', upEngD: 'Top speed', upTur: 'Turbo', upTurD: 'Acceleration', upTyr: 'Tyres', upTyrD: 'Grip', upNos: 'Nitro', upNosD: 'Duration and power', upAero: 'Aerodynamics', upAeroD: 'Speed and stability', upBrk: 'Sport brakes', upBrkD: 'Braking power',
     rim_five: '5 spokes', rim_ten: '10 spokes', rim_mesh: 'Mesh', rim_disc: 'Turbine', rim_dish: 'Deep dish',
     gameMode: 'Game mode', circuit: 'Track', settings: 'Settings', laps: 'Laps', opponents: 'Opponents', difficulty: 'Difficulty', traffic: 'Traffic', weather: 'Weather',
     no: 'No', yes: 'Yes', easy: 'Easy', normal: 'Normal', hard: 'Hard', sunny: 'Clear', rain: 'Rain', start: 'START ›', record: 'Record: {0}',
@@ -3705,13 +3717,13 @@ const LANGS = {
     perk_speed: '+3٪ في السرعة القصوى.', perk_nitro: 'يُعاد شحن النيترو أسرع بـ25٪.', perk_accel: '+5٪ في التسارع.', perk_grip: '+4٪ في التماسك عند المنعطفات.', perk_tough: 'أثقل عند الاحتكاك (+25٪): يدفع المنافسين.', perk_drift: 'نقاط الأسلوب ×1.5 عند الانزلاق.', perk_ghost: 'يفلت من الشرطة أسرع بـ30٪.', perk_money: '+15٪ من المال في كل سباق.',
     loading: 'تشغيل المحرّك…', preparing: 'تجهيز الحلبة: {0}', webgl: 'تعذّر تشغيل محرّك الرسوم: المتصفح عطّل WebGL، غالبًا بعد عطل في الرسوميات.', webglHelp: 'أغلق Chrome تمامًا (أو أعد تشغيل الهاتف) ثم افتح اللعبة من جديد. إذا فتحتها من فيسبوك أو ماسنجر أو واتساب، افتح الرابط في Chrome. ستعمل اللعبة بجودة منخفضة.', retry: 'إعادة المحاولة', glLost: 'أُعيد تشغيل محرّك الرسوم. إعادة التشغيل بجودة منخفضة…', safeMode: 'الوضع الآمن: جودة منخفضة (لم يكتمل التشغيل السابق).',
     tagline: 'سباقات الشوارع عبر تونس، من المدينة العتيقة إلى الصحراء.', play: 'العب', career: 'المسيرة', quick: 'سباق سريع', garage: 'المرآب', options: 'الإعدادات', help: 'طريقة اللعب',
-    careerSub: '20 مرحلة للفوز بالبطولة', quickSub: 'سباق، ضد الساعة أو مطاردة', garageSub: 'سيارات، طلاء، جنوط، نيون، تعديل', optionsSub: 'اللغة، الصوت، الرسوم، التحكم', helpSub: 'لوحة المفاتيح، اللمس، الذراع',
+    careerSub: '50 مرحلة للفوز بالبطولة', quickSub: 'سباق، ضد الساعة أو مطاردة', garageSub: 'سيارات، طلاء، جنوط، نيون، تعديل', optionsSub: 'اللغة، الصوت، الرسوم، التحكم', helpSub: 'لوحة المفاتيح، اللمس، الذراع',
     playNext: 'التحدي {0}: {1}', playQuick: 'سباق سريع: {0}', careerDone: 'انتهت المسيرة — أنت ملك الطريق!', careerStep: 'التحدي {0} / {1}',
     yourCar: 'سيارتك، الفئة {0}', back: 'رجوع ›', paint: 'الطلاء', rims: 'الجنوط', neons: 'النيون', tuning: 'التعديل',
     selected: 'مختارة', inGarage: 'في مرآبك', select: 'اختيار', isSelected: 'مختارة', buy: 'شراء {0}', buyConfirm: 'شراء {0} بسعر {1}؟',
     preview: 'معاينة — اشترِ المركبة للاحتفاظ بهذا الشكل.', previewRims: 'معاينة — اشترِ المركبة للاحتفاظ بهذه الجنوط.', buyFirst: 'اشترِ السيارة لتطويرها.', model: 'الشكل', color: 'اللون', max: 'الأقصى', none: 'بدون',
     stSpeed: 'السرعة القصوى', stAccel: 'التسارع', stHandling: 'التحكم', stNitro: 'النيترو',
-    upEng: 'المحرّك', upEngD: 'السرعة القصوى', upTur: 'التيربو', upTurD: 'التسارع', upTyr: 'الإطارات', upTyrD: 'الثبات', upNos: 'النيترو', upNosD: 'المدة والقوة',
+    upEng: 'المحرّك', upEngD: 'السرعة القصوى', upTur: 'التيربو', upTurD: 'التسارع', upTyr: 'الإطارات', upTyrD: 'الثبات', upNos: 'النيترو', upNosD: 'المدة والقوة', upAero: 'الديناميكية الهوائية', upAeroD: 'السرعة والثبات', upBrk: 'مكابح رياضية', upBrkD: 'قوة الكبح',
     rim_five: '5 أذرع', rim_ten: '10 أذرع', rim_mesh: 'شبكية', rim_disc: 'توربين', rim_dish: 'عميقة',
     gameMode: 'نمط اللعب', circuit: 'الحلبة', settings: 'الإعدادات', laps: 'اللفات', opponents: 'المنافسون', difficulty: 'الصعوبة', traffic: 'حركة المرور', weather: 'الطقس',
     no: 'لا', yes: 'نعم', easy: 'سهل', normal: 'عادي', hard: 'صعب', sunny: 'صحو', rain: 'مطر', start: 'ابدأ ›', record: 'الرقم القياسي: {0}',
@@ -3851,9 +3863,9 @@ const CARS = [
 const CATS = ['car', 'moto', 'offroad', 'heavy', 'retro'];
 const catOf = c => c.cat || 'car';
 const tierCars = t => CARS.filter(c => c.tier === t && catOf(c) === 'car');
-const UPG = [{ k: 'eng', name: 'Moteur', desc: 'Vitesse max' }, { k: 'tur', name: 'Turbo', desc: 'Accélération' }, { k: 'tyr', name: 'Pneus', desc: 'Adhérence' }, { k: 'nos', name: 'Nitro', desc: 'Durée et puissance' }];
+const UPG = [{ k: 'eng', name: 'Moteur', desc: 'Vitesse max' }, { k: 'tur', name: 'Turbo', desc: 'Accélération' }, { k: 'tyr', name: 'Pneus', desc: 'Adhérence' }, { k: 'nos', name: 'Nitro', desc: 'Durée et puissance' }, { k: 'aero', name: 'Aérodynamique', desc: 'Vitesse et stabilité' }, { k: 'brk', name: 'Freins sport', desc: 'Puissance de freinage' }];
 const MAXUP = 3;
-function carStats(car, up) { up = up || {}; return { vmax: car.vmax / 3.6 * (1 + 0.035 * (up.eng || 0)), acc: car.acc * (1 + 0.07 * (up.tur || 0)), lat: car.lat * (1 + 0.035 * (up.tyr || 0)), nos: car.nos * (1 + 0.15 * (up.nos || 0)) }; }
+function carStats(car, up) { up = up || {}; return { vmax: car.vmax / 3.6 * (1 + 0.035 * (up.eng || 0) + 0.018 * (up.aero || 0)), acc: car.acc * (1 + 0.07 * (up.tur || 0)), lat: car.lat * (1 + 0.035 * (up.tyr || 0)), nos: car.nos * (1 + 0.15 * (up.nos || 0)), brake: 1 + 0.12 * (up.brk || 0) }; }
 function upgPrice(car, lvl) { return Math.round((1500 + car.price * 0.05) * (lvl + 1) / 100) * 100; }
 const PAINTS = ['#d81e1e', '#ff6a00', '#ffc400', '#1fb84a', '#00b3c7', '#1e56d8', '#6a2bd8', '#e0218a', '#f2f2f2', '#9aa0a6', '#2b2d31', '#0d0d0f'];
 const NEONS = [null, '#00e5ff', '#ff2bd6', '#39ff5a', '#ff8a00', '#9d4bff', '#ffffff'];
@@ -3881,6 +3893,26 @@ const CAREER = [
   { name: 'Rallye de Kairouan — finale régionale', mode: 'race', track: 12, laps: 5, opp: 7, tier: 4, diff: 9, reward: 125000, desc: 'Finale régionale exigeante autour des remparts et de la médina.' },
   { name: 'SUPER SEDDIK & JOUD — Grand tournoi', mode: 'race', track: 13, laps: 6, opp: 7, tier: 4, diff: 10, reward: 180000, desc: 'Grande finale du championnat à Monastir : six tours, rivaux élite et météo changeante.', weather: 'rain' },
 ];
+// 30 nouvelles épreuves : dix chapitres de cinq courses, avec progression de la difficulté.
+const CAREER_EXTRA_NAMES = [
+  'Grand tour de Sousse','Sprint de la médina','Poursuite des salines','Chrono des oliveraies','Défi du cap Bon',
+  'Rallye des montagnes','Nuit sur la corniche','Coupe des oasis','Traque sur l’autoroute','Grand prix de Bizerte',
+  'Épreuve des champions','Tempête sur les dunes','Marathon de Monastir','Contre-la-montre des remparts','Poursuite de minuit',
+  'Circuit des légendes','Rallye des pistes rouges','Défi des sept virages','Grand prix du Sahel','Finale des pilotes pro',
+  'Coupe des maîtres','Nuit blanche à Tunis','Défi des supercars','Chrono du littoral','Poursuite infernale',
+  'Tournoi des légendes','Rallye extrême du Sud','Grand prix des champions','Dernier duel nocturne','ULTIMATE SEDDIK & JOUD'
+];
+for (let stage = 21; stage <= 50; stage++) {
+  const k = stage - 21, mode = ['race', 'tt', 'race', 'chase', 'race'][k % 5];
+  const track = (k * 7 + 3) % 14, laps = mode === 'chase' ? 1 : mode === 'tt' ? 2 + Math.floor(k / 12) : 3 + Math.floor(k / 10);
+  CAREER.push({
+    name: CAREER_EXTRA_NAMES[k], mode, track, laps, opp: mode === 'tt' ? 0 : 7, tier: 4,
+    diff: stage - 1, heat: mode === 'chase' ? Math.min(5, 2 + Math.floor(k / 7)) : undefined,
+    reward: 180000 + (stage - 20) * 18000,
+    desc: 'Épreuve de championnat avancée : adversaires plus rapides, trajectoires exigeantes et récompense supérieure.',
+    weather: k % 6 === 2 || k % 6 === 5 ? 'rain' : undefined
+  });
+}
 const DIFFS = [
   { name: 'Facile', v: 0.86, lat: 0.86, rb: 0.6 },
   { name: 'Normal', v: 0.94, lat: 0.95, rb: 1 },
@@ -3894,6 +3926,10 @@ const DIFFS = [
   { name: 'Légende I', v: 1.245, lat: 1.195, rb: 1.55 },
   { name: 'Légende II', v: 1.28, lat: 1.22, rb: 1.6 }
 ];
+while (DIFFS.length < 50) {
+  const level = DIFFS.length, extra = level - 10;
+  DIFFS.push({ name: 'Légende +' + extra, v: 1.28 + extra * 0.012, lat: 1.22 + extra * 0.006, rb: 1.6 + extra * 0.018 });
+}
 
 const G = {
   state: 'menu', T: null, trackId: null, cars: [], player: null, cfg: null, time: 0, raceT: 0, countdown: 0,
@@ -4037,7 +4073,7 @@ function physPlayer(c, dt, inp) {
   let a = 0; const r = Math.max(0, vf) / vmax;
   if (inp.gas > 0) { if (vf > -1) a += inp.gas * (st.acc * Math.max(0.12, 1 - r * r) + (nitroOn ? 7.5 * st.nos : 0) + (c.draftT > 0.6 ? 1.5 : 0)); else a += 18 * inp.gas; }
   if (r > 1) a -= (r - 1) * 30;
-  if (inp.brake > 0) { if (vf > 0.8) a -= 27 * inp.brake; else if (vf > -13) a -= 8 * inp.brake; }
+  if (inp.brake > 0) { if (vf > 0.8) a -= 27 * (st.brake || 1) * inp.brake; else if (vf > -13) a -= 8 * inp.brake; }
   if (inp.gas === 0 && inp.brake === 0) a -= Math.sign(vf) * (0.7 + 0.0005 * vf * vf);
   if (inp.hand) a -= Math.sign(vf) * 4.5;
   a -= 9.81 * (c.slopeF || 0) * 0.65;
@@ -4231,15 +4267,21 @@ function updateGame(dt) {
   }
   const racing = G.state === 'race';
   let inp = readInput(dt);
-  if (!racing) { const fin = G.state === 'finish', rv = inp.gas; inp.gas = 0; inp.brake = fin ? 0.35 : 0; inp.steer = fin ? clamp(-p.d * 0.05, -0.3, 0.3) : 0; inp.hand = false; inp.nitro = false; inp.rev = fin ? 0 : rv; inp.hold = !fin; }
+  if (!racing) { const fin = G.state === 'finish', rv = inp.gas; inp.gas = 0; inp.brake = fin ? 0.35 : 0; inp.steer = fin ? clamp(-p.d * 0.05, -0.3, 0.3) : 0; inp.hand = false; inp.nitro = false; inp.rev = fin ? 0 : rv; inp.hold = !fin; if (!fin) { G.steer = 0; G.inputGas = 0; G.inputBrake = 0; } }
   if (racing) G.raceT += dt;
   // physique (sous-pas)
   const h = 1 / 120; G.acc = Math.min(0.1, (G.acc || 0) + dt);
   while (G.acc >= h) {
     G.acc -= h;
     physPlayer(p, h, inp);
-    for (const c of G.cars) { if (c.kind === 'ai') aiUpdate(c, h); else if (c.kind === 'traffic') trafficUpdate(c, h); else if (c.kind === 'cop') copUpdate(c, h); }
-    for (let i = 0; i < G.cars.length; i++) for (let j = i + 1; j < G.cars.length; j++) { const a = G.cars[i], b = G.cars[j]; if (Math.abs(T.dS(a.s, b.s)) < 9) collide(a, b); }
+    if (G.state === 'countdown') {
+      // Grille de départ verrouillée : aucun déplacement longitudinal ou latéral avant le GO.
+      p.vx = 0; p.vz = 0; p.vfw = 0; p.vl = 0; p.v = 0; p.yaw = 0;
+      for (const c of G.cars) { c.v = 0; c.dv = 0; c.brake = 0; c.spinVis = 0; c.squat = 0; }
+    } else {
+      for (const c of G.cars) { if (c.kind === 'ai') aiUpdate(c, h); else if (c.kind === 'traffic') trafficUpdate(c, h); else if (c.kind === 'cop') copUpdate(c, h); }
+      for (let i = 0; i < G.cars.length; i++) for (let j = i + 1; j < G.cars.length; j++) { const a = G.cars[i], b = G.cars[j]; if (Math.abs(T.dS(a.s, b.s)) < 9) collide(a, b); }
+    }
   }
   // progression du joueur
   if (p.prevS >= 0) { const dS = T.dS(p.prevS, p.s); if (Math.abs(dS) < 30) p.progress += dS; }
@@ -4739,13 +4781,23 @@ const SAVE_KEY = 'superjoud_save_v1';
 function detectLang() { const l = (navigator.language || 'fr').toLowerCase(); return l.includes('-tn') ? 'tn' : l.startsWith('ar') ? 'ar' : l.startsWith('en') ? 'en' : 'fr'; }
 function defaultSettings() { return { sfx: 80, music: 50, quality: IS_TOUCH ? 'medium' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
-  return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], best: {}, settings: defaultSettings(), stats: { races: 0, wins: 0 } };
+  return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, settings: defaultSettings(), stats: { races: 0, wins: 0 } };
 }
 let SAVE = defaultSave();
 function loadGame() {
   try {
     const s = localStorage.getItem(SAVE_KEY); if (!s) return;
-    const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {}; const oldDone = Array.isArray(SAVE.careerDone) ? SAVE.careerDone : []; SAVE.careerDone = [...new Set([...oldDone.filter(i => Number.isInteger(i) && i >= 0 && i < 16), ...oldDone.filter(i => Number.isInteger(i) && i >= 20 && i < 24).map(i => i - 4)])]; const oldCareer = clamp(Number(SAVE.career) || 0, 0, 24); SAVE.career = oldCareer <= 16 ? oldCareer : oldCareer < 20 ? 16 : Math.min(20, 16 + oldCareer - 20);
+    const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {};
+    if ((Number(o.careerVersion) || 0) < 2) {
+      const oldDone = Array.isArray(o.careerDone) ? o.careerDone : [];
+      SAVE.careerDone = [...new Set([...oldDone.filter(i => Number.isInteger(i) && i >= 0 && i < 16), ...oldDone.filter(i => Number.isInteger(i) && i >= 20 && i < 24).map(i => i - 4)])];
+      const oldCareer = clamp(Number(o.career) || 0, 0, 24);
+      SAVE.career = oldCareer <= 16 ? oldCareer : oldCareer < 20 ? 16 : Math.min(20, 16 + oldCareer - 20);
+    } else {
+      SAVE.careerDone = [...new Set((Array.isArray(o.careerDone) ? o.careerDone : []).filter(i => Number.isInteger(i) && i >= 0 && i < 50))];
+      SAVE.career = clamp(Number(o.career) || 0, 0, 50);
+    }
+    SAVE.careerVersion = 2;
     const st = Object.assign(defaultSettings(), o.settings || {}); if (o.settings && o.settings.vol !== undefined && o.settings.sfx === undefined) st.sfx = o.settings.vol; SAVE.settings = st;
   } catch (e) { }
 }
@@ -4849,7 +4901,7 @@ const UI = {
       tab.querySelectorAll('button[data-s]').forEach(b => b.onclick = () => setR({ s: b.dataset.s }));
       tab.querySelectorAll('button[data-c]').forEach(b => b.onclick = () => setR({ c: b.dataset.c }));
     } else {
-      const names = { eng: ['upEng', 'upEngD'], tur: ['upTur', 'upTurD'], tyr: ['upTyr', 'upTyrD'], nos: ['upNos', 'upNosD'] };
+      const names = { eng: ['upEng', 'upEngD'], tur: ['upTur', 'upTurD'], tyr: ['upTyr', 'upTyrD'], nos: ['upNos', 'upNosD'], aero: ['upAero', 'upAeroD'], brk: ['upBrk', 'upBrkD'] };
       tab.innerHTML = UPG.map(u => { const l = up[u.k] || 0, pr = upgPrice(c, l); return `<div class="upg"><div><b>${t(names[u.k][0])}</b><small>${t(names[u.k][1])}</small></div><div class="pips">${[0, 1, 2].map(i => `<i class="${i < l ? 'f' : ''}"></i>`).join('')}</div><button data-k="${u.k}" ${(!own || l >= MAXUP || SAVE.money < pr) ? 'disabled' : ''}>${l >= MAXUP ? t('max') : money(pr)}</button></div>`; }).join('') + (own ? '' : `<p class="note">${t('buyFirst')}</p>`);
       tab.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => {
         const k = b.dataset.k, l = (SAVE.upg[c.id] || {})[k] || 0, pr = upgPrice(c, l);
@@ -4880,7 +4932,8 @@ const UI = {
   renderCareer() {
     const done = SAVE.careerDone.length;
     $('c-prog').innerHTML = `<span>${t('progress')}</span><div class="pb"><i style="transform:scaleX(${done / CAREER.length})"></i></div><span>${done} / ${CAREER.length}</span>`;
-    const phases = LANG === 'en' ? ['QUALIFIERS · STAGES 01–05','ELIMINATION · STAGES 06–10','PLAYOFFS · STAGES 11–15','CHAMPIONSHIP FINAL · STAGES 16–20'] : LANG === 'ar' ? ['التصفيات · المراحل 01–05','الإقصائيات · المراحل 06–10','الأدوار النهائية · المراحل 11–15','نهائي البطولة · المراحل 16–20'] : LANG === 'tn' ? ['التصفيات · مراحل 01–05','الإقصائيات · مراحل 06–10','البلاي أوف · مراحل 11–15','نهائي البطولة · مراحل 16–20'] : ['QUALIFICATIONS · ÉTAPES 01–05','ÉLIMINATOIRES · ÉTAPES 06–10','PLAY-OFFS · ÉTAPES 11–15','FINALE DU CHAMPIONNAT · ÉTAPES 16–20'];
+    const phaseNames = ['Qualifications','Éliminatoires','Play-offs','Finales','Tournée continentale','Série Élite','Maîtres','Ligue Pro','Légendes','Championnat ultime'];
+    const phases = phaseNames.map((n, k) => LANG === 'en' ? ['QUALIFIERS','ELIMINATION','PLAYOFFS','FINALS','CONTINENTAL TOUR','ELITE SERIES','MASTERS','PRO LEAGUE','LEGENDS','ULTIMATE CHAMPIONSHIP'][k] + ' · STAGES ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0') : LANG === 'ar' || LANG === 'tn' ? 'المرحلة ' + (k + 1) + ' · ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0') : n.toUpperCase() + ' · ÉTAPES ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0'));
     $('c-list').innerHTML = CAREER.map((e, i) => {
       const isDone = SAVE.careerDone.includes(i), lock = i > SAVE.career, next = i === SAVE.career, tc = tierCars(e.tier)[0].cls;
       const SEP = LANG === 'ar' || LANG === 'tn' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');

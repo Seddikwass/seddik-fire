@@ -469,6 +469,18 @@ button:disabled{pointer-events:none}
 #scr-main .nbtn .ic{width:19px;height:19px;vertical-align:-3px;margin-inline-end:7px}
 @media(max-width:700px){#scr-main{gap:16px;padding-inline-start:18px;padding-inline-end:18px}#scr-main .mainnav{width:min(390px,92vw);gap:8px}#scr-main .nbtn{min-height:57px;padding:10px 15px 9px 18px}#scr-main .nbtn b{font-size:18px}#scr-main .nbtn small{font-size:11px}}
 
+
+/* V64 — finition cockpit : commandes plus lisibles et retours tactiles doux. */
+#touch button{position:relative;overflow:hidden;isolation:isolate;letter-spacing:.035em}
+#touch button:before{content:"";position:absolute;inset:1px 1px auto;height:42%;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent);pointer-events:none;z-index:-1}
+#touch .tl button{border-width:1px 1px 3px;border-bottom-color:#061522;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 5px 12px rgba(0,0,0,.3)}
+#touch [data-t=gas],#touch [data-t=brake],#touch [data-t=hand]{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 15px rgba(0,0,0,.32)}
+#touch button.on{filter:brightness(1.16) saturate(1.08);box-shadow:inset 0 3px 8px rgba(0,0,0,.32),0 2px 6px rgba(0,0,0,.25)}
+#hud .hbtn{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#ui .panel,#ui .garpanel{box-shadow:0 18px 48px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.07)}
+#ui .nbtn,#ui .mode,#ui .trk,#ui .ev{backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+@media(prefers-reduced-motion:reduce){#touch button,#hud .hbtn{transition:none}}
+
 </style>
 </head>
 <body>
@@ -4402,7 +4414,7 @@ function readInput(dt) {
   TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 1 : (TOUCH.rightPulse > 0 ? 0.20 : 0)) - (leftDown ? 1 : (TOUCH.leftPulse > 0 ? 0.20 : 0));
+  let st = (rightDown ? 0.58 : (TOUCH.rightPulse > 0 ? 0.075 : 0)) - (leftDown ? 0.58 : (TOUCH.leftPulse > 0 ? 0.075 : 0));
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4425,13 +4437,13 @@ function readInput(dt) {
   const digitalSteer = analog === null && st !== 0;
   // Montée rapide mais progressive : le véhicule répond au premier contact
   // sans passer brutalement d'un braquage nul au braquage maximal.
-  const steerRate = digitalSteer ? 8.5 : (steerTarget === 0 ? 9 : 10);
+  const steerRate = digitalSteer ? 3.4 : (steerTarget === 0 ? 5.2 : 6.0);
   G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
-  G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.105 : 0.145)));
-  G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.085 : 0.16)));
-  G.inputHand = (G.inputHand || 0) + ((hand ? 1 : 0) - (G.inputHand || 0)) * (1 - Math.exp(-dt / (hand ? 0.075 : 0.13)));
-  const o = G.inpO || (G.inpO = {}); o.gas = G.inputGas; o.brake = G.inputBrake; o.steer = G.steer; o.hand = G.inputHand > 0.12; o.nitro = nitro; o.rev = 0; o.hold = false; return o;
+  G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));
+  G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.17 : 0.25)));
+  G.inputHand = (G.inputHand || 0) + ((hand ? 1 : 0) - (G.inputHand || 0)) * (1 - Math.exp(-dt / (hand ? 0.24 : 0.30)));
+  const o = G.inpO || (G.inpO = {}); o.gas = G.inputGas; o.brake = G.inputBrake; o.steer = G.steer; o.hand = G.inputHand; o.nitro = nitro; o.rev = 0; o.hold = false; return o;
 }
 
 /* ---------------- physique du joueur ---------------- */
@@ -4449,7 +4461,7 @@ function physPlayer(c, dt, inp) {
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
-  if (inp.hand && spd > 8) target *= 1.45; else if (c.sliding) target *= 1.12;
+  if (inp.hand > 0.08 && spd > 8) target *= 1 + 0.45 * inp.hand; else if (c.sliding) target *= 1.12;
   c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));
   c.h += c.yaw * dt;
   const Fx = Math.sin(c.h), Fz = Math.cos(c.h), Rx = -Math.cos(c.h), Rz = Math.sin(c.h);
@@ -4459,7 +4471,7 @@ function physPlayer(c, dt, inp) {
   if (r > 1) a -= (r - 1) * 30;
   if (inp.brake > 0) { if (vf > 0.8) a -= 27 * (st.brake || 1) * inp.brake; else if (vf > -13) a -= 8 * inp.brake; }
   if (inp.gas === 0 && inp.brake === 0) a -= Math.sign(vf) * (0.7 + 0.0005 * vf * vf);
-  if (inp.hand) a -= Math.sign(vf) * 4.5;
+  if (inp.hand > 0) a -= Math.sign(vf) * 4.5 * inp.hand;
   a -= 9.81 * (c.slopeF || 0) * 0.65;
   if (inp.hold) { a = 0; c.vx = c.vz = 0; c.yaw = 0; }
   if (c.burnT > 0) { c.burnT -= dt; if (a > 0) a *= 0.4; c.burn = true; } else c.burn = false;
@@ -5714,7 +5726,7 @@ function bindInputs() {
     const off = e => {
       if (e && activePointer !== null && e.pointerId !== activePointer) return;
       activePointer = null; TOUCH[k] = false;
-      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.12;
+      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.075;
       b.classList.remove('on');
     };
     b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);

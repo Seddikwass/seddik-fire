@@ -5907,13 +5907,15 @@ function applySettings() {
     const mem = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
     const modest = (mem > 0 && mem <= 4) || (cores > 0 && cores <= 4);
     // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
-    PR = Math.min(PR, modest ? 0.48 : 0.62);
+    // Un peu plus de définition sur les téléphones, tout en gardant
+    // les ombres/post-effets coûteux désactivés pour éviter les pertes WebGL.
+    PR = Math.min(PR, modest ? 0.56 : 0.70);
     R.shadowSize = 256;
     R.shadows = false;
     R.bloom = false; R.rays = false; R.post = false; R.aa = false;
-    R.detail = Math.min(R.detail, modest ? 0.18 : 0.28);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.32 : 0.40);
-    G.lodNear = Math.min(G.lodNear, modest ? 7 : 10);
+    R.detail = Math.min(R.detail, modest ? 0.22 : 0.34);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.37 : 0.46);
+    G.lodNear = Math.min(G.lodNear, modest ? 8 : 12);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;

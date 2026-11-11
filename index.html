@@ -4402,7 +4402,7 @@ function readInput(dt) {
   TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 1 : (TOUCH.rightPulse > 0 ? 0.92 : 0)) - (leftDown ? 1 : (TOUCH.leftPulse > 0 ? 0.92 : 0));
+  let st = (rightDown ? 1 : (TOUCH.rightPulse > 0 ? 0.20 : 0)) - (leftDown ? 1 : (TOUCH.leftPulse > 0 ? 0.20 : 0));
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4425,7 +4425,7 @@ function readInput(dt) {
   const digitalSteer = analog === null && st !== 0;
   // Montée rapide mais progressive : le véhicule répond au premier contact
   // sans passer brutalement d'un braquage nul au braquage maximal.
-  const steerRate = digitalSteer ? 29 : (steerTarget === 0 ? 13 : 12);
+  const steerRate = digitalSteer ? 8.5 : (steerTarget === 0 ? 9 : 10);
   G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.105 : 0.145)));
@@ -5714,7 +5714,7 @@ function bindInputs() {
     const off = e => {
       if (e && activePointer !== null && e.pointerId !== activePointer) return;
       activePointer = null; TOUCH[k] = false;
-      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.36;
+      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.12;
       b.classList.remove('on');
     };
     b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);

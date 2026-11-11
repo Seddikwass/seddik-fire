@@ -667,6 +667,19 @@ button:disabled{pointer-events:none}
  #touch [data-t=brake],#touch [data-t=nitro]{right:calc(max(18px,env(safe-area-inset-right)) + clamp(132px,15vw,160px))!important}
 }
 
+
+/* v77 — commandes tactiles grand format et direction plus immédiate */
+@media (hover:none), (pointer:coarse){
+  #touch .tl button{width:clamp(82px,17vw,104px);height:clamp(82px,17vw,104px);min-width:82px;min-height:82px;border-width:2.5px;box-shadow:0 7px 20px rgba(0,0,0,.48),inset 0 2px 0 rgba(255,255,255,.24)}
+  #touch [data-t=left]{left:max(12px,env(safe-area-inset-left))}
+  #touch [data-t=right]{left:calc(max(12px,env(safe-area-inset-left)) + clamp(82px,17vw,104px) + 8px)}
+  #touch [data-t=gas]{width:clamp(86px,19vw,116px);height:clamp(126px,32vw,176px);min-width:86px;min-height:126px}
+  #touch [data-t=brake]{width:clamp(76px,16vw,98px);height:clamp(76px,16vw,98px);min-width:76px;min-height:76px}
+  #touch [data-t=nitro]{width:clamp(76px,16vw,98px);height:clamp(54px,11vw,70px);min-width:76px;min-height:54px}
+  #touch [data-t=hand]{width:clamp(86px,19vw,116px);height:clamp(54px,11vw,70px);min-width:86px;min-height:54px}
+  #touch button svg{width:55%;height:55%}
+}
+#touch button{ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none; }
 </style>
 </head>
 <body>
@@ -4626,7 +4639,7 @@ function readInput(dt) {
   TOUCH.rightPulse = Math.max(0, (TOUCH.rightPulse || 0) - dt);
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  let st = (rightDown ? 0.84 : (TOUCH.rightPulse > 0 ? 0.46 : 0)) - (leftDown ? 0.84 : (TOUCH.leftPulse > 0 ? 0.46 : 0));
+  let st = (rightDown ? 1 : (TOUCH.rightPulse > 0 ? 0.72 : 0)) - (leftDown ? 1 : (TOUCH.leftPulse > 0 ? 0.72 : 0));
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4649,7 +4662,7 @@ function readInput(dt) {
   const digitalSteer = analog === null && st !== 0;
   // Montée rapide mais progressive : le véhicule répond au premier contact
   // sans passer brutalement d'un braquage nul au braquage maximal.
-  const steerRate = digitalSteer ? 8.2 : (steerTarget === 0 ? 7.0 : 8.0);
+  const steerRate = digitalSteer ? 14.5 : (steerTarget === 0 ? 10.5 : 11.5);
   G.steer += (steerTarget - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));
@@ -5952,7 +5965,7 @@ function bindInputs() {
     const off = e => {
       if (e && activePointer !== null && e.pointerId !== activePointer) return;
       activePointer = null; TOUCH[k] = false;
-      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.22;
+      if (k === 'left' || k === 'right') TOUCH[k + 'Pulse'] = 0.42;
       b.classList.remove('on');
     };
     b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off);

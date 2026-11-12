@@ -6776,6 +6776,10 @@ function bindStick() {
   st.addEventListener('pointerup', end); st.addEventListener('pointercancel', end); st.addEventListener('lostpointercapture', end);
   addEventListener('blur', () => end());
   document.addEventListener('visibilitychange', () => { if (document.hidden) end(); });
+  // Le joystick analogique doit aussi se libérer si Android tourne l'écran
+  // ou quitte momentanément le jeu pendant qu'un doigt est encore posé.
+  addEventListener('orientationchange', () => end(), { passive: true });
+  addEventListener('pagehide', () => end(), { passive: true });
 }
 
 /* ---------- entrées ---------- */
@@ -6843,6 +6847,7 @@ function bindInputs() {
   });
   addEventListener('orientationchange', () => {
     TOUCH.leftAmount = 0; TOUCH.rightAmount = 0; TOUCH.ax = 0; TOUCH.axOn = false;
+    TILT.zero = null;
   }, { passive: true });
   bindStick(); bindTilt();
   const cv = $('gl'); let lx = 0;

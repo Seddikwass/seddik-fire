@@ -730,7 +730,7 @@ body.touch .meter div{height:9px}
   #touch button { opacity:1!important; -webkit-tap-highlight-color:transparent!important; }
 }
 
-/* V89 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
+/* V90 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
 @media (pointer:coarse) and (max-width:1000px) {
   #touch { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; z-index:30!important; }
   #touch .tl,#touch .tr { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; }
@@ -800,7 +800,7 @@ body.touch .meter div{height:9px}
 }
 
 
-/* V89 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
+/* V90 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
 :root{
  --acc:#ff8a1f;--acc2:#ffd166;--cy:#36d8f2;--bg:#070b12;
  --pan:rgba(9,15,26,.88);--line:rgba(255,255,255,.14);
@@ -901,7 +901,7 @@ html[dir=rtl] .stat span{text-align:left}
 
 
 
-/* V89 — cockpit HUD : lecture rapide, hiérarchie et lisibilité en course */
+/* V90 — cockpit HUD : lecture rapide, hiérarchie et lisibilité en course */
 #hud{isolation:isolate}
 #hud:before,#hud:after{content:"";position:absolute;left:0;right:0;pointer-events:none;z-index:0}
 #hud:before{top:0;height:30%;background:linear-gradient(180deg,rgba(3,8,15,.58),transparent)}
@@ -977,6 +977,75 @@ html[dir=rtl] .hud-tl{border-left:1px solid rgba(255,255,255,.15);border-right:3
 html[dir=rtl] .hud-bl{border-left:1px solid rgba(255,255,255,.14);border-right:3px solid #ff4b4b;border-radius:11px 0 0 11px}
 html[dir=rtl] .nosbar i{transform-origin:right}
 
+
+
+/* V90 — lisibilité du circuit, menu adaptable et pause tactile */
+#gl{filter:saturate(1.045) contrast(1.02)!important}
+#pause.overlay{
+  z-index:80!important;
+  padding:18px!important;
+  background:rgba(3,7,13,.76)!important;
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+#pause .box{
+  width:min(440px,calc(100vw - 30px))!important;
+  max-height:min(82dvh,620px)!important;
+  overflow-y:auto!important;
+  padding:clamp(20px,4vw,34px)!important;
+  display:flex!important;flex-direction:column!important;gap:12px!important;
+  border:1px solid rgba(255,255,255,.2)!important;
+  border-top:3px solid var(--acc)!important;
+  border-radius:18px!important;
+  background:linear-gradient(145deg,rgba(13,22,36,.98),rgba(5,10,19,.98))!important;
+  box-shadow:0 28px 90px #000c,0 0 0 1px #ff9b2c18!important;
+}
+#pause .box h2{
+  margin:0 0 3px!important;font-size:clamp(25px,5vw,34px)!important;
+  line-height:1.2!important;color:#fff!important;text-align:center!important;
+  letter-spacing:.025em;text-shadow:0 3px 16px #000;
+}
+#pause .box button{
+  width:100%!important;min-height:54px!important;padding:13px 16px!important;
+  border:1px solid #ffffff24!important;border-radius:10px!important;
+  background:linear-gradient(135deg,#1b293c,#101827)!important;
+  color:#f7f4ed!important;font-size:clamp(15px,2.5vw,18px)!important;
+  font-weight:850!important;touch-action:manipulation;
+}
+#pause .box button.cta{
+  color:#17100a!important;
+  background:linear-gradient(135deg,#ffad43,#e56716)!important;
+  border-color:#ffd18a!important;
+}
+#pause .box button:active{transform:scale(.985)}
+#speedo{width:clamp(150px,20vmin,230px)!important;height:auto!important;aspect-ratio:1}
+.hud-br{width:clamp(150px,20vmin,230px)!important}
+#h-nosbox{width:100%;box-sizing:border-box}
+#minimap{max-width:clamp(88px,15vmin,150px)}
+@media (min-width:761px) and (max-height:680px){
+  #scr-main{
+    justify-content:flex-start!important;align-content:start!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    padding:12px 3vw 24px!important;gap:12px!important;
+  }
+  #scr-main .hero{padding:14px 22px!important}
+  #scr-main .logo{font-size:clamp(34px,5vw,58px)!important}
+  #scr-main .mainnav{gap:8px!important}
+  #scr-main .mainnav .nbtn{min-height:62px!important;padding:10px 14px!important}
+  #scr-main .carline{margin-top:0!important}
+}
+@media (max-width:760px){
+  #pause .box{width:min(390px,calc(100vw - 28px))!important;padding:20px!important;gap:10px!important}
+  #pause .box button{min-height:52px!important}
+  #speedo{width:clamp(126px,28vw,178px)!important}
+  .hud-br{width:clamp(126px,28vw,178px)!important}
+}
+@media (max-width:760px) and (orientation:landscape){
+  #scr-main{overflow-y:auto!important;max-height:100dvh!important}
+  #pause .box{max-height:78dvh!important;padding:14px 18px!important;gap:8px!important}
+  #pause .box button{min-height:44px!important;padding:9px 12px!important}
+  #pause .box h2{font-size:24px!important}
+}
+
 </style>
 </head>
 <body>
@@ -990,7 +1059,7 @@ html[dir=rtl] .nosbar i{transform-origin:right}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V89</span>
+    <span id="build-tag" aria-label="Version du jeu">V90</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -4769,7 +4838,7 @@ LANGS.tn = Object.assign({}, LANGS.fr, {
   cancel: 'إلغاء', confirm: 'تأكيد', pause: 'وقفة', resume: 'كمّل', restart: 'عاود', quitRace: 'اخرج من السباق',
 });
 
-/* V89 — descriptions, épreuves et circuits rédigés en derja tunisienne */
+/* V90 — descriptions, épreuves et circuits rédigés en derja tunisienne */
 const TN_CONTENT = {
   car: {
     zitouna:'سكوتر خفيف متاع المدينة، يتعدّى بالساهل بين الكراهب.',
@@ -5796,7 +5865,7 @@ Object.assign(LANGS.fr, { adDouble: 'Doubler les gains : +{0}', adDoubled: 'Gain
 Object.assign(LANGS.en, { adDouble: 'Double your winnings: +{0}', adDoubled: 'Winnings doubled: +{0}', adBonus: '+{0}', adBonusTitle: 'Watch a short video to earn {0}', adThanks: 'Thanks! +{0}', adNone: 'No video available right now, try again in a moment.', adWait: 'Next video bonus in {0}', adDay: 'No more video bonuses today. Come back tomorrow!', adNoReward: 'Video closed early: no reward.', o_privacy: 'Privacy', o_privLink: 'Privacy policy', o_ads: 'Ads', o_adsPriv: 'Ad privacy', o_adsInfo: 'Ads keep the game free. Rewarded videos are always your choice.' });
 Object.assign(LANGS.ar, { adDouble: 'ضاعف أرباحك: +{0}', adDoubled: 'تمت مضاعفة الأرباح: +{0}', adBonus: '+{0}', adBonusTitle: 'شاهد فيديو قصيرًا واربح {0}', adThanks: 'شكرًا! +{0}', adNone: 'لا يوجد فيديو متاح الآن، حاول بعد قليل.', adWait: 'المكافأة التالية بعد {0}', adDay: 'انتهت مكافآت الفيديو لليوم. عد غدًا!', adNoReward: 'أُغلق الفيديو مبكرًا: لا مكافأة.', o_privacy: 'الخصوصية', o_privLink: 'سياسة الخصوصية', o_ads: 'الإعلانات', o_adsPriv: 'خصوصية الإعلانات', o_adsInfo: 'الإعلانات تجعل اللعبة مجانية. مشاهدة الفيديو بمكافأة اختيارية دائمًا.' });
 
-/* V89 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
+/* V90 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
 LANGS.tn = Object.assign({}, LANGS.ar, LANGS.tn, {
   webglTest:'جرّب الـ3D متاع التليفون: كان المكعّب ما يدورش، المتصفّح حاجب WebGL.',
   drivers:'السواق',driver:'السائق',driverNote:'السائق يقعد ورا الفولان ويعطيك امتياز صغير مع أي كروسة.',

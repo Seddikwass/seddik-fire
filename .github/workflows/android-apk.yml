@@ -159,14 +159,12 @@ jobs:
           main = base / "MainActivity.java"
           source = main.read_text(encoding="utf-8")
           if "TeamTTSPlugin.class" not in source:
-              source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport android.os.Bundle;")
-              source = re.sub(
-                  r"public class MainActivity extends BridgeActivity\\s*\\{\\s*\\}",
-                  "public class MainActivity extends BridgeActivity {\\n    @Override public void onCreate(Bundle savedInstanceState) {\\n        registerPlugin(TeamTTSPlugin.class);\\n        super.onCreate(savedInstanceState);\\n    }\\n}",
-                  source
-              )
-              if "TeamTTSPlugin.class" not in source:
-                  raise SystemExit("Could not register TeamTTSPlugin in generated MainActivity")
+              source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;" + chr(10) + "import android.os.Bundle;")
+              marker = "public class MainActivity extends BridgeActivity {"
+              if marker not in source:
+                  raise SystemExit("Unexpected generated MainActivity: " + source)
+              method = chr(10) + "    @Override public void onCreate(Bundle savedInstanceState) {" + chr(10) + "        registerPlugin(TeamTTSPlugin.class);" + chr(10) + "        super.onCreate(savedInstanceState);" + chr(10) + "    }"
+              source = source.replace(marker, marker + method, 1)
               main.write_text(source, encoding="utf-8")
           print("Native TeamTTS bridge registered")
           PY

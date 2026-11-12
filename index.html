@@ -5132,15 +5132,13 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
     roster:'#sf-portrait-roster .sf-roster-head b',
     rosterMeta:'#sf-portrait-roster .sf-roster-head span',
     alive:'#hud .count:first-child small',killsShort:'#hud .count.k small',
-    storm:'#warn',eliminated:'#kb b',reload:'#btnReload',pick:'#btnPick',
-    bandage:'#mBandage',medkit:'#mMedkit',drink:'#mDrink',
+    storm:'#warn',eliminated:'#kb b',pick:'#btnPick',
     armoryTitle:'#armory h2',armoryClose:'#armClose',armoryNote:'#armory .arm-note',
     missionsTitle:'#miss .ptitle',daily:'#miss .set h3',achievements:'#achH',
     gameOver:'#endEye',soldiers:'#end .of',eliminations:'#end .stats div:nth-child(1) dt',
     damage:'#end .stats div:nth-child(2) dt',survival:'#end .stats div:nth-child(3) dt',
     eliminatedBy:'#end .stats div:nth-child(4) dt',replay:'#again',menu:'#toMenu',
-    mapClose:'#bigmap p',armor:'#hud .arm span:nth-child(1)',helmet:'#hud .arm span:nth-child(2)',
-    hp:'#hud .arm span:nth-child(4)',currentLevel:'#xpBox .xp-h span:first-child';
+    mapClose:'#bigmap p';
     map:'.side .card:nth-child(1) .lbl',mode:'.side .card:nth-child(2) .lbl',
     weapon:'.side .card:nth-child(3) .lbl',custom:'.side .card:nth-child(4) .lbl',
     accessory:'.side .card:nth-child(4) .cz:nth-child(1) > b',
@@ -5157,9 +5155,12 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
   };
   function apply(lang){
     const ar=lang==='ar';const d=dict[ar?'ar':'fr'];
-    document.querySelectorAll('#hud .arm span').forEach((el,i)=>{if(i===0||i===1||i===3){const label=i===0?d.armor:i===1?d.helmet:d.hp;const value=el.querySelector('b');el.firstChild.nodeValue=label+' ';if(value)el.appendChild(value)}});
+    document.querySelectorAll('#hud .arm span').forEach((el,i)=>{if(i===0||i===1||i===3){const label=i===0?d.armor:i===1?d.helmet:d.hp;el.firstChild.nodeValue=label+' '}});
     const pause=$('#btnPause');if(pause)pause.setAttribute('aria-label',ar?'توقّف':'Pause');
     const miniMap=$('#mini');if(miniMap)miniMap.setAttribute('aria-label',d.mapLabel);
+    const reload=$('#btnReload');if(reload&&reload.firstChild)reload.firstChild.nodeValue=d.reload;
+    const jump=$('#btnJump');if(jump&&jump.firstChild)jump.firstChild.nodeValue=d.jump;
+    [['#mBandage',d.bandage],['#mMedkit',d.medkit],['#mDrink',d.drink]].forEach(([sel,label])=>{const el=$(sel);if(el)el.setAttribute('aria-label',label)});
     Object.entries(nodes).forEach(([key,sel])=>{const el=document.querySelector(sel);if(el&&d[key])el.textContent=d[key]});
     lobby.dir=ar?'rtl':'ltr';
     document.documentElement.lang=ar?'ar-TN':'fr';

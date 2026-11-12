@@ -730,7 +730,7 @@ body.touch .meter div{height:9px}
   #touch button { opacity:1!important; -webkit-tap-highlight-color:transparent!important; }
 }
 
-/* V90 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
+/* V91 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
 @media (pointer:coarse) and (max-width:1000px) {
   #touch { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; z-index:30!important; }
   #touch .tl,#touch .tr { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; }
@@ -800,7 +800,7 @@ body.touch .meter div{height:9px}
 }
 
 
-/* V90 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
+/* V91 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
 :root{
  --acc:#ff8a1f;--acc2:#ffd166;--cy:#36d8f2;--bg:#070b12;
  --pan:rgba(9,15,26,.88);--line:rgba(255,255,255,.14);
@@ -901,7 +901,7 @@ html[dir=rtl] .stat span{text-align:left}
 
 
 
-/* V90 — cockpit HUD : lecture rapide, hiérarchie et lisibilité en course */
+/* V91 — cockpit HUD : lecture rapide, hiérarchie et lisibilité en course */
 #hud{isolation:isolate}
 #hud:before,#hud:after{content:"";position:absolute;left:0;right:0;pointer-events:none;z-index:0}
 #hud:before{top:0;height:30%;background:linear-gradient(180deg,rgba(3,8,15,.58),transparent)}
@@ -979,7 +979,7 @@ html[dir=rtl] .nosbar i{transform-origin:right}
 
 
 
-/* V90 — lisibilité du circuit, menu adaptable et pause tactile */
+/* V91 — lisibilité du circuit, menu adaptable et pause tactile */
 #gl{filter:saturate(1.045) contrast(1.02)!important}
 #pause.overlay{
   z-index:80!important;
@@ -1046,6 +1046,74 @@ html[dir=rtl] .nosbar i{transform-origin:right}
   #pause .box h2{font-size:24px!important}
 }
 
+
+
+/* V91 — panneaux garage/options : aucune section ne doit être coupée */
+#scr-options{
+  justify-content:flex-start!important;
+  align-items:center!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  overscroll-behavior:contain;
+  padding:76px 16px 24px!important;
+}
+#scr-options .scr-head{position:fixed!important;top:8px!important}
+#scr-options #o-panel{
+  align-self:flex-start!important;flex:0 0 auto!important;
+  width:min(640px,calc(100vw - 28px))!important;
+  max-height:none!important;min-height:0!important;
+  margin:0 auto 8px!important;
+}
+#scr-options .panel .orow{min-width:0}
+#scr-options .panel .orow>*{min-width:0}
+#scr-garage,#scr-drivers{
+  min-height:0!important;overflow:hidden!important;
+  padding-top:68px!important;padding-bottom:max(14px,env(safe-area-inset-bottom))!important;
+}
+#scr-garage .carlist,#scr-drivers .carlist{
+  min-height:0!important;max-height:calc(100dvh - 86px)!important;
+  overscroll-behavior:contain;scrollbar-width:thin;
+  scrollbar-color:#697789 #111925;
+}
+#scr-garage .garpanel,#scr-drivers .garpanel{
+  min-height:0!important;max-height:calc(100dvh - 86px)!important;
+  overscroll-behavior:contain;scrollbar-width:thin;
+  scrollbar-color:#697789 #111925;
+}
+#scr-garage .garpanel .tabs{position:sticky;top:0;z-index:2}
+@media (max-width:900px){
+  #scr-garage,#scr-drivers{gap:10px!important;padding-inline:10px!important}
+  #scr-garage .carlist,#scr-drivers .carlist{width:clamp(150px,27vw,230px)!important}
+  #scr-garage .garpanel,#scr-drivers .garpanel{width:min(360px,42vw)!important;padding:14px!important}
+  #scr-garage .stat,#scr-drivers .stat{grid-template-columns:86px minmax(35px,1fr) 65px;gap:6px}
+}
+@media (max-width:650px){
+  #scr-options{padding:68px 10px 18px!important}
+  #scr-options #o-panel{width:calc(100vw - 20px)!important;padding:16px!important}
+  #scr-options .panel .orow{grid-template-columns:1fr!important;gap:6px!important}
+  #scr-garage,#scr-drivers{
+    flex-direction:column!important;justify-content:flex-start!important;
+    align-items:stretch!important;overflow-y:auto!important;
+    padding:64px 10px 18px!important;gap:10px!important;
+  }
+  #scr-garage .carlist,#scr-drivers .carlist{
+    order:2;width:100%!important;max-height:32dvh!important;
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px!important;
+  }
+  #scr-garage .garpanel,#scr-drivers .garpanel{
+    order:1;width:100%!important;max-width:none!important;
+    max-height:none!important;overflow:visible!important;padding:14px!important;
+  }
+  #scr-garage .scr-head,#scr-drivers .scr-head{
+    position:sticky!important;top:0!important;inset-inline-start:auto!important;
+    margin:-54px 0 4px!important;align-self:flex-start;
+  }
+}
+@media (max-height:680px) and (min-width:651px){
+  #scr-options{padding-top:68px!important;padding-bottom:12px!important}
+  #scr-options #o-panel{gap:11px!important;padding:16px!important}
+  #scr-options .panel .orow{gap:9px!important}
+}
+
 </style>
 </head>
 <body>
@@ -1059,7 +1127,7 @@ html[dir=rtl] .nosbar i{transform-origin:right}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V90</span>
+    <span id="build-tag" aria-label="Version du jeu">V91</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -4838,7 +4906,7 @@ LANGS.tn = Object.assign({}, LANGS.fr, {
   cancel: 'إلغاء', confirm: 'تأكيد', pause: 'وقفة', resume: 'كمّل', restart: 'عاود', quitRace: 'اخرج من السباق',
 });
 
-/* V90 — descriptions, épreuves et circuits rédigés en derja tunisienne */
+/* V91 — descriptions, épreuves et circuits rédigés en derja tunisienne */
 const TN_CONTENT = {
   car: {
     zitouna:'سكوتر خفيف متاع المدينة، يتعدّى بالساهل بين الكراهب.',
@@ -5865,7 +5933,7 @@ Object.assign(LANGS.fr, { adDouble: 'Doubler les gains : +{0}', adDoubled: 'Gain
 Object.assign(LANGS.en, { adDouble: 'Double your winnings: +{0}', adDoubled: 'Winnings doubled: +{0}', adBonus: '+{0}', adBonusTitle: 'Watch a short video to earn {0}', adThanks: 'Thanks! +{0}', adNone: 'No video available right now, try again in a moment.', adWait: 'Next video bonus in {0}', adDay: 'No more video bonuses today. Come back tomorrow!', adNoReward: 'Video closed early: no reward.', o_privacy: 'Privacy', o_privLink: 'Privacy policy', o_ads: 'Ads', o_adsPriv: 'Ad privacy', o_adsInfo: 'Ads keep the game free. Rewarded videos are always your choice.' });
 Object.assign(LANGS.ar, { adDouble: 'ضاعف أرباحك: +{0}', adDoubled: 'تمت مضاعفة الأرباح: +{0}', adBonus: '+{0}', adBonusTitle: 'شاهد فيديو قصيرًا واربح {0}', adThanks: 'شكرًا! +{0}', adNone: 'لا يوجد فيديو متاح الآن، حاول بعد قليل.', adWait: 'المكافأة التالية بعد {0}', adDay: 'انتهت مكافآت الفيديو لليوم. عد غدًا!', adNoReward: 'أُغلق الفيديو مبكرًا: لا مكافأة.', o_privacy: 'الخصوصية', o_privLink: 'سياسة الخصوصية', o_ads: 'الإعلانات', o_adsPriv: 'خصوصية الإعلانات', o_adsInfo: 'الإعلانات تجعل اللعبة مجانية. مشاهدة الفيديو بمكافأة اختيارية دائمًا.' });
 
-/* V90 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
+/* V91 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
 LANGS.tn = Object.assign({}, LANGS.ar, LANGS.tn, {
   webglTest:'جرّب الـ3D متاع التليفون: كان المكعّب ما يدورش، المتصفّح حاجب WebGL.',
   drivers:'السواق',driver:'السائق',driverNote:'السائق يقعد ورا الفولان ويعطيك امتياز صغير مع أي كروسة.',

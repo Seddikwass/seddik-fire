@@ -730,7 +730,7 @@ body.touch .meter div{height:9px}
   #touch button { opacity:1!important; -webkit-tap-highlight-color:transparent!important; }
 }
 
-/* V91 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
+/* V92 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
 @media (pointer:coarse) and (max-width:1000px) {
   #touch { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; z-index:30!important; }
   #touch .tl,#touch .tr { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; }
@@ -800,7 +800,7 @@ body.touch .meter div{height:9px}
 }
 
 
-/* V91 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
+/* V92 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
 :root{
  --acc:#ff8a1f;--acc2:#ffd166;--cy:#36d8f2;--bg:#070b12;
  --pan:rgba(9,15,26,.88);--line:rgba(255,255,255,.14);
@@ -901,7 +901,7 @@ html[dir=rtl] .stat span{text-align:left}
 
 
 
-/* V91 — cockpit HUD : lecture rapide, hiérarchie et lisibilité en course */
+/* V92 — cockpit HUD : lecture rapide, hiérarchie et lisibilité en course */
 #hud{isolation:isolate}
 #hud:before,#hud:after{content:"";position:absolute;left:0;right:0;pointer-events:none;z-index:0}
 #hud:before{top:0;height:30%;background:linear-gradient(180deg,rgba(3,8,15,.58),transparent)}
@@ -979,7 +979,7 @@ html[dir=rtl] .nosbar i{transform-origin:right}
 
 
 
-/* V91 — lisibilité du circuit, menu adaptable et pause tactile */
+/* V92 — lisibilité du circuit, menu adaptable et pause tactile */
 #gl{filter:saturate(1.045) contrast(1.02)!important}
 #pause.overlay{
   z-index:80!important;
@@ -1048,7 +1048,7 @@ html[dir=rtl] .nosbar i{transform-origin:right}
 
 
 
-/* V91 — panneaux garage/options : aucune section ne doit être coupée */
+/* V92 — panneaux garage/options : aucune section ne doit être coupée */
 #scr-options{
   justify-content:flex-start!important;
   align-items:center!important;
@@ -1114,6 +1114,71 @@ html[dir=rtl] .nosbar i{transform-origin:right}
   #scr-options .panel .orow{gap:9px!important}
 }
 
+
+
+/* V92 — cockpit tactile renforcé, repères lisibles et finition premium */
+#touch button{
+  font-weight:1000!important;text-shadow:0 2px 4px #000!important;
+  border:2px solid rgba(255,255,255,.72)!important;
+  box-shadow:0 8px 22px #0009,inset 0 2px 0 #ffffff55!important;
+  opacity:1!important;
+}
+#touch button svg{width:54%!important;height:54%!important;stroke-width:3}
+#touch [data-t=left],#touch [data-t=right]{
+  width:clamp(76px,13vw,94px)!important;height:clamp(76px,13vw,94px)!important;
+  min-width:76px!important;min-height:76px!important;
+  background:linear-gradient(145deg,#258fd4,#073b70)!important;
+  border-color:#b9e7ff!important;
+}
+#touch [data-t=gas]{
+  width:clamp(82px,16vw,112px)!important;height:clamp(124px,27vw,174px)!important;
+  background:linear-gradient(155deg,#ffbd4a,#ed650d)!important;
+  border:3px solid #ffe0a1!important;border-radius:22px!important;
+}
+#touch [data-t=brake]{
+  width:clamp(72px,13vw,94px)!important;height:clamp(72px,13vw,94px)!important;
+  background:linear-gradient(155deg,#f15b5b,#861c2c)!important;border:3px solid #ffc0c0!important;
+}
+#touch [data-t=hand]{
+  min-height:58px!important;background:linear-gradient(145deg,#e4a23a,#70400e)!important;
+  border:2px solid #ffe0a1!important;
+}
+#touch [data-t=nitro]{
+  min-height:54px!important;background:linear-gradient(145deg,#28d7f5,#075b9a)!important;
+  border:2px solid #b9f5ff!important;color:#fff!important;
+}
+#touch [data-t=left]::after,#touch [data-t=right]::after{
+  content:"GAUCHE";position:absolute;bottom:7px;font:900 9px var(--fb);letter-spacing:.06em;color:#fff;
+}
+#touch [data-t=right]::after{content:"DROITE"}
+#touch [data-t=gas]::after,#touch [data-t=brake]::after,
+#touch [data-t=hand]::after,#touch [data-t=nitro]::after{
+  position:absolute;bottom:7px;left:2px;right:2px;text-align:center;
+  font:900 10px var(--fb);letter-spacing:.055em;color:#fff;
+}
+#touch [data-t=gas]::after{content:"ACCÉLÉRER"}
+#touch [data-t=brake]::after{content:"FREIN"}
+#touch [data-t=hand]::after{content:"FREIN À MAIN"}
+#touch [data-t=nitro]::after{content:"NITRO"}
+#touch .tl button.on{background:linear-gradient(145deg,#58c5ff,#07539a)!important}
+#touch button.on{filter:brightness(1.2)!important;outline:2px solid #fff;outline-offset:2px}
+@media (hover:none) and (orientation:landscape){
+ #touch .tl button{width:72px!important;height:72px!important;min-width:72px!important;min-height:72px!important}
+ #touch [data-t=left]{left:max(14px,env(safe-area-inset-left))!important}
+ #touch [data-t=right]{left:calc(max(14px,env(safe-area-inset-left)) + 82px)!important}
+ #touch [data-t=gas]{width:96px!important;height:142px!important}
+ #touch [data-t=brake]{width:78px!important;height:78px!important}
+ #touch [data-t=hand],#touch [data-t=nitro]{min-height:54px!important}
+}
+@media (max-width:760px) and (orientation:portrait){
+ #touch [data-t=left],#touch [data-t=right]{width:70px!important;height:70px!important;min-width:70px!important;min-height:70px!important}
+ #touch [data-t=gas]{width:78px!important;height:126px!important}
+ #touch [data-t=brake]{width:68px!important;height:68px!important}
+ #touch [data-t=hand],#touch [data-t=nitro]{min-height:48px!important}
+ #touch [data-t=left]::after,#touch [data-t=right]::after{font-size:8px;bottom:5px}
+ #touch [data-t=gas]::after,#touch [data-t=brake]::after,#touch [data-t=hand]::after,#touch [data-t=nitro]::after{font-size:8px;bottom:5px}
+}
+
 </style>
 </head>
 <body>
@@ -1127,7 +1192,7 @@ html[dir=rtl] .nosbar i{transform-origin:right}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V91</span>
+    <span id="build-tag" aria-label="Version du jeu">V92</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -4906,7 +4971,7 @@ LANGS.tn = Object.assign({}, LANGS.fr, {
   cancel: 'إلغاء', confirm: 'تأكيد', pause: 'وقفة', resume: 'كمّل', restart: 'عاود', quitRace: 'اخرج من السباق',
 });
 
-/* V91 — descriptions, épreuves et circuits rédigés en derja tunisienne */
+/* V92 — descriptions, épreuves et circuits rédigés en derja tunisienne */
 const TN_CONTENT = {
   car: {
     zitouna:'سكوتر خفيف متاع المدينة، يتعدّى بالساهل بين الكراهب.',
@@ -5254,7 +5319,7 @@ function readInput(dt) {
   // l'orientation de l'écran. Chaque appui monte progressivement puis revient au centre.
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  const steerRise = 5.2, steerReturn = 8.0;
+  const steerRise = 7.0, steerReturn = 9.2;
   if (leftDown && rightDown) {
     TOUCH.leftAmount = Math.max(0, (TOUCH.leftAmount || 0) - steerReturn * dt);
     TOUCH.rightAmount = Math.max(0, (TOUCH.rightAmount || 0) - steerReturn * dt);
@@ -5290,9 +5355,9 @@ function readInput(dt) {
     steerTarget = Math.sign(digital) * Math.pow(Math.abs(digital), 1.12);
   }
   const digitalSteer = analog === null && Math.abs(digital) > 0.001;
-  const steerRate = digitalSteer ? 9.2 : (Math.abs(steerTarget) < 0.01 ? 8.0 : 10.5);
+  const steerRate = digitalSteer ? 11.5 : (Math.abs(steerTarget) < 0.01 ? 9.5 : 12.0);
   const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 52, 0, 1);
-  const stability = 1 - speedFactor * 0.16;
+  const stability = 1 - speedFactor * 0.22;
   G.steer += (steerTarget * stability - G.steer) * (1 - Math.exp(-steerRate * dt));
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.20 : 0.26)));
   G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.16 : 0.23)));
@@ -5314,7 +5379,7 @@ function physPlayer(c, dt, inp) {
   // Direction assistée renforcée : davantage d'angle utile à vitesse élevée,
   // sans rendre le véhicule incontrôlable à faible vitesse.
   // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
-  let yawMax = Math.min(3.35, (st.lat * 2.78) / Math.max(spd, 4.2));
+  let yawMax = Math.min(3.55, (st.lat * 2.92) / Math.max(spd, 4.0));
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
@@ -5780,7 +5845,7 @@ function drawCar(c, M, far) {
   const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6), frontSteer = -steer;
   R.setRim(c.rimC || RIM0);
   const wm = c.wm || (c.wm = getWheel(c.rimS || m.rim, m.wr, m.ww));
-  for (const w of m.wheels) { M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? frontSteer * 0.42 : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
+  for (const w of m.wheels) { M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? frontSteer * 0.58 : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
   if (inside && m.glass) { R.glassOn(); R.draw(m.glass, M); R.glassOff(); }
 }
 const UNDER0 = [0.05, 0.05, 0.06], RIM0 = [0.78, 0.79, 0.82];
@@ -5933,7 +5998,7 @@ Object.assign(LANGS.fr, { adDouble: 'Doubler les gains : +{0}', adDoubled: 'Gain
 Object.assign(LANGS.en, { adDouble: 'Double your winnings: +{0}', adDoubled: 'Winnings doubled: +{0}', adBonus: '+{0}', adBonusTitle: 'Watch a short video to earn {0}', adThanks: 'Thanks! +{0}', adNone: 'No video available right now, try again in a moment.', adWait: 'Next video bonus in {0}', adDay: 'No more video bonuses today. Come back tomorrow!', adNoReward: 'Video closed early: no reward.', o_privacy: 'Privacy', o_privLink: 'Privacy policy', o_ads: 'Ads', o_adsPriv: 'Ad privacy', o_adsInfo: 'Ads keep the game free. Rewarded videos are always your choice.' });
 Object.assign(LANGS.ar, { adDouble: 'ضاعف أرباحك: +{0}', adDoubled: 'تمت مضاعفة الأرباح: +{0}', adBonus: '+{0}', adBonusTitle: 'شاهد فيديو قصيرًا واربح {0}', adThanks: 'شكرًا! +{0}', adNone: 'لا يوجد فيديو متاح الآن، حاول بعد قليل.', adWait: 'المكافأة التالية بعد {0}', adDay: 'انتهت مكافآت الفيديو لليوم. عد غدًا!', adNoReward: 'أُغلق الفيديو مبكرًا: لا مكافأة.', o_privacy: 'الخصوصية', o_privLink: 'سياسة الخصوصية', o_ads: 'الإعلانات', o_adsPriv: 'خصوصية الإعلانات', o_adsInfo: 'الإعلانات تجعل اللعبة مجانية. مشاهدة الفيديو بمكافأة اختيارية دائمًا.' });
 
-/* V91 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
+/* V92 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
 LANGS.tn = Object.assign({}, LANGS.ar, LANGS.tn, {
   webglTest:'جرّب الـ3D متاع التليفون: كان المكعّب ما يدورش، المتصفّح حاجب WebGL.',
   drivers:'السواق',driver:'السائق',driverNote:'السائق يقعد ورا الفولان ويعطيك امتياز صغير مع أي كروسة.',
@@ -6107,7 +6172,7 @@ const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && 
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 function detectLang() { const l = (navigator.language || '').toLowerCase(); return l.startsWith('en') ? 'en' : l.startsWith('ar') && !l.includes('-tn') ? 'ar' : 'tn'; }
-function defaultSettings() { return { sfx: 80, music: 50, quality: IS_TOUCH ? 'medium' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
+function defaultSettings() { return { sfx: 80, music: 50, quality: IS_TOUCH ? 'high' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
   return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
 }
@@ -6553,14 +6618,18 @@ function applySettings() {
     const modest = (mem > 0 && mem <= 2) || (cores > 0 && cores <= 4);
     // Profil équilibré : les téléphones 4 Go / 8 cœurs (dont Huawei P20)
     // gardent une vraie définition, des ombres modérées et plus de détails.
-    PR = Math.min(dpr, modest ? 0.88 : Math.max(PR, 1.12));
-    R.shadowSize = modest ? 512 : 1024;
+    // Haute définition adaptative : les appareils capables conservent les ombres,
+    // les détails des carrosseries et une résolution nette sans activer les effets coûteux.
+    const capable = !modest && (mem >= 4 || cores >= 6);
+    const ultra = s.quality === 'ultra';
+    PR = Math.min(dpr, modest ? 0.92 : capable ? Math.max(PR, ultra ? 1.42 : 1.28) : Math.max(PR, 1.08));
+    R.shadowSize = modest ? 512 : capable ? (ultra ? 2048 : 1536) : 1024;
     R.shadows = !modest;
     R.bloom = false; R.rays = false; R.post = false;
     R.aa = !modest;
-    R.detail = Math.min(Math.max(R.detail, modest ? 0.72 : 1.04), modest ? 0.78 : 1.08);
-    G.drawMul = Math.min(Math.max(G.drawMul, modest ? 0.82 : 1.02), modest ? 0.86 : 1.08);
-    G.lodNear = Math.min(Math.max(G.lodNear, modest ? 24 : 48), modest ? 28 : 56);
+    R.detail = Math.min(Math.max(R.detail, modest ? 0.72 : capable ? 1.16 : 1.02), modest ? 0.82 : capable ? (ultra ? 1.3 : 1.22) : 1.08);
+    G.drawMul = Math.min(Math.max(G.drawMul, modest ? 0.82 : capable ? 1.1 : 1.0), modest ? 0.88 : capable ? 1.16 : 1.06);
+    G.lodNear = Math.min(Math.max(G.lodNear, modest ? 24 : capable ? 58 : 42), modest ? 30 : capable ? 68 : 50);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;

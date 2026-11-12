@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout V95 source
+      - name: Checkout V96 source
         uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -50,6 +50,35 @@ jobs:
         run: npx cap add android
       - name: Sync game into Android app
         run: npx cap sync android
+      - name: Apply premium supercar Android launcher icon
+        run: |
+          python3 -m pip install --user Pillow
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          src = Image.open("icons/launcher-car.png").convert("RGBA")
+          res = Path("android/app/src/main/res")
+          densities = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
+          for density, px in densities.items():
+              folder = res / f"mipmap-{density}"
+              folder.mkdir(parents=True, exist_ok=True)
+              icon = src.resize((px, px), Image.Resampling.LANCZOS)
+              icon.save(folder / "ic_launcher.png")
+              icon.save(folder / "ic_launcher_round.png")
+              fg_size = round(px * 2.25)
+              canvas = Image.new("RGBA", (fg_size, fg_size), (0, 0, 0, 0))
+              artwork = src.resize((round(fg_size * 0.68), round(fg_size * 0.68)), Image.Resampling.LANCZOS)
+              canvas.alpha_composite(artwork, ((fg_size - artwork.width) // 2, (fg_size - artwork.height) // 2))
+              canvas.save(folder / "ic_launcher_foreground.png")
+          adaptive = res / "mipmap-anydpi-v26"
+          adaptive.mkdir(parents=True, exist_ok=True)
+          xml = '''<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@android:color/black" />
+            <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+          </adaptive-icon>'''
+          (adaptive / "ic_launcher.xml").write_text(xml)
+          (adaptive / "ic_launcher_round.xml").write_text(xml)
+          PY
       - name: Lock game orientation to landscape
         run: |
           sed -i 's/<activity android:name=".MainActivity"/<activity android:name=".MainActivity" android:screenOrientation="landscape"/' android/app/src/main/AndroidManifest.xml
@@ -61,7 +90,7 @@ jobs:
       - name: Publish APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: super-seddik-joud-v95-android-apk
+          name: super-seddik-joud-v96-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

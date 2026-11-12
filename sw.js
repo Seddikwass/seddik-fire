@@ -1,16 +1,12 @@
 /* SUPER SEDDIK@JOUD — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'super-joud-v95';
+const VERSION = 'super-joud-v96';
 const FONTS = 'super-joud-fonts';
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
-  
   './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/maskable-192.png',
-  './icons/maskable-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/maskable-192.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -30,7 +26,6 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Polices Google : servies depuis le cache, rafraîchies en arrière-plan.
   if (url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com') {
     event.respondWith(caches.open(FONTS).then(async (cache) => {
       const hit = await cache.match(req);
@@ -45,7 +40,6 @@ self.addEventListener('fetch', (event) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // Pages : réseau d'abord (pour recevoir les mises à jour), cache si hors ligne.
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(new Request(req, { cache: 'reload' })).then((res) => {
@@ -57,7 +51,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Fichiers : cache d'abord.
   event.respondWith(
     caches.match(req).then((hit) => hit || fetch(req).then((res) => {
       if (res.ok) {

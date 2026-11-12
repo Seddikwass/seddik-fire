@@ -4871,7 +4871,7 @@ function readInput(dt) {
   // Les flèches gardent leur sens physique gauche/droite, quelle que soit
   // l'orientation de l'écran. Chaque appui monte progressivement puis revient au centre.
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
-  const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || KEYS.KeyQ && false || TOUCH.right);
+  const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
   const steerRise = 5.2, steerReturn = 8.0;
   if (leftDown && rightDown) {
     TOUCH.leftAmount = Math.max(0, (TOUCH.leftAmount || 0) - steerReturn * dt);
@@ -5897,7 +5897,7 @@ const UI = {
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
         G.camMode = SAVE.settings.cam; G.resultsShown = false;
         setupRace(cfg);
-        G.radioNext = 12; G.crowdNext = 8;
+        G.radioNext = 7; G.crowdNext = 8;
       } catch (e) { console.error(e); showErr(e.message); return; }
       $('loading').classList.remove('show'); $('hud').classList.remove('hidden');
       const tt = SAVE.settings.touch === 'on' || (SAVE.settings.touch === 'auto' && IS_TOUCH);

@@ -3105,9 +3105,10 @@ function radioAdvice() {
   if(G.cfg.mode==='chase') return LANG==='en'?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
   return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
 }
-// Déverrouillage vocal au premier geste utilisateur (politique Android/Chrome).
+// Radio équipe : confirmation réelle du moteur natif Android, pas seulement de l'envoi.
 let RADIO_TTS_UNLOCKED = false;
 let RADIO_TTS_PENDING = '';
+let RADIO_TTS_LISTENER = null;
 function crewTtsStatus(message, error=false) {
   const el = $('radio-tts-status'); if (!el) return;
   el.textContent = message; el.classList.toggle('error', !!error);
@@ -3116,19 +3117,55 @@ function nativeCrewTts() {
   try { return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TeamTTS || null; }
   catch (e) { return null; }
 }
+function isNativeAndroidApp() {
+  try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && window.Capacitor.getPlatform && window.Capacitor.getPlatform()==='android'); }
+  catch (e) { return false; }
+}
+function watchNativeCrewTts(plugin) {
+  if (!plugin || RADIO_TTS_LISTENER || typeof plugin.addListener !== 'function') return;
+  RADIO_TTS_LISTENER = plugin.addListener('status', event => {
+    if (!event) return;
+    const state = event.state || '';
+    if (state === 'ready') {
+      crewTtsStatus('Moteur vocal Android prêt · ' + (event.message || ''));
+      if (RADIO_TTS_PENDING) {
+        const pending = RADIO_TTS_PENDING; RADIO_TTS_PENDING = '';
+        speakCrewAdvice(pending);
+      }
+    } else if (state === 'speaking') crewTtsStatus('VOIX DE L’ÉQUIPE EN COURS · Android');
+    else if (state === 'done') crewTtsStatus('Consigne vocale terminée · radio prête');
+    else if (state === 'language_error' || state === 'init_error' || state === 'speech_error') crewTtsStatus(event.message || 'Erreur du moteur vocal Android', true);
+  }).catch(e => console.warn('Écoute du moteur vocal Android indisponible', e));
+}
 function unlockCrewSpeech() {
   if (RADIO_TTS_UNLOCKED) return;
-  if (nativeCrewTts()) {
+  const nativeTts = nativeCrewTts();
+  if (nativeTts) {
     RADIO_TTS_UNLOCKED = true;
+    watchNativeCrewTts(nativeTts);
+    if (typeof nativeTts.status === 'function') {
+      nativeTts.status().then(state => {
+        if (state && state.failed) crewTtsStatus('ERREUR : moteur vocal Android non initialisé. Vérifie la synthèse vocale dans les paramètres.', true);
+        else if (state && state.ready) crewTtsStatus('Moteur vocal Android prêt');
+        else crewTtsStatus('Initialisation du moteur vocal Android…');
+      }).catch(e => crewTtsStatus('Impossible de vérifier le moteur vocal Android : ' + (e && e.message || 'erreur'), true));
+    } else crewTtsStatus('Connexion au moteur vocal Android…');
     if (RADIO_TTS_PENDING) { const pending = RADIO_TTS_PENDING; RADIO_TTS_PENDING = ''; speakCrewAdvice(pending); }
     return;
   }
-  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { crewTtsStatus('Synthèse vocale indisponible sur ce navigateur', true); return; }
+  if (isNativeAndroidApp()) {
+    RADIO_TTS_UNLOCKED = true;
+    crewTtsStatus('ERREUR : module vocal natif absent de cette APK. Réinstalle la nouvelle compilation.', true);
+    return;
+  }
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+    crewTtsStatus('Synthèse vocale indisponible sur ce navigateur', true); return;
+  }
   RADIO_TTS_UNLOCKED = true;
-  // Amorçage muet pendant le premier geste Android : évite que la première consigne,
-  // annoncée quelques secondes après le départ, soit bloquée par la politique audio du navigateur.
-  try { const prime = new SpeechSynthesisUtterance(' '); prime.lang = 'fr-FR'; prime.volume = 0; window.speechSynthesis.speak(prime); }
-  catch (e) { console.warn('Amorçage vocal indisponible', e); }
+  try {
+    const prime = new SpeechSynthesisUtterance(' ');
+    prime.lang = 'fr-FR'; prime.volume = 0; window.speechSynthesis.speak(prime);
+  } catch (e) { console.warn('Amorçage vocal indisponible', e); }
   if (RADIO_TTS_PENDING) { const pending = RADIO_TTS_PENDING; RADIO_TTS_PENDING = ''; speakCrewAdvice(pending); }
 }
 function speakCrewAdvice(message) {
@@ -3136,16 +3173,24 @@ function speakCrewAdvice(message) {
   const nativeTts = nativeCrewTts();
   const nativeLang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
   if (nativeTts && typeof nativeTts.speak === 'function') {
-    crewTtsStatus('Préparation de la voix Android…');
+    watchNativeCrewTts(nativeTts);
+    if (!RADIO_TTS_UNLOCKED) { RADIO_TTS_PENDING = message; crewTtsStatus('Consigne prête · touche l’écran pour activer la radio'); return; }
+    crewTtsStatus('Transmission de la consigne au moteur Android…');
     nativeTts.speak({ text: message, language: nativeLang, rate: 0.94 })
       .then(result => {
-        if (result && result.queued) crewTtsStatus('Consigne mise en attente · initialisation du moteur vocal');
-        else crewTtsStatus('Consigne envoyée au moteur Android · ' + nativeLang.toUpperCase());
+        if (result && result.queued) crewTtsStatus('Consigne en attente · démarrage du moteur vocal Android');
+        else crewTtsStatus('Consigne acceptée · attente du démarrage audio…');
       })
       .catch(e => crewTtsStatus('ÉCHEC VOIX ANDROID : ' + (e && e.message || 'moteur vocal absent ou langue indisponible'), true));
     return;
   }
-  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { crewTtsStatus('Moteur vocal non disponible sur cet appareil', true); return; }
+  if (isNativeAndroidApp()) {
+    crewTtsStatus('ERREUR : module vocal natif absent de cette APK. La voix navigateur est désactivée pour éviter un faux diagnostic.', true);
+    return;
+  }
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+    crewTtsStatus('Moteur vocal non disponible sur cet appareil', true); return;
+  }
   if (!RADIO_TTS_UNLOCKED) { RADIO_TTS_PENDING = message; return; }
   const synth = window.speechSynthesis;
   const lang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
@@ -3157,9 +3202,15 @@ function speakCrewAdvice(message) {
     const voices = synth.getVoices(), base = lang.slice(0,2).toLowerCase();
     utter.voice = voices.find(v => v.lang && v.lang.toLowerCase() === lang.toLowerCase()) || voices.find(v => v.lang && v.lang.toLowerCase().startsWith(base)) || null;
     synth.cancel(); synth.resume(); synth.speak(utter);
-  } catch(e) { console.warn('Lecture de la consigne vocale impossible', e); } };
+  } catch(e) { crewTtsStatus('Erreur de lecture vocale : ' + (e && e.message || 'inconnue'), true); } };
   if (synth.getVoices().length) say();
-  else { crewTtsStatus('Chargement des voix du téléphone…'); let done=false; const ready=()=>{if(done)return;done=true;synth.removeEventListener('voiceschanged',ready);say();}; synth.addEventListener('voiceschanged',ready); setTimeout(ready,1600); }
+  else {
+    crewTtsStatus('Chargement des voix du téléphone…');
+    let done=false;
+    const ready=()=>{if(done)return;done=true;synth.removeEventListener('voiceschanged',ready);say();};
+    synth.addEventListener('voiceschanged',ready);
+    setTimeout(ready,1600);
+  }
 }
 document.addEventListener('pointerdown', unlockCrewSpeech, {capture:true, passive:true});
 document.addEventListener('touchstart', unlockCrewSpeech, {capture:true, passive:true});
@@ -3175,7 +3226,6 @@ function radioCall(automatic = false) {
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
-  // Annonce parlée après déverrouillage audio du navigateur.
   speakCrewAdvice($('radio-message').textContent);
 }
 

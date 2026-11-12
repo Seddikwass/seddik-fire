@@ -926,7 +926,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
           <span class="xpt" id="xpTxt">0 XP</span>
         </div>
       </div>
-      <div class="ltop-r"><button id="armBtn" class="ghost sm">Armurerie</button><button id="sndBtn" class="ghost sm">Son : activé</button></div>
+      <div class="ltop-r"><button id="langBtn" class="ghost sm" type="button" aria-label="Changer la langue">العربية</button><button id="armBtn" class="ghost sm">Armurerie</button><button id="sndBtn" class="ghost sm">Son : activé</button></div>
     </div>
     <div class="brand">
       <span class="stamp">Île de Seddik · 30 joueurs · 1 survivant</span>
@@ -5071,5 +5071,82 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
 })();
 </script>
 
+<script>
+/* v185 — interface du lobby en français / arabe tunisien, préférence mémorisée. */
+(function(){
+  const btn=document.getElementById('langBtn'), lobby=document.getElementById('lobby');
+  if(!btn||!lobby)return;
+  const dict={
+    fr:{
+      armBtn:'Armurerie',howBtn:'Comment jouer',optBtn:'Réglages',missBtn:'Missions',
+      stamp:'Île de Seddik · 30 joueurs · 1 survivant',
+      tagline:'Choisissez votre soldat, votre arme de départ, sautez de l’avion et tenez face à la tempête de feu.',
+      roster:'CHOISIR UN COMBATTANT',rosterMeta:'9 portraits · sélection directe',
+      map:'Carte',mode:'Mode de jeu',weapon:'Arme de départ · faites défiler',
+      custom:'Personnalisation',accessory:'Accessoire',shoes:'Chaussures',bag:'Housse de sac',
+      unlock:'Les maillots et accessoires se débloquent en montant de niveau. Housse de sac : soldats uniquement.',
+      phone:'Sur téléphone',keyboard:'Au clavier',rules:'Règles',play:'Jouer',close:'Fermer',
+      games:'Parties',wins:'Top 1',best:'Record élim.',kills:'Élim. totales',
+      pause:'Pause',resume:'Reprendre',quit:'Quitter la partie',settings:'Réglages',
+      sound:'Son',music:'Musique',effects:'Effets',touch:'Commandes tactiles',
+      voice:'Voix : le jeu n’a pas encore de voix, ce réglage viendra avec elles.'
+    },
+    ar:{
+      armBtn:'مخزن الأسلحة',howBtn:'كيفاش تلعب',optBtn:'الإعدادات',missBtn:'المهام',
+      stamp:'جزيرة صدّيق · 30 لاعب · ناجي واحد',
+      tagline:'اختار مقاتلك وسلاحك، اهبط من الطيارة وواجه عاصفة النار.',
+      roster:'اختار المقاتل',rosterMeta:'9 صور · اختيار مباشر',
+      map:'الخريطة',mode:'نمط اللعب',weapon:'السلاح الأول · مرّر للاختيار',
+      custom:'التخصيص',accessory:'الإكسسوارات',shoes:'الصباط',bag:'غطاء الحقيبة',
+      unlock:'تتحلّ الملابس والإكسسوارات كي تطلع في المستوى. غطاء الحقيبة للمقاتلين فقط.',
+      phone:'على التليفون',keyboard:'بالكلافيي',rules:'القوانين',play:'إلعب',close:'سكر',
+      games:'المباريات',wins:'الأول',best:'أعلى عدد إقصاءات',kills:'الإقصاءات الكل',
+      pause:'توقّف',resume:'كمّل',quit:'اخرج من المباراة',settings:'الإعدادات',
+      sound:'الصوت',music:'الموسيقى',effects:'المؤثرات',touch:'أزرار اللمس',
+      voice:'التعليق الصوتي مازال قيد الإضافة.'
+    }
+  };
+  const nodes={
+    armBtn:'#armBtn',howBtn:'#howBtn',optBtn:'#optBtn',missBtn:'#missBtn',
+    stamp:'.brand .stamp',tagline:'.brand .tag',
+    roster:'#sf-portrait-roster .sf-roster-head b',
+    rosterMeta:'#sf-portrait-roster .sf-roster-head span',
+    map:'.side .card:nth-child(1) .lbl',mode:'.side .card:nth-child(2) .lbl',
+    weapon:'.side .card:nth-child(3) .lbl',custom:'.side .card:nth-child(4) .lbl',
+    accessory:'.side .card:nth-child(4) .cz:nth-child(1) > b',
+    shoes:'.side .card:nth-child(4) .cz:nth-child(2) > b',
+    bag:'.side .card:nth-child(4) .cz:nth-child(3) > b',
+    unlock:'.side .card:nth-child(4) .czn',
+    phone:'#how h3:nth-of-type(1)',keyboard:'#how h3:nth-of-type(2)',rules:'#how h3:nth-of-type(3)',
+    games:'.stats div:nth-child(1) dt',wins:'.stats div:nth-child(2) dt',
+    best:'.stats div:nth-child(3) dt',kills:'.stats div:nth-child(4) dt',
+    pause:'#pause .ptitle',resume:'#resume',quit:'#quit',settings:'#opts .ptitle',
+    sound:'#opts .set:nth-child(1) h3',music:'#opts .set:nth-child(1) label:nth-of-type(1) span',
+    effects:'#opts .set:nth-child(1) label:nth-of-type(2) span',
+    touch:'#opts .set:nth-child(2) h3',voice:'#opts .set:nth-child(1) p'
+  };
+  function apply(lang){
+    const ar=lang==='ar';const d=dict[ar?'ar':'fr'];
+    Object.entries(nodes).forEach(([key,sel])=>{const el=document.querySelector(sel);if(el&&d[key])el.textContent=d[key]});
+    lobby.dir=ar?'rtl':'ltr';
+    document.documentElement.lang=ar?'ar-TN':'fr';
+    btn.textContent=ar?'Français':'العربية';
+    btn.setAttribute('aria-label',ar?'التبديل إلى الفرنسية':'Changer la langue');
+    document.documentElement.dataset.sfLang=ar?'ar':'fr';
+    try{const raw=JSON.parse(localStorage.getItem('seddikfire.v1')||'{}');raw.lang=ar?'ar':'fr';localStorage.setItem('seddikfire.v1',JSON.stringify(raw))}catch(e){}
+  }
+  let lang='fr';try{lang=JSON.parse(localStorage.getItem('seddikfire.v1')||'{}').lang==='ar'?'ar':'fr'}catch(e){}
+  btn.addEventListener('click',()=>{lang=lang==='fr'?'ar':'fr';apply(lang)});
+  apply(lang);
+})();
+</script>
+<style>
+#lobby[dir="rtl"]{font-family:system-ui,"Noto Sans Arabic",Tahoma,sans-serif}
+#lobby[dir="rtl"] .brand,#lobby[dir="rtl"] .card,#lobby[dir="rtl"] .how,#lobby[dir="rtl"] .stats{text-align:right}
+#lobby[dir="rtl"] .prof-m{text-align:right}
+#lobby[dir="rtl"] .side .row{direction:rtl}
+#lobby[dir="rtl"] .ltop-r{direction:ltr}
+#langBtn{min-width:76px;font-weight:800}
+</style>
 </body>
 </html>

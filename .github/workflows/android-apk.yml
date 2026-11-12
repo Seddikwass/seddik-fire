@@ -27,6 +27,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Validate game JavaScript before Android build
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.active = False; self.parts = []; self.blocks = []
+              def handle_starttag(self, tag, attrs):
+                  if tag == 'script':
+                      self.active = True; self.parts = []
+              def handle_data(self, data):
+                  if self.active: self.parts.append(data)
+              def handle_endtag(self, tag):
+                  if tag == 'script' and self.active:
+                      self.blocks.append(''.join(self.parts)); self.active = False
+          parser = Scripts()
+          parser.feed(Path('index.html').read_text(encoding='utf-8'))
+          inline = [s for s in parser.blocks if s.strip()]
+          if not inline:
+              raise SystemExit('No inline game JavaScript found')
+          Path('/tmp/game-inline.js').write_text('\\n'.join(inline), encoding='utf-8')
+          print(f'Extracted {len(inline)} inline JavaScript block(s)')
+          PY
+          node --check /tmp/game-inline.js
+          node --check sw.js
       - name: Set up Java
         uses: actions/setup-java@v4
         with:

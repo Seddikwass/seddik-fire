@@ -3134,10 +3134,10 @@ function unlockCrewSpeech() {
 function speakCrewAdvice(message) {
   if (!message) return;
   const nativeTts = nativeCrewTts();
-  const lang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
+  const nativeLang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
   if (nativeTts && typeof nativeTts.speak === 'function') {
-    nativeTts.speak({ text: message, language: lang, rate: 0.94 })
-      .then(() => crewTtsStatus('VOIX ANDROID ACTIVE · ' + lang.toUpperCase()))
+    nativeTts.speak({ text: message, language: nativeLang, rate: 0.94 })
+      .then(() => crewTtsStatus('VOIX ANDROID ACTIVE · ' + nativeLang.toUpperCase()))
       .catch(e => crewTtsStatus('Voix Android indisponible : ' + (e && e.message || 'vérifie la synthèse vocale du téléphone'), true));
     return;
   }

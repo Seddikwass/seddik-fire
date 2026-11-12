@@ -5133,9 +5133,9 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
     btn.textContent=ar?'Français':'العربية';
     btn.setAttribute('aria-label',ar?'التبديل إلى الفرنسية':'Changer la langue');
     document.documentElement.dataset.sfLang=ar?'ar':'fr';
-    try{const raw=JSON.parse(localStorage.getItem('seddikfire.v1')||'{}');raw.lang=ar?'ar':'fr';localStorage.setItem('seddikfire.v1',JSON.stringify(raw))}catch(e){}
+    try{if(typeof stats!=='undefined')stats.lang=ar?'ar':'fr';const raw=JSON.parse(localStorage.getItem('seddikfire.v1')||'{}');raw.lang=ar?'ar':'fr';localStorage.setItem('seddikfire.v1',JSON.stringify(raw))}catch(e){}
   }
-  let lang='fr';try{lang=JSON.parse(localStorage.getItem('seddikfire.v1')||'{}').lang==='ar'?'ar':'fr'}catch(e){}
+  let lang='fr';try{lang=(typeof stats!=='undefined'&&stats.lang==='ar')||JSON.parse(localStorage.getItem('seddikfire.v1')||'{}').lang==='ar'?'ar':'fr'}catch(e){}
   btn.addEventListener('click',()=>{lang=lang==='fr'?'ar':'fr';apply(lang)});
   apply(lang);
 })();

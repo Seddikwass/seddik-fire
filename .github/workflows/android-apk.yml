@@ -32,8 +32,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: latest
+          packages: platform-tools
       - name: Install Android platform
-        run: yes | sdkmanager --licenses && sdkmanager "platforms;android-35" "build-tools;35.0.0"
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses && "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
       - name: Prepare local game assets
         run: |
           mkdir -p www/icons

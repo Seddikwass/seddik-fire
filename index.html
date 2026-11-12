@@ -5418,11 +5418,18 @@ function readInput(dt) {
   // puis reviennent au centre sans à-coup dès que le doigt est relâché.
   const steerRise = 20.0, steerReturn = 14.0;
   if (leftDown && rightDown) {
+    // Deux directions simultanées = neutre immédiat, sans cumul parasite.
+    TOUCH.leftAmount = 0; TOUCH.rightAmount = 0;
+  } else if (leftDown) {
+    // Inversion immédiate du sens : pas d'ancien braquage opposé qui retarde la réponse.
+    TOUCH.rightAmount = 0;
+    TOUCH.leftAmount = clamp((TOUCH.leftAmount || 0) + steerRise * dt, 0, 1);
+  } else if (rightDown) {
+    TOUCH.leftAmount = 0;
+    TOUCH.rightAmount = clamp((TOUCH.rightAmount || 0) + steerRise * dt, 0, 1);
+  } else {
     TOUCH.leftAmount = Math.max(0, (TOUCH.leftAmount || 0) - steerReturn * dt);
     TOUCH.rightAmount = Math.max(0, (TOUCH.rightAmount || 0) - steerReturn * dt);
-  } else {
-    TOUCH.leftAmount = clamp((TOUCH.leftAmount || 0) + (leftDown ? steerRise : -steerReturn) * dt, 0, 1);
-    TOUCH.rightAmount = clamp((TOUCH.rightAmount || 0) + (rightDown ? steerRise : -steerReturn) * dt, 0, 1);
   }
   const digital = clamp((TOUCH.rightAmount || 0) - (TOUCH.leftAmount || 0), -1, 1);
   let hand = !!(KEYS.Space || TOUCH.hand);

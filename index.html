@@ -6836,7 +6836,14 @@ function bindInputs() {
     // verrouillage), libérer aussi l'état interne du bouton pour éviter une commande bloquée.
     addEventListener('blur', () => off());
     document.addEventListener('visibilitychange', () => { if (document.hidden) off(); });
+    // Android peut interrompre un appui pendant la rotation ou la mise en arrière-plan.
+    // Libérer immédiatement la commande évite qu'une pédale ou une flèche reste active.
+    addEventListener('orientationchange', () => off(), { passive: true });
+    addEventListener('pagehide', () => off(), { passive: true });
   });
+  addEventListener('orientationchange', () => {
+    TOUCH.leftAmount = 0; TOUCH.rightAmount = 0; TOUCH.ax = 0; TOUCH.axOn = false;
+  }, { passive: true });
   bindStick(); bindTilt();
   const cv = $('gl'); let lx = 0;
   cv.addEventListener('pointerdown', e => { if (G.state !== 'menu') return; GAR.drag = true; lx = e.clientX; try { cv.setPointerCapture(e.pointerId); } catch (x) { } });

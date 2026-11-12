@@ -5153,6 +5153,60 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
     effects:'#opts .set:nth-child(1) label:nth-of-type(2) span',
     touch:'#opts .set:nth-child(2) h3',voice:'#opts .set:nth-child(1) p'
   };
+  const mapLabels={
+    fr:{seddik:'Île de Seddik',cote:'Côte méditerranéenne',sahara:'Sahara & Sud',ville:'Grande Ville',foret:'Forêt profonde',hautes:'Hautes Terres',djerba:'Djerba & Zarzis',capbon:'Cap Bon & Kélibia'},
+    ar:{seddik:'جزيرة صدّيق',cote:'الساحل التونسي',sahara:'الصحراء والجنوب',ville:'المدينة الكبيرة',foret:'الغابة',hautes:'المرتفعات',djerba:'جربة وجرجيس',capbon:'الوطن القبلي وقليبية'}
+  };
+  const modeLabels={
+    fr:{classic:'Classique',quick:'Rapide',team:'Équipe',surv:'Survie',cup:'Parcours',train:'Entraînement'},
+    ar:{classic:'كلاسيكي',quick:'سريع',team:'فريق',surv:'نجاة',cup:'مراحل',train:'تدريب'}
+  };
+  const modeDescs={
+    fr:{classic:'30 joueurs · 1 survivant',quick:'16 joueurs · tempête plus rapide',team:'Équipes de 3 contre l’IA · 24 joueurs',surv:'20 joueurs · trouvez vite une arme',cup:'Parcours à étapes · gagnez pour débloquer la suivante',train:'8 adversaires · entraînement sans statistiques'},
+    ar:{classic:'30 لاعب · ناجي واحد',quick:'16 لاعب · العاصفة أسرع',team:'فرق من 3 ضد الذكاء الاصطناعي · 24 لاعب',surv:'20 لاعب · لوّج على سلاح بسرعة',cup:'مراحل متتالية · اربح باش تفتح المرحلة الجاية',train:'8 خصوم · تدريب من غير إحصائيات'}
+  };
+  const mapPlaces={
+    ar:{seddik:'المدينة العتيقة · الميناء · القاعدة',cote:'تونس · المرسى · قرطاج',sahara:'توزر · دوز · نفطة',ville:'وسط المدينة · الميناء · مركز الشرطة',foret:'مخيّم الحطّابة · المنشرة · البحيرة',hautes:'القيروان · الكاف · جندوبة',djerba:'حومة السوق · ميدون · قلالة',capbon:'نابل · الحمامات · قليبية'},
+    fr:{seddik:'La Médina · Le Port · Base militaire',cote:'Tunis · La Marsa · Carthage',sahara:'Tozeur · Douz · Nefta',ville:'Centre-ville · Le Port · Commissariat',foret:'Camp des bûcherons · La Scierie · Lac des Pins',hautes:'Kairouan · Le Kef · Jendouba',djerba:'Houmt Souk · Midoun · Guellala',capbon:'Nabeul · Hammamet · Kélibia'}
+  };
+  function applyDynamic(ar){
+    const lang=ar?'ar':'fr';
+    document.querySelectorAll('#maps .map-card').forEach(el=>{
+      const key=el.dataset.k,title=el.querySelector('.map-copy b'),sub=el.querySelector('.map-copy small');
+      if(title&&mapLabels[lang][key]&&title.textContent!==mapLabels[lang][key])title.textContent=mapLabels[lang][key];
+      if(sub&&mapPlaces[lang][key]&&sub.textContent!==mapPlaces[lang][key])sub.textContent=mapPlaces[lang][key];
+    });
+    document.querySelectorAll('#modes .chip').forEach(el=>{
+      const key=el.dataset.m,label=modeLabels[lang][key];
+      if(label&&el.textContent!==label)el.textContent=label;
+    });
+    const selected=document.querySelector('#maps .map-card[aria-checked="true"]');
+    const mapD=$('#mapD');if(selected&&mapD){
+      const key=selected.dataset.k;
+      const desc=lang==='ar'?({
+        seddik:'المدينة العتيقة والميناء والقاعدة العسكرية والواحة.',
+        cote:'مدن الشمال التونسي، خضرة كثيفة وبحر فيروزي.',
+        sahara:'كثبان وواحات ومدن الجنوب. عاصفة رملية تنقص الرؤية.',
+        ville:'شوارع عريضة ومباني عالية وميناء وفضاءات حضرية.',
+        foret:'غابة صنوبر وبلوط ومسالك ترابية وبحيرة.',
+        hautes:'تلال وزياتين وصخور وضباب خفيف.',
+        djerba:'جزيرة الجنوب: حومة السوق وميدون وڨلالة وشواطئ جرجيس.',
+        capbon:'الوطن القبلي: نابل والحمامات وقليبية والهوارية.'
+      })[key] : ({
+        seddik:'Carte d’origine : médina, port, base militaire et oasis.',
+        cote:'Villes du nord tunisien, végétation dense et mer turquoise.',
+        sahara:'Dunes, oasis et villes du sud. Tempête de sable et visibilité réduite.',
+        ville:'Avenues, grands bâtiments, port et quartiers urbains.',
+        foret:'Pins, chênes, chemins de terre et lac.',
+        hautes:'Collines, oliveraies, rochers et brume.',
+        djerba:'Île du Sud : Houmt Souk, Midoun, Guellala et plages de Zarzis.',
+        capbon:'Péninsule du Cap Bon : Nabeul, Hammamet, Kélibia et El Haouaria.'
+      })[key];
+      if(desc&&mapD.textContent!==desc)mapD.textContent=desc;
+    }
+    const mode=document.querySelector('#modes .chip[aria-checked="true"]');
+    const modeD=$('#modeD');if(mode&&modeD){const desc=modeDescs[lang][mode.dataset.m];if(desc&&modeD.textContent!==desc)modeD.textContent=desc}
+  }
   function apply(lang){
     const ar=lang==='ar';const d=dict[ar?'ar':'fr'];
     document.querySelectorAll('#hud .arm span').forEach((el,i)=>{if(i===0||i===1||i===3){const label=i===0?d.armor:i===1?d.helmet:d.hp;el.firstChild.nodeValue=label+' '}});
@@ -5162,6 +5216,7 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
     const jump=$('#btnJump');if(jump&&jump.firstChild)jump.firstChild.nodeValue=d.jump;
     [['#mBandage',d.bandage],['#mMedkit',d.medkit],['#mDrink',d.drink]].forEach(([sel,label])=>{const el=$(sel);if(el)el.setAttribute('aria-label',label)});
     Object.entries(nodes).forEach(([key,sel])=>{const el=document.querySelector(sel);if(el&&d[key])el.textContent=d[key]});
+    applyDynamic(ar);
     lobby.dir=ar?'rtl':'ltr';
     document.documentElement.lang=ar?'ar-TN':'fr';
     btn.textContent=ar?'Français':'العربية';
@@ -5172,6 +5227,8 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
   let lang='fr';try{lang=(typeof stats!=='undefined'&&stats.lang==='ar')||JSON.parse(localStorage.getItem('seddikfire.v1')||'{}').lang==='ar'?'ar':'fr'}catch(e){}
   btn.addEventListener('click',()=>{lang=lang==='fr'?'ar':'fr';apply(lang)});
   apply(lang);
+  const watchTargets=['#maps','#modes'];
+  watchTargets.forEach(sel=>{const el=document.querySelector(sel);if(el&&typeof MutationObserver!=='undefined')new MutationObserver(()=>applyDynamic(lang==='ar')).observe(el,{childList:true,subtree:true})});
 })();
 </script>
 <style>

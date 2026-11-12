@@ -661,6 +661,40 @@ body.touch .meter div{height:9px}
   .screen{min-height:0;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain}
   .scr-head{position:sticky;top:0;background:linear-gradient(180deg,rgba(7,10,15,.96),rgba(7,10,15,.78));padding:8px 0;backdrop-filter:blur(8px)}
 }
+
+/* V85 Android : commandes tactiles agrandies et contraste renforcé. */
+@media (pointer:coarse) and (max-width:900px){
+  #touch .tl button{
+    width:clamp(88px,18vw,112px)!important;
+    height:clamp(88px,18vw,112px)!important;
+    min-width:88px!important;min-height:88px!important;
+    border-radius:22px!important;border:3px solid rgba(190,232,255,.98)!important;
+    background:linear-gradient(150deg,#237fba,#092d50)!important;
+    box-shadow:0 7px 20px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.28)!important;
+  }
+  #touch [data-t=left]{left:max(14px,env(safe-area-inset-left))!important;right:auto!important}
+  #touch [data-t=right]{left:calc(max(14px,env(safe-area-inset-left)) + clamp(88px,18vw,112px) + 10px)!important;right:auto!important}
+  #touch [data-t=gas]{
+    width:clamp(94px,20vw,124px)!important;height:clamp(142px,34vw,184px)!important;
+    min-width:94px!important;min-height:142px!important;border-radius:24px!important;
+    border:3px solid rgba(190,255,211,.98)!important;
+    background:linear-gradient(150deg,#27a968,#07502f)!important;
+    box-shadow:0 7px 20px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.28)!important;
+  }
+  #touch [data-t=brake]{
+    width:clamp(82px,17vw,104px)!important;height:clamp(82px,17vw,104px)!important;
+    min-width:82px!important;min-height:82px!important;border-radius:22px!important;
+    border:3px solid rgba(255,218,218,.98)!important;
+    background:linear-gradient(150deg,#c94c55,#641b29)!important;
+  }
+  #touch [data-t=hand],#touch [data-t=nitro]{
+    min-width:82px!important;min-height:58px!important;height:58px!important;
+    border-radius:17px!important;font-weight:900!important;border-width:2px!important;
+  }
+  #touch button{opacity:1!important;touch-action:none!important;-webkit-tap-highlight-color:transparent}
+  #touch button svg{width:58%!important;height:58%!important}
+  #touch .tl button::after{font-size:10px!important;bottom:7px!important}
+}
 </style>
 </head>
 <body>
@@ -674,7 +708,7 @@ body.touch .meter div{height:9px}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V84</span>
+    <span id="build-tag" aria-label="Version du jeu">V85</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -2969,7 +3003,7 @@ function buildTrack(def, quality) {
   for (let i = 0; i < n; i++) { const p0 = P[(i - 1 + n) % n], p1 = P[i], p2 = P[(i + 1) % n], p3 = P[(i + 2) % n]; for (let k = 0; k < 40; k++) dense.push(crPoint(p0, p1, p2, p3, k / 40)); }
   const DN = dense.length, cum = new Float64Array(DN + 1);
   for (let i = 1; i <= DN; i++) { const a = dense[i - 1], b = dense[i % DN]; cum[i] = cum[i - 1] + Math.hypot(b[0] - a[0], b[2] - a[2]); }
-  const total = cum[DN], N = Math.round(total / (IS_TOUCH ? 3.0 : 2.0)), ds = total / N;
+  const total = cum[DN], N = Math.round(total / (IS_TOUCH ? 3.4 : 2.0)), ds = total / N;
   const px = new Float32Array(N), py = new Float32Array(N), pz = new Float32Array(N);
   let jj = 0;
   for (let i = 0; i < N; i++) {
@@ -4734,11 +4768,11 @@ function readInput(dt) {
   // puis revient doucement au centre dès que le doigt est relâché.
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  const steerRise = 7.2, steerReturn = 8.6;
+  const steerRise = 8.4, steerReturn = 9.2;
   TOUCH.leftAmount = clamp((TOUCH.leftAmount || 0) + (leftDown ? steerRise : -steerReturn) * dt, 0, 1);
   TOUCH.rightAmount = clamp((TOUCH.rightAmount || 0) + (rightDown ? steerRise : -steerReturn) * dt, 0, 1);
   if (leftDown && rightDown) { TOUCH.leftAmount *= 0.82; TOUCH.rightAmount *= 0.82; }
-  let st = (TOUCH.rightAmount - TOUCH.leftAmount) * 1.08;
+  let st = (TOUCH.rightAmount - TOUCH.leftAmount) * 1.20;
   let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -4761,9 +4795,9 @@ function readInput(dt) {
   // Progressivité spécifique aux flèches, douceur au relâchement et filtrage
   // des micro-mouvements pour garder la voiture stable à haute vitesse.
   const digitalSteer = analog === null && st !== 0;
-  const steerRate = digitalSteer ? 11.5 : (steerTarget === 0 ? 7.4 : 10.5);
+  const steerRate = digitalSteer ? 14.0 : (steerTarget === 0 ? 8.6 : 12.0);
   const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 48, 0, 1);
-  const stability = 1 - speedFactor * 0.16;
+  const stability = 1 - speedFactor * 0.10;
   G.steer += (steerTarget * stability - G.steer) * (1 - Math.exp(-steerRate * dt));
   // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));
@@ -4783,7 +4817,7 @@ function physPlayer(c, dt, inp) {
   // Direction assistée renforcée : davantage d'angle utile à vitesse élevée,
   // sans rendre le véhicule incontrôlable à faible vitesse.
   // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
-  let yawMax = Math.min(3.25, (st.lat * 2.55) / Math.max(spd, 4.5));
+  let yawMax = Math.min(3.50, (st.lat * 2.70) / Math.max(spd, 4.5));
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
@@ -5973,12 +6007,12 @@ function applySettings() {
     // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
     // Un peu plus de définition sur les téléphones, tout en gardant
     // les ombres/post-effets coûteux désactivés pour éviter les pertes WebGL.
-    PR = Math.min(PR, modest ? 0.76 : 0.92);
+    PR = Math.min(PR, modest ? 0.80 : 0.94);
     R.shadowSize = 256;
     R.shadows = false;
     R.bloom = false; R.rays = false; R.post = false; R.aa = false;
-    R.detail = Math.min(R.detail, modest ? 0.62 : 0.82);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.72 : 0.90);
+    R.detail = Math.min(R.detail, modest ? 0.66 : 0.84);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.76 : 0.92);
     G.lodNear = Math.min(G.lodNear, modest ? 20 : 34);
   }
   R.setLite(s.quality === 'low');

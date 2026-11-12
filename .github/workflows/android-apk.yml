@@ -1,0 +1,60 @@
+name: Build SUPER SEDDIK & JOUD Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [super-joud]
+    paths:
+      - 'index.html'
+      - 'manifest.webmanifest'
+      - 'sw.js'
+      - 'icons/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'capacitor.config.json'
+      - '.github/workflows/android-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout V92 source
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Prepare local game assets
+        run: |
+          mkdir -p www/icons
+          cp index.html manifest.webmanifest sw.js www/
+          cp icons/*.png www/icons/
+      - name: Install dependencies
+        run: npm install
+      - name: Generate Android project
+        run: npx cap add android
+      - name: Sync game into Android app
+        run: npx cap sync android
+      - name: Build installable debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Publish APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: super-seddik-joud-v92-android-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30

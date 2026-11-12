@@ -4088,7 +4088,7 @@ function buildTrack(def, quality) {
       }
     }
     // balises de bord de route (catadioptres) et bornes kilométriques
-    if (theme !== 'city' && theme !== 'circuit' && theme !== 'port') {
+    if (theme !== 'city' && theme !== 'port') {
       for (let i = 0; i < N; i += 13) {
         if (inTun(i, 3)) continue;
         for (const side of [-1, 1]) {

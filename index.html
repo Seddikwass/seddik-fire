@@ -5586,8 +5586,11 @@ function kin(c, dt) {
   c.spinVis *= Math.exp(-dt * 2.5);
   c.squat = lerp(c.squat, clamp((c.v - c.pv) / Math.max(dt, 1e-4) * 0.0028, -0.045, 0.035), Math.min(1, dt * 6)); c.pv = c.v;
   c.h = a.h - Math.atan2(c.dv, Math.max(3, c.v)) + c.spinVis; c.pitch = Math.atan(a.slope);
-  if (c.model.bike) { const yr = wrapPi(c.h - c.ph) / Math.max(dt, 1e-4); c.roll = lerp(c.roll, clamp(Math.atan(-c.v * yr / 9.81) * 0.95, -0.8, 0.8), Math.min(1, dt * 6)); }
-  else { const yawRate = wrapPi(c.h - c.ph) / Math.max(dt, 1e-4); const lateralLoad = c.v * yawRate / 9.81; c.roll = lerp(c.roll, clamp(-Math.atan(lateralLoad) * 0.42, -0.085, 0.085), Math.min(1, dt * 5.2)); }
+  const yawRate = wrapPi(c.h - c.ph) / Math.max(dt, 1e-4);
+  const lateralLoad = c.v * yawRate / 9.81;
+  c.cornerLoad = lateralLoad;
+  if (c.model.bike) { c.roll = lerp(c.roll, clamp(Math.atan(-c.v * yawRate / 9.81) * 0.95, -0.8, 0.8), Math.min(1, dt * 6)); }
+  else { c.roll = lerp(c.roll, clamp(-Math.atan(lateralLoad) * 0.42, -0.085, 0.085), Math.min(1, dt * 5.2)); }
   c.ph = c.h;
 }
 function aheadCar(c, maxD, laneW) {
@@ -5875,13 +5878,14 @@ function emitEffects(dt) {
   for (const c of G.cars) {
     const d2 = (c.x - p.x) ** 2 + (c.z - p.z) ** 2; if (d2 > 160 * 160) { if (sk) for (let k = 0; k < 4; k++) sk.stop(c.uid * 8 + k); continue; }
     const M = c.M || carMatrix(c), m = c.model;
-    const skid = c.kind === 'player' ? ((c.sliding && c.v > 6) || (c.brake && c.v > 8 && Math.abs(c.vl) > 1.5) || c.burn || (c.brake && c.v > 22)) : (Math.abs(c.spinVis) > 0.15 && c.v > 5);
+    const aiCornerSlide = c.kind !== 'player' && Math.abs(c.cornerLoad || 0) > 0.58 && c.v > 19;
+    const skid = c.kind === 'player' ? ((c.sliding && c.v > 6) || (c.brake && c.v > 8 && Math.abs(c.vl) > 1.5) || c.burn || (c.brake && c.v > 22)) : ((Math.abs(c.spinVis) > 0.15 && c.v > 5) || aiCornerSlide);
     for (let k = 0; k < m.wheels.length && k < 4; k++) {
       const w = m.wheels[k], key = c.uid * 8 + k;
       const on = skid && (!w[3] || c.brake || c.sliding);
       if (on && sk) { const hw = m.ww * 0.5; localToWorld(M, w[0] - hw, 0.035, w[2], Q1); localToWorld(M, w[0] + hw, 0.035, w[2], Q2); sk.add(key, Q1[0], Q1[1], Q1[2], Q2[0], Q2[1], Q2[2], c.burn ? 0.75 : 0.5); }
       else if (sk) sk.stop(key);
-      if (on && !w[3] && Math.random() < 0.88) { localToWorld(M, w[0], 0.15, w[2], Q1); const driftSmoke = c.sliding || c.burn; G.smoke.emit(Q1[0], Q1[1] + 0.2, Q1[2], rnd(-0.75, 0.75), rnd(0.45, 1.6), rnd(-0.75, 0.75), rnd(driftSmoke ? 1.25 : 1.0, driftSmoke ? 2.1 : 1.8), 0.9, 3.2, 0.76, 0.77, 0.8, driftSmoke ? 0.38 : 0.32, 1.4, -0.4); }
+      if (on && !w[3] && Math.random() < 0.88) { localToWorld(M, w[0], 0.15, w[2], Q1); const driftSmoke = c.sliding || c.burn || aiCornerSlide; G.smoke.emit(Q1[0], Q1[1] + 0.2, Q1[2], rnd(-0.75, 0.75), rnd(0.45, 1.6), rnd(-0.75, 0.75), rnd(driftSmoke ? 1.25 : 1.0, driftSmoke ? 2.1 : 1.8), 0.9, 3.2, 0.76, 0.77, 0.8, driftSmoke ? 0.38 : 0.32, 1.4, -0.4); }
       if (!w[3] && c.v > 11 && (env.rain || env.dust) && Math.random() < (env.rain ? 0.8 : 0.35)) {
         localToWorld(M, w[0], 0.2, w[2] - 0.3, Q1); const dc = env.dust || RAIN_SPRAY;
         G.smoke.emit(Q1[0], Q1[1], Q1[2], c.vx * 0.25 + rnd(-0.8, 0.8), rnd(0.3, 1.2), c.vz * 0.25 + rnd(-0.8, 0.8), rnd(0.4, 0.7), 0.8, 3.6, dc[0], dc[1], dc[2], env.rain ? 0.12 + c.v * 0.0015 : 0.09, 2.2, -0.1);

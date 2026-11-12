@@ -34,6 +34,8 @@ jobs:
           java-version: '21'
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - name: Prepare local game assets
         run: |
           mkdir -p www/icons
@@ -45,6 +47,9 @@ jobs:
         run: npx cap add android
       - name: Sync game into Android app
         run: npx cap sync android
+      - name: Lock game orientation to landscape
+        run: |
+          sed -i 's/<activity android:name=".MainActivity"/<activity android:name=".MainActivity" android:screenOrientation="landscape"/' android/app/src/main/AndroidManifest.xml
       - name: Build installable debug APK
         run: |
           cd android

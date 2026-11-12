@@ -5959,7 +5959,10 @@ function drawCar(c, M, far) {
   const wm = c.wm || (c.wm = getWheel(c.rimS || m.rim, m.wr, m.ww));
   for (const w of m.wheels) { const speedFactor = clamp(Math.abs(c.v || 0) / 90, 0, 1);
     const wheelAngle = frontSteer * (0.72 - 0.12 * speedFactor);
-    M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? wheelAngle : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
+    // Débattement visuel différencié entre essieu avant et arrière lors des transferts de charge.
+    const bodyPitch = clamp(c.squat || 0, -0.045, 0.045);
+    const suspensionTravel = clamp(bodyPitch * (w[3] ? -0.58 : 0.58), -0.026, 0.026);
+    M4.wheelTo(WT, w[0], w[1] + suspensionTravel, w[2], w[3] ? wheelAngle : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
   if (inside && m.glass) { R.glassOn(); R.draw(m.glass, M); R.glassOff(); }
 }
 const UNDER0 = [0.05, 0.05, 0.06], RIM0 = [0.78, 0.79, 0.82];

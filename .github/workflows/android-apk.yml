@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout V98 source
+      - name: Checkout V99 source
         uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -116,7 +116,7 @@ jobs:
       - name: Publish APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: super-seddik-joud-v98-android-apk
+          name: super-seddik-joud-v99-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

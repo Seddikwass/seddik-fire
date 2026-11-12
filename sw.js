@@ -1,5 +1,5 @@
 /* SUPER SEDDIK@JOUD — service worker : le jeu se lance hors ligne après la première ouverture. */
-const VERSION = 'super-joud-v109';
+const VERSION = 'super-joud-v110';
 const FONTS = 'super-joud-fonts';
 const CORE = [
   './',

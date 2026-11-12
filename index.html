@@ -1201,6 +1201,25 @@ html[dir=rtl] .nosbar i{transform-origin:right}
 #touch [data-t=nitro].on {background:linear-gradient(145deg,#48c8ff,#075ac4)!important}
 #touch [data-t=hand].on {background:linear-gradient(145deg,#ffd45d,#a45a08)!important}
 
+
+/* V94 ANDROID : cockpit plus lisible, commandes épaisses et premium */
+@media (pointer:coarse) and (orientation:landscape){
+  #touch button{font-weight:900;font-size:clamp(17px,2.5vw,22px);border-width:3px;box-shadow:0 7px 20px rgba(0,0,0,.58),inset 0 2px 0 rgba(255,255,255,.28);text-shadow:0 2px 4px #000;opacity:1}
+  #touch button svg{width:58%;height:58%;stroke-width:2.8}
+  #touch .tl button{width:clamp(82px,12vw,108px);height:clamp(82px,12vw,108px);font-size:38px;border-width:3px;background:linear-gradient(145deg,#168fe0,#073c78);box-shadow:0 8px 24px #0009,inset 0 2px 0 #ffffff55}
+  #touch [data-t=left]{left:max(22px,env(safe-area-inset-left))}
+  #touch [data-t=right]{left:calc(max(22px,env(safe-area-inset-left)) + clamp(82px,12vw,108px) + 12px)}
+  #touch [data-t=gas]{width:clamp(92px,13vw,124px);height:clamp(128px,23vh,174px);border-radius:28px;background:linear-gradient(150deg,#ffad24,#e34b08);border-color:#ffe0a0;color:#fff;font-size:clamp(18px,2.4vw,24px)}
+  #touch [data-t=brake]{width:clamp(78px,10vw,104px);height:clamp(78px,10vw,104px);right:calc(max(22px,env(safe-area-inset-right)) + clamp(92px,13vw,124px) + 14px);background:linear-gradient(145deg,#ff5656,#9d101b);border-color:#ffc2c2}
+  #touch [data-t=nitro]{right:calc(max(22px,env(safe-area-inset-right)) + clamp(92px,13vw,124px) + 14px);bottom:calc(max(22px,env(safe-area-inset-bottom)) + clamp(78px,10vw,104px) + 14px);min-width:78px;min-height:58px;background:linear-gradient(145deg,#25cfff,#075baf);border-color:#b9f5ff;color:#fff;font-size:16px}
+  #touch [data-t=hand]{right:max(22px,env(safe-area-inset-right));bottom:calc(max(22px,env(safe-area-inset-bottom)) + clamp(128px,23vh,174px) + 14px);width:clamp(92px,13vw,124px);height:58px;background:linear-gradient(145deg,#e9bd45,#9c6500);border-color:#ffedaa;color:#fff;font-size:15px}
+  #touch button.on{filter:brightness(1.28);box-shadow:0 0 0 5px #ffffff35,0 0 25px #ff9b35aa,0 9px 26px #000b}
+  #radio-team{backdrop-filter:blur(14px);box-shadow:0 12px 38px #0009}
+}
+#radio-message{font-weight:800;letter-spacing:.015em}
+#radio-talk,#radio-ptt,#radio-open,#radio-join{font-weight:900;letter-spacing:.04em;min-height:46px}
+#radio-tts-status{font-weight:700}
+
 </style>
 </head>
 <body>
@@ -3055,7 +3074,7 @@ function speakCrewAdvice(message) {
   const synth = window.speechSynthesis;
   const lang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
   const say = () => { try {
-    const utter = new SpeechSynthesisUtterance(message); utter.lang = lang; utter.rate = 0.91; utter.pitch = 0.96; utter.volume = 1;
+    const utter = new SpeechSynthesisUtterance(message); utter.lang = lang; utter.rate = 0.94; utter.pitch = 0.98; utter.volume = 1;
     utter.onstart = () => crewTtsStatus('VOIX ACTIVE · ' + lang.toUpperCase());
     utter.onend = () => crewTtsStatus('Voix équipe prête · prochaine consigne automatique');
     utter.onerror = (e) => crewTtsStatus('Voix bloquée : ' + (e.error || 'moteur vocal Android'), true);
@@ -5377,9 +5396,9 @@ function readInput(dt) {
     steerTarget = Math.sign(digital) * Math.pow(Math.abs(digital), 1.12);
   }
   const digitalSteer = analog === null && Math.abs(digital) > 0.001;
-  const steerRate = digitalSteer ? 14.0 : (Math.abs(steerTarget) < 0.01 ? 10.5 : 13.5);
+  const steerRate = digitalSteer ? 15.5 : (Math.abs(steerTarget) < 0.01 ? 11.5 : 14.5);
   const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 52, 0, 1);
-  const stability = 1 - speedFactor * 0.32;
+  const stability = 1 - speedFactor * 0.27;
   G.steer += (steerTarget * stability - G.steer) * (1 - Math.exp(-steerRate * dt));
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.20 : 0.26)));
   G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.16 : 0.23)));
@@ -5401,13 +5420,13 @@ function physPlayer(c, dt, inp) {
   // Direction assistée renforcée : davantage d'angle utile à vitesse élevée,
   // sans rendre le véhicule incontrôlable à faible vitesse.
   // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
-  let yawMax = Math.min(3.55, (st.lat * 2.92) / Math.max(spd, 4.0));
+  let yawMax = Math.min(3.8, (st.lat * 3.08) / Math.max(spd, 3.8));
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   const handActive = inp.hand > 0.08 && spd > 7;
   if (handActive) target *= 1 + 0.72 * inp.hand; else if (c.sliding) target *= 1.10;
-  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 15));
+  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 17));
   c.h += c.yaw * dt;
   const Fx = Math.sin(c.h), Fz = Math.cos(c.h), Rx = -Math.cos(c.h), Rz = Math.sin(c.h);
   vf = c.vx * Fx + c.vz * Fz; let vl = c.vx * Rx + c.vz * Rz;

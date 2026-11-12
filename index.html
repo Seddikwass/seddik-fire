@@ -5238,6 +5238,24 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
 #lobby[dir="rtl"] .side .row{direction:rtl}
 #lobby[dir="rtl"] .ltop-r{direction:ltr}
 #langBtn{min-width:76px;font-weight:800}
+
+/* v189 — commandes tactiles Android : cibles plus larges et lisibles */
+@media (pointer:coarse) {
+  #hud .act { min-height:54px; padding-inline:18px; font-size:14px; }
+  #hud .med { width:50px; height:50px; }
+  #hud .med svg { width:24px; height:24px; }
+  #hud .fire { width:92px; height:92px; }
+  #hud .fire svg { width:48px; height:48px; }
+  #hud .pist { width:64px; height:64px; }
+  #hud .pist img { width:44px; height:18px; }
+  #hud .slot { min-height:58px; }
+}
+@media (pointer:coarse) and (max-height:520px) {
+  #hud .act { min-height:46px; }
+  #hud .med { width:42px; height:42px; }
+  #hud .fire { width:82px; height:82px; }
+  #hud .pist { width:58px; height:58px; }
+}
 </style>
 </body>
 </html>

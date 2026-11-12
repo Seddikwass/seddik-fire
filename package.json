@@ -2,7 +2,7 @@
   "name": "super-seddik-joud-android",
   "version": "1.0.0",
   "private": true,
-  "description": "Android packaging for SUPER SEDDIK & JOUD V109",
+  "description": "Android packaging for SUPER SEDDIK & JOUD V110",
   "scripts": {
     "android": "cap sync android"
   },

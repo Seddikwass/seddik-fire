@@ -3114,7 +3114,7 @@ function crewTtsStatus(message, error=false) {
   el.textContent = message; el.classList.toggle('error', !!error);
 }
 function nativeCrewTts() {
-  try { return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TeamTTS || null; }
+  try { const C = window.Capacitor; return C && ((C.Plugins && C.Plugins.TeamTTS) || (C.registerPlugin && C.registerPlugin('TeamTTS'))) || null; }
   catch (e) { return null; }
 }
 function isNativeAndroidApp() {

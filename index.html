@@ -730,7 +730,7 @@ body.touch .meter div{height:9px}
   #touch button { opacity:1!important; -webkit-tap-highlight-color:transparent!important; }
 }
 
-/* V87 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
+/* V88 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
 @media (pointer:coarse) and (max-width:1000px) {
   #touch { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; z-index:30!important; }
   #touch .tl,#touch .tr { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; }
@@ -798,6 +798,107 @@ body.touch .meter div{height:9px}
   .screen { overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;max-height:100dvh!important; }
   .scr-head { position:sticky!important;top:0!important;z-index:8!important; }
 }
+
+
+/* V88 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
+:root{
+ --acc:#ff8a1f;--acc2:#ffd166;--cy:#36d8f2;--bg:#070b12;
+ --pan:rgba(9,15,26,.88);--line:rgba(255,255,255,.14);
+ --txt:#f7f3eb;--mut:#aab5c5;
+}
+body{background:#070b12}
+#gl{filter:saturate(1.12) contrast(1.045)}
+.screen{isolation:isolate}
+.screen:before{
+ content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+ background:
+ radial-gradient(ellipse at 78% 22%,rgba(255,133,34,.16),transparent 34%),
+ radial-gradient(ellipse at 12% 82%,rgba(20,164,210,.14),transparent 38%),
+ linear-gradient(115deg,rgba(4,8,15,.78),rgba(4,8,15,.22) 58%,rgba(4,8,15,.62));
+}
+#scr-main{gap:clamp(16px,2.6vh,28px)!important}
+#scr-main .hero{max-width:min(680px,92vw);padding:clamp(16px,2.4vw,28px);border:1px solid rgba(255,255,255,.14);border-left:4px solid var(--acc);background:linear-gradient(130deg,rgba(7,13,23,.78),rgba(10,18,30,.36));box-shadow:0 18px 55px #0007;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+#scr-main .logo{font-size:clamp(38px,5.8vw,72px)!important;line-height:.98;text-shadow:0 5px 24px #000b,0 0 28px #ff8a1f33;letter-spacing:.015em}
+#scr-main .logo .ar{font-size:.31em;letter-spacing:.03em;color:#f5d7aa}
+#scr-main .hero .tag{max-width:44ch;font-size:clamp(13px,1.2vw,16px);color:#d2d9e3;line-height:1.55}
+#scr-main .mainnav{width:min(660px,92vw)!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px!important}
+#scr-main .mainnav .nbtn{
+ min-height:78px;padding:15px 18px!important;clip-path:none;border:1px solid rgba(255,255,255,.12);
+ border-inline-start:3px solid rgba(255,138,31,.7);border-radius:12px;
+ background:linear-gradient(135deg,rgba(21,31,47,.96),rgba(8,15,26,.9));
+ box-shadow:0 8px 22px #0005;transition:transform .18s,border-color .18s,background .18s;
+}
+#scr-main .mainnav .nbtn b{font-size:clamp(16px,1.55vw,21px);letter-spacing:.045em}
+#scr-main .mainnav .nbtn small{font-size:12px;color:#b8c3d2;letter-spacing:.015em}
+#scr-main .mainnav .nbtn:hover,#scr-main .mainnav .nbtn:focus-visible{
+ transform:translateY(-2px);border-color:rgba(255,180,76,.65);
+ background:linear-gradient(135deg,rgba(91,49,19,.92),rgba(12,23,38,.96));
+ box-shadow:0 12px 28px #0008,0 0 0 1px #ff9b2c22;
+}
+#scr-main .mainnav .nbtn.hl{background:linear-gradient(135deg,#9b4b12,#54290f 55%,#182336);border-color:#ffb04a}
+#scr-main .mainnav .nbtn.hl b{color:#fff1d6}
+.scr-head{padding:9px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(8,14,24,.86);box-shadow:0 8px 22px #0005;backdrop-filter:blur(10px)}
+.scr-head h1{letter-spacing:.055em;text-shadow:0 2px 12px #000}
+.back,.cta,.nbtn,.tabs button,.seg button,.hbtn{transition:all .18s ease}
+.back{border-radius:9px;background:linear-gradient(135deg,#202c3d,#111a29);border-color:#ffffff24;padding:10px 16px}
+.back:active,.cta:active,.nbtn:active{transform:scale(.975)}
+.box,.garpanel,.panel,.modal,.dialog{
+ background:linear-gradient(145deg,rgba(15,24,39,.96),rgba(7,12,21,.94))!important;
+ border:1px solid rgba(255,255,255,.16)!important;border-radius:16px!important;
+ box-shadow:0 22px 60px #0009, inset 0 1px 0 #ffffff12!important;
+ backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.ccard,.tabs button,.seg button,.stat,.option-row,.row{
+ border-radius:9px;
+}
+.ccard{background:linear-gradient(120deg,rgba(26,38,56,.94),rgba(12,20,32,.9));border-color:#ffffff18}
+.ccard.on{border-color:#ff9a35;background:linear-gradient(120deg,#573016aa,#19283c)}
+.cta{border-radius:10px!important;border:1px solid #ffc06b!important;background:linear-gradient(135deg,#ff9a2f,#d75b12)!important;color:#17100a!important;font-weight:900!important;letter-spacing:.04em;box-shadow:0 8px 22px #ff8a1f35,inset 0 1px 0 #fff7}
+button:focus-visible{outline:2px solid #ffd166!important;outline-offset:3px}
+#radio-team{border:1px solid #ffffff28!important;border-radius:14px!important;background:linear-gradient(145deg,#101e30ed,#070d18ed)!important;box-shadow:0 16px 42px #0009!important}
+#radio-team .radio-head{border-bottom:1px solid #ffffff18}
+#radio-tts-status{line-height:1.4}
+.hbtn{border:1px solid #ffffff35!important;border-radius:10px!important;background:linear-gradient(145deg,#1c2a3d,#0a1422)!important;box-shadow:0 5px 16px #0008}
+#touch button{box-shadow:0 9px 24px #0009,inset 0 1px 0 #ffffff55!important}
+#touch [data-t=gas]{background:linear-gradient(155deg,#ffb33f,#e65c12)!important;color:#1b1007!important;border-color:#ffe0a1!important}
+#touch [data-t=brake]{background:linear-gradient(155deg,#e84a4a,#741e2c)!important;border-color:#ffaaaa!important}
+#touch [data-t=left],#touch [data-t=right]{background:linear-gradient(155deg,#258fc4,#123c63)!important}
+#touch [data-t=hand]{background:linear-gradient(155deg,#d18a28,#674016)!important}
+#touch [data-t=nitro]{background:linear-gradient(155deg,#19b9e5,#155080)!important}
+@media (min-width:761px){
+ #scr-main{padding-inline-start:max(4vw,34px)!important}
+ #scr-main .mainnav{grid-template-columns:repeat(2,minmax(220px,1fr));max-width:660px}
+}
+@media (max-width:760px){
+ #scr-main{justify-content:flex-start!important;align-content:center;padding:clamp(76px,10vh,104px) 14px 22px!important;gap:14px!important}
+ #scr-main .hero{width:100%;padding:16px 17px!important}
+ #scr-main .logo{font-size:clamp(34px,10vw,50px)!important}
+ #scr-main .mainnav{width:100%!important;gap:8px!important}
+ #scr-main .mainnav .nbtn{min-height:70px!important;padding:12px 11px!important;border-radius:10px}
+ #scr-main .mainnav .nbtn b{font-size:clamp(14px,4vw,18px)!important}
+ #scr-main .mainnav .nbtn small{font-size:10px!important;line-height:1.3}
+ .scr-head{margin:4px;max-width:calc(100vw - 16px)}
+ .scr-head h1{font-size:clamp(17px,4.8vw,24px)}
+ .box,.garpanel{max-width:calc(100vw - 18px)!important}
+}
+@media (max-width:380px){
+ #scr-main .mainnav{grid-template-columns:1fr!important}
+ #scr-main .mainnav .nbtn{min-height:58px!important}
+}
+@media (max-width:760px) and (orientation:landscape){
+ #scr-main{padding:52px 12px 10px!important;display:grid!important;grid-template-columns:minmax(180px,.82fr) minmax(300px,1.2fr);align-items:center;gap:12px!important}
+ #scr-main .hero{padding:12px!important}
+ #scr-main .logo{font-size:clamp(27px,5.2vw,40px)!important}
+ #scr-main .hero .tag{font-size:11px}
+ #scr-main .mainnav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #scr-main .mainnav .nbtn{min-height:52px!important;padding:8px 10px!important}
+ #scr-main .mainnav .nbtn b{font-size:clamp(12px,2.6vw,16px)!important}
+ #scr-main .mainnav .nbtn small{font-size:9px!important}
+}
+html[dir=rtl] #scr-main .hero{border-left:1px solid rgba(255,255,255,.14);border-right:4px solid var(--acc)}
+html[dir=rtl] #scr-main .mainnav .nbtn{border-inline-start:1px solid rgba(255,255,255,.12);border-inline-end:3px solid rgba(255,138,31,.7)}
+html[dir=rtl] .stat span{text-align:left}
+
 </style>
 </head>
 <body>
@@ -811,7 +912,7 @@ body.touch .meter div{height:9px}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V87</span>
+    <span id="build-tag" aria-label="Version du jeu">V88</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -2613,6 +2714,16 @@ function radioCrew(driver) {
 }
 function radioAdvice() {
   const p=G.player,d=Math.abs(p.d),kmh=Math.round(Math.abs(p.vfw)*3.6);
+  if(LANG==='tn'){
+    if(G.wrongT>0.8) return 'المراقب: راك ماشي بالعكس! نقص في السرعة وارجع للمسار.';
+    if(d>G.T.lim-1.2) return 'المهندس: قربت تخرج على الطريق. نقص شوية وارجع بالراحة.';
+    if(p.nitro<0.18) return 'الاستراتيجي: النيترو قربت توفى. خلّي شوية للخروج من الفيراج الجاي.';
+    if(p.sliding&&kmh>90) return 'المهندس: نقص شوية من الدوران وثبّت الكروسة بالراحة.';
+    if(G.cfg.mode==='race'&&rankOf(p)>1) return 'الاستراتيجي: ما زلت تلحق في المنافسين. استغلّ الهواء وحضّر روحك للتجاوز.';
+    if(G.cfg.mode==='tt') return 'مهندس السباق: حافظ على النسق. فرمل بالراحة وارجع للبنزين بكري.';
+    if(G.cfg.mode==='chase') return 'فريق المطاردة: رد بالك من الرادار وواصل تجري. خذ الفيراجات بنظافة باش تبعّد البوليس.';
+    return 'المراقب: الطريق قدّامك واضح. ركّز في الفرملة واخرج مليح من الفيراج.';
+  }
   if(G.wrongT>0.8) return LANG==='en'?'SPOTTER: Wrong way! Slow down and turn around safely.':(LANG==='ar'||LANG==='tn'?'المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.':'SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.');
   if(d>G.T.lim-1.2) return LANG==='en'?'ENGINEER: You are near the track edge. Ease off and return smoothly.':(LANG==='ar'||LANG==='tn'?'المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.':'INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.');
   if(p.nitro<0.18) return LANG==='en'?'STRATEGIST: Nitro is low. Save it for the exit of the next turn.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.':'STRATÈGE : réserve ton nitro pour la sortie du prochain virage.');
@@ -5551,6 +5662,56 @@ Object.assign(LANGS.fr, { adDouble: 'Doubler les gains : +{0}', adDoubled: 'Gain
 Object.assign(LANGS.en, { adDouble: 'Double your winnings: +{0}', adDoubled: 'Winnings doubled: +{0}', adBonus: '+{0}', adBonusTitle: 'Watch a short video to earn {0}', adThanks: 'Thanks! +{0}', adNone: 'No video available right now, try again in a moment.', adWait: 'Next video bonus in {0}', adDay: 'No more video bonuses today. Come back tomorrow!', adNoReward: 'Video closed early: no reward.', o_privacy: 'Privacy', o_privLink: 'Privacy policy', o_ads: 'Ads', o_adsPriv: 'Ad privacy', o_adsInfo: 'Ads keep the game free. Rewarded videos are always your choice.' });
 Object.assign(LANGS.ar, { adDouble: 'ضاعف أرباحك: +{0}', adDoubled: 'تمت مضاعفة الأرباح: +{0}', adBonus: '+{0}', adBonusTitle: 'شاهد فيديو قصيرًا واربح {0}', adThanks: 'شكرًا! +{0}', adNone: 'لا يوجد فيديو متاح الآن، حاول بعد قليل.', adWait: 'المكافأة التالية بعد {0}', adDay: 'انتهت مكافآت الفيديو لليوم. عد غدًا!', adNoReward: 'أُغلق الفيديو مبكرًا: لا مكافأة.', o_privacy: 'الخصوصية', o_privLink: 'سياسة الخصوصية', o_ads: 'الإعلانات', o_adsPriv: 'خصوصية الإعلانات', o_adsInfo: 'الإعلانات تجعل اللعبة مجانية. مشاهدة الفيديو بمكافأة اختيارية دائمًا.' });
 
+/* V88 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
+LANGS.tn = Object.assign({}, LANGS.ar, LANGS.tn, {
+  webglTest:'جرّب الـ3D متاع التليفون: كان المكعّب ما يدورش، المتصفّح حاجب WebGL.',
+  drivers:'السواق',driver:'السائق',driverNote:'السائق يقعد ورا الفولان ويعطيك امتياز صغير مع أي كروسة.',
+  cat_car:'كراهب',cat_moto:'موتورات',cat_offroad:'4x4',cat_heavy:'شاحنات',cat_retro:'كلاسيك',
+  perkT_speed:'السريع',perkT_nitro:'ملكة النيترو',perkT_accel:'دبزة البداية',perkT_grip:'سياقة نظيفة',perkT_tough:'القوي',perkT_drift:'ملك الدريفت',perkT_ghost:'الشبح',perkT_money:'التاجر',
+  perk_speed:'+3٪ في السرعة القصوى.',perk_nitro:'النيترو تتعبّى أسرع بـ25٪.',perk_accel:'+5٪ في التسارع.',perk_grip:'+4٪ ثبات في الفيراجات.',perk_tough:'أقوى في الصدمات (+25٪) وينجّم يزحزح المنافسين.',perk_drift:'نقاط الستايل ×1.5 وقت الدريفت.',perk_ghost:'تفلت من البوليس أسرع بـ30٪.',perk_money:'+15٪ فلوس زيادة في كل سباق.',
+  loading:'الموتور قاعد يشعل…',preparing:'قاعدين نحضّروا في الحلبة: {0}',webgl:'محرّك الـ3D ما خدمش: المتصفّح عطّل WebGL، غالباً بعد مشكل في الغرافيك.',
+  webglHelp:'سكّر Chrome بالكلّ وعاود حلّ اللعبة. كان دخلتلها من فيسبوك ولا واتساب، حلّ الرابط مباشرة في Chrome. اللعبة تنجم تخدم بجودة أخفّ.',
+  retry:'عاود جرّب',glLost:'الغرافيك تعاود تهيّأ. اللعبة باش تعاود تخدم بإعدادات أخفّ…',safeMode:'الوضع الآمن: جودة خفيفة خاطر التشغيل اللي فات ما كملش.',
+  careerDone:'كمّلت المسيرة — إنت ملك الطريق!',careerStep:'المرحلة {0} / {1}',playQuick:'سباق سريع: {0}',
+  back:'‹ رجوع',paint:'الطلاء',rims:'الجنوط',neons:'النيون',tuning:'التعديل',inGarage:'في الكراج',select:'اختار',isSelected:'مختارة',
+  buy:'اشري {0}',buyConfirm:'تحب تشري {0} بـ {1}؟',preview:'معاينة — اشري الكروسة باش تحتفظ بالستايل هذا.',previewRims:'معاينة — اشري الكروسة باش تحتفظ بالجنوط هاذم.',
+  buyFirst:'اشري الكروسة قبل ما تطوّرها.',model:'الموديل',color:'اللون',max:'للآخر',none:'حتى شي',
+  stSpeed:'السرعة القصوى',stAccel:'التسارع',stHandling:'التحكّم',stNitro:'النيترو',
+  upEng:'الموتور',upEngD:'السرعة القصوى',upTur:'التيربو',upTurD:'التسارع',upTyr:'العجلات',upTyrD:'الثبات',upNos:'النيترو',upNosD:'المدّة والقوّة',upAero:'الأيروديناميك',upAeroD:'السرعة والثبات',upBrk:'فرامل رياضية',upBrkD:'قوّة الفرملة',
+  rim_five:'5 أذرع',rim_ten:'10 أذرع',rim_mesh:'شبكة',rim_disc:'توربين',rim_dish:'عميقة',
+  gameMode:'نوع السباق',circuit:'الحلبة',settings:'الإعدادات',laps:'الدورات',opponents:'المنافسين',difficulty:'الصعوبة',traffic:'الترافيك',weather:'الطقس',
+  no:'لا',yes:'إي',easy:'ساهل',normal:'عادي',hard:'صعيب',sunny:'صحو',rain:'شتاء',start:'إنطلق ›',record:'الرقم القياسي: {0}',
+  m_race:'سباق',m_tt:'ضدّ الوقت',m_chase:'مطاردة البوليس',
+  m_raceD:'نافس حتى 7 سواق وكمّل في الثلاثة اللّولين.',m_ttD:'إنت وحدك في الحلبة. حطّم أحسن توقيت متاعك.',m_chaseD:'البوليس يجرّي وراك: فلّت منهم قبل ما يشدّوك.',
+  progress:'التقدّم',done:'✓ كملتها',locked:'🔒 مسكّرة',available:'▶ محلولة',lap1:'دورة',lapN:'دورات',advised:'الصنف اللي ننصحو بيه:',rainTag:'شتاء',
+  o_lang:'اللغة',o_music:'الموسيقى',o_sfx:'الأصوات',o_gfx:'الغرافيك',o_low:'ضعيف',o_med:'متوسّط',o_high:'عالي',o_ultra:'فائق — للأجهزة القوية',
+  o_dyn:'الدقّة تتبدّل وحدها',o_fps:'إظهار FPS',o_cam:'الكاميرا',o_near:'قريبة',o_far:'بعيدة',o_hood:'الكابو',
+  o_touch:'التحكّم باللمس',o_auto:'أوتوماتيك',o_steer:'طريقة التوجيه',o_buttons:'أزرار',o_stick:'Joystick',o_tilt:'بالميلان',o_sens:'الحساسية',o_opacity:'شفافية الأزرار',o_vibe:'اهتزاز',
+  o_save:'التقدّم',o_reset:'فسخ التقدّم',o_note:'التقدّم متاعك (الفلوس، الكراهب والمسيرة) يتسجّل في المتصفّح هذا.',
+  resetConfirm:'تحب تفسخ التقدّم الكلّ متاعك؟',cancel:'إلغاء',confirm:'أكّد',
+  tiltNo:'التوجيه بميلان التليفون موش متاح في الجهاز هذا.',
+  h_keys:'الكلافيي',h_accel:'زيد في السرعة',h_brake:'فرامل / رجوع',h_turn:'دور',h_hand:'فرامل اليد (دريفت)',h_nitro:'نيترو',h_cam:'بدّل الكاميرا',h_reset:'ارجع للطريق',h_pause:'وقفة',
+  h_space:'مسافة',h_shift:'Shift',h_esc:'Esc',h_mobile:'تليفون ومانيت',h_mobileT:'في التليفون: استعمل السهام ولا الـJoystick ولا ميلان التليفون باش تدور. البنزين والفرامل والنيترو وفرامل اليد على اليمين. العب والتليفون بالعرض.',
+  h_tips:'نصايح',h_t1:'إضغط على البنزين قبل GO بشويّة باش تنطلق مليح. كان بكّرت برشة العجلات تزلق.',h_t2:'استعمل فرامل اليد للدريفت وتعبّي النيترو وتربح نقاط ستايل.',
+  h_t3:'قرّب للكراهب متاع الترافيك بسرعة باش تربح نيترو.',h_t4:'إبقى ورا منافس باش تستغلّ الهواء وتزيد في السرعة.',
+  h_t5:'في المطاردة، بعّد على البوليس أكثر من 175 متر باش تفلت منهم.',h_t6:'نقاط الستايل تتحوّل لفلوس في آخر كل سباق.',
+  wrongWay:'راك ماشي بالعكس!',evade:'فلّتّ',bust:'شدّوك',pause:'وقفة',resume:'كمّل',restart:'عاود',quitRace:'اخرج من السباق',
+  rotate:'دوّر التليفون بالعرض باش تلعب خير.',rotateOk:'كمّل هكّاكا',
+  lapHud:'الدورة {0}/{1}',chaseHud:'مطاردة',bestLap:'أحسن دورة {0}',bounty:'المكافأة {0}',target:'الهدف {0}',targetOver:' — تعدّيتو',
+  nearMiss:'قريب برشة! +300',drift:'دريفت +{0}',draft:'استغلال الهواء',nitroReady:'النيترو واجدة',replaced:'رجعت للطريق',
+  lapN2:'الدورة {0}',lastLap:'آخر دورة!',victory:'ربحت!',finish:'خطّ الوصول',
+  heatUp:'مستوى التفتيش {0}',roadblock:'حاجز قدّامك!',busted:'شدّوك!',escaped:'فلّتّ منهم!',copDown:'طيّحت بوليسي! +1000',
+  go:'إنطلق!',perfectStart:'انطلاقة ممتازة!',wheelspin:'العجلات تزلق!',you:'إنت',
+  r_place:'المرتبة {0}',r_ok:'حقّقت الهدف!',r_slow:'بطيء برشة…',r_escaped:'فلّتّ من البوليس!',r_busted:'شدّوك!',
+  r_total:'الوقت الكلّ',r_best:'أحسن دورة',r_target:'الهدف',r_dur:'مدّة المطاردة',r_heat:'مستوى التفتيش',r_wrecked:'بوليس تعطّلوا',r_bounty:'المكافأة',
+  r_record:'رقم قياسي جديد!',r_reward:'الجائزة',r_style:'بونيس الستايل ({0} نقطة)',r_gain:'الربح الكلّ',r_money:'فلوسك',r_menu:'القائمة',r_garage:'الكراج',r_again:'عاود السباق',r_next:'المرحلة الجاية ›',
+  r_evOk:'✓ كمّلت التحدّي «{0}»! المرحلة الجاية تحلّت.',r_evAgain:'التحدّي هذا كملتو قبل — الجائزة أقلّ.',r_evFail:'ما نجحتش في التحدّي «{0}». عاود جرّب ولا طوّر الكروسة.',
+  adDouble:'ضاعف فلوسك: +{0}',adDoubled:'تضاعفت فلوسك: +{0}',adBonus:'+{0}',adBonusTitle:'تفرّج في فيديو قصير واربح {0}',
+  adThanks:'يعطيك الصحّة! +{0}',adNone:'ما فماش فيديو متاح توّة، عاود جرّب بعد شوية.',adWait:'البونيس الجاي بعد {0}',adDay:'كمّلت بونيسات الفيديو لليوم. ارجع غدوة!',adNoReward:'تسكّر الفيديو قبل ما يوفى: ما فماش جائزة.',
+  o_privacy:'الخصوصية',o_privLink:'سياسة الخصوصية',o_ads:'الإشهار',o_adsPriv:'خصوصية الإشهار',o_adsInfo:'الإشهار يعاون باش اللعبة تبقى مجانية. الفيديوهات بالمكافأة اختيارية.'
+});
+
+
 const ADS = {
   on: false, ready: false, inter: false, busy: false, earned: false, cb: null, P: null, cfg: null, privacy: false,
   races: 0, lastInter: 0, lastReward: 0,
@@ -5674,7 +5835,7 @@ const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
-function detectLang() { const l = (navigator.language || 'fr').toLowerCase(); return l.includes('-tn') ? 'tn' : l.startsWith('ar') ? 'ar' : l.startsWith('en') ? 'en' : 'fr'; }
+function detectLang() { const l = (navigator.language || '').toLowerCase(); return l.startsWith('en') ? 'en' : l.startsWith('ar') && !l.includes('-tn') ? 'ar' : 'tn'; }
 function defaultSettings() { return { sfx: 80, music: 50, quality: IS_TOUCH ? 'medium' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
   return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
@@ -6118,18 +6279,17 @@ function applySettings() {
   // Les réglages graphiques choisis restent respectés sur ordinateur.
   if (IS_TOUCH) {
     const mem = Number(navigator.deviceMemory) || 0, cores = Number(navigator.hardwareConcurrency) || 0;
-    const modest = (mem > 0 && mem <= 4) || (cores > 0 && cores <= 4);
-    // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
-    // Un peu plus de définition sur les téléphones, tout en gardant
-    // les ombres/post-effets coûteux désactivés pour éviter les pertes WebGL.
-    // Définition renforcée sur téléphones récents, profil allégé sur appareils modestes.
-    PR = Math.min(PR, modest ? 0.88 : 1.02);
-    R.shadowSize = 512;
-    R.shadows = false;
-    R.bloom = false; R.rays = false; R.post = false; R.aa = false;
-    R.detail = Math.min(R.detail, modest ? 0.72 : 0.94);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.82 : 0.98);
-    G.lodNear = Math.min(G.lodNear, modest ? 24 : 42);
+    const modest = (mem > 0 && mem <= 2) || (cores > 0 && cores <= 4);
+    // Profil équilibré : les téléphones 4 Go / 8 cœurs (dont Huawei P20)
+    // gardent une vraie définition, des ombres modérées et plus de détails.
+    PR = Math.min(dpr, modest ? 0.88 : Math.max(PR, 1.12));
+    R.shadowSize = modest ? 512 : 1024;
+    R.shadows = !modest;
+    R.bloom = false; R.rays = false; R.post = false;
+    R.aa = !modest;
+    R.detail = Math.min(Math.max(R.detail, modest ? 0.72 : 1.04), modest ? 0.78 : 1.08);
+    G.drawMul = Math.min(Math.max(G.drawMul, modest ? 0.82 : 1.02), modest ? 0.86 : 1.08);
+    G.lodNear = Math.min(Math.max(G.lodNear, modest ? 24 : 48), modest ? 28 : 56);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;

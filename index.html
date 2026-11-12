@@ -730,7 +730,7 @@ body.touch .meter div{height:9px}
   #touch button { opacity:1!important; -webkit-tap-highlight-color:transparent!important; }
 }
 
-/* V88 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
+/* V89 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
 @media (pointer:coarse) and (max-width:1000px) {
   #touch { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; z-index:30!important; }
   #touch .tl,#touch .tr { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; }
@@ -800,7 +800,7 @@ body.touch .meter div{height:9px}
 }
 
 
-/* V88 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
+/* V89 — refonte visuelle premium, lisibilité mobile et identité tunisienne */
 :root{
  --acc:#ff8a1f;--acc2:#ffd166;--cy:#36d8f2;--bg:#070b12;
  --pan:rgba(9,15,26,.88);--line:rgba(255,255,255,.14);
@@ -899,6 +899,84 @@ html[dir=rtl] #scr-main .hero{border-left:1px solid rgba(255,255,255,.14);border
 html[dir=rtl] #scr-main .mainnav .nbtn{border-inline-start:1px solid rgba(255,255,255,.12);border-inline-end:3px solid rgba(255,138,31,.7)}
 html[dir=rtl] .stat span{text-align:left}
 
+
+
+/* V89 — cockpit HUD : lecture rapide, hiérarchie et lisibilité en course */
+#hud{isolation:isolate}
+#hud:before,#hud:after{content:"";position:absolute;left:0;right:0;pointer-events:none;z-index:0}
+#hud:before{top:0;height:30%;background:linear-gradient(180deg,rgba(3,8,15,.58),transparent)}
+#hud:after{bottom:0;height:35%;background:linear-gradient(0deg,rgba(3,8,15,.38),transparent)}
+.hud-tl,.hud-br,.hud-bl,.hud-tc,#minimap,#h-tt,#h-msgs,#h-count,#h-wrong,#h-fps,#radio-team,#touch{z-index:2}
+.hud-tl{
+ padding:12px 15px 13px 14px!important;min-width:142px;
+ border:1px solid rgba(255,255,255,.15);border-left:3px solid #ff922e;
+ border-radius:0 13px 13px 0;
+ background:linear-gradient(135deg,rgba(6,13,23,.84),rgba(12,21,34,.55));
+ box-shadow:0 10px 28px #0005;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.hud-tl .pos{display:flex;align-items:baseline;gap:5px;margin-bottom:3px}
+.hud-tl .pos b{font-size:clamp(42px,8vmin,66px)!important;font-weight:800;letter-spacing:-.045em;text-shadow:0 3px 18px #000}
+.hud-tl .pos span{font-size:18px;color:#b9c5d4}
+.hud-tl .lap,.hud-tl .time{gap:6px;font-size:clamp(13px,2.5vmin,17px);font-style:normal;font-weight:800;letter-spacing:.02em}
+.hud-tl .lap{color:#ffd18a}
+.hud-tl .lap .ic,.hud-tl .time .ic{width:15px;height:15px;opacity:.82}
+.hud-tl .best{margin-top:3px;font-size:11px;color:#b5c5d8}
+#minimap{
+ width:clamp(112px,18vmin,170px);height:clamp(112px,18vmin,170px);
+ border:2px solid rgba(255,255,255,.25);background:rgba(5,10,18,.72);
+ box-shadow:0 8px 26px #0008,0 0 0 5px rgba(255,255,255,.055);
+}
+.hud-br{filter:drop-shadow(0 8px 20px #0008)}
+#speedo{filter:drop-shadow(0 2px 8px #0009)}
+.nos{
+ padding:7px 11px!important;border:1px solid rgba(48,211,255,.34);
+ border-radius:8px;background:linear-gradient(90deg,rgba(5,22,39,.88),rgba(6,15,27,.7));
+ box-shadow:0 5px 18px #0007;backdrop-filter:blur(6px);
+}
+.nosbar{height:11px;border-radius:5px;overflow:hidden}
+.nosbar i{border-radius:5px;transition:transform .12s linear}
+.hud-bl{
+ padding:10px 12px;border:1px solid rgba(255,255,255,.14);
+ border-left:3px solid #ff4b4b;border-radius:0 11px 11px 0;
+ background:linear-gradient(135deg,rgba(9,13,22,.86),rgba(12,20,32,.66));
+ box-shadow:0 8px 22px #0006;backdrop-filter:blur(8px);
+}
+.hud-bl .heat{font-weight:900;text-shadow:0 0 14px #f33}
+.hud-bl .meter div{height:9px;border-radius:5px;overflow:hidden}
+.hud-bl .meter i{border-radius:5px;transition:transform .12s linear}
+.hud-tc .hbtn{
+ width:48px;height:46px;border:1px solid rgba(255,255,255,.27)!important;
+ border-radius:12px!important;background:linear-gradient(145deg,rgba(20,34,52,.94),rgba(5,12,22,.88))!important;
+ box-shadow:0 7px 20px #0008,inset 0 1px 0 #ffffff24!important;
+}
+.hud-tc .hbtn svg{width:22px;height:22px}
+#h-count{font-weight:900;letter-spacing:-.04em;text-shadow:0 8px 28px #000,0 0 24px #ff922e88}
+#h-msgs .pmsg{padding:8px 18px;border:1px solid #ffffff2b;border-radius:10px;background:rgba(5,12,22,.76);backdrop-filter:blur(6px);font-weight:900}
+#radio-team{box-shadow:0 14px 38px #0009,0 0 0 1px #42d5ff12!important}
+#radio-team .radio-message{line-height:1.42}
+#radio-team button{border-radius:8px}
+#touch .tl button{box-shadow:0 9px 26px #000a,inset 0 1px 0 #ffffff55}
+#touch .tr button{box-shadow:0 9px 26px #000a,inset 0 1px 0 #ffffff55}
+@media (max-width:760px) and (orientation:landscape){
+ .hud-tl{padding:7px 10px 8px 10px!important;min-width:116px}
+ .hud-tl .pos b{font-size:42px!important}
+ #minimap{width:104px!important;height:104px!important}
+ body.touch .hud-br{transform:scale(.62)!important;right:max(6px,env(safe-area-inset-right))!important;bottom:max(2px,env(safe-area-inset-bottom))!important}
+ body.touch .hud-bl{transform:scale(.68)!important;transform-origin:bottom left!important}
+ #radio-team{top:42%!important;max-height:30vh!important;max-width:24vw!important}
+ .hud-tc .hbtn{width:42px;height:40px}
+}
+@media (max-width:760px) and (orientation:portrait){
+ .hud-tl{padding:7px 9px!important;min-width:108px}
+ .hud-tl .pos b{font-size:36px!important}
+ #minimap{width:94px!important;height:94px!important}
+ body.touch .hud-br{transform:scale(.46)!important}
+ #radio-team{max-width:36vw!important;width:160px!important;top:43%!important}
+}
+html[dir=rtl] .hud-tl{border-left:1px solid rgba(255,255,255,.15);border-right:3px solid #ff922e;border-radius:13px 0 0 13px;text-align:right}
+html[dir=rtl] .hud-bl{border-left:1px solid rgba(255,255,255,.14);border-right:3px solid #ff4b4b;border-radius:11px 0 0 11px}
+html[dir=rtl] .nosbar i{transform-origin:right}
+
 </style>
 </head>
 <body>
@@ -912,7 +990,7 @@ html[dir=rtl] .stat span{text-align:left}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V88</span>
+    <span id="build-tag" aria-label="Version du jeu">V89</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -4690,13 +4768,69 @@ LANGS.tn = Object.assign({}, LANGS.fr, {
   o_lang: 'اللغة', o_music: 'الموسيقى', o_sfx: 'الأصوات', o_gfx: 'الغرافيك', o_low: 'ضعيف', o_med: 'متوسط', o_high: 'عالي', o_ultra: 'Ultra للأجهزة القوية', o_dyn: 'دقّة تتبدّل وحدها', o_fps: 'إظهار FPS', o_cam: 'الكاميرا', o_touch: 'أزرار اللمس', o_steer: 'طريقة التوجيه', o_buttons: 'أزرار', o_stick: 'Joystick', o_tilt: 'بالميلان', o_sens: 'الحساسية', o_opacity: 'شفافية الأزرار', o_vibe: 'اهتزاز', o_save: 'التقدّم', o_reset: 'فسخ التقدّم',
   cancel: 'إلغاء', confirm: 'تأكيد', pause: 'وقفة', resume: 'كمّل', restart: 'عاود', quitRace: 'اخرج من السباق',
 });
+
+/* V89 — descriptions, épreuves et circuits rédigés en derja tunisienne */
+const TN_CONTENT = {
+  car: {
+    zitouna:'سكوتر خفيف متاع المدينة، يتعدّى بالساهل بين الكراهب.',
+    djebel:'موتور مغامرات عالي ومريح، ومعاه فاليسات ألمنيوم.',
+    raad:'موتور سبور متاع حلبة، كاريناج كامل وثابت في الفيراج.',
+    chaambi:'4x4 قوي، فيه واقي قدّام وعجلة احتياطية. ما يوقفو شي.',
+    kerkennah:'بيك آب بكابينتين، صندوق مغطّى وقوس حماية.',
+    medjerda:'كاميون ثقيل: موش سريع، أمّا صعيب برشة باش توقفو.',
+    transtunis:'كار مدينة طويل 10 متر. رد بالك في الفيراجات!',
+    bizerte:'بيرلين من السبعينات، كروم وفوانيس مدوّرين.',
+    sfax:'كوبيه تيربو من الثمانينات، شكلها حادّ وسبويلر لورى.',
+    sprint:'كروسة مدينة خفيفة ونشيطة، باهية باش تتعلّم الدريفت.',
+    tozeur:'كروسة رالي صغيرة، رفارف عراض وتعليق عالي وتحبّ اللعب.',
+    medina:'كوبيه سبور متوازنة، تخرج بقوّة من الفيراجات.',
+    kairouan:'بيرلين سبور بأربعة بيبان، قوية وثابتة.',
+    djerba:'كوبيه معمولة للدريفت، كاروسري عريضة وجناح كبير.',
+    carthage:'كروسة سفر قوية وثابتة حتى في السرعة الكبيرة.',
+    atlas:'SUV سبور قوي وثقيل، يزحزح اللي يجي قدّامو.',
+    sahara:'Muscle car بتيربو: وحش في الخطّ المستقيم وتحبّ الفيراجات.',
+    phenix:'Supercar كهربائية هادئة، قوّتها تجي فيسع والتسارع متاعها صاروخي.',
+    hannibal:'Hypercar بموتور V12، ملكة الطريق بلا منافس.'
+  },
+  ev: [
+    ['أوّل انطلاقة','كمّل الأوّل في شوارع تونس.'],
+    ['كرونو الصحراء','جيب التوقيت المطلوب في طريق الصحراء.'],
+    ['نهار في الحلبة','أوّل سباق ليك في حلبة قرطاج قدّام المدرّجات.'],
+    ['الكورنيش شاعل','سباق سريع على طريق البحر.'],
+    ['فلّة من تونس','البوليس وراك، دبّر راسك وفلّت منهم!'],
+    ['الميناء بالليل','عدّي بين الحاويات والرافعات في ميناء رادس.'],
+    ['طلعة الأطلس','فيراجات ضيّقة وطريق جبلية، رد بالك.'],
+    ['شتاء وضباب','دورتين ضدّ الوقت تحت الشتا والرعد في الغابة.'],
+    ['عاصفة رملية','ثمانية سواق وثلاث دورات بين كثبان الرمل.'],
+    ['مطاردة سخونة','البوليس داخل عليك بقوّة من أوّل السباق.'],
+    ['جائزة قرطاج الكبرى','أربع دورات في الحلبة ضدّ أقوى المنافسين.'],
+    ['ملك تونس','الفينال الكبير تحت الشتا. ورّيهم شكون ملك الطريق!']
+  ],
+  trk: {
+    tunis:'تونس • المدينة العتيقة والبحيرة، بالليل',
+    sahara:'دوز • كثبان شطّ الجريد وقت الغروب',
+    atlas:'القصرين • جبل الشعانبي والشمس طالعة',
+    corniche:'سيدي بوسعيد • المرسى والكورنيش',
+    circuit:'قرطاج • حلبة سباق قدّام المدرّجات',
+    port:'رادس • الميناء والحاويات بالليل',
+    aindraham:'عين دراهم • غابة وشتاء وضباب',
+    sousse:'سوسة • بوجعفر والمدينة العتيقة',
+    sfax:'صفاقس • طريق قرمدة والمنطقة الصناعية',
+    djerba:'جربة • حومة السوق والبحيرة',
+    hammamet:'الحمامات • ياسمين والمارينا',
+    bizerte:'بنزرت • الميناء القديم وكاب بلان',
+    kairouan:'القيروان • المدينة العتيقة والسور',
+    monastir:'المنستير • الرباط والمارينا'
+  }
+};
+
 let LANG = 'fr';
 const LI = () => LANG === 'en' ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
-const tCar = c => (TXT.car[c.id] || [c.desc])[LI()] || c.desc;
-const tEvName = i => (TXT.ev[i] || [])[LI()] || CAREER[i].name;
-const tEvDesc = i => (TXT.ev[i] || [])[3 + LI()] || CAREER[i].desc;
-const tTrk = d => (TXT.trk[d.id] || [d.sub])[LI()] || d.sub;
+const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
+const tEvName = i => LANG === 'tn' ? ((TN_CONTENT.ev[i] || [])[0] || (TXT.ev[i] || [])[2] || CAREER[i].name) : ((TXT.ev[i] || [])[LI()] || CAREER[i].name);
+const tEvDesc = i => LANG === 'tn' ? ((TN_CONTENT.ev[i] || [])[1] || (TXT.ev[i] || [])[5] || CAREER[i].desc) : ((TXT.ev[i] || [])[3 + LI()] || CAREER[i].desc);
+const tTrk = d => LANG === 'tn' ? (TN_CONTENT.trk[d.id] || (TXT.trk[d.id] || [d.sub])[2] || d.sub) : ((TXT.trk[d.id] || [d.sub])[LI()] || d.sub);
 function applyI18n() {
   document.documentElement.lang = LANG === 'tn' ? 'ar-TN' : LANG; document.documentElement.dir = (LANG === 'ar' || LANG === 'tn') ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
@@ -5662,7 +5796,7 @@ Object.assign(LANGS.fr, { adDouble: 'Doubler les gains : +{0}', adDoubled: 'Gain
 Object.assign(LANGS.en, { adDouble: 'Double your winnings: +{0}', adDoubled: 'Winnings doubled: +{0}', adBonus: '+{0}', adBonusTitle: 'Watch a short video to earn {0}', adThanks: 'Thanks! +{0}', adNone: 'No video available right now, try again in a moment.', adWait: 'Next video bonus in {0}', adDay: 'No more video bonuses today. Come back tomorrow!', adNoReward: 'Video closed early: no reward.', o_privacy: 'Privacy', o_privLink: 'Privacy policy', o_ads: 'Ads', o_adsPriv: 'Ad privacy', o_adsInfo: 'Ads keep the game free. Rewarded videos are always your choice.' });
 Object.assign(LANGS.ar, { adDouble: 'ضاعف أرباحك: +{0}', adDoubled: 'تمت مضاعفة الأرباح: +{0}', adBonus: '+{0}', adBonusTitle: 'شاهد فيديو قصيرًا واربح {0}', adThanks: 'شكرًا! +{0}', adNone: 'لا يوجد فيديو متاح الآن، حاول بعد قليل.', adWait: 'المكافأة التالية بعد {0}', adDay: 'انتهت مكافآت الفيديو لليوم. عد غدًا!', adNoReward: 'أُغلق الفيديو مبكرًا: لا مكافأة.', o_privacy: 'الخصوصية', o_privLink: 'سياسة الخصوصية', o_ads: 'الإعلانات', o_adsPriv: 'خصوصية الإعلانات', o_adsInfo: 'الإعلانات تجعل اللعبة مجانية. مشاهدة الفيديو بمكافأة اختيارية دائمًا.' });
 
-/* V88 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
+/* V89 — dialecte tunisien complet : base arabe pour les clés rares + formulations tunisiennes */
 LANGS.tn = Object.assign({}, LANGS.ar, LANGS.tn, {
   webglTest:'جرّب الـ3D متاع التليفون: كان المكعّب ما يدورش، المتصفّح حاجب WebGL.',
   drivers:'السواق',driver:'السائق',driverNote:'السائق يقعد ورا الفولان ويعطيك امتياز صغير مع أي كروسة.',

@@ -5515,7 +5515,9 @@ function physPlayer(c, dt, inp) {
   // Adhérence progressive : appui aérodynamique à haute vitesse, perte de grip sous la pluie.
   const surfaceWet = clamp((G.env && G.env.wet) || 0, 0, 1);
   const aeroLoad = 1 + Math.min(0.22, spd * spd * 0.000035);
-  let grip = 10 * (st.lat / 22) * aeroLoad * (1 - 0.38 * surfaceWet);
+  // Grip légèrement renforcé hors frein à main : limite le flottement latéral
+  // en conduite normale, tout en conservant le drift volontaire et la pénalité pluie.
+  let grip = 10.6 * (st.lat / 22) * aeroLoad * (1 - 0.38 * surfaceWet);
   if (G.env && G.env.dust) grip *= 0.86;
   // Le frein à main libère surtout l'arrière : la voiture pivote et glisse,
   // mais la récupération d'adhérence reste progressive à la relâche.

@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout V189 source
+      - name: Checkout V190 source
         uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -48,7 +48,7 @@ jobs:
           inline = [s for s in parser.blocks if s.strip()]
           if not inline:
               raise SystemExit('No inline game JavaScript found')
-          Path('/tmp/game-inline.js').write_text('\\n'.join(inline), encoding='utf-8')
+          Path('/tmp/game-inline.js').write_text('\n'.join(inline), encoding='utf-8')
           print(f'Extracted {len(inline)} inline JavaScript block(s)')
           PY
           node --check /tmp/game-inline.js
@@ -266,7 +266,7 @@ jobs:
       - name: Publish APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: super-seddik-joud-v189-android-apk
+          name: super-seddik-joud-v190-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

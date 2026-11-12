@@ -1179,6 +1179,28 @@ html[dir=rtl] .nosbar i{transform-origin:right}
  #touch [data-t=gas]::after,#touch [data-t=brake]::after,#touch [data-t=hand]::after,#touch [data-t=nitro]::after{font-size:8px;bottom:5px}
 }
 
+
+
+/* V93 ANDROID — commandes tactiles agrandies et différenciées, priorité aux écrans paysage */
+@media (hover:none) and (orientation:landscape) {
+  #touch .tl button { width:clamp(68px,8.5vw,82px)!important;height:clamp(68px,8.5vw,82px)!important;min-width:68px!important;min-height:68px!important;border-radius:20px!important;font-size:28px!important; }
+  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + clamp(78px,9.2vw,92px))!important; }
+  #touch [data-t=gas] { width:clamp(82px,9vw,104px)!important;height:clamp(112px,16vw,142px)!important;min-width:82px!important;min-height:82px!important;background:linear-gradient(155deg,#ff9b32,#c84b08)!important;border:3px solid #ffe0ad!important; }
+  #touch [data-t=brake] { width:clamp(70px,7.5vw,82px)!important;height:clamp(70px,7.5vw,82px)!important;min-width:70px!important;min-height:70px!important;background:linear-gradient(145deg,#f04444,#8e101b)!important;border:3px solid #ffc0c0!important; }
+  #touch [data-t=hand] { background:linear-gradient(145deg,#c58b20,#70430a)!important;border:2px solid #ffe08a!important; }
+  #touch [data-t=nitro] { background:linear-gradient(145deg,#168de8,#064b9b)!important;border:2px solid #9fe6ff!important;color:#fff!important;font-weight:900!important; }
+}
+#touch [data-t=left],#touch [data-t=right] {background:linear-gradient(145deg,#187fca,#073a70)!important;border-color:#a8dcff!important;color:#fff!important;}
+#touch [data-t=gas]::after {content:"ACCÉLÉRER";font:900 10px/1 'Chakra Petch',sans-serif;letter-spacing:.05em;color:#fff;text-shadow:0 2px 4px #542000}
+#touch [data-t=brake]::after {content:"FREIN";font:900 10px/1 'Chakra Petch',sans-serif;letter-spacing:.08em;color:#fff}
+#touch [data-t=hand]::after {content:"FREIN À MAIN";font:900 9px/1 'Chakra Petch',sans-serif;color:#fff;white-space:nowrap}
+#touch [data-t=nitro]::after {content:"NITRO";font:900 9px/1 'Chakra Petch',sans-serif;color:#fff;letter-spacing:.08em}
+#touch button.on {filter:brightness(1.32)!important;outline:2px solid rgba(255,255,255,.8);outline-offset:1px}
+#touch [data-t=gas].on {background:linear-gradient(155deg,#ffc15f,#e65a0b)!important}
+#touch [data-t=brake].on {background:linear-gradient(145deg,#ff7777,#c3182b)!important}
+#touch [data-t=nitro].on {background:linear-gradient(145deg,#48c8ff,#075ac4)!important}
+#touch [data-t=hand].on {background:linear-gradient(145deg,#ffd45d,#a45a08)!important}
+
 </style>
 </head>
 <body>
@@ -5319,7 +5341,7 @@ function readInput(dt) {
   // l'orientation de l'écran. Chaque appui monte progressivement puis revient au centre.
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  const steerRise = 7.0, steerReturn = 9.2;
+  const steerRise = 10.0, steerReturn = 8.4;
   if (leftDown && rightDown) {
     TOUCH.leftAmount = Math.max(0, (TOUCH.leftAmount || 0) - steerReturn * dt);
     TOUCH.rightAmount = Math.max(0, (TOUCH.rightAmount || 0) - steerReturn * dt);
@@ -5355,9 +5377,9 @@ function readInput(dt) {
     steerTarget = Math.sign(digital) * Math.pow(Math.abs(digital), 1.12);
   }
   const digitalSteer = analog === null && Math.abs(digital) > 0.001;
-  const steerRate = digitalSteer ? 11.5 : (Math.abs(steerTarget) < 0.01 ? 9.5 : 12.0);
+  const steerRate = digitalSteer ? 14.0 : (Math.abs(steerTarget) < 0.01 ? 10.5 : 13.5);
   const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 52, 0, 1);
-  const stability = 1 - speedFactor * 0.22;
+  const stability = 1 - speedFactor * 0.32;
   G.steer += (steerTarget * stability - G.steer) * (1 - Math.exp(-steerRate * dt));
   G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.20 : 0.26)));
   G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.16 : 0.23)));
@@ -5385,7 +5407,7 @@ function physPlayer(c, dt, inp) {
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   const handActive = inp.hand > 0.08 && spd > 7;
   if (handActive) target *= 1 + 0.72 * inp.hand; else if (c.sliding) target *= 1.10;
-  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 13));
+  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 15));
   c.h += c.yaw * dt;
   const Fx = Math.sin(c.h), Fz = Math.cos(c.h), Rx = -Math.cos(c.h), Rz = Math.sin(c.h);
   vf = c.vx * Fx + c.vz * Fz; let vl = c.vx * Rx + c.vz * Rz;

@@ -5485,6 +5485,10 @@ function physPlayer(c, dt, inp) {
   // sans rendre le véhicule incontrôlable à faible vitesse.
   // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
   let yawMax = Math.min(4.0, (st.lat * 3.28) / Math.max(spd, 3.6));
+  // Progressivité de direction : pleine agilité à basse vitesse, angle mieux dosé
+  // à haute vitesse pour éviter les coups de volant et garder la trajectoire.
+  const speedSteer = clamp(spd / 58, 0, 1);
+  yawMax *= 1 - 0.16 * speedSteer;
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);

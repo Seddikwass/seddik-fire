@@ -1645,7 +1645,7 @@ void main(){
   else if (mi == 2) { emis = 1.6 + uNight*0.9; }
   else if (mi == 3) { spec=1.6; shin=220.0; refl=0.9; coat=2.0; }
   else if (mi == 4) { spec=1.0; shin=50.0; refl=0.6; }
-  else if (mi == 5) { emis = 0.4 + 0.9*uNight + 2.6*uBrake; }
+  else if (mi == 5) { emis = 0.4 + 1.15*uNight + 4.0*uBrake; }
   else if (mi == 6) { float f = step(0.0, sin(uTime*13.0)); emis = 0.2 + f*3.5; }
   else if (mi == 7) { float f = step(0.0, -sin(uTime*13.0)); emis = 0.2 + f*3.5; }
   else if (mi == 8 || mi == 22) {

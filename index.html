@@ -5416,7 +5416,7 @@ function readInput(dt) {
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
   // Réponse tactile plus franche : les flèches atteignent rapidement leur braquage utile,
   // puis reviennent au centre sans à-coup dès que le doigt est relâché.
-  const steerRise = 13.5, steerReturn = 9.6;
+  const steerRise = 20.0, steerReturn = 14.0;
   if (leftDown && rightDown) {
     TOUCH.leftAmount = Math.max(0, (TOUCH.leftAmount || 0) - steerReturn * dt);
     TOUCH.rightAmount = Math.max(0, (TOUCH.rightAmount || 0) - steerReturn * dt);
@@ -5452,12 +5452,12 @@ function readInput(dt) {
     steerTarget = Math.sign(digital) * Math.pow(Math.abs(digital), 1.12);
   }
   const digitalSteer = analog === null && Math.abs(digital) > 0.001;
-  const steerRate = digitalSteer ? 19.0 : (Math.abs(steerTarget) < 0.01 ? 13.5 : 17.0);
+  const steerRate = digitalSteer ? 24.0 : (Math.abs(steerTarget) < 0.01 ? 17.0 : 21.0);
   const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 52, 0, 1);
   const stability = 1 - speedFactor * 0.19;
   G.steer += (steerTarget * stability - G.steer) * (1 - Math.exp(-steerRate * dt));
-  G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.20 : 0.26)));
-  G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.16 : 0.23)));
+  G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.15 : 0.21)));
+  G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.12 : 0.19)));
   G.inputHand = (G.inputHand || 0) + ((hand ? 1 : 0) - (G.inputHand || 0)) * (1 - Math.exp(-dt / (hand ? 0.22 : 0.28)));
   const o = G.inpO || (G.inpO = {});
   o.gas = G.inputGas; o.brake = G.inputBrake; o.steer = G.steer;

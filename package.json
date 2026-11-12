@@ -1,0 +1,17 @@
+{
+  "name": "seddik-fire",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Seddik Fire - Tunisian tactical battle royale",
+  "scripts": {
+    "build:web": "mkdir -p www && rsync -a --delete --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='www' --exclude='android' --exclude='package.json' --exclude='package-lock.json' --exclude='capacitor.config.json' --exclude='README.md' ./ www/",
+    "build:android": "npm run build:web && cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}

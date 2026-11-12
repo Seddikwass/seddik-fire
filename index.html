@@ -3112,8 +3112,17 @@ function crewTtsStatus(message, error=false) {
   const el = $('radio-tts-status'); if (!el) return;
   el.textContent = message; el.classList.toggle('error', !!error);
 }
+function nativeCrewTts() {
+  try { return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TeamTTS || null; }
+  catch (e) { return null; }
+}
 function unlockCrewSpeech() {
   if (RADIO_TTS_UNLOCKED) return;
+  if (nativeCrewTts()) {
+    RADIO_TTS_UNLOCKED = true;
+    if (RADIO_TTS_PENDING) { const pending = RADIO_TTS_PENDING; RADIO_TTS_PENDING = ''; speakCrewAdvice(pending); }
+    return;
+  }
   if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { crewTtsStatus('Synthèse vocale indisponible sur ce navigateur', true); return; }
   RADIO_TTS_UNLOCKED = true;
   // Amorçage muet pendant le premier geste Android : évite que la première consigne,
@@ -3124,7 +3133,15 @@ function unlockCrewSpeech() {
 }
 function speakCrewAdvice(message) {
   if (!message) return;
-  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { crewTtsStatus('Moteur vocal Android non disponible', true); return; }
+  const nativeTts = nativeCrewTts();
+  const lang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
+  if (nativeTts && typeof nativeTts.speak === 'function') {
+    nativeTts.speak({ text: message, language: lang, rate: 0.94 })
+      .then(() => crewTtsStatus('VOIX ANDROID ACTIVE · ' + lang.toUpperCase()))
+      .catch(e => crewTtsStatus('Voix Android indisponible : ' + (e && e.message || 'vérifie la synthèse vocale du téléphone'), true));
+    return;
+  }
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { crewTtsStatus('Moteur vocal non disponible sur cet appareil', true); return; }
   if (!RADIO_TTS_UNLOCKED) { RADIO_TTS_PENDING = message; return; }
   const synth = window.speechSynthesis;
   const lang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
@@ -6916,7 +6933,7 @@ function bindInputs() {
   $('h-pause').onclick = () => UI.pause(true);
   $('radio-talk').onclick = () => {
     unlockCrewSpeech();
-    if (!window.speechSynthesis) { crewTtsStatus('Active la synthèse vocale Android dans les paramètres', true); return; }
+    if (!nativeCrewTts() && !window.speechSynthesis) { crewTtsStatus('Active la synthèse vocale Android dans les paramètres', true); return; }
     crewTtsStatus('Test vocal en cours…');
     radioCall();
   };

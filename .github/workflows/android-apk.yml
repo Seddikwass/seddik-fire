@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout V115 source
+      - name: Checkout V116 source
         uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -86,30 +86,57 @@ jobs:
           plugin = r"""package com.seddik.superjoud;
 
           import android.speech.tts.TextToSpeech;
+          import android.speech.tts.UtteranceProgressListener;
+          import java.util.ArrayDeque;
           import java.util.Locale;
           import com.getcapacitor.Plugin;
           import com.getcapacitor.PluginCall;
           import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.JSObject;
           import com.getcapacitor.annotation.CapacitorPlugin;
 
           @CapacitorPlugin(name = "TeamTTS")
           public class TeamTTSPlugin extends Plugin implements TextToSpeech.OnInitListener {
               private TextToSpeech engine;
               private boolean ready = false;
-              private String pendingText = null;
-              private String pendingLanguage = "fr-FR";
+              private boolean failed = false;
+              private final ArrayDeque<SpeechItem> queue = new ArrayDeque<>();
+              private static class SpeechItem {
+                  final String text, language;
+                  final float rate;
+                  SpeechItem(String t, String l, float r) { text=t; language=l; rate=r; }
+              }
 
               @Override public void load() {
-                  engine = new TextToSpeech(getContext(), this);
+                  engine = new TextToSpeech(getContext().getApplicationContext(), this);
+                  if (engine == null) failed = true;
               }
 
               @Override public void onInit(int status) {
                   ready = status == TextToSpeech.SUCCESS;
-                  if (ready && pendingText != null) {
-                      String text = pendingText, language = pendingLanguage;
-                      pendingText = null;
-                      speakNow(text, language, 0.94f);
+                  failed = !ready;
+                  notifyTtsStatus(ready ? "ready" : "init_error", ready ? "Moteur vocal Android prêt" : "Android TextToSpeech initialization failed");
+                  if (ready) {
+                      while (!queue.isEmpty()) {
+                          SpeechItem item = queue.poll();
+                          speakNow(item.text, item.language, item.rate, null);
+                      }
                   }
+              }
+
+              private void notifyTtsStatus(String state, String message) {
+                  JSObject data = new JSObject();
+                  data.put("state", state);
+                  data.put("message", message);
+                  notifyListeners("status", data);
+              }
+
+              @PluginMethod public void status(PluginCall call) {
+                  JSObject result = new JSObject();
+                  result.put("ready", ready);
+                  result.put("failed", failed);
+                  result.put("queued", queue.size());
+                  call.resolve(result);
               }
 
               @PluginMethod public void speak(PluginCall call) {
@@ -120,37 +147,68 @@ jobs:
                       call.reject("Aucune consigne vocale à lire");
                       return;
                   }
-                  if (!ready || engine == null) {
-                      pendingText = text;
-                      pendingLanguage = language;
-                      call.resolve();
+                  if (failed) {
+                      call.reject("Moteur vocal Android indisponible. Vérifie le service de synthèse vocale dans les paramètres Android.");
                       return;
                   }
-                  speakNow(text, language, (float) rate);
-                  call.resolve();
+                  SpeechItem item = new SpeechItem(text, language, (float) rate);
+                  if (!ready || engine == null) {
+                      if (queue.size() >= 8) queue.poll();
+                      queue.add(item);
+                      JSObject result = new JSObject();
+                      result.put("queued", true);
+                      result.put("queueSize", queue.size());
+                      call.resolve(result);
+                      return;
+                  }
+                  speakNow(item.text, item.language, item.rate, call);
               }
 
-              private void speakNow(String text, String language, float rate) {
-                  if (engine == null) return;
-                  Locale locale = Locale.forLanguageTag(language == null ? "fr-FR" : language);
+              private void speakNow(String text, String language, float rate, PluginCall call) {
+                  if (engine == null || !ready) {
+                      if (call != null) call.reject("Moteur vocal Android non prêt");
+                      return;
+                  }
+                  String tag = language == null ? "fr-FR" : language;
+                  Locale locale = Locale.forLanguageTag(tag);
                   int result = engine.setLanguage(locale);
                   if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                      String base = language == null ? "fr" : language.substring(0, Math.min(2, language.length())).toLowerCase(Locale.ROOT);
+                      String base = tag.substring(0, Math.min(2, tag.length())).toLowerCase(Locale.ROOT);
                       locale = base.equals("ar") ? new Locale("ar") : (base.equals("en") ? Locale.US : Locale.FRANCE);
-                      engine.setLanguage(locale);
+                      result = engine.setLanguage(locale);
+                  }
+                  if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                      notifyTtsStatus("language_error", "Voix " + tag + " absente. Installe les données vocales dans Android.");
+                      if (call != null) call.reject("Voix " + tag + " non installée sur Android");
+                      return;
                   }
                   engine.setSpeechRate(Math.max(0.75f, Math.min(1.15f, rate)));
-                  engine.stop();
-                  engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "sj-team-" + System.currentTimeMillis());
+                  String utteranceId = "sj-team-" + System.nanoTime();
+                  engine.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                      @Override public void onStart(String id) { notifyTtsStatus("speaking", "Lecture de la consigne de l’équipe"); }
+                      @Override public void onDone(String id) { notifyTtsStatus("done", "Consigne terminée"); }
+                      @Override public void onError(String id) { notifyTtsStatus("speech_error", "Le moteur vocal Android a interrompu la lecture"); }
+                  });
+                  int spoken = engine.speak(text, TextToSpeech.QUEUE_ADD, null, utteranceId);
+                  if (spoken == TextToSpeech.ERROR) {
+                      notifyTtsStatus("speech_error", "Android a refusé la consigne vocale");
+                      if (call != null) call.reject("Android a refusé la lecture vocale");
+                  } else if (call != null) {
+                      JSObject resultData = new JSObject();
+                      resultData.put("queued", false);
+                      call.resolve(resultData);
+                  }
               }
 
               @PluginMethod public void stop(PluginCall call) {
                   if (engine != null) engine.stop();
+                  queue.clear();
                   call.resolve();
               }
 
               @Override protected void handleOnDestroy() {
                   if (engine != null) { engine.stop(); engine.shutdown(); engine = null; }
+                  queue.clear();
                   super.handleOnDestroy();
               }
           }
@@ -208,7 +266,7 @@ jobs:
       - name: Publish APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: super-seddik-joud-v115-android-apk
+          name: super-seddik-joud-v116-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

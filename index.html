@@ -5957,7 +5957,9 @@ function drawCar(c, M, far) {
   const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6), frontSteer = -steer;
   R.setRim(c.rimC || RIM0);
   const wm = c.wm || (c.wm = getWheel(c.rimS || m.rim, m.wr, m.ww));
-  for (const w of m.wheels) { M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? frontSteer * 0.58 : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
+  for (const w of m.wheels) { const speedFactor = clamp(Math.abs(c.v || 0) / 90, 0, 1);
+    const wheelAngle = frontSteer * (0.72 - 0.12 * speedFactor);
+    M4.wheelTo(WT, w[0], w[1], w[2], w[3] ? wheelAngle : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
   if (inside && m.glass) { R.glassOn(); R.draw(m.glass, M); R.glassOff(); }
 }
 const UNDER0 = [0.05, 0.05, 0.06], RIM0 = [0.78, 0.79, 0.82];

@@ -5082,6 +5082,16 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
       stamp:'Île de Seddik · 30 joueurs · 1 survivant',
       tagline:'Choisissez votre soldat, votre arme de départ, sautez de l’avion et tenez face à la tempête de feu.',
       roster:'CHOISIR UN COMBATTANT',rosterMeta:'9 portraits · sélection directe',
+      alive:'en vie',killsShort:'élim.',zone:'Zone',storm:'Tempête de feu · rejoignez la zone',
+      eliminated:'Éliminé',reload:'Recharger',pick:'Ramasser',jump:'Sauter',
+      bandage:'Bandage',medkit:'Trousse de soins',drink:'Boisson énergisante',
+      armoryTitle:'Armurerie',armoryClose:'Fermer',armoryNote:"Les armes que vous trouverez sur l'île.",
+      missionsTitle:'Missions',daily:'Missions du jour',achievements:'Succès',
+      gameOver:'Partie terminée',soldiers:'sur 30 soldats',eliminations:'Éliminations',
+      damage:'Dégâts',survival:'Survie',eliminatedBy:'Éliminé par',
+      replay:'Rejouer',menu:'Menu',mapClose:'Touchez pour fermer',
+      armor:'Gilet',helmet:'Casque',hp:'PV',pauseLabel:'Pause',mapLabel:"Mini-carte, touchez pour l'agrandir",
+      currentLevel:'Niveau',xp:'Expérience',soundOn:'Son : activé'
       map:'Carte',mode:'Mode de jeu',weapon:'Arme de départ · faites défiler',
       custom:'Personnalisation',accessory:'Accessoire',shoes:'Chaussures',bag:'Housse de sac',
       unlock:'Les maillots et accessoires se débloquent en montant de niveau. Housse de sac : soldats uniquement.',
@@ -5093,6 +5103,16 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
     },
     ar:{
       armBtn:'مخزن الأسلحة',howBtn:'كيفاش تلعب',optBtn:'الإعدادات',missBtn:'المهام',
+      alive:'عايشين',killsShort:'إقصاءات',zone:'المنطقة',storm:'عاصفة النار · ارجع للمنطقة',
+      eliminated:'تقصّيت',reload:'عمّر السلاح',pick:'إلّم',jump:'إقفز',
+      bandage:'ضمادة',medkit:'حقيبة إسعاف',drink:'مشروب طاقة',
+      armoryTitle:'مخزن الأسلحة',armoryClose:'سكر',armoryNote:'الأسلحة اللي تلقاها في الجزيرة.',
+      missionsTitle:'المهام',daily:'مهام اليوم',achievements:'الإنجازات',
+      gameOver:'وفات المباراة',soldiers:'من 30 مقاتل',eliminations:'الإقصاءات',
+      damage:'الضرر',survival:'وقت البقاء',eliminatedBy:'قصّاك',
+      replay:'عاود إلعب',menu:'القائمة',mapClose:'إضغط باش تسكّر',
+      armor:'درع',helmet:'خوذة',hp:'الصحة',pauseLabel:'توقّف',mapLabel:'الخريطة المصغّرة، إضغط باش تكبّرها',
+      currentLevel:'المستوى',xp:'نقاط الخبرة',soundOn:'الصوت: يخدم'
       stamp:'جزيرة صدّيق · 30 لاعب · ناجي واحد',
       tagline:'اختار مقاتلك وسلاحك، اهبط من الطيارة وواجه عاصفة النار.',
       roster:'اختار المقاتل',rosterMeta:'9 صور · اختيار مباشر',
@@ -5111,6 +5131,16 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
     stamp:'.brand .stamp',tagline:'.brand .tag',
     roster:'#sf-portrait-roster .sf-roster-head b',
     rosterMeta:'#sf-portrait-roster .sf-roster-head span',
+    alive:'#hud .count:first-child small',killsShort:'#hud .count.k small',
+    storm:'#warn',eliminated:'#kb b',reload:'#btnReload',pick:'#btnPick',
+    bandage:'#mBandage',medkit:'#mMedkit',drink:'#mDrink',
+    armoryTitle:'#armory h2',armoryClose:'#armClose',armoryNote:'#armory .arm-note',
+    missionsTitle:'#miss .ptitle',daily:'#miss .set h3',achievements:'#achH',
+    gameOver:'#endEye',soldiers:'#end .of',eliminations:'#end .stats div:nth-child(1) dt',
+    damage:'#end .stats div:nth-child(2) dt',survival:'#end .stats div:nth-child(3) dt',
+    eliminatedBy:'#end .stats div:nth-child(4) dt',replay:'#again',menu:'#toMenu',
+    mapClose:'#bigmap p',armor:'#hud .arm span:nth-child(1)',helmet:'#hud .arm span:nth-child(2)',
+    hp:'#hud .arm span:nth-child(4)',currentLevel:'#xpBox .xp-h span:first-child';
     map:'.side .card:nth-child(1) .lbl',mode:'.side .card:nth-child(2) .lbl',
     weapon:'.side .card:nth-child(3) .lbl',custom:'.side .card:nth-child(4) .lbl',
     accessory:'.side .card:nth-child(4) .cz:nth-child(1) > b',
@@ -5127,6 +5157,9 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
   };
   function apply(lang){
     const ar=lang==='ar';const d=dict[ar?'ar':'fr'];
+    document.querySelectorAll('#hud .arm span').forEach((el,i)=>{if(i===0||i===1||i===3){const label=i===0?d.armor:i===1?d.helmet:d.hp;const value=el.querySelector('b');el.firstChild.nodeValue=label+' ';if(value)el.appendChild(value)}});
+    const pause=$('#btnPause');if(pause)pause.setAttribute('aria-label',ar?'توقّف':'Pause');
+    const miniMap=$('#mini');if(miniMap)miniMap.setAttribute('aria-label',d.mapLabel);
     Object.entries(nodes).forEach(([key,sel])=>{const el=document.querySelector(sel);if(el&&d[key])el.textContent=d[key]});
     lobby.dir=ar?'rtl':'ltr';
     document.documentElement.lang=ar?'ar-TN':'fr';

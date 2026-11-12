@@ -5228,7 +5228,7 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
   btn.addEventListener('click',()=>{lang=lang==='fr'?'ar':'fr';apply(lang)});
   apply(lang);
   const watchTargets=['#maps','#modes'];
-  watchTargets.forEach(sel=>{const el=document.querySelector(sel);if(el&&typeof MutationObserver!=='undefined')new MutationObserver(()=>applyDynamic(lang==='ar')).observe(el,{childList:true,subtree:true})});
+  watchTargets.forEach(sel=>{const el=document.querySelector(sel);if(el&&typeof MutationObserver!=='undefined')new MutationObserver(()=>applyDynamic(lang==='ar')).observe(el,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-checked']})});
 })();
 </script>
 <style>

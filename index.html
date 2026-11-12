@@ -6804,7 +6804,15 @@ function bindInputs() {
   });
   addEventListener('keyup', e => { KEYS[e.code] = false; });
   addEventListener('blur', () => { for (const k in KEYS) KEYS[k] = false; for (const k in TOUCH) TOUCH[k] = false; if (G.state === 'race') UI.pause(true); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && (G.state === 'race' || G.state === 'countdown')) UI.pause(true); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      // Android peut masquer l'application sans émettre blur : aucune commande ne doit rester bloquée.
+      for (const k in KEYS) KEYS[k] = false;
+      for (const k in TOUCH) TOUCH[k] = false;
+      TOUCH.leftAmount = 0; TOUCH.rightAmount = 0; TOUCH.ax = 0; TOUCH.axOn = false;
+      if (G.state === 'race' || G.state === 'countdown') UI.pause(true);
+    }
+  });
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
   addEventListener('pagehide', () => saveGame());
   addEventListener('pointerdown', () => { AU.init(); if (G.state === 'menu') MUS.play('menu'); }, { capture: true });

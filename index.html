@@ -729,6 +729,75 @@ body.touch .meter div{height:9px}
   }
   #touch button { opacity:1!important; -webkit-tap-highlight-color:transparent!important; }
 }
+
+/* V87 — Android: disposition tactile unifiée, grands boutons et menu toujours accessible. */
+@media (pointer:coarse) and (max-width:1000px) {
+  #touch { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; z-index:30!important; }
+  #touch .tl,#touch .tr { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; }
+  #touch button { position:absolute!important; top:auto!important; display:flex!important; align-items:center!important; justify-content:center!important; pointer-events:auto!important; touch-action:none!important; user-select:none!important; -webkit-user-select:none!important; -webkit-tap-highlight-color:transparent!important; opacity:1!important; }
+  #touch .tl button {
+    bottom:max(18px,env(safe-area-inset-bottom))!important;
+    width:clamp(96px,12vw,122px)!important;height:clamp(96px,12vw,122px)!important;
+    min-width:96px!important;min-height:96px!important;border-radius:24px!important;
+    border:3px solid #bfeaff!important;background:linear-gradient(145deg,#238bc9,#082b4c)!important;
+    box-shadow:0 8px 22px #0009,inset 0 2px 0 #ffffff55!important;
+  }
+  #touch [data-t=left] { left:max(14px,env(safe-area-inset-left))!important;right:auto!important; }
+  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + clamp(96px,12vw,122px) + 12px)!important;right:auto!important; }
+  #touch [data-t=gas] {
+    right:max(14px,env(safe-area-inset-right))!important;left:auto!important;
+    bottom:max(18px,env(safe-area-inset-bottom))!important;
+    width:clamp(104px,13vw,132px)!important;height:clamp(148px,21vh,184px)!important;
+    min-width:104px!important;min-height:148px!important;border-radius:25px!important;
+    border:3px solid #c4ffdb!important;background:linear-gradient(150deg,#27a968,#07502f)!important;
+  }
+  #touch [data-t=brake] {
+    right:calc(max(14px,env(safe-area-inset-right)) + clamp(104px,13vw,132px) + 12px)!important;left:auto!important;
+    bottom:max(18px,env(safe-area-inset-bottom))!important;
+    width:clamp(90px,10vw,108px)!important;height:clamp(90px,10vw,108px)!important;
+    min-width:90px!important;min-height:90px!important;border-radius:23px!important;
+    border:3px solid #ffd1d1!important;background:linear-gradient(145deg,#d64e58,#651c2b)!important;
+  }
+  #touch [data-t=hand] {
+    right:max(14px,env(safe-area-inset-right))!important;left:auto!important;
+    bottom:calc(max(18px,env(safe-area-inset-bottom)) + clamp(148px,21vh,184px) + 12px)!important;
+    width:clamp(104px,13vw,132px)!important;height:60px!important;min-height:60px!important;
+    border:2px solid #ffe0a0!important;background:linear-gradient(145deg,#a95c16,#63300c)!important;
+  }
+  #touch [data-t=nitro] {
+    right:calc(max(14px,env(safe-area-inset-right)) + clamp(104px,13vw,132px) + 12px)!important;left:auto!important;
+    bottom:calc(max(18px,env(safe-area-inset-bottom)) + clamp(90px,10vw,108px) + 12px)!important;
+    width:clamp(90px,10vw,108px)!important;height:58px!important;min-height:58px!important;
+    border:2px solid #9beaff!important;background:linear-gradient(145deg,#176f94,#09334e)!important;
+  }
+  #touch .tl button::after { font-size:11px!important;bottom:8px!important; }
+  #touch button svg { width:58%!important;height:58%!important; }
+}
+@media (pointer:coarse) and (max-width:1000px) and (orientation:landscape) {
+  #touch .tl button { width:clamp(96px,11vw,116px)!important;height:clamp(96px,11vw,116px)!important; }
+  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + clamp(96px,11vw,116px) + 12px)!important; }
+  #touch [data-t=gas] { height:clamp(132px,38vh,168px)!important; }
+  #touch [data-t=hand] { bottom:calc(max(18px,env(safe-area-inset-bottom)) + clamp(132px,38vh,168px) + 10px)!important; }
+  #scr-main { justify-content:flex-start!important;align-items:stretch!important;gap:8px!important;padding:calc(env(safe-area-inset-top) + 58px) 18px 18px!important;overflow-y:auto!important; }
+  #scr-main .hero .logo { font-size:clamp(25px,5vw,40px)!important; }
+  #scr-main .hero .tag { display:none!important; }
+  #scr-main .mainnav { display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:min(680px,100%)!important; }
+  #scr-main .mainnav .nbtn { min-height:54px!important;padding:9px 12px!important; }
+  #scr-main .mainnav .nbtn b { font-size:clamp(15px,2.2vw,19px)!important; }
+  #scr-main .mainnav .nbtn small { font-size:10px!important; }
+}
+@media (pointer:coarse) and (max-width:760px) and (orientation:portrait) {
+  #scr-main { justify-content:flex-start!important;align-items:stretch!important;gap:14px!important;padding:calc(env(safe-area-inset-top) + 66px) 16px max(24px,env(safe-area-inset-bottom))!important;overflow-y:auto!important; }
+  #scr-main .hero .logo { font-size:clamp(30px,8vw,48px)!important; }
+  #scr-main .mainnav { display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;width:100%!important; }
+  #scr-main .mainnav .nbtn { min-height:64px!important;padding:11px 12px!important; }
+  #scr-main .mainnav .nbtn b { font-size:clamp(15px,4vw,19px)!important; }
+  #scr-main .mainnav .nbtn small { font-size:10px!important; }
+}
+@media (pointer:coarse) and (max-width:760px) {
+  .screen { overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;max-height:100dvh!important; }
+  .scr-head { position:sticky!important;top:0!important;z-index:8!important; }
+}
 </style>
 </head>
 <body>
@@ -742,7 +811,7 @@ body.touch .meter div{height:9px}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V86</span>
+    <span id="build-tag" aria-label="Version du jeu">V87</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -4797,47 +4866,59 @@ function spawnCop(s, d, v, state) {
 /* ---------------- entrées ---------------- */
 const KEYS = {}, TOUCH = {};
 function readInput(dt) {
-  let gas = (KEYS.ArrowUp || KEYS.KeyW || KEYS.KeyZ || TOUCH.gas) ? 1 : 0, brake = (KEYS.ArrowDown || KEYS.KeyS || TOUCH.brake) ? 1 : 0;
-  // Direction tactile progressive : le braquage monte avec la durée d'appui,
-  // puis revient doucement au centre dès que le doigt est relâché.
+  let gas = (KEYS.ArrowUp || KEYS.KeyW || KEYS.KeyZ || TOUCH.gas) ? 1 : 0;
+  let brake = (KEYS.ArrowDown || KEYS.KeyS || TOUCH.brake) ? 1 : 0;
+  // Les flèches gardent leur sens physique gauche/droite, quelle que soit
+  // l'orientation de l'écran. Chaque appui monte progressivement puis revient au centre.
   const leftDown = !!(KEYS.ArrowLeft || KEYS.KeyA || KEYS.KeyQ || TOUCH.left);
-  const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
-  const steerRise = 8.4, steerReturn = 9.2;
-  TOUCH.leftAmount = clamp((TOUCH.leftAmount || 0) + (leftDown ? steerRise : -steerReturn) * dt, 0, 1);
-  TOUCH.rightAmount = clamp((TOUCH.rightAmount || 0) + (rightDown ? steerRise : -steerReturn) * dt, 0, 1);
-  if (leftDown && rightDown) { TOUCH.leftAmount *= 0.82; TOUCH.rightAmount *= 0.82; }
-  let st = (TOUCH.rightAmount - TOUCH.leftAmount) * 1.20;
-  let hand = !!(KEYS.Space || TOUCH.hand), nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro), analog = null;
+  const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || KEYS.KeyQ && false || TOUCH.right);
+  const steerRise = 5.2, steerReturn = 8.0;
+  if (leftDown && rightDown) {
+    TOUCH.leftAmount = Math.max(0, (TOUCH.leftAmount || 0) - steerReturn * dt);
+    TOUCH.rightAmount = Math.max(0, (TOUCH.rightAmount || 0) - steerReturn * dt);
+  } else {
+    TOUCH.leftAmount = clamp((TOUCH.leftAmount || 0) + (leftDown ? steerRise : -steerReturn) * dt, 0, 1);
+    TOUCH.rightAmount = clamp((TOUCH.rightAmount || 0) + (rightDown ? steerRise : -steerReturn) * dt, 0, 1);
+  }
+  const digital = clamp((TOUCH.rightAmount || 0) - (TOUCH.leftAmount || 0), -1, 1);
+  let hand = !!(KEYS.Space || TOUCH.hand);
+  let nitro = !!(KEYS.ShiftLeft || KEYS.ShiftRight || KEYS.KeyN || TOUCH.nitro);
+  let analog = null;
   try {
     const gps = navigator.getGamepads ? navigator.getGamepads() : [];
     for (const gp of gps) {
       if (!gp) continue;
-      const ax = gp.axes[0] || 0; if (Math.abs(ax) > 0.12) analog = ax;
+      const ax = gp.axes[0] || 0;
+      if (Math.abs(ax) > 0.12) analog = ax;
       const b = i => gp.buttons[i] && (gp.buttons[i].pressed || gp.buttons[i].value > 0.2);
-      if (b(7)) gas = Math.max(gas, gp.buttons[7].value || 1); if (b(6)) brake = Math.max(brake, gp.buttons[6].value || 1);
-      if (b(0)) nitro = true; if (b(2) || b(1)) hand = true;
+      if (b(7)) gas = Math.max(gas, gp.buttons[7].value || 1);
+      if (b(6)) brake = Math.max(brake, gp.buttons[6].value || 1);
+      if (b(0)) nitro = true;
+      if (b(2) || b(1)) hand = true;
     }
-  } catch (e) { }
+  } catch (e) {}
   if (TOUCH.axOn) analog = clamp(TOUCH.ax * (SAVE.settings.sens || 100) / 100, -1, 1);
-  // Flèches tactiles : réponse quasi immédiate, sans rampe qui retarde le virage.
-  // Joystick/manette : courbe analogique conservée pour les petits ajustements.
-  let steerTarget = st;
+  let steerTarget = digital;
   if (analog !== null) {
     const dz = 0.035, a = Math.abs(analog);
-    steerTarget = a <= dz ? 0 : Math.sign(analog) * Math.pow((a - dz) / (1 - dz), 1.08);
+    const curved = a <= dz ? 0 : Math.pow((a - dz) / (1 - dz), 1.18);
+    steerTarget = Math.sign(analog) * curved;
+  } else {
+    // Courbe douce pour éviter un braquage brutal dès le premier contact.
+    steerTarget = Math.sign(digital) * Math.pow(Math.abs(digital), 1.12);
   }
-  // Progressivité spécifique aux flèches, douceur au relâchement et filtrage
-  // des micro-mouvements pour garder la voiture stable à haute vitesse.
-  const digitalSteer = analog === null && st !== 0;
-  const steerRate = digitalSteer ? 14.0 : (steerTarget === 0 ? 8.6 : 12.0);
-  const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 48, 0, 1);
-  const stability = 1 - speedFactor * 0.10;
+  const digitalSteer = analog === null && Math.abs(digital) > 0.001;
+  const steerRate = digitalSteer ? 9.2 : (Math.abs(steerTarget) < 0.01 ? 8.0 : 10.5);
+  const speedFactor = clamp(Math.abs(G.player ? G.player.vfw : 0) / 52, 0, 1);
+  const stability = 1 - speedFactor * 0.16;
   G.steer += (steerTarget * stability - G.steer) * (1 - Math.exp(-steerRate * dt));
-  // Réponse en rampe : appui progressif, relâchement amorti, frein à main dosé.
-  G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.22 : 0.28)));
-  G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.17 : 0.25)));
-  G.inputHand = (G.inputHand || 0) + ((hand ? 1 : 0) - (G.inputHand || 0)) * (1 - Math.exp(-dt / (hand ? 0.24 : 0.30)));
-  const o = G.inpO || (G.inpO = {}); o.gas = G.inputGas; o.brake = G.inputBrake; o.steer = G.steer; o.hand = G.inputHand; o.nitro = nitro; o.rev = 0; o.hold = false; return o;
+  G.inputGas = (G.inputGas || 0) + (gas - (G.inputGas || 0)) * (1 - Math.exp(-dt / (gas ? 0.20 : 0.26)));
+  G.inputBrake = (G.inputBrake || 0) + (brake - (G.inputBrake || 0)) * (1 - Math.exp(-dt / (brake ? 0.16 : 0.23)));
+  G.inputHand = (G.inputHand || 0) + ((hand ? 1 : 0) - (G.inputHand || 0)) * (1 - Math.exp(-dt / (hand ? 0.22 : 0.28)));
+  const o = G.inpO || (G.inpO = {});
+  o.gas = G.inputGas; o.brake = G.inputBrake; o.steer = G.steer;
+  o.hand = G.inputHand; o.nitro = nitro; o.rev = 0; o.hold = false;
+  return o;
 }
 
 /* ---------------- physique du joueur ---------------- */
@@ -4851,13 +4932,13 @@ function physPlayer(c, dt, inp) {
   // Direction assistée renforcée : davantage d'angle utile à vitesse élevée,
   // sans rendre le véhicule incontrôlable à faible vitesse.
   // Braquage progressif et sensible à faible vitesse, plus stable à haute vitesse.
-  let yawMax = Math.min(3.50, (st.lat * 2.70) / Math.max(spd, 4.5));
+  let yawMax = Math.min(3.35, (st.lat * 2.78) / Math.max(spd, 4.2));
   if (spd < 1.2) yawMax *= 0.78 + 0.22 * (spd / 1.2);
   // Même convention de direction pour motos et voitures : gauche braque à gauche, droite à droite.
   let target = -inp.steer * yawMax * (vf >= 0 ? 1 : -1);
   const handActive = inp.hand > 0.08 && spd > 7;
   if (handActive) target *= 1 + 0.72 * inp.hand; else if (c.sliding) target *= 1.10;
-  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 16));
+  c.yaw += (target - c.yaw) * (1 - Math.exp(-dt * 13));
   c.h += c.yaw * dt;
   const Fx = Math.sin(c.h), Fz = Math.cos(c.h), Rx = -Math.cos(c.h), Rz = Math.sin(c.h);
   vf = c.vx * Fx + c.vz * Fz; let vl = c.vx * Rx + c.vz * Rz;
@@ -5072,7 +5153,7 @@ function updateGame(dt) {
   if (!racing) { const fin = G.state === 'finish', rv = inp.gas; inp.gas = 0; inp.brake = fin ? 0.35 : 0; inp.steer = fin ? clamp(-p.d * 0.05, -0.3, 0.3) : 0; inp.hand = false; inp.nitro = false; inp.rev = fin ? 0 : rv; inp.hold = !fin; if (!fin) { G.steer = 0; G.inputGas = 0; G.inputBrake = 0; } }
   if (racing) {
     G.raceT += dt;
-    if (G.raceT >= (G.radioNext || 12)) { radioCall(true); G.radioNext = G.raceT + 22; }
+    if (G.raceT >= (G.radioNext || 7)) { radioCall(true); G.radioNext = G.raceT + 18; }
     if (G.raceT >= (G.crowdNext || 15)) { AU.crowdPulse(0.38 + Math.random() * 0.24); G.crowdNext = G.raceT + 15 + Math.random() * 7; }
   }
   // physique (sous-pas)
@@ -6041,13 +6122,14 @@ function applySettings() {
     // Profil téléphone : priorité à une course stable plutôt qu'aux effets coûteux.
     // Un peu plus de définition sur les téléphones, tout en gardant
     // les ombres/post-effets coûteux désactivés pour éviter les pertes WebGL.
-    PR = Math.min(PR, modest ? 0.80 : 0.94);
-    R.shadowSize = 256;
+    // Définition renforcée sur téléphones récents, profil allégé sur appareils modestes.
+    PR = Math.min(PR, modest ? 0.88 : 1.02);
+    R.shadowSize = 512;
     R.shadows = false;
     R.bloom = false; R.rays = false; R.post = false; R.aa = false;
-    R.detail = Math.min(R.detail, modest ? 0.66 : 0.84);
-    G.drawMul = Math.min(G.drawMul, modest ? 0.76 : 0.92);
-    G.lodNear = Math.min(G.lodNear, modest ? 20 : 34);
+    R.detail = Math.min(R.detail, modest ? 0.72 : 0.94);
+    G.drawMul = Math.min(G.drawMul, modest ? 0.82 : 0.98);
+    G.lodNear = Math.min(G.lodNear, modest ? 24 : 42);
   }
   R.setLite(s.quality === 'low');
   if (!s.dyn) DYN = 1;
@@ -6177,7 +6259,12 @@ function bindInputs() {
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };
   $('p-quit').onclick = () => UI.quit();
   $('h-pause').onclick = () => UI.pause(true);
-  $('radio-talk').onclick = () => { unlockCrewSpeech(); if (!window.speechSynthesis) { crewTtsStatus('Active la synthèse vocale Android dans les paramètres', true); return; } radioCall(); };
+  $('radio-talk').onclick = () => {
+    unlockCrewSpeech();
+    if (!window.speechSynthesis) { crewTtsStatus('Active la synthèse vocale Android dans les paramètres', true); return; }
+    crewTtsStatus('Test vocal en cours…');
+    radioCall();
+  };
   $('radio-open').onclick = () => radioVoiceStart('host');
   $('radio-join').onclick = () => radioVoiceStart('guest');
   const ptt=$('radio-ptt');

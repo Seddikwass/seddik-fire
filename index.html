@@ -3136,9 +3136,13 @@ function speakCrewAdvice(message) {
   const nativeTts = nativeCrewTts();
   const nativeLang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
   if (nativeTts && typeof nativeTts.speak === 'function') {
+    crewTtsStatus('Préparation de la voix Android…');
     nativeTts.speak({ text: message, language: nativeLang, rate: 0.94 })
-      .then(() => crewTtsStatus('VOIX ANDROID ACTIVE · ' + nativeLang.toUpperCase()))
-      .catch(e => crewTtsStatus('Voix Android indisponible : ' + (e && e.message || 'vérifie la synthèse vocale du téléphone'), true));
+      .then(result => {
+        if (result && result.queued) crewTtsStatus('Consigne mise en attente · initialisation du moteur vocal');
+        else crewTtsStatus('Consigne envoyée au moteur Android · ' + nativeLang.toUpperCase());
+      })
+      .catch(e => crewTtsStatus('ÉCHEC VOIX ANDROID : ' + (e && e.message || 'moteur vocal absent ou langue indisponible'), true));
     return;
   }
   if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { crewTtsStatus('Moteur vocal non disponible sur cet appareil', true); return; }

@@ -695,6 +695,40 @@ body.touch .meter div{height:9px}
   #touch button svg{width:58%!important;height:58%!important}
   #touch .tl button::after{font-size:10px!important;bottom:7px!important}
 }
+
+/* V86 Android: recalage fiable des commandes après rotation et redimensionnement. */
+@media (pointer:coarse) and (max-width:900px) {
+  #touch { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; }
+  #touch .tl, #touch .tr { position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important; pointer-events:none!important; }
+  #touch button { position:absolute!important; top:auto!important; bottom:max(16px,env(safe-area-inset-bottom))!important; pointer-events:auto!important; touch-action:none!important; }
+  #touch .tl button {
+    width:clamp(78px,10vw,104px)!important; height:clamp(78px,10vw,104px)!important;
+    min-width:78px!important; min-height:78px!important; border-radius:20px!important;
+  }
+  #touch [data-t=left] { left:max(14px,env(safe-area-inset-left))!important; right:auto!important; }
+  #touch [data-t=right] { left:calc(max(14px,env(safe-area-inset-left)) + clamp(78px,10vw,104px) + 10px)!important; right:auto!important; }
+  #touch [data-t=gas] {
+    right:max(14px,env(safe-area-inset-right))!important; left:auto!important;
+    width:clamp(88px,11vw,116px)!important; height:clamp(126px,18vh,164px)!important;
+    min-width:88px!important; min-height:126px!important;
+  }
+  #touch [data-t=brake] {
+    right:calc(max(14px,env(safe-area-inset-right)) + clamp(88px,11vw,116px) + 12px)!important; left:auto!important;
+    width:clamp(76px,9vw,96px)!important; height:clamp(76px,9vw,96px)!important;
+    min-width:76px!important; min-height:76px!important;
+  }
+  #touch [data-t=hand] {
+    right:max(14px,env(safe-area-inset-right))!important; left:auto!important;
+    bottom:calc(max(16px,env(safe-area-inset-bottom)) + clamp(126px,18vh,164px) + 12px)!important;
+    width:clamp(88px,11vw,116px)!important; height:56px!important; min-height:56px!important;
+  }
+  #touch [data-t=nitro] {
+    right:calc(max(14px,env(safe-area-inset-right)) + clamp(88px,11vw,116px) + 12px)!important; left:auto!important;
+    bottom:calc(max(16px,env(safe-area-inset-bottom)) + clamp(76px,9vw,96px) + 12px)!important;
+    width:clamp(76px,9vw,96px)!important; height:54px!important; min-height:54px!important;
+  }
+  #touch button { opacity:1!important; -webkit-tap-highlight-color:transparent!important; }
+}
 </style>
 </head>
 <body>
@@ -708,7 +742,7 @@ body.touch .meter div{height:9px}
     <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V85</span>
+    <span id="build-tag" aria-label="Version du jeu">V86</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -6160,7 +6194,20 @@ function bindInputs() {
   };
   $('h-cam').onclick = () => { G.camMode = (G.camMode + 1) % 3; };
   $('rot-ok').onclick = () => { UI.rotOk = true; $('rotate').classList.remove('show'); };
-  addEventListener('resize', () => { if (IS_TOUCH && innerWidth > innerHeight) $('rotate').classList.remove('show'); });
+  const syncAndroidLayout = () => {
+    if (!IS_TOUCH) return;
+    requestAnimationFrame(() => {
+      if (innerWidth > innerHeight) $('rotate').classList.remove('show');
+      if (!$('stick').classList.contains('hidden')) stickHome();
+    });
+  };
+  addEventListener('resize', syncAndroidLayout, { passive: true });
+  addEventListener('orientationchange', () => {
+    TILT.zero = null;
+    syncAndroidLayout();
+  }, { passive: true });
+  if (window.visualViewport) visualViewport.addEventListener('resize', syncAndroidLayout, { passive: true });
+  addEventListener('pageshow', syncAndroidLayout, { passive: true });
   $('ad-bonus').onclick = () => ADS.bonus();
   $('btnFs').onclick = () => {
     try {

@@ -5972,7 +5972,11 @@ function drawCar(c, M, far) {
   R.setRim(c.rimC || RIM0);
   const wm = c.wm || (c.wm = getWheel(c.rimS || m.rim, m.wr, m.ww));
   for (const w of m.wheels) { const speedFactor = clamp(Math.abs(c.v || 0) / 90, 0, 1);
-    const wheelAngle = frontSteer * (0.72 - 0.12 * speedFactor);
+    const baseWheelAngle = frontSteer * (0.72 - 0.12 * speedFactor);
+    // Géométrie Ackermann légère : la roue intérieure braque un peu plus que l'extérieure.
+    const trackHalf = Math.max(0.55, m.W * 0.39);
+    const ackermann = clamp(1 + (w[0] / trackHalf) * Math.sign(baseWheelAngle) * 0.075, 0.91, 1.09);
+    const wheelAngle = baseWheelAngle * ackermann;
     // Débattement visuel différencié entre essieu avant et arrière lors des transferts de charge.
     const bodyPitch = clamp(c.squat || 0, -0.045, 0.045);
     const suspensionTravel = clamp(bodyPitch * (w[3] ? -0.58 : 0.58), -0.026, 0.026);

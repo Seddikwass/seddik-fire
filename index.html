@@ -4052,6 +4052,16 @@ function buildTrack(def, quality) {
     const curbOff = theme === 'circuit' ? W + 5.5 : theme === 'city' ? W + 0.6 : W + 2.6;
     for (const [a, b] of sharp) {
       const mid = (a + b) >> 1, dl = bend(mid), side = dl > 0 ? -1 : 1;
+      // V110 : vibreurs rouge/blanc sur les deux rives des virages de circuit.
+      if (theme === 'circuit') {
+        for (let i = a; i < b; i += 2) {
+          const mb = ch(rk(i)), col = ((Math.floor((i - a) / 2) & 1) === 0) ? [0.88, 0.055, 0.045] : [0.92, 0.91, 0.84];
+          for (const edge of [-1, 1]) {
+            const d0 = edge * (W + 0.12), d1 = edge * (W + 1.28), j = Math.min(i + 2, b);
+            mb.quad(pos(i, d0, 0.055), pos(i, d1, 0.055), pos(j, d1, 0.055), pos(j, d0, 0.055), col, 0);
+          }
+        }
+      }
       // chevrons à l'extérieur du virage, tous les ~16 m
       if (theme !== 'city') for (let i = a; i <= b; i += 8) {
         const mb = ch(rk(i)), d = side * curbOff;

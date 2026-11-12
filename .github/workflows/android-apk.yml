@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout V114 source
+      - name: Checkout V115 source
         uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -76,6 +76,100 @@ jobs:
         run: npx cap add android
       - name: Sync game into Android app
         run: npx cap sync android
+      - name: Add native Android team text-to-speech bridge
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          base = Path("android/app/src/main/java/com/seddik/superjoud")
+          base.mkdir(parents=True, exist_ok=True)
+          plugin = r"""package com.seddik.superjoud;
+
+          import android.speech.tts.TextToSpeech;
+          import java.util.Locale;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+
+          @CapacitorPlugin(name = "TeamTTS")
+          public class TeamTTSPlugin extends Plugin implements TextToSpeech.OnInitListener {
+              private TextToSpeech engine;
+              private boolean ready = false;
+              private String pendingText = null;
+              private String pendingLanguage = "fr-FR";
+
+              @Override public void load() {
+                  engine = new TextToSpeech(getContext(), this);
+              }
+
+              @Override public void onInit(int status) {
+                  ready = status == TextToSpeech.SUCCESS;
+                  if (ready && pendingText != null) {
+                      String text = pendingText, language = pendingLanguage;
+                      pendingText = null;
+                      speakNow(text, language, 0.94f);
+                  }
+              }
+
+              @PluginMethod public void speak(PluginCall call) {
+                  String text = call.getString("text", "");
+                  String language = call.getString("language", "fr-FR");
+                  double rate = call.getDouble("rate", 0.94);
+                  if (text == null || text.trim().isEmpty()) {
+                      call.reject("Aucune consigne vocale à lire");
+                      return;
+                  }
+                  if (!ready || engine == null) {
+                      pendingText = text;
+                      pendingLanguage = language;
+                      call.resolve();
+                      return;
+                  }
+                  speakNow(text, language, (float) rate);
+                  call.resolve();
+              }
+
+              private void speakNow(String text, String language, float rate) {
+                  if (engine == null) return;
+                  Locale locale = Locale.forLanguageTag(language == null ? "fr-FR" : language);
+                  int result = engine.setLanguage(locale);
+                  if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                      String base = language == null ? "fr" : language.substring(0, Math.min(2, language.length())).toLowerCase(Locale.ROOT);
+                      locale = base.equals("ar") ? new Locale("ar") : (base.equals("en") ? Locale.US : Locale.FRANCE);
+                      engine.setLanguage(locale);
+                  }
+                  engine.setSpeechRate(Math.max(0.75f, Math.min(1.15f, rate)));
+                  engine.stop();
+                  engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "sj-team-" + System.currentTimeMillis());
+              }
+
+              @PluginMethod public void stop(PluginCall call) {
+                  if (engine != null) engine.stop();
+                  call.resolve();
+              }
+
+              @Override protected void handleOnDestroy() {
+                  if (engine != null) { engine.stop(); engine.shutdown(); engine = null; }
+                  super.handleOnDestroy();
+              }
+          }
+          """
+          (base / "TeamTTSPlugin.java").write_text(plugin, encoding="utf-8")
+          main = base / "MainActivity.java"
+          source = main.read_text(encoding="utf-8")
+          if "TeamTTSPlugin.class" not in source:
+              source = source.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport android.os.Bundle;")
+              source = re.sub(
+                  r"public class MainActivity extends BridgeActivity\\s*\\{\\s*\\}",
+                  "public class MainActivity extends BridgeActivity {\\n    @Override public void onCreate(Bundle savedInstanceState) {\\n        registerPlugin(TeamTTSPlugin.class);\\n        super.onCreate(savedInstanceState);\\n    }\\n}",
+                  source
+              )
+              if "TeamTTSPlugin.class" not in source:
+                  raise SystemExit("Could not register TeamTTSPlugin in generated MainActivity")
+              main.write_text(source, encoding="utf-8")
+          print("Native TeamTTS bridge registered")
+          PY
       - name: Apply premium supercar Android launcher icon
         run: |
           python3 -m pip install --user Pillow
@@ -116,7 +210,7 @@ jobs:
       - name: Publish APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: super-seddik-joud-v114-android-apk
+          name: super-seddik-joud-v115-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

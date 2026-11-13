@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#07080b">
-<title>SUPER SEDDIK & JOUD</title>
+<title>SUPER SEDDIK &amp; JOUD — 3D street racing</title>
+<meta name="description" content="SUPER SEDDIK &amp; JOUD: free 3D street racing across Tunisia. 18 tracks, 77 vehicles, career, police chases, garage and tuning. 9 languages, playable offline.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SUPER SEDDIK &amp; JOUD — 3D street racing">
+<meta property="og:description" content="Race, drift and escape the police on 18 Tunisian tracks. Free, in 9 languages, on phone and computer.">
+<meta property="og:image" content="https://super-joud.onrender.com/icons/icon-512.png">
+<meta property="og:url" content="https://super-joud.onrender.com/">
+<meta name="twitter:card" content="summary">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -1271,6 +1279,146 @@ html[dir=rtl] .nosbar i{transform-origin:right}
   #touch button.on { transform: translateY(4px) scale(.97) !important; border-bottom-width: 1px !important; }
 }
 
+/* =====================================================================
+   V200 — passe finale : mise en page fiable sur tous les téléphones en paysage,
+   HUD sans chevauchement, sélecteur de langue, commandes tactiles sans texte.
+   Ce bloc est le dernier de la feuille : il a le dernier mot sur les versions précédentes.
+   ===================================================================== */
+.langsel{display:flex;align-items:center;gap:6px;padding:0 10px!important;height:40px;border-radius:9px;cursor:pointer}
+.langsel svg{width:18px;height:18px;color:var(--acc2);flex:none}
+.langsel select{appearance:none;-webkit-appearance:none;background:transparent;border:0;color:#fff;font:700 14px var(--fb);padding:8px 2px;max-width:118px;outline:none;cursor:pointer}
+.langsel select:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
+.langsel select option{background:#0d1420;color:#fff}
+.seg[data-k=lang]{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.qwrap{height:max-content}
+.qwrap>*{flex-shrink:0}
+#q-track-filters{min-height:40px}
+/* l'accueil ne reste plus affiché derrière les autres écrans (ancienne règle display:grid!important) */
+#ui #scr-main:not(.on){display:none!important}
+.scr-head h1{text-transform:uppercase}
+#hud #radio-team.radio-collapsed .radio-head span:first-child{font-size:0!important}
+#hud #radio-team.radio-collapsed .radio-head span:first-child::before{content:"RADIO";font-size:10px;letter-spacing:.08em}
+html[dir=rtl] #hud #radio-team.radio-collapsed .radio-head span:first-child::before{content:"راديو";font-size:12px;letter-spacing:0}
+#q-track-filters button{min-height:32px;white-space:nowrap}
+/* le réglage « opacité des boutons » agit de nouveau */
+#hud #touch button{opacity:var(--touch-op,.85)!important}
+#hud #touch button.on{opacity:1!important}
+/* commandes tactiles : pictogrammes seuls (compris dans toutes les langues), plus de texte qui déborde */
+#hud #touch button::after,#hud #touch button::before{content:none!important}
+/* radio d'équipe : repliée = pastille discrète ; appel automatique = simple message ; ouverte à la main = panneau centré */
+#hud #radio-team.radio-auto .radio-members,#hud #radio-team.radio-auto .radio-voice-controls,#hud #radio-team.radio-auto #radio-talk,#hud #radio-team.radio-auto #radio-tts-status{display:none!important}
+#hud #radio-team.radio-collapsed #radio-tts-status{display:none!important}
+#hud #radio-team:not(.radio-collapsed):not(.radio-auto){left:50%!important;right:auto!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%)!important;width:min(330px,calc(100vw - 24px))!important;max-width:none!important;max-height:calc(100dvh - 20px)!important;overflow-y:auto!important;z-index:60!important;padding:12px 14px!important}
+#hud #radio-team:not(.radio-collapsed):not(.radio-auto) .radio-message{max-height:none!important;font-size:12px!important}
+#hud #radio-team:not(.radio-collapsed):not(.radio-auto) .radio-toggle{min-width:40px!important;min-height:34px!important;font-size:16px!important}
+#hud #radio-team.radio-auto .radio-message{max-height:none!important;margin-bottom:0!important}
+#hud #radio-team .radio-head span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hud #radio-team.radio-collapsed .radio-live{display:none}
+
+@media (max-width:820px){
+  body.sub #langs,body.sub #build-tag{display:none!important}
+  body.sub #topbar{justify-content:flex-end}
+}
+
+/* ---------- ordinateur / tablette : la radio ne recouvre plus la mini-carte ---------- */
+@media (min-height:541px){
+  #hud #radio-team.radio-collapsed,#hud #radio-team.radio-auto{left:max(12px,env(safe-area-inset-left))!important;top:auto!important;bottom:max(14px,env(safe-area-inset-bottom))!important;transform:none!important}
+  body.touch #hud #radio-team.radio-collapsed,body.touch #hud #radio-team.radio-auto{left:50%!important;transform:translateX(-50%)!important}
+  #hud:has(#h-chase:not(.hidden)) #radio-team.radio-collapsed,#hud:has(#h-chase:not(.hidden)) #radio-team.radio-auto{left:50%!important;transform:translateX(-50%)!important}
+}
+
+/* ---------- téléphones en paysage (toutes largeurs) ---------- */
+@media (orientation:landscape) and (max-height:540px){
+  /* menus */
+  #ui .screen{padding-top:56px!important;overflow-x:hidden!important;overflow-y:auto!important;max-height:100dvh!important}
+  #ui .screen .scr-head{position:fixed!important;top:6px!important;inset-inline-start:max(10px,env(safe-area-inset-left))!important;inset-inline-end:auto!important;margin:0!important;padding:4px 12px 4px 5px!important;gap:10px!important;max-width:calc(100vw - 200px)!important;z-index:9!important;display:flex!important;flex-direction:row!important;align-items:center!important;border-radius:11px!important;align-self:auto!important}
+  html[dir=rtl] #ui .screen .scr-head{padding:4px 5px 4px 12px!important}
+  #ui .screen .scr-head h1{font-size:clamp(15px,2.9vw,22px)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  #ui .screen .scr-head .back,#ui .screen .scr-head .hdbtn{flex:none;min-height:36px;padding:6px 11px!important;font-size:12px!important;white-space:nowrap}
+  #topbar{height:50px!important}
+  #topbar .icon{width:40px;height:40px}
+  .money{font-size:16px!important;padding:6px 13px!important}
+  /* course rapide, carrière, aide, options : une colonne qui défile */
+  #scr-quick,#scr-career,#scr-help,#scr-options{flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right))!important;padding-bottom:max(14px,env(safe-area-inset-bottom))!important}
+  #scr-quick .qwrap,#scr-career .qwrap{width:100%!important;max-width:980px}
+  #scr-quick .modes{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+  #scr-quick .mode{padding:9px 11px!important}
+  #scr-quick .tracks{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;gap:8px!important}
+  #scr-quick .opts{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important}
+  #scr-quick .golbl{position:sticky;bottom:0;z-index:5;justify-content:flex-end;padding:8px 0 2px;background:linear-gradient(180deg,transparent,rgba(7,11,18,.94) 45%)}
+  #scr-career .evlist{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))!important}
+  #scr-options #o-panel,#scr-help #h-panel{width:min(680px,100%)!important;margin:0 auto!important;padding:12px 14px!important;max-height:none!important}
+  #scr-options .panel .orow{grid-template-columns:minmax(110px,30%) 1fr!important;gap:10px!important}
+  /* garage et pilotes : liste à gauche, véhicule au centre, fiche à droite */
+  #scr-garage,#scr-drivers{flex-direction:row!important;justify-content:space-between!important;align-items:stretch!important;overflow:hidden!important;padding:54px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;gap:8px!important}
+  #scr-garage .carlist,#scr-drivers .carlist{order:0!important;display:flex!important;flex-direction:column!important;width:clamp(150px,29vw,230px)!important;max-height:none!important;overflow-y:auto!important;gap:6px!important;padding-top:0!important}
+  #scr-garage .garpanel,#scr-drivers .garpanel{order:0!important;width:clamp(232px,43vw,360px)!important;max-width:none!important;max-height:100%!important;overflow-y:auto!important;padding:10px 12px!important;gap:8px!important;margin:0!important}
+  #scr-garage .cname h2,#scr-drivers .cname h2{font-size:clamp(17px,3vw,24px)!important}
+  #scr-garage .desc{font-size:12px!important;line-height:1.3!important}
+  #scr-garage .ccard,#scr-drivers .ccard{padding:7px 9px!important}
+  #scr-garage .cats{gap:4px!important}
+  #scr-garage .cats button{min-height:30px!important;padding:4px 8px!important;font-size:11.5px!important}
+  #scr-garage .garpanel .cname{order:-3}
+  #scr-garage #g-action{order:-2;flex:none;min-height:42px;font-size:15px!important;padding:9px 14px!important}
+  #scr-garage .tabs button{font-size:12px!important;padding:8px 2px!important;min-width:0}
+  #scr-drivers #drvpanel h2{font-size:clamp(16px,2.9vw,24px)!important;overflow-wrap:anywhere}
+  #scr-drivers #drvpanel .cta{font-size:15px!important;padding:9px 14px!important}
+  /* accueil */
+  #scr-main{overflow-y:auto!important}
+  @media (max-width:760px){#ui #scr-main.on{grid-template-columns:minmax(0,.86fr) minmax(0,1.3fr)!important}#ui #scr-main .logo{font-size:clamp(19px,3.6vw,30px)!important}#ui #scr-main .hero{min-width:0;overflow:hidden}}
+
+  /* HUD */
+  #hud .hud-tl{top:max(8px,env(safe-area-inset-top))!important;left:max(10px,env(safe-area-inset-left))!important;padding:5px 11px 6px 9px!important;min-width:108px!important;max-width:150px;gap:0!important}
+  #hud .hud-tl .pos{margin-bottom:0!important}
+  #hud .hud-tl .pos b{font-size:32px!important;line-height:1!important}
+  #hud .hud-tl .pos span{font-size:14px!important}
+  #hud .hud-tl .lap,#hud .hud-tl .time{font-size:13px!important;line-height:1.35!important}
+  #hud .hud-tl .best{display:none!important}
+  #hud #minimap{left:max(10px,env(safe-area-inset-left))!important;right:auto!important;top:calc(max(8px,env(safe-area-inset-top)) + 90px)!important;width:clamp(70px,23vh,104px)!important;height:clamp(70px,23vh,104px)!important;max-width:none!important}
+  #hud:has(#h-posbox.hidden) #minimap{top:calc(max(8px,env(safe-area-inset-top)) + 58px)!important}
+  #hud #radio-team.radio-collapsed{left:auto!important;right:max(8px,env(safe-area-inset-right))!important;top:calc(max(6px,env(safe-area-inset-top)) + clamp(92px,27vh,128px) + 20px)!important;bottom:auto!important;transform:none!important}
+  #hud #radio-team.radio-auto{bottom:auto!important}
+  #hud #radio-team.radio-collapsed{width:auto!important;max-width:104px!important;max-height:32px!important;padding:5px 7px!important}
+  #hud #radio-team.radio-auto{top:calc(max(8px,env(safe-area-inset-top)) + 50px)!important;left:50%!important;transform:translateX(-50%)!important;width:min(300px,calc(100vw - 380px))!important;min-width:200px;max-width:none!important;max-height:none!important;padding:6px 9px!important;pointer-events:none!important}
+  #hud #radio-team.radio-auto .radio-head{display:none!important}
+  #hud #radio-team.radio-auto .radio-message{font-size:11px!important;line-height:1.3!important;background:none!important;padding:0!important}
+  #hud .hud-tc{top:max(8px,env(safe-area-inset-top))!important}
+  #hud .hud-tc .hbtn{width:44px!important;height:40px!important}
+  #hud #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 62px)!important}
+  #hud #h-msgs .pmsg{font-size:clamp(15px,4.6vh,22px)!important;padding:5px 14px!important}
+  #hud:has(#radio-team.radio-auto) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 104px)!important}
+  #hud #h-tt{margin-top:44px!important;font-size:13px!important}
+  #hud #h-count{top:30%!important;font-size:clamp(64px,28vh,110px)!important}
+  #hud #h-wrong{top:40%!important;font-size:clamp(20px,7vh,34px)!important}
+  body.touch #hud .hud-br{transform:none!important;top:max(6px,env(safe-area-inset-top))!important;bottom:auto!important;right:max(8px,env(safe-area-inset-right))!important;width:clamp(92px,27vh,128px)!important}
+  body.touch #hud #speedo{width:100%!important;height:auto!important}
+  body.touch #hud .hud-br .nos{padding:4px 8px!important;width:100%}
+  /* poursuite : jauges en haut au centre, sous les boutons */
+  body.touch #hud .hud-bl{left:50%!important;right:auto!important;bottom:auto!important;top:calc(max(8px,env(safe-area-inset-top)) + 46px)!important;transform:translateX(-50%) scale(.7)!important;transform-origin:top center!important;width:250px!important;padding:5px 10px!important;gap:3px!important}
+  body.touch #hud .hud-bl .bounty{font-size:13px!important}
+  #hud:has(#h-chase:not(.hidden)) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 142px)!important}
+  #hud:has(#h-chase:not(.hidden)) #radio-team.radio-auto{display:none!important}
+
+  /* commandes tactiles : tailles calculées sur la hauteur de l'écran, aucun chevauchement */
+  body.touch #hud #touch{--u:clamp(56px,19vh,92px);--pad:max(12px,env(safe-area-inset-bottom));--pl:max(14px,env(safe-area-inset-left));--pr:max(14px,env(safe-area-inset-right))}
+  body.touch #hud #touch .tl,body.touch #hud #touch .tr{transform:none!important}
+  body.touch #hud #touch button{transform:none;min-width:0!important;min-height:0!important;margin:0!important;top:auto!important}
+  body.touch #hud #touch .tl button{width:calc(var(--u)*1.18)!important;height:calc(var(--u)*1.18)!important;bottom:var(--pad)!important;border-radius:18px!important}
+  body.touch #hud #touch [data-t=left]{left:var(--pl)!important;right:auto!important}
+  body.touch #hud #touch [data-t=right]{left:calc(var(--pl) + var(--u)*1.18 + 12px)!important;right:auto!important}
+  body.touch #hud #touch [data-t=gas]{right:var(--pr)!important;left:auto!important;bottom:var(--pad)!important;width:calc(var(--u)*1.18)!important;height:calc(var(--u)*1.72)!important;border-radius:20px!important}
+  body.touch #hud #touch [data-t=brake]{right:calc(var(--pr) + var(--u)*1.18 + 12px)!important;left:auto!important;bottom:var(--pad)!important;width:calc(var(--u)*1.12)!important;height:calc(var(--u)*1.12)!important;border-radius:18px!important}
+  body.touch #hud #touch [data-t=hand]{right:var(--pr)!important;left:auto!important;bottom:calc(var(--pad) + var(--u)*1.72 + 9px)!important;width:calc(var(--u)*1.18)!important;height:calc(var(--u)*.7)!important;border-radius:14px!important}
+  body.touch #hud #touch [data-t=nitro]{right:calc(var(--pr) + var(--u)*1.18 + 12px)!important;left:auto!important;bottom:calc(var(--pad) + var(--u)*1.12 + 9px)!important;width:calc(var(--u)*1.12)!important;height:calc(var(--u)*.7)!important;border-radius:14px!important;font-size:clamp(15px,5.4vh,20px)!important}
+  body.touch #hud #touch button svg{width:50%!important;height:50%!important}
+  body.touch #hud #touch [data-t=hand] svg,body.touch #hud #touch [data-t=gas] svg{width:auto!important;height:62%!important}
+  body.touch #hud #touch button.on{transform:translateY(3px) scale(.97)!important}
+  /* fenêtres : jamais plus hautes que l'écran */
+  .overlay .box{max-height:calc(100dvh - 16px)!important;overflow-y:auto!important;padding:16px 18px!important;gap:10px}
+  #results .box{width:min(760px,calc(100vw - 16px))!important}
+  .box h2{font-size:24px!important}
+}
+
 </style>
 </head>
 <body>
@@ -1281,10 +1429,10 @@ html[dir=rtl] .nosbar i{transform-origin:right}
 
 <div id="ui">
   <div id="topbar">
-    <div class="langs" id="langs"><button data-l="fr">FR</button><button data-l="en">EN</button><button data-l="ar">ع</button></div>
+    <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version du jeu">V190</span>
+    <span id="build-tag" aria-label="Version">V200</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -1371,7 +1519,7 @@ html[dir=rtl] .nosbar i{transform-origin:right}
     <div class="radio-members" id="radio-members"></div>
     <div class="radio-message" id="radio-message" aria-live="polite">Équipe prête. Appuie pour recevoir un conseil de course.</div>
     <div id="radio-voice-controls" class="radio-voice-controls">
-      <label for="radio-room">CANAL ÉQUIPE <input id="radio-room" type="text" value="SEDDIKJOUD" maxlength="20" autocomplete="off" spellcheck="false"></label>
+      <label for="radio-room"><span id="radio-room-l">CANAL ÉQUIPE</span> <input id="radio-room" type="text" value="SEDDIKJOUD" maxlength="20" autocomplete="off" spellcheck="false"></label>
       <div class="radio-voice-actions">
         <button id="radio-open" type="button">OUVRIR LE CANAL</button>
         <button id="radio-join" type="button">REJOINDRE</button>
@@ -3080,9 +3228,9 @@ const DRIVERS = [
 function radioCrew(driver) {
   const ix=Math.max(0,DRIVERS.findIndex(d=>d.id===driver.id));
   const names=[['Hatem','Inès','Fares','Aymen'],['Sana','Walid','Mouna','Tarek'],['Bilel','Rim','Anis','Nour'],['Khalil','Amira','Mehdi','Yassine']];
-  const roles=['INGÉNIEUR','STRATÈGE','MÉCANICIEN','SPOTTER'];
+  const roles=[L3('INGÉNIEUR','ENGINEER','المهندس'),L3('STRATÈGE','STRATEGIST','الاستراتيجي'),L3('MÉCANICIEN','MECHANIC','الميكانيكي'),L3('SPOTTER','SPOTTER','المراقب')];
   const extra=[['Sofiene','Lilia'],['Amine','Nour'],['Tarek','Yasmine'],['Fedi','Meriem']];
-  return roles.map((role,i)=>({name:names[ix%names.length][i],role})).concat([{name:extra[ix%extra.length][0],role:'CHEF D’ÉQUIPE'},{name:extra[ix%extra.length][1],role:'ANALYSTE DATA'}]);
+  return roles.map((role,i)=>({name:names[ix%names.length][i],role})).concat([{name:extra[ix%extra.length][0],role:L3('CHEF D’ÉQUIPE','TEAM BOSS','رئيس الفريق')},{name:extra[ix%extra.length][1],role:L3('ANALYSTE DATA','DATA ANALYST','محلّل البيانات')}]);
 }
 function radioAdvice() {
   const p=G.player,d=Math.abs(p.d),kmh=Math.round(Math.abs(p.vfw)*3.6);
@@ -3096,14 +3244,14 @@ function radioAdvice() {
     if(G.cfg.mode==='chase') return 'فريق المطاردة: رد بالك من الرادار وواصل تجري. خذ الفيراجات بنظافة باش تبعّد البوليس.';
     return 'المراقب: الطريق قدّامك واضح. ركّز في الفرملة واخرج مليح من الفيراج.';
   }
-  if(G.wrongT>0.8) return LANG==='en'?'SPOTTER: Wrong way! Slow down and turn around safely.':(LANG==='ar'||LANG==='tn'?'المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.':'SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.');
-  if(d>G.T.lim-1.2) return LANG==='en'?'ENGINEER: You are near the track edge. Ease off and return smoothly.':(LANG==='ar'||LANG==='tn'?'المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.':'INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.');
-  if(p.nitro<0.18) return LANG==='en'?'STRATEGIST: Nitro is low. Save it for the exit of the next turn.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.':'STRATÈGE : réserve ton nitro pour la sortie du prochain virage.');
-  if(p.sliding&&kmh>90) return LANG==='en'?'ENGINEER: Reduce steering input and gently stabilize the car.':(LANG==='ar'||LANG==='tn'?'المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.':'INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.');
-  if(G.cfg.mode==='race'&&rankOf(p)>1) return LANG==='en'?'STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.':'STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.');
-  if(G.cfg.mode==='tt') return LANG==='en'?'RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.':(LANG==='ar'||LANG==='tn'?'مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.':'INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.');
-  if(G.cfg.mode==='chase') return LANG==='en'?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
-  return LANG==='en'?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
+  if(G.wrongT>0.8) return LEN()?'SPOTTER: Wrong way! Slow down and turn around safely.':(LANG==='ar'||LANG==='tn'?'المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.':'SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.');
+  if(d>G.T.lim-1.2) return LEN()?'ENGINEER: You are near the track edge. Ease off and return smoothly.':(LANG==='ar'||LANG==='tn'?'المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.':'INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.');
+  if(p.nitro<0.18) return LEN()?'STRATEGIST: Nitro is low. Save it for the exit of the next turn.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.':'STRATÈGE : réserve ton nitro pour la sortie du prochain virage.');
+  if(p.sliding&&kmh>90) return LEN()?'ENGINEER: Reduce steering input and gently stabilize the car.':(LANG==='ar'||LANG==='tn'?'المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.':'INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.');
+  if(G.cfg.mode==='race'&&rankOf(p)>1) return LEN()?'STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.':'STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.');
+  if(G.cfg.mode==='tt') return LEN()?'RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.':(LANG==='ar'||LANG==='tn'?'مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.':'INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.');
+  if(G.cfg.mode==='chase') return LEN()?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
+  return LEN()?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
 }
 // Radio équipe : confirmation réelle du moteur natif Android, pas seulement de l'envoi.
 let RADIO_TTS_UNLOCKED = false;
@@ -3111,7 +3259,7 @@ let RADIO_TTS_PENDING = '';
 let RADIO_TTS_LISTENER = null;
 function crewTtsStatus(message, error=false) {
   const el = $('radio-tts-status'); if (!el) return;
-  el.textContent = message; el.classList.toggle('error', !!error);
+  el.textContent = rtx(message); el.classList.toggle('error', !!error);
 }
 function nativeCrewTts() {
   try { const C = window.Capacitor; return C && ((C.Plugins && C.Plugins.TeamTTS) || (C.registerPlugin && C.registerPlugin('TeamTTS'))) || null; }
@@ -3171,7 +3319,7 @@ function unlockCrewSpeech() {
 function speakCrewAdvice(message) {
   if (!message) return;
   const nativeTts = nativeCrewTts();
-  const nativeLang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
+  const nativeLang = LEN() ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
   if (nativeTts && typeof nativeTts.speak === 'function') {
     watchNativeCrewTts(nativeTts);
     if (!RADIO_TTS_UNLOCKED) { RADIO_TTS_PENDING = message; crewTtsStatus('Consigne prête · touche l’écran pour activer la radio'); return; }
@@ -3193,7 +3341,7 @@ function speakCrewAdvice(message) {
   }
   if (!RADIO_TTS_UNLOCKED) { RADIO_TTS_PENDING = message; return; }
   const synth = window.speechSynthesis;
-  const lang = LANG === 'en' ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
+  const lang = LEN() ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
   const say = () => { try {
     const utter = new SpeechSynthesisUtterance(message); utter.lang = lang; utter.rate = 0.94; utter.pitch = 0.98; utter.volume = 1;
     utter.onstart = () => crewTtsStatus('VOIX ACTIVE · ' + lang.toUpperCase());
@@ -3219,9 +3367,12 @@ let radioAutoFold = 0;
 function radioCall(automatic = false) {
   if(!G.player||!G.T) return;
   if(automatic){
-    const panel=$('radio-team');panel.classList.remove('radio-collapsed');
-    $('radio-toggle').textContent='−';$('radio-toggle').setAttribute('aria-expanded','true');
-    clearTimeout(radioAutoFold);radioAutoFold=setTimeout(()=>{if(G.state==='race'){panel.classList.add('radio-collapsed');$('radio-toggle').textContent='＋';$('radio-toggle').setAttribute('aria-expanded','false');}},8500);
+    // appel automatique : on n'affiche que le message (classe radio-auto), sans ouvrir tout le panneau sur les commandes
+    const panel=$('radio-team');
+    if(panel.classList.contains('radio-collapsed')||panel.classList.contains('radio-auto')){
+      panel.classList.remove('radio-collapsed');panel.classList.add('radio-auto');
+      clearTimeout(radioAutoFold);radioAutoFold=setTimeout(()=>{if(panel.classList.contains('radio-auto')){panel.classList.remove('radio-auto');panel.classList.add('radio-collapsed');$('radio-toggle').textContent='＋';$('radio-toggle').setAttribute('aria-expanded','false');}},7000);
+    }
   }
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
@@ -3233,7 +3384,7 @@ function radioCall(automatic = false) {
 const RADIO_VOICE = { peer:null, stream:null, calls:new Set(), audios:new Set(), mode:null, room:null };
 function radioVoiceStatus(message, state='') {
   const el=$('radio-voice-status'); if(!el) return;
-  el.textContent=message; el.classList.remove('connected','error');
+  el.textContent=rtx(message); el.classList.remove('connected','error');
   if(state) el.classList.add(state);
 }
 function loadPeerLibrary() {
@@ -3256,7 +3407,7 @@ function radioVoiceCleanup() {
   if(RADIO_VOICE.peer){try{RADIO_VOICE.peer.destroy();}catch(e){}}
   if(RADIO_VOICE.stream) RADIO_VOICE.stream.getTracks().forEach(track=>track.stop());
   Object.assign(RADIO_VOICE,{peer:null,stream:null,mode:null,room:null});
-  const ptt=$('radio-ptt'); if(ptt){ptt.disabled=true;ptt.classList.remove('ptt-active');ptt.textContent='MAINTENIR POUR PARLER';}
+  const ptt=$('radio-ptt'); if(ptt){ptt.disabled=true;ptt.classList.remove('ptt-active');ptt.textContent=L3('MAINTENIR POUR PARLER','HOLD TO TALK','اضغط مطوّلاً للتكلّم');}
 }
 function radioVoiceAttach(call) {
   call.on('stream', remote=>{
@@ -3330,7 +3481,7 @@ function radioVoiceTalk(active) {
   if(!RADIO_VOICE.stream)return;
   RADIO_VOICE.stream.getAudioTracks().forEach(track=>track.enabled=!!active);
   $('radio-ptt').classList.toggle('ptt-active',!!active);
-  $('radio-ptt').textContent=active?'● EN TRANSMISSION — RELÂCHER POUR COUPER':'MAINTENIR POUR PARLER';
+  $('radio-ptt').textContent=active?L3('● EN TRANSMISSION — RELÂCHER POUR COUPER','● ON AIR — RELEASE TO MUTE','● على الهواء — ارفع إصبعك للقطع'):L3('MAINTENIR POUR PARLER','HOLD TO TALK','اضغط مطوّلاً للتكلّم');
   radioVoiceStatus(active?'Tu transmets à ton équipe. Relâche pour couper le micro.':'Radio connectée · micro coupé','connected');
 }
 
@@ -5204,8 +5355,259 @@ const TN_CONTENT = {
 };
 
 let LANG = 'fr';
-const LI = () => LANG === 'en' ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
-function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
+/* V200 — langues internationales : espagnol, portugais, allemand, italien, turc.
+   Les contenus longs (voitures, épreuves, circuits) et la radio retombent sur l'anglais. */
+LANGS.es = {
+  webglTest: 'Prueba el 3D de este teléfono (get.webgl.org): si el cubo no gira, el navegador bloquea WebGL.',
+  drivers: 'Pilotos', driver: 'Piloto', driverNote: 'El piloto va al volante (o en la moto) y da una pequeña ventaja con cualquier vehículo.',
+  cat_car: 'Coches', cat_moto: 'Motos', cat_offroad: '4x4', cat_heavy: 'Pesados', cat_retro: 'Retro',
+  perkT_speed: 'El rápido', perkT_nitro: 'Reina del nitro', perkT_accel: 'Salida cohete', perkT_grip: 'Trazada limpia', perkT_tough: 'El peso pesado', perkT_drift: 'Reina del derrape', perkT_ghost: 'El fantasma', perkT_money: 'Negocios',
+  perk_speed: '+3 % de velocidad máxima.', perk_nitro: 'El nitro se recarga un 25 % más rápido.', perk_accel: '+5 % de aceleración.', perk_grip: '+4 % de agarre en curva.', perk_tough: 'Más peso en los choques (+25 %): empuja a los rivales.', perk_drift: 'Puntos de estilo ×1,5 al derrapar.', perk_ghost: 'Pierde a la policía un 30 % más rápido.', perk_money: '+15 % de dinero en cada carrera.',
+  loading: 'Arrancando el motor…', preparing: 'Preparando el circuito: {0}', webgl: 'El motor 3D no pudo arrancar: el navegador ha desactivado WebGL, a menudo tras un fallo gráfico.', webglHelp: 'Cierra Chrome por completo (o reinicia el teléfono) y vuelve a abrir el juego. Si lo abriste desde Facebook, Messenger o WhatsApp, abre el enlace en Chrome. El juego se reiniciará en calidad baja.', retry: 'Reintentar', glLost: 'El motor gráfico se ha reiniciado. Reinicio en calidad baja…', safeMode: 'Modo seguro: calidad baja (el último inicio no terminó).',
+  tagline: 'Carreras callejeras por Túnez, de la medina al Sahara.', play: 'JUGAR', career: 'CARRERA', quick: 'CARRERA RÁPIDA', garage: 'GARAJE', options: 'OPCIONES', help: 'CÓMO JUGAR',
+  careerSub: '50 pruebas para ganar el torneo', quickSub: 'Carrera, contrarreloj o persecución', garageSub: 'Coches, pintura, llantas, neones, tuning', optionsSub: 'Idioma, sonido, gráficos, controles', helpSub: 'Teclado, táctil, mando',
+  playNext: 'Prueba {0}: {1}', playQuick: 'Carrera rápida: {0}', careerDone: 'Carrera completada: ¡eres el rey!', careerStep: 'Prueba {0} / {1}',
+  yourCar: 'Tu coche, clase {0}', back: '‹ ATRÁS', paint: 'Pintura', rims: 'Llantas', neons: 'Neones', tuning: 'Tuning',
+  selected: 'Seleccionado', inGarage: 'En tu garaje', select: 'ELEGIR', isSelected: 'ELEGIDO', buy: 'COMPRAR {0}', buyConfirm: '¿Comprar el {0} por {1}?',
+  preview: 'Vista previa: compra el vehículo para conservar este estilo.', previewRims: 'Vista previa: compra el vehículo para conservar estas llantas.', buyFirst: 'Compra el vehículo para mejorarlo.', model: 'Estilo', color: 'Color', max: 'MÁX', none: 'Ninguno',
+  stSpeed: 'Velocidad máx.', stAccel: 'Aceleración', stHandling: 'Manejo', stNitro: 'Nitro',
+  upEng: 'Motor', upEngD: 'Velocidad máxima', upTur: 'Turbo', upTurD: 'Aceleración', upTyr: 'Neumáticos', upTyrD: 'Agarre', upNos: 'Nitro', upNosD: 'Duración y potencia', upAero: 'Aerodinámica', upAeroD: 'Velocidad y estabilidad', upBrk: 'Frenos deportivos', upBrkD: 'Potencia de frenado',
+  rim_five: '5 radios', rim_ten: '10 radios', rim_mesh: 'Malla', rim_disc: 'Turbina', rim_dish: 'Plato hondo',
+  gameMode: 'Modo de juego', circuit: 'Circuito', settings: 'Ajustes', laps: 'Vueltas', opponents: 'Rivales', difficulty: 'Dificultad', traffic: 'Tráfico', weather: 'Clima',
+  no: 'No', yes: 'Sí', easy: 'Fácil', normal: 'Normal', hard: 'Difícil', sunny: 'Despejado', rain: 'Lluvia', start: 'EMPEZAR ›', record: 'Récord: {0}',
+  m_race: 'Carrera', m_tt: 'Contrarreloj', m_chase: 'Persecución policial', m_raceD: 'Enfréntate a hasta 7 pilotos. Termina en el podio.', m_ttD: 'Solo en pista. Bate tu mejor vuelta.', m_chaseD: 'La policía te persigue: despístala antes de que te detenga.',
+  progress: 'Progreso', done: '✓ Completada', locked: '🔒 Bloqueada', available: '▶ Disponible', lap1: 'vuelta', lapN: 'vueltas', advised: 'Clase recomendada:', rainTag: 'Lluvia',
+  o_lang: 'Idioma', o_music: 'Música', o_sfx: 'Efectos de sonido', o_gfx: 'Gráficos', o_low: 'Baja', o_med: 'Media', o_high: 'Alta', o_ultra: 'Ultra (gama alta)', o_dyn: 'Resolución dinámica', o_fps: 'Mostrar FPS', o_cam: 'Cámara', o_near: 'Cerca', o_far: 'Lejos', o_hood: 'Capó',
+  o_touch: 'Controles táctiles', o_auto: 'Auto', o_steer: 'Dirección táctil', o_buttons: 'Botones', o_stick: 'Joystick', o_tilt: 'Inclinación', o_sens: 'Sensibilidad', o_opacity: 'Opacidad de botones', o_vibe: 'Vibración', o_save: 'Progreso', o_reset: 'Borrar la partida',
+  o_note: 'Tu progreso (dinero, coches, carrera) se guarda en este navegador.', resetConfirm: '¿Borrar todo tu progreso (dinero, coches, carrera)?', cancel: 'Cancelar', confirm: 'CONFIRMAR',
+  tiltNo: 'La dirección por inclinación no está disponible en este dispositivo.',
+  h_keys: 'Teclado', h_accel: 'Acelerar', h_brake: 'Frenar / marcha atrás', h_turn: 'Girar', h_hand: 'Freno de mano (derrape)', h_nitro: 'Nitro', h_cam: 'Cambiar cámara', h_reset: 'Volver a la pista', h_pause: 'Pausa', h_space: 'Espacio', h_shift: 'Mayús', h_esc: 'Esc',
+  h_mobile: 'Móvil y mando', h_mobileT: 'En el móvil: flechas, joystick o inclinación para girar (elige en opciones); acelerador, freno, nitro y freno de mano a la derecha. Juega en horizontal. Mando: gatillo derecho = acelerar, izquierdo = frenar, A = nitro, B/X = freno de mano.',
+  h_tips: 'Consejos', h_t1: 'Acelera justo antes del GO para una salida perfecta (demasiado pronto: patinas).', h_t2: 'Derrapa con el freno de mano para llenar el nitro y ganar puntos de estilo.', h_t3: 'Roza el tráfico a gran velocidad para ganar nitro.', h_t4: 'Quédate a rebufo de un rival para ganar velocidad.', h_t5: 'En una persecución, aléjate más de 175 m de todos los policías para perderlos.', h_t6: 'Los puntos de estilo se convierten en dinero al final de cada carrera.',
+  wrongWay: '¡SENTIDO CONTRARIO!', evade: 'ESCAPE', bust: 'ARRESTO', pause: 'PAUSA', resume: 'CONTINUAR', restart: 'Reiniciar', quitRace: 'Salir de la carrera', rotate: 'Gira el teléfono en horizontal para jugar mejor.', rotateOk: 'Continuar igualmente',
+  lapHud: 'VUELTA {0}/{1}', chaseHud: 'PERSECUCIÓN', bestLap: 'Mejor vuelta {0}', bounty: 'Recompensa {0}', target: 'Objetivo {0}', targetOver: ' — fallado',
+  nearMiss: '¡POR POCO! +300', drift: 'DERRAPE +{0}', draft: 'REBUFO', nitroReady: 'NITRO LISTO', replaced: 'DE VUELTA A LA PISTA', lapN2: 'VUELTA {0}', lastLap: '¡ÚLTIMA VUELTA!', victory: '¡VICTORIA!', finish: 'META',
+  heatUp: 'NIVEL DE BÚSQUEDA {0}', roadblock: '¡CONTROL POLICIAL!', busted: '¡DETENIDO!', escaped: '¡ESCAPASTE!', copDown: '¡POLICÍA FUERA! +1000', go: '¡YA!', perfectStart: '¡SALIDA PERFECTA!', wheelspin: '¡PATINAS!', you: 'Tú',
+  r_place: 'PUESTO {0}', r_ok: '¡OBJETIVO SUPERADO!', r_slow: 'DEMASIADO LENTO…', r_escaped: '¡POLICÍA DESPISTADA!', r_busted: '¡DETENIDO!', r_total: 'Tiempo total', r_best: 'Mejor vuelta', r_target: 'Objetivo', r_dur: 'Duración de la persecución', r_heat: 'Nivel de búsqueda', r_wrecked: 'Policías fuera', r_bounty: 'Recompensa',
+  r_record: '¡Nuevo récord de vuelta!', r_reward: 'Premio', r_style: 'Bonus de estilo ({0} pts)', r_gain: 'Total ganado', r_money: 'Tu dinero', r_menu: 'Menú', r_garage: 'Garaje', r_again: 'Repetir', r_next: 'SIGUIENTE PRUEBA ›',
+  r_evOk: '✓ ¡Prueba «{0}» superada! Siguiente prueba desbloqueada.', r_evAgain: 'Prueba ya superada: premio reducido.', r_evFail: 'Prueba «{0}» fallada. Inténtalo de nuevo o mejora tu coche.',
+  adDouble: 'Duplica tus ganancias: +{0}', adDoubled: 'Ganancias duplicadas: +{0}', adBonus: '+{0}', adBonusTitle: 'Mira un vídeo corto para ganar {0}', adThanks: '¡Gracias! +{0}', adNone: 'No hay vídeo disponible ahora, inténtalo en un momento.', adWait: 'Próximo bonus de vídeo en {0}', adDay: 'No quedan bonus de vídeo por hoy. ¡Vuelve mañana!', adNoReward: 'Vídeo cerrado antes de tiempo: sin premio.', o_privacy: 'Privacidad', o_privLink: 'Política de privacidad', o_ads: 'Anuncios', o_adsPriv: 'Privacidad de anuncios', o_adsInfo: 'Los anuncios mantienen el juego gratis. Los vídeos con premio siempre son tu elección.',
+};
+LANGS.pt = {
+  webglTest: 'Teste o 3D deste telefone (get.webgl.org): se o cubo não girar, o navegador está bloqueando o WebGL.',
+  drivers: 'Pilotos', driver: 'Piloto', driverNote: 'O piloto vai ao volante (ou na moto) e dá um pequeno bônus com qualquer veículo.',
+  cat_car: 'Carros', cat_moto: 'Motos', cat_offroad: '4x4', cat_heavy: 'Pesados', cat_retro: 'Retrô',
+  perkT_speed: 'O veloz', perkT_nitro: 'Rainha do nitro', perkT_accel: 'Largada foguete', perkT_grip: 'Traçado limpo', perkT_tough: 'O peso-pesado', perkT_drift: 'Rainha do drift', perkT_ghost: 'O fantasma', perkT_money: 'Negócios',
+  perk_speed: '+3% de velocidade máxima.', perk_nitro: 'O nitro recarrega 25% mais rápido.', perk_accel: '+5% de aceleração.', perk_grip: '+4% de aderência em curva.', perk_tough: 'Mais peso nas batidas (+25%): empurra os rivais.', perk_drift: 'Pontos de estilo ×1,5 no drift.', perk_ghost: 'Despista a polícia 30% mais rápido.', perk_money: '+15% de dinheiro em cada corrida.',
+  loading: 'Ligando o motor…', preparing: 'Preparando a pista: {0}', webgl: 'O motor 3D não iniciou: o navegador desativou o WebGL, geralmente após uma falha gráfica.', webglHelp: 'Feche o Chrome por completo (ou reinicie o telefone) e abra o jogo de novo. Se abriu pelo Facebook, Messenger ou WhatsApp, abra o link no Chrome. O jogo reiniciará em qualidade baixa.', retry: 'Tentar de novo', glLost: 'O motor gráfico foi reiniciado. Reiniciando em qualidade baixa…', safeMode: 'Modo seguro: qualidade baixa (a última abertura não terminou).',
+  tagline: 'Corridas de rua pela Tunísia, da medina ao Saara.', play: 'JOGAR', career: 'CARREIRA', quick: 'CORRIDA RÁPIDA', garage: 'GARAGEM', options: 'OPÇÕES', help: 'COMO JOGAR',
+  careerSub: '50 etapas para vencer o torneio', quickSub: 'Corrida, contrarrelógio ou perseguição', garageSub: 'Carros, pintura, rodas, neons, tuning', optionsSub: 'Idioma, som, gráficos, controles', helpSub: 'Teclado, toque, controle',
+  playNext: 'Etapa {0}: {1}', playQuick: 'Corrida rápida: {0}', careerDone: 'Carreira concluída: você é o rei!', careerStep: 'Etapa {0} / {1}',
+  yourCar: 'Seu carro, classe {0}', back: '‹ VOLTAR', paint: 'Pintura', rims: 'Rodas', neons: 'Neons', tuning: 'Tuning',
+  selected: 'Selecionado', inGarage: 'Na sua garagem', select: 'ESCOLHER', isSelected: 'ESCOLHIDO', buy: 'COMPRAR {0}', buyConfirm: 'Comprar o {0} por {1}?',
+  preview: 'Prévia: compre o veículo para manter este estilo.', previewRims: 'Prévia: compre o veículo para manter estas rodas.', buyFirst: 'Compre o veículo para melhorá-lo.', model: 'Estilo', color: 'Cor', max: 'MÁX', none: 'Nenhum',
+  stSpeed: 'Velocidade máx.', stAccel: 'Aceleração', stHandling: 'Dirigibilidade', stNitro: 'Nitro',
+  upEng: 'Motor', upEngD: 'Velocidade máxima', upTur: 'Turbo', upTurD: 'Aceleração', upTyr: 'Pneus', upTyrD: 'Aderência', upNos: 'Nitro', upNosD: 'Duração e potência', upAero: 'Aerodinâmica', upAeroD: 'Velocidade e estabilidade', upBrk: 'Freios esportivos', upBrkD: 'Potência de frenagem',
+  rim_five: '5 raios', rim_ten: '10 raios', rim_mesh: 'Malha', rim_disc: 'Turbina', rim_dish: 'Aro fundo',
+  gameMode: 'Modo de jogo', circuit: 'Pista', settings: 'Ajustes', laps: 'Voltas', opponents: 'Adversários', difficulty: 'Dificuldade', traffic: 'Trânsito', weather: 'Clima',
+  no: 'Não', yes: 'Sim', easy: 'Fácil', normal: 'Normal', hard: 'Difícil', sunny: 'Tempo limpo', rain: 'Chuva', start: 'INICIAR ›', record: 'Recorde: {0}',
+  m_race: 'Corrida', m_tt: 'Contrarrelógio', m_chase: 'Perseguição policial', m_raceD: 'Enfrente até 7 pilotos. Termine no pódio.', m_ttD: 'Sozinho na pista. Bata sua melhor volta.', m_chaseD: 'A polícia está atrás de você: despiste-a antes de ser preso.',
+  progress: 'Progresso', done: '✓ Concluída', locked: '🔒 Bloqueada', available: '▶ Disponível', lap1: 'volta', lapN: 'voltas', advised: 'Classe recomendada:', rainTag: 'Chuva',
+  o_lang: 'Idioma', o_music: 'Música', o_sfx: 'Efeitos sonoros', o_gfx: 'Gráficos', o_low: 'Baixa', o_med: 'Média', o_high: 'Alta', o_ultra: 'Ultra (topo de linha)', o_dyn: 'Resolução dinâmica', o_fps: 'Mostrar FPS', o_cam: 'Câmera', o_near: 'Perto', o_far: 'Longe', o_hood: 'Capô',
+  o_touch: 'Controles por toque', o_auto: 'Auto', o_steer: 'Direção por toque', o_buttons: 'Botões', o_stick: 'Joystick', o_tilt: 'Inclinação', o_sens: 'Sensibilidade', o_opacity: 'Opacidade dos botões', o_vibe: 'Vibração', o_save: 'Progresso', o_reset: 'Apagar o progresso',
+  o_note: 'Seu progresso (dinheiro, carros, carreira) fica salvo neste navegador.', resetConfirm: 'Apagar todo o seu progresso (dinheiro, carros, carreira)?', cancel: 'Cancelar', confirm: 'CONFIRMAR',
+  tiltNo: 'A direção por inclinação não está disponível neste aparelho.',
+  h_keys: 'Teclado', h_accel: 'Acelerar', h_brake: 'Frear / ré', h_turn: 'Virar', h_hand: 'Freio de mão (drift)', h_nitro: 'Nitro', h_cam: 'Trocar câmera', h_reset: 'Voltar à pista', h_pause: 'Pausa', h_space: 'Espaço', h_shift: 'Shift', h_esc: 'Esc',
+  h_mobile: 'Celular e controle', h_mobileT: 'No celular: setas, joystick ou inclinação para virar (escolha nas opções); acelerador, freio, nitro e freio de mão à direita. Jogue na horizontal. Controle: gatilho direito = acelerar, esquerdo = frear, A = nitro, B/X = freio de mão.',
+  h_tips: 'Dicas', h_t1: 'Acelere logo antes do GO para uma largada perfeita (cedo demais: as rodas patinam).', h_t2: 'Faça drift com o freio de mão para encher o nitro e ganhar pontos de estilo.', h_t3: 'Passe raspando pelo trânsito em alta velocidade para ganhar nitro.', h_t4: 'Fique no vácuo de um rival para ganhar velocidade.', h_t5: 'Numa perseguição, fique a mais de 175 m de todos os policiais para despistá-los.', h_t6: 'Os pontos de estilo viram dinheiro no fim de cada corrida.',
+  wrongWay: 'CONTRAMÃO!', evade: 'FUGA', bust: 'PRISÃO', pause: 'PAUSA', resume: 'CONTINUAR', restart: 'Reiniciar', quitRace: 'Sair da corrida', rotate: 'Vire o telefone na horizontal para jogar melhor.', rotateOk: 'Continuar assim mesmo',
+  lapHud: 'VOLTA {0}/{1}', chaseHud: 'PERSEGUIÇÃO', bestLap: 'Melhor volta {0}', bounty: 'Recompensa {0}', target: 'Meta {0}', targetOver: ' — perdida',
+  nearMiss: 'POR POUCO! +300', drift: 'DRIFT +{0}', draft: 'VÁCUO', nitroReady: 'NITRO PRONTO', replaced: 'DE VOLTA À PISTA', lapN2: 'VOLTA {0}', lastLap: 'ÚLTIMA VOLTA!', victory: 'VITÓRIA!', finish: 'CHEGADA',
+  heatUp: 'NÍVEL DE PROCURA {0}', roadblock: 'BLOQUEIO À FRENTE!', busted: 'PRESO!', escaped: 'ESCAPOU!', copDown: 'POLICIAL FORA! +1000', go: 'JÁ!', perfectStart: 'LARGADA PERFEITA!', wheelspin: 'RODAS PATINANDO!', you: 'Você',
+  r_place: '{0}º LUGAR', r_ok: 'META BATIDA!', r_slow: 'LENTO DEMAIS…', r_escaped: 'POLÍCIA DESPISTADA!', r_busted: 'PRESO!', r_total: 'Tempo total', r_best: 'Melhor volta', r_target: 'Meta', r_dur: 'Duração da perseguição', r_heat: 'Nível de procura', r_wrecked: 'Policiais fora', r_bounty: 'Recompensa',
+  r_record: 'Novo recorde de volta!', r_reward: 'Prêmio', r_style: 'Bônus de estilo ({0} pts)', r_gain: 'Total ganho', r_money: 'Seu dinheiro', r_menu: 'Menu', r_garage: 'Garagem', r_again: 'Correr de novo', r_next: 'PRÓXIMA ETAPA ›',
+  r_evOk: '✓ Etapa “{0}” concluída! Próxima etapa liberada.', r_evAgain: 'Etapa já concluída: prêmio reduzido.', r_evFail: 'Etapa “{0}” perdida. Tente de novo ou melhore seu carro.',
+  adDouble: 'Dobre seus ganhos: +{0}', adDoubled: 'Ganhos dobrados: +{0}', adBonus: '+{0}', adBonusTitle: 'Assista a um vídeo curto para ganhar {0}', adThanks: 'Obrigado! +{0}', adNone: 'Nenhum vídeo disponível agora, tente daqui a pouco.', adWait: 'Próximo bônus de vídeo em {0}', adDay: 'Bônus de vídeo esgotados por hoje. Volte amanhã!', adNoReward: 'Vídeo fechado antes do fim: sem prêmio.', o_privacy: 'Privacidade', o_privLink: 'Política de privacidade', o_ads: 'Anúncios', o_adsPriv: 'Privacidade dos anúncios', o_adsInfo: 'Os anúncios mantêm o jogo gratuito. Os vídeos premiados são sempre escolha sua.',
+};
+LANGS.de = {
+  webglTest: '3D dieses Handys testen (get.webgl.org): Dreht sich der Würfel nicht, blockiert der Browser WebGL.',
+  drivers: 'Fahrer', driver: 'Fahrer', driverNote: 'Dein Fahrer sitzt am Steuer (oder auf dem Motorrad) und gibt mit jedem Fahrzeug einen kleinen Bonus.',
+  cat_car: 'Autos', cat_moto: 'Motorräder', cat_offroad: '4x4', cat_heavy: 'Schwere', cat_retro: 'Retro',
+  perkT_speed: 'Der Schnelle', perkT_nitro: 'Nitro-Königin', perkT_accel: 'Raketenstart', perkT_grip: 'Saubere Linie', perkT_tough: 'Das Schwergewicht', perkT_drift: 'Drift-Königin', perkT_ghost: 'Der Geist', perkT_money: 'Geschäftssinn',
+  perk_speed: '+3 % Höchstgeschwindigkeit.', perk_nitro: 'Nitro lädt 25 % schneller.', perk_accel: '+5 % Beschleunigung.', perk_grip: '+4 % Kurvengrip.', perk_tough: 'Schwerer bei Kontakt (+25 %): schiebt Gegner weg.', perk_drift: 'Stilpunkte ×1,5 beim Driften.', perk_ghost: 'Hängt die Polizei 30 % schneller ab.', perk_money: '+15 % Geld aus jedem Rennen.',
+  loading: 'Motor wird gestartet…', preparing: 'Strecke wird vorbereitet: {0}', webgl: 'Die 3D-Engine konnte nicht starten: Der Browser hat WebGL deaktiviert, oft nach einem Grafikabsturz.', webglHelp: 'Chrome vollständig schließen (oder Handy neu starten) und das Spiel erneut öffnen. Wenn du es aus Facebook, Messenger oder WhatsApp geöffnet hast, öffne den Link in Chrome. Das Spiel startet dann in niedriger Qualität.', retry: 'Erneut versuchen', glLost: 'Die Grafik-Engine wurde zurückgesetzt. Neustart in niedriger Qualität…', safeMode: 'Sicherer Modus: niedrige Qualität (der letzte Start wurde nicht beendet).',
+  tagline: 'Straßenrennen durch Tunesien, von der Medina bis zur Sahara.', play: 'SPIELEN', career: 'KARRIERE', quick: 'SCHNELLES RENNEN', garage: 'GARAGE', options: 'OPTIONEN', help: 'ANLEITUNG',
+  careerSub: '50 Etappen bis zum Turniersieg', quickSub: 'Rennen, Zeitfahren oder Polizeijagd', garageSub: 'Autos, Lack, Felgen, Neon, Tuning', optionsSub: 'Sprache, Ton, Grafik, Steuerung', helpSub: 'Tastatur, Touch, Gamepad',
+  playNext: 'Etappe {0}: {1}', playQuick: 'Schnelles Rennen: {0}', careerDone: 'Karriere geschafft – du bist der König!', careerStep: 'Etappe {0} / {1}',
+  yourCar: 'Dein Auto, Klasse {0}', back: '‹ ZURÜCK', paint: 'Lack', rims: 'Felgen', neons: 'Neon', tuning: 'Tuning',
+  selected: 'Ausgewählt', inGarage: 'In deiner Garage', select: 'WÄHLEN', isSelected: 'GEWÄHLT', buy: 'KAUFEN {0}', buyConfirm: '{0} für {1} kaufen?',
+  preview: 'Vorschau – kaufe das Fahrzeug, um diesen Stil zu behalten.', previewRims: 'Vorschau – kaufe das Fahrzeug, um diese Felgen zu behalten.', buyFirst: 'Kaufe das Fahrzeug, um es zu verbessern.', model: 'Stil', color: 'Farbe', max: 'MAX', none: 'Keine',
+  stSpeed: 'Höchsttempo', stAccel: 'Beschleunigung', stHandling: 'Handling', stNitro: 'Nitro',
+  upEng: 'Motor', upEngD: 'Höchstgeschwindigkeit', upTur: 'Turbo', upTurD: 'Beschleunigung', upTyr: 'Reifen', upTyrD: 'Grip', upNos: 'Nitro', upNosD: 'Dauer und Kraft', upAero: 'Aerodynamik', upAeroD: 'Tempo und Stabilität', upBrk: 'Sportbremsen', upBrkD: 'Bremskraft',
+  rim_five: '5 Speichen', rim_ten: '10 Speichen', rim_mesh: 'Kreuzspeiche', rim_disc: 'Turbine', rim_dish: 'Tiefbett',
+  gameMode: 'Spielmodus', circuit: 'Strecke', settings: 'Einstellungen', laps: 'Runden', opponents: 'Gegner', difficulty: 'Schwierigkeit', traffic: 'Verkehr', weather: 'Wetter',
+  no: 'Nein', yes: 'Ja', easy: 'Leicht', normal: 'Normal', hard: 'Schwer', sunny: 'Klar', rain: 'Regen', start: 'START ›', record: 'Rekord: {0}',
+  m_race: 'Rennen', m_tt: 'Zeitfahren', m_chase: 'Polizeijagd', m_raceD: 'Tritt gegen bis zu 7 Fahrer an. Schaff es aufs Podium.', m_ttD: 'Allein auf der Strecke. Schlag deine beste Runde.', m_chaseD: 'Die Polizei jagt dich: Häng sie ab, bevor sie dich schnappt.',
+  progress: 'Fortschritt', done: '✓ Geschafft', locked: '🔒 Gesperrt', available: '▶ Verfügbar', lap1: 'Runde', lapN: 'Runden', advised: 'Empfohlene Klasse:', rainTag: 'Regen',
+  o_lang: 'Sprache', o_music: 'Musik', o_sfx: 'Soundeffekte', o_gfx: 'Grafik', o_low: 'Niedrig', o_med: 'Mittel', o_high: 'Hoch', o_ultra: 'Ultra (High-End)', o_dyn: 'Dynamische Auflösung', o_fps: 'FPS anzeigen', o_cam: 'Kamera', o_near: 'Nah', o_far: 'Fern', o_hood: 'Motorhaube',
+  o_touch: 'Touch-Steuerung', o_auto: 'Auto', o_steer: 'Touch-Lenkung', o_buttons: 'Tasten', o_stick: 'Joystick', o_tilt: 'Neigen', o_sens: 'Empfindlichkeit', o_opacity: 'Tasten-Deckkraft', o_vibe: 'Vibration', o_save: 'Fortschritt', o_reset: 'Spielstand löschen',
+  o_note: 'Dein Fortschritt (Geld, Autos, Karriere) wird in diesem Browser gespeichert.', resetConfirm: 'Gesamten Fortschritt (Geld, Autos, Karriere) löschen?', cancel: 'Abbrechen', confirm: 'BESTÄTIGEN',
+  tiltNo: 'Neigungslenkung ist auf diesem Gerät nicht verfügbar.',
+  h_keys: 'Tastatur', h_accel: 'Gas geben', h_brake: 'Bremsen / rückwärts', h_turn: 'Lenken', h_hand: 'Handbremse (Drift)', h_nitro: 'Nitro', h_cam: 'Kamera wechseln', h_reset: 'Zurück auf die Strecke', h_pause: 'Pause', h_space: 'Leertaste', h_shift: 'Umschalt', h_esc: 'Esc',
+  h_mobile: 'Handy & Gamepad', h_mobileT: 'Am Handy: Pfeile, Joystick oder Neigen zum Lenken (in den Optionen wählen); Gas, Bremse, Nitro und Handbremse rechts. Spiele im Querformat. Gamepad: rechter Trigger = Gas, linker = Bremse, A = Nitro, B/X = Handbremse.',
+  h_tips: 'Tipps', h_t1: 'Gib kurz vor dem GO Gas für einen perfekten Start (zu früh: Räder drehen durch).', h_t2: 'Drifte mit der Handbremse, um Nitro zu füllen und Stilpunkte zu sammeln.', h_t3: 'Fahr mit hohem Tempo knapp am Verkehr vorbei für einen Nitro-Bonus.', h_t4: 'Bleib im Windschatten eines Gegners, um schneller zu werden.', h_t5: 'Bei einer Jagd: mehr als 175 m Abstand zu allen Polizisten, um sie abzuhängen.', h_t6: 'Stilpunkte werden am Ende jedes Rennens zu Geld.',
+  wrongWay: 'FALSCHE RICHTUNG!', evade: 'FLUCHT', bust: 'FESTNAHME', pause: 'PAUSE', resume: 'WEITER', restart: 'Neu starten', quitRace: 'Rennen beenden', rotate: 'Dreh dein Handy ins Querformat für das beste Erlebnis.', rotateOk: 'Trotzdem fortfahren',
+  lapHud: 'RUNDE {0}/{1}', chaseHud: 'JAGD', bestLap: 'Beste Runde {0}', bounty: 'Kopfgeld {0}', target: 'Ziel {0}', targetOver: ' – verpasst',
+  nearMiss: 'KNAPP VORBEI! +300', drift: 'DRIFT +{0}', draft: 'WINDSCHATTEN', nitroReady: 'NITRO BEREIT', replaced: 'ZURÜCK AUF DER STRECKE', lapN2: 'RUNDE {0}', lastLap: 'LETZTE RUNDE!', victory: 'SIEG!', finish: 'ZIEL',
+  heatUp: 'FAHNDUNGSSTUFE {0}', roadblock: 'STRASSENSPERRE VORAUS!', busted: 'GESCHNAPPT!', escaped: 'ENTKOMMEN!', copDown: 'POLIZIST AUSGESCHALTET! +1000', go: 'LOS!', perfectStart: 'PERFEKTER START!', wheelspin: 'RÄDER DREHEN DURCH!', you: 'Du',
+  r_place: 'PLATZ {0}', r_ok: 'ZIEL GESCHLAGEN!', r_slow: 'ZU LANGSAM…', r_escaped: 'POLIZEI ABGEHÄNGT!', r_busted: 'GESCHNAPPT!', r_total: 'Gesamtzeit', r_best: 'Beste Runde', r_target: 'Ziel', r_dur: 'Dauer der Jagd', r_heat: 'Fahndungsstufe', r_wrecked: 'Polizisten ausgeschaltet', r_bounty: 'Kopfgeld',
+  r_record: 'Neuer Rundenrekord!', r_reward: 'Preisgeld', r_style: 'Stilbonus ({0} Pkt.)', r_gain: 'Gesamtgewinn', r_money: 'Dein Geld', r_menu: 'Menü', r_garage: 'Garage', r_again: 'Nochmal', r_next: 'NÄCHSTE ETAPPE ›',
+  r_evOk: '✓ Etappe „{0}“ geschafft! Nächste Etappe freigeschaltet.', r_evAgain: 'Etappe bereits geschafft – geringeres Preisgeld.', r_evFail: 'Etappe „{0}“ nicht geschafft. Versuch es erneut oder verbessere dein Auto.',
+  adDouble: 'Gewinn verdoppeln: +{0}', adDoubled: 'Gewinn verdoppelt: +{0}', adBonus: '+{0}', adBonusTitle: 'Kurzes Video ansehen und {0} verdienen', adThanks: 'Danke! +{0}', adNone: 'Gerade kein Video verfügbar, versuch es gleich noch einmal.', adWait: 'Nächster Videobonus in {0}', adDay: 'Keine Videoboni mehr für heute. Komm morgen wieder!', adNoReward: 'Video vorzeitig geschlossen: keine Belohnung.', o_privacy: 'Datenschutz', o_privLink: 'Datenschutzerklärung', o_ads: 'Werbung', o_adsPriv: 'Werbe-Datenschutz', o_adsInfo: 'Werbung hält das Spiel kostenlos. Belohnte Videos sind immer deine Entscheidung.',
+};
+LANGS.it = {
+  webglTest: 'Prova il 3D di questo telefono (get.webgl.org): se il cubo non gira, il browser blocca WebGL.',
+  drivers: 'Piloti', driver: 'Pilota', driverNote: 'Il pilota è al volante (o in sella) e dà un piccolo bonus con qualsiasi veicolo.',
+  cat_car: 'Auto', cat_moto: 'Moto', cat_offroad: '4x4', cat_heavy: 'Pesanti', cat_retro: 'Retrò',
+  perkT_speed: 'Il veloce', perkT_nitro: 'Regina del nitro', perkT_accel: 'Partenza a razzo', perkT_grip: 'Traiettorie pulite', perkT_tough: 'Il peso massimo', perkT_drift: 'Regina del drift', perkT_ghost: 'Il fantasma', perkT_money: 'Affari',
+  perk_speed: '+3% di velocità massima.', perk_nitro: 'Il nitro si ricarica il 25% più in fretta.', perk_accel: '+5% di accelerazione.', perk_grip: '+4% di tenuta in curva.', perk_tough: 'Più peso nei contatti (+25%): spinge via i rivali.', perk_drift: 'Punti stile ×1,5 in derapata.', perk_ghost: 'Semina la polizia il 30% più in fretta.', perk_money: '+15% di denaro da ogni gara.',
+  loading: 'Avvio del motore…', preparing: 'Preparazione del circuito: {0}', webgl: 'Il motore 3D non è partito: il browser ha disattivato WebGL, spesso dopo un crash grafico.', webglHelp: 'Chiudi del tutto Chrome (o riavvia il telefono) e riapri il gioco. Se l’hai aperto da Facebook, Messenger o WhatsApp, apri il link in Chrome. Il gioco ripartirà in qualità bassa.', retry: 'Riprova', glLost: 'Il motore grafico è stato reimpostato. Riavvio in qualità bassa…', safeMode: 'Modalità sicura: qualità bassa (l’ultimo avvio non è terminato).',
+  tagline: 'Corse su strada in Tunisia, dalla medina al Sahara.', play: 'GIOCA', career: 'CARRIERA', quick: 'GARA RAPIDA', garage: 'GARAGE', options: 'OPZIONI', help: 'COME SI GIOCA',
+  careerSub: '50 tappe per vincere il torneo', quickSub: 'Gara, prova a tempo o inseguimento', garageSub: 'Auto, vernice, cerchi, neon, tuning', optionsSub: 'Lingua, audio, grafica, comandi', helpSub: 'Tastiera, touch, gamepad',
+  playNext: 'Tappa {0}: {1}', playQuick: 'Gara rapida: {0}', careerDone: 'Carriera completata: sei il re!', careerStep: 'Tappa {0} / {1}',
+  yourCar: 'La tua auto, classe {0}', back: '‹ INDIETRO', paint: 'Vernice', rims: 'Cerchi', neons: 'Neon', tuning: 'Tuning',
+  selected: 'Selezionata', inGarage: 'Nel tuo garage', select: 'SCEGLI', isSelected: 'SCELTA', buy: 'COMPRA {0}', buyConfirm: 'Comprare {0} per {1}?',
+  preview: 'Anteprima: compra il veicolo per tenere questo stile.', previewRims: 'Anteprima: compra il veicolo per tenere questi cerchi.', buyFirst: 'Compra il veicolo per potenziarlo.', model: 'Stile', color: 'Colore', max: 'MAX', none: 'Nessuno',
+  stSpeed: 'Velocità max', stAccel: 'Accelerazione', stHandling: 'Maneggevolezza', stNitro: 'Nitro',
+  upEng: 'Motore', upEngD: 'Velocità massima', upTur: 'Turbo', upTurD: 'Accelerazione', upTyr: 'Gomme', upTyrD: 'Tenuta', upNos: 'Nitro', upNosD: 'Durata e potenza', upAero: 'Aerodinamica', upAeroD: 'Velocità e stabilità', upBrk: 'Freni sportivi', upBrkD: 'Potenza frenante',
+  rim_five: '5 razze', rim_ten: '10 razze', rim_mesh: 'A rete', rim_disc: 'Turbina', rim_dish: 'Canale profondo',
+  gameMode: 'Modalità di gioco', circuit: 'Circuito', settings: 'Impostazioni', laps: 'Giri', opponents: 'Avversari', difficulty: 'Difficoltà', traffic: 'Traffico', weather: 'Meteo',
+  no: 'No', yes: 'Sì', easy: 'Facile', normal: 'Normale', hard: 'Difficile', sunny: 'Sereno', rain: 'Pioggia', start: 'VIA ›', record: 'Record: {0}',
+  m_race: 'Gara', m_tt: 'Prova a tempo', m_chase: 'Inseguimento', m_raceD: 'Sfida fino a 7 piloti. Arriva sul podio.', m_ttD: 'Da solo in pista. Batti il tuo giro migliore.', m_chaseD: 'La polizia ti insegue: seminala prima che ti arresti.',
+  progress: 'Progressi', done: '✓ Completata', locked: '🔒 Bloccata', available: '▶ Disponibile', lap1: 'giro', lapN: 'giri', advised: 'Classe consigliata:', rainTag: 'Pioggia',
+  o_lang: 'Lingua', o_music: 'Musica', o_sfx: 'Effetti sonori', o_gfx: 'Grafica', o_low: 'Bassa', o_med: 'Media', o_high: 'Alta', o_ultra: 'Ultra (top di gamma)', o_dyn: 'Risoluzione dinamica', o_fps: 'Mostra FPS', o_cam: 'Visuale', o_near: 'Vicina', o_far: 'Lontana', o_hood: 'Cofano',
+  o_touch: 'Comandi touch', o_auto: 'Auto', o_steer: 'Sterzo touch', o_buttons: 'Pulsanti', o_stick: 'Joystick', o_tilt: 'Inclinazione', o_sens: 'Sensibilità', o_opacity: 'Opacità pulsanti', o_vibe: 'Vibrazione', o_save: 'Progressi', o_reset: 'Cancella i progressi',
+  o_note: 'I tuoi progressi (denaro, auto, carriera) sono salvati in questo browser.', resetConfirm: 'Cancellare tutti i tuoi progressi (denaro, auto, carriera)?', cancel: 'Annulla', confirm: 'CONFERMA',
+  tiltNo: 'Lo sterzo a inclinazione non è disponibile su questo dispositivo.',
+  h_keys: 'Tastiera', h_accel: 'Accelerare', h_brake: 'Frenare / retromarcia', h_turn: 'Sterzare', h_hand: 'Freno a mano (drift)', h_nitro: 'Nitro', h_cam: 'Cambia visuale', h_reset: 'Torna in pista', h_pause: 'Pausa', h_space: 'Spazio', h_shift: 'Maiusc', h_esc: 'Esc',
+  h_mobile: 'Telefono e gamepad', h_mobileT: 'Su telefono: frecce, joystick o inclinazione per sterzare (scegli nelle opzioni); gas, freno, nitro e freno a mano a destra. Gioca in orizzontale. Gamepad: grilletto destro = gas, sinistro = freno, A = nitro, B/X = freno a mano.',
+  h_tips: 'Consigli', h_t1: 'Accelera appena prima del GO per una partenza perfetta (troppo presto: pattini).', h_t2: 'Derapa con il freno a mano per riempire il nitro e fare punti stile.', h_t3: 'Sfiora il traffico ad alta velocità per un bonus nitro.', h_t4: 'Resta in scia a un rivale per guadagnare velocità.', h_t5: 'In un inseguimento, allontanati più di 175 m da ogni poliziotto per seminarli.', h_t6: 'I punti stile diventano denaro alla fine di ogni gara.',
+  wrongWay: 'CONTROMANO!', evade: 'FUGA', bust: 'ARRESTO', pause: 'PAUSA', resume: 'RIPRENDI', restart: 'Ricomincia', quitRace: 'Abbandona la gara', rotate: 'Ruota il telefono in orizzontale per giocare meglio.', rotateOk: 'Continua comunque',
+  lapHud: 'GIRO {0}/{1}', chaseHud: 'INSEGUIMENTO', bestLap: 'Giro migliore {0}', bounty: 'Taglia {0}', target: 'Obiettivo {0}', targetOver: ' — mancato',
+  nearMiss: 'PER UN PELO! +300', drift: 'DRIFT +{0}', draft: 'SCIA', nitroReady: 'NITRO PRONTO', replaced: 'DI NUOVO IN PISTA', lapN2: 'GIRO {0}', lastLap: 'ULTIMO GIRO!', victory: 'VITTORIA!', finish: 'TRAGUARDO',
+  heatUp: 'LIVELLO DI RICERCA {0}', roadblock: 'POSTO DI BLOCCO!', busted: 'ARRESTATO!', escaped: 'SEMINATI!', copDown: 'POLIZIOTTO FUORI! +1000', go: 'VIA!', perfectStart: 'PARTENZA PERFETTA!', wheelspin: 'PATTINI!', you: 'Tu',
+  r_place: '{0}º POSTO', r_ok: 'OBIETTIVO BATTUTO!', r_slow: 'TROPPO LENTO…', r_escaped: 'POLIZIA SEMINATA!', r_busted: 'ARRESTATO!', r_total: 'Tempo totale', r_best: 'Giro migliore', r_target: 'Obiettivo', r_dur: 'Durata dell’inseguimento', r_heat: 'Livello di ricerca', r_wrecked: 'Poliziotti fuori', r_bounty: 'Taglia',
+  r_record: 'Nuovo record sul giro!', r_reward: 'Premio', r_style: 'Bonus stile ({0} pt)', r_gain: 'Totale guadagnato', r_money: 'Il tuo denaro', r_menu: 'Menu', r_garage: 'Garage', r_again: 'Rigioca', r_next: 'PROSSIMA TAPPA ›',
+  r_evOk: '✓ Tappa «{0}» superata! Prossima tappa sbloccata.', r_evAgain: 'Tappa già superata: premio ridotto.', r_evFail: 'Tappa «{0}» fallita. Riprova o potenzia la tua auto.',
+  adDouble: 'Raddoppia la vincita: +{0}', adDoubled: 'Vincita raddoppiata: +{0}', adBonus: '+{0}', adBonusTitle: 'Guarda un breve video per ottenere {0}', adThanks: 'Grazie! +{0}', adNone: 'Nessun video disponibile ora, riprova tra poco.', adWait: 'Prossimo bonus video tra {0}', adDay: 'Bonus video finiti per oggi. Torna domani!', adNoReward: 'Video chiuso in anticipo: nessun premio.', o_privacy: 'Privacy', o_privLink: 'Informativa sulla privacy', o_ads: 'Pubblicità', o_adsPriv: 'Privacy degli annunci', o_adsInfo: 'La pubblicità mantiene il gioco gratuito. I video premio sono sempre una tua scelta.',
+};
+LANGS.tr = {
+  webglTest: 'Bu telefonun 3D desteğini test et (get.webgl.org): küp dönmüyorsa tarayıcı WebGL’i engelliyor.',
+  drivers: 'Pilotlar', driver: 'Pilot', driverNote: 'Pilotun direksiyona (ya da motora) geçer ve her araçta küçük bir avantaj sağlar.',
+  cat_car: 'Arabalar', cat_moto: 'Motorlar', cat_offroad: '4x4', cat_heavy: 'Ağır', cat_retro: 'Retro',
+  perkT_speed: 'Hızlı olan', perkT_nitro: 'Nitro kraliçesi', perkT_accel: 'Roket kalkış', perkT_grip: 'Temiz çizgi', perkT_tough: 'Ağır sıklet', perkT_drift: 'Drift kraliçesi', perkT_ghost: 'Hayalet', perkT_money: 'İş bilir',
+  perk_speed: '+%3 son hız.', perk_nitro: 'Nitro %25 daha hızlı dolar.', perk_accel: '+%5 hızlanma.', perk_grip: '+%4 viraj tutuşu.', perk_tough: 'Temasta daha ağır (+%25): rakipleri iter.', perk_drift: 'Driftte stil puanı ×1,5.', perk_ghost: 'Polisi %30 daha hızlı atlatır.', perk_money: 'Her yarıştan +%15 para.',
+  loading: 'Motor çalıştırılıyor…', preparing: 'Pist hazırlanıyor: {0}', webgl: '3D motoru başlatılamadı: tarayıcı WebGL’i devre dışı bıraktı (genellikle bir grafik çökmesinden sonra).', webglHelp: 'Chrome’u tamamen kapat (ya da telefonu yeniden başlat), sonra oyunu tekrar aç. Facebook, Messenger veya WhatsApp’tan açtıysan bağlantıyı Chrome’da aç. Oyun düşük kalitede yeniden başlar.', retry: 'Tekrar dene', glLost: 'Grafik motoru sıfırlandı. Düşük kalitede yeniden başlatılıyor…', safeMode: 'Güvenli mod: düşük kalite (son açılış tamamlanmadı).',
+  tagline: 'Tunus’ta sokak yarışları: medinadan Sahra’ya.', play: 'OYNA', career: 'KARİYER', quick: 'HIZLI YARIŞ', garage: 'GARAJ', options: 'AYARLAR', help: 'NASIL OYNANIR',
+  careerSub: 'Turnuvayı kazanmak için 50 etap', quickSub: 'Yarış, zamana karşı veya polis kovalamacası', garageSub: 'Araçlar, boya, jant, neon, tuning', optionsSub: 'Dil, ses, grafik, kontroller', helpSub: 'Klavye, dokunmatik, oyun kolu',
+  playNext: 'Etap {0}: {1}', playQuick: 'Hızlı yarış: {0}', careerDone: 'Kariyer tamamlandı: kral sensin!', careerStep: 'Etap {0} / {1}',
+  yourCar: 'Araban, {0} sınıfı', back: '‹ GERİ', paint: 'Boya', rims: 'Jant', neons: 'Neon', tuning: 'Tuning',
+  selected: 'Seçili', inGarage: 'Garajında', select: 'SEÇ', isSelected: 'SEÇİLDİ', buy: 'SATIN AL {0}', buyConfirm: '{0} aracı {1} karşılığında alınsın mı?',
+  preview: 'Önizleme: bu stili korumak için aracı satın al.', previewRims: 'Önizleme: bu jantları korumak için aracı satın al.', buyFirst: 'Geliştirmek için önce aracı satın al.', model: 'Stil', color: 'Renk', max: 'MAKS', none: 'Yok',
+  stSpeed: 'Son hız', stAccel: 'Hızlanma', stHandling: 'Yol tutuş', stNitro: 'Nitro',
+  upEng: 'Motor', upEngD: 'Son hız', upTur: 'Turbo', upTurD: 'Hızlanma', upTyr: 'Lastikler', upTyrD: 'Tutuş', upNos: 'Nitro', upNosD: 'Süre ve güç', upAero: 'Aerodinamik', upAeroD: 'Hız ve denge', upBrk: 'Spor frenler', upBrkD: 'Fren gücü',
+  rim_five: '5 kollu', rim_ten: '10 kollu', rim_mesh: 'Örgü', rim_disc: 'Türbin', rim_dish: 'Derin çanak',
+  gameMode: 'Oyun modu', circuit: 'Pist', settings: 'Ayarlar', laps: 'Tur', opponents: 'Rakipler', difficulty: 'Zorluk', traffic: 'Trafik', weather: 'Hava',
+  no: 'Hayır', yes: 'Evet', easy: 'Kolay', normal: 'Normal', hard: 'Zor', sunny: 'Açık', rain: 'Yağmur', start: 'BAŞLA ›', record: 'Rekor: {0}',
+  m_race: 'Yarış', m_tt: 'Zamana karşı', m_chase: 'Polis kovalamacası', m_raceD: '7 pilota kadar rakiple yarış. Podyumda bitir.', m_ttD: 'Pistte tek başınasın. En iyi turunu geç.', m_chaseD: 'Polis peşinde: yakalanmadan onları atlat.',
+  progress: 'İlerleme', done: '✓ Tamamlandı', locked: '🔒 Kilitli', available: '▶ Açık', lap1: 'tur', lapN: 'tur', advised: 'Önerilen sınıf:', rainTag: 'Yağmur',
+  o_lang: 'Dil', o_music: 'Müzik', o_sfx: 'Ses efektleri', o_gfx: 'Grafik', o_low: 'Düşük', o_med: 'Orta', o_high: 'Yüksek', o_ultra: 'Ultra (güçlü cihaz)', o_dyn: 'Dinamik çözünürlük', o_fps: 'FPS göster', o_cam: 'Kamera', o_near: 'Yakın', o_far: 'Uzak', o_hood: 'Kaput',
+  o_touch: 'Dokunmatik kontroller', o_auto: 'Otomatik', o_steer: 'Dokunmatik direksiyon', o_buttons: 'Düğmeler', o_stick: 'Joystick', o_tilt: 'Eğme', o_sens: 'Hassasiyet', o_opacity: 'Düğme opaklığı', o_vibe: 'Titreşim', o_save: 'İlerleme', o_reset: 'Kaydı sıfırla',
+  o_note: 'İlerlemen (para, araçlar, kariyer) bu tarayıcıda saklanır.', resetConfirm: 'Tüm ilerlemen (para, araçlar, kariyer) silinsin mi?', cancel: 'İptal', confirm: 'ONAYLA',
+  tiltNo: 'Eğerek direksiyon bu cihazda kullanılamıyor.',
+  h_keys: 'Klavye', h_accel: 'Gaz', h_brake: 'Fren / geri', h_turn: 'Direksiyon', h_hand: 'El freni (drift)', h_nitro: 'Nitro', h_cam: 'Kamerayı değiştir', h_reset: 'Piste dön', h_pause: 'Duraklat', h_space: 'Boşluk', h_shift: 'Shift', h_esc: 'Esc',
+  h_mobile: 'Telefon ve oyun kolu', h_mobileT: 'Telefonda: yön vermek için oklar, joystick veya eğme (ayarlardan seç); gaz, fren, nitro ve el freni sağda. Yatay oyna. Oyun kolu: sağ tetik = gaz, sol tetik = fren, A = nitro, B/X = el freni.',
+  h_tips: 'İpuçları', h_t1: 'Kusursuz kalkış için GO’dan hemen önce gaza bas (çok erken: patinaj).', h_t2: 'El freniyle drift yaparak nitroyu doldur ve stil puanı kazan.', h_t3: 'Yüksek hızda trafiğin yanından sıyrılarak nitro bonusu al.', h_t4: 'Hız kazanmak için rakibin rüzgâr gölgesinde kal.', h_t5: 'Kovalamacada polisleri atlatmak için hepsinden 175 m’den fazla uzaklaş.', h_t6: 'Stil puanları her yarışın sonunda paraya dönüşür.',
+  wrongWay: 'TERS YÖN!', evade: 'KAÇIŞ', bust: 'YAKALANMA', pause: 'DURAKLATILDI', resume: 'DEVAM', restart: 'Yeniden başlat', quitRace: 'Yarıştan çık', rotate: 'Daha iyi oynamak için telefonu yatay çevir.', rotateOk: 'Yine de devam et',
+  lapHud: 'TUR {0}/{1}', chaseHud: 'KOVALAMACA', bestLap: 'En iyi tur {0}', bounty: 'Ödül {0}', target: 'Hedef {0}', targetOver: ' — kaçtı',
+  nearMiss: 'KIL PAYI! +300', drift: 'DRIFT +{0}', draft: 'RÜZGÂR GÖLGESİ', nitroReady: 'NİTRO HAZIR', replaced: 'PİSTE DÖNDÜN', lapN2: 'TUR {0}', lastLap: 'SON TUR!', victory: 'ZAFER!', finish: 'FİNİŞ',
+  heatUp: 'ARANMA SEVİYESİ {0}', roadblock: 'İLERİDE BARİKAT!', busted: 'YAKALANDIN!', escaped: 'KAÇTIN!', copDown: 'POLİS DEVRE DIŞI! +1000', go: 'BAŞLA!', perfectStart: 'KUSURSUZ KALKIŞ!', wheelspin: 'PATİNAJ!', you: 'Sen',
+  r_place: '{0}. SIRA', r_ok: 'HEDEF GEÇİLDİ!', r_slow: 'ÇOK YAVAŞ…', r_escaped: 'POLİS ATLATILDI!', r_busted: 'YAKALANDIN!', r_total: 'Toplam süre', r_best: 'En iyi tur', r_target: 'Hedef', r_dur: 'Kovalamaca süresi', r_heat: 'Aranma seviyesi', r_wrecked: 'Devre dışı polisler', r_bounty: 'Ödül',
+  r_record: 'Yeni tur rekoru!', r_reward: 'Ödül', r_style: 'Stil bonusu ({0} puan)', r_gain: 'Toplam kazanç', r_money: 'Paran', r_menu: 'Menü', r_garage: 'Garaj', r_again: 'Tekrar yarış', r_next: 'SONRAKİ ETAP ›',
+  r_evOk: '✓ “{0}” etabı tamamlandı! Sonraki etap açıldı.', r_evAgain: 'Etap zaten tamamlanmıştı: ödül azaltıldı.', r_evFail: '“{0}” etabı başarısız. Tekrar dene ya da arabanı geliştir.',
+  adDouble: 'Kazancını ikiye katla: +{0}', adDoubled: 'Kazanç ikiye katlandı: +{0}', adBonus: '+{0}', adBonusTitle: '{0} kazanmak için kısa bir video izle', adThanks: 'Teşekkürler! +{0}', adNone: 'Şu anda video yok, birazdan tekrar dene.', adWait: 'Sonraki video bonusu: {0}', adDay: 'Bugünlük video bonusları bitti. Yarın tekrar gel!', adNoReward: 'Video erken kapatıldı: ödül yok.', o_privacy: 'Gizlilik', o_privLink: 'Gizlilik politikası', o_ads: 'Reklamlar', o_adsPriv: 'Reklam gizliliği', o_adsInfo: 'Reklamlar oyunu ücretsiz tutar. Ödüllü videolar her zaman senin tercihin.',
+};
+const LANG_LIST = [['fr', 'Français'], ['en', 'English'], ['es', 'Español'], ['pt', 'Português'], ['de', 'Deutsch'], ['it', 'Italiano'], ['tr', 'Türkçe'], ['ar', 'العربية'], ['tn', 'تونسي']];
+// langues « de base anglaise » : tout sauf le français et les deux arabes
+const LEN = () => LANG !== 'fr' && LANG !== 'ar' && LANG !== 'tn';
+const L3 = (fr, en, ar) => LEN() ? en : (LANG === 'ar' || LANG === 'tn') ? ar : fr;
+// messages techniques de la radio : version anglaise pour les langues internationales (correspondance par préfixe)
+const RADIO_EN = [
+  ['Voix automatique prête à être testée', 'Automatic voice ready to test'],
+  ['Appuie une fois sur « TESTER LA VOIX » pour autoriser la voix automatique.', 'Tap “TEST TEAM VOICE” once to allow the automatic voice.'],
+  ['Test vocal en cours…', 'Voice test in progress…'],
+  ['Voix équipe prête · prochaine consigne automatique', 'Team voice ready · next call is automatic'],
+  ['VOIX ACTIVE · ', 'VOICE ON · '], ['Voix bloquée : ', 'Voice blocked: '],
+  ['VOIX DE L’ÉQUIPE EN COURS · Android', 'TEAM VOICE SPEAKING · Android'],
+  ['Transmission de la consigne au moteur Android…', 'Sending the call to the Android voice engine…'],
+  ['Synthèse vocale indisponible sur ce navigateur', 'Speech synthesis is not available in this browser'],
+  ['Moteur vocal non disponible sur cet appareil', 'No voice engine on this device'],
+  ['Moteur vocal Android prêt', 'Android voice engine ready'],
+  ['Initialisation du moteur vocal Android…', 'Starting the Android voice engine…'],
+  ['Impossible de vérifier le moteur vocal Android : ', 'Could not check the Android voice engine: '],
+  ['Erreur de lecture vocale : ', 'Voice playback error: '],
+  ['ERREUR : moteur vocal Android non initialisé. Vérifie la synthèse vocale dans les paramètres.', 'ERROR: Android voice engine not started. Check text-to-speech in the system settings.'],
+  ['ERREUR : module vocal natif absent de cette APK.', 'ERROR: native voice module missing from this APK.'],
+  ['ÉCHEC VOIX ANDROID : ', 'ANDROID VOICE FAILED: '],
+  ['Consigne vocale terminée · radio prête', 'Call finished · radio ready'],
+  ['Consigne prête · touche l’écran pour activer la radio', 'Call ready · tap the screen to enable the radio'],
+  ['Consigne en attente · démarrage du moteur vocal Android', 'Call queued · Android voice engine starting'],
+  ['Consigne acceptée · attente du démarrage audio…', 'Call accepted · waiting for audio…'],
+  ['Connexion au moteur vocal Android…', 'Connecting to the Android voice engine…'],
+  ['Chargement des voix du téléphone…', 'Loading the phone’s voices…'],
+  ['Active la synthèse vocale Android dans les paramètres', 'Enable Android text-to-speech in the settings'],
+  ['Radio vocale désactivée · micro requis', 'Voice radio off · microphone required'],
+  ['Un membre a quitté le canal.', 'A member left the channel.'],
+  ['Reconnexion automatique à la radio…', 'Reconnecting to the radio…'],
+  ['Radio prête : une activation manuelle du micro est nécessaire.', 'Radio ready: the microphone must be enabled manually.'],
+  ['Radio prête : touche REJOINDRE pour réactiver le canal.', 'Radio ready: tap JOIN to reopen the channel.'],
+  ['Radio mémorisée : touche OUVRIR/REJOINDRE pour réactiver le micro.', 'Radio remembered: tap OPEN/JOIN to re-enable the microphone.'],
+  ['Micro indisponible : ouvre le jeu en HTTPS sur un navigateur compatible.', 'Microphone unavailable: open the game over HTTPS in a compatible browser.'],
+  ['Liaison vocale active · micro en attente du bouton PTT', 'Voice link active · microphone waits for the talk button'],
+  ['Impossible de joindre le canal. Réessaie.', 'Could not reach the channel. Try again.'],
+  ['Flux reçu : touche l’écran pour autoriser le son.', 'Audio received: tap the screen to allow sound.'],
+  ['Erreur audio : ', 'Audio error: '],
+  ['Choisis un code de canal d’au moins 3 caractères.', 'Choose a channel code of at least 3 characters.'],
+  ['Canal trouvé · connexion à l’équipe…', 'Channel found · connecting to the team…'],
+  ['Canal ouvert · partage ce code avec ton équipe : ', 'Channel open · share this code with your team: '],
+  ['Autorise le microphone puis connexion au canal…', 'Allow the microphone, then connecting to the channel…'],
+  ['Tu transmets à ton équipe. Relâche pour couper le micro.', 'You are talking to your team. Release to mute.'],
+  ['Radio connectée · micro coupé', 'Radio connected · microphone muted'],
+  ['Ce canal est déjà ouvert : rejoins-le depuis un autre appareil.', 'This channel is already open: join it from another device.'],
+  ['Canal introuvable : demande au chef d’équipe de l’ouvrir d’abord.', 'Channel not found: ask the team leader to open it first.'],
+  ['Accès au micro refusé. Autorise le microphone dans ton navigateur.', 'Microphone access denied. Allow the microphone in your browser.'],
+  ['Aucun microphone détecté.', 'No microphone detected.'],
+];
+function rtx(m) {
+  if (!LEN() || !m) return m;
+  for (const [fr, en] of RADIO_EN) if (m.startsWith(fr)) return en + m.slice(fr.length);
+  return m;
+}
+// V200 — libellés communs aux neuf langues (filtres de circuits, sauvegarde, équipe radio)
+const V200_TXT = {
+  fr: ['TOUS', 'VILLES', 'DÉSERT', 'MONTAGNE', 'CÔTE', 'CIRCUIT', 'Course, récompense et solde enregistrés'],
+  en: ['ALL', 'CITY', 'DESERT', 'MOUNTAIN', 'COAST', 'CIRCUIT', 'Race, reward and balance saved'],
+  es: ['TODOS', 'CIUDAD', 'DESIERTO', 'MONTAÑA', 'COSTA', 'CIRCUITO', 'Carrera, premio y saldo guardados'],
+  pt: ['TODAS', 'CIDADE', 'DESERTO', 'MONTANHA', 'COSTA', 'CIRCUITO', 'Corrida, prêmio e saldo salvos'],
+  de: ['ALLE', 'STADT', 'WÜSTE', 'BERGE', 'KÜSTE', 'RUNDKURS', 'Rennen, Preisgeld und Kontostand gespeichert'],
+  it: ['TUTTI', 'CITTÀ', 'DESERTO', 'MONTAGNA', 'COSTA', 'CIRCUITO', 'Gara, premio e saldo salvati'],
+  tr: ['TÜMÜ', 'ŞEHİR', 'ÇÖL', 'DAĞ', 'SAHİL', 'PİST', 'Yarış, ödül ve bakiye kaydedildi'],
+  ar: ['الكل', 'المدن', 'الصحراء', 'الجبال', 'الساحل', 'الحلبة', 'تم حفظ السباق والجائزة والرصيد'],
+  tn: ['الكلّ', 'المدن', 'الصحراء', 'الجبال', 'البحر', 'الحلبة', 'تسجّل السباق والجائزة والفلوس'],
+};
+for (const l in V200_TXT) { const v = V200_TXT[l]; LANGS[l] = Object.assign(LANGS[l] || {}, { f_all: v[0], f_city: v[1], f_desert: v[2], f_mountain: v[3], f_coast: v[4], f_circuit: v[5], r_saved: v[6] }); }
+const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
+function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
 const tEvName = i => LANG === 'tn' ? ((TN_CONTENT.ev[i] || [])[0] || (TXT.ev[i] || [])[2] || CAREER[i].name) : ((TXT.ev[i] || [])[LI()] || CAREER[i].name);
 const tEvDesc = i => LANG === 'tn' ? ((TN_CONTENT.ev[i] || [])[1] || (TXT.ev[i] || [])[5] || CAREER[i].desc) : ((TXT.ev[i] || [])[3 + LI()] || CAREER[i].desc);
@@ -6158,7 +6560,7 @@ function renderGarage(dt) {
   }
   const env = GAR.env; env.time = t;
   const aspect = R.W / R.H, wide = aspect > 1.15;
-  const rtl = LANG === 'ar', off = (UI.screen === 'garage' || UI.screen === 'drivers') ? (wide ? (rtl ? 1.15 : -1.15) : 0) : UI.screen === 'main' ? (wide ? (rtl ? -1.9 : 1.7) : 0) : 0;
+  const rtl = LANG === 'ar' || LANG === 'tn', off = (UI.screen === 'garage' || UI.screen === 'drivers') ? (wide ? (rtl ? 1.15 : -1.15) : 0) : UI.screen === 'main' ? (wide ? (rtl ? -1.9 : 1.7) : 0) : 0;
   // cadrage adapté à la taille (moto … bus) : on recule jusqu'aux arcades, puis on élargit l'objectif
   const sz = clamp(Math.max(m.L / 4.6, m.H / 1.45), 0.75, 2.2), want = (aspect < 0.8 ? 9.5 : 7.2) * GAR.zoom * sz, dist = Math.min(want, 11.2);
   GAR.cam.fov = clamp(42 * want / dist, 42, 72);
@@ -6375,9 +6777,15 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
+const GAME_VERSION = 'V200';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
-function detectLang() { const l = (navigator.language || '').toLowerCase(); return l.startsWith('en') ? 'en' : l.startsWith('ar') && !l.includes('-tn') ? 'ar' : 'tn'; }
+// langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
+function detectLang() {
+  const all = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
+  for (const raw of all) { const l = String(raw).toLowerCase(); if (l === 'ar-tn') return 'tn'; const b = l.split('-')[0]; if (b !== 'tn' && LANGS[b]) return b; }
+  return 'en';
+}
 function defaultSettings() { return { sfx: 80, music: 50, quality: IS_TOUCH ? 'high' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
   return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
@@ -6402,7 +6810,7 @@ function loadGame() {
 }
 function saveGame() { try { const payload = JSON.stringify(SAVE); localStorage.setItem(SAVE_KEY, payload); localStorage.setItem(SAVE_BACKUP_KEY, payload); } catch (e) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SAVE)); } catch (err) { console.warn('Sauvegarde indisponible', err); } } }
 const fmtT = x => { if (!isFinite(x)) return '--:--.--'; const m = Math.floor(x / 60), s = x - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(2); };
-const money = v => LANG === 'tn' ? Math.round(v).toLocaleString('fr-TN') + ' د.ت' : '$ ' + Math.round(v).toLocaleString(LANG === 'en' ? 'en-US' : 'fr-FR');
+const money = v => LANG === 'tn' ? Math.round(v).toLocaleString('fr-TN') + ' د.ت' : '$ ' + Math.round(v).toLocaleString(LEN() ? 'en-US' : 'fr-FR');
 const modeName = m => t('m_' + m);
 const evCfg = i => { const e = CAREER[i]; return { mode: e.mode, track: e.track, laps: e.laps || 1, opp: e.opp || 0, diff: e.diff || 0, tier: e.tier, heat: e.heat, traffic: e.mode === 'chase' ? 1 : 0, event: i, weather: e.weather }; };
 
@@ -6426,7 +6834,7 @@ const UI = {
     if (name === 'main') this.renderMain();
     if (name) { MUS.play('menu'); MUS.muffle(false); }
     this.updMoney();
-    document.querySelectorAll('#langs button').forEach(b => b.classList.toggle('on', b.dataset.l === LANG));
+    $('lang-sel').value = LANG; document.body.dataset.scr = name || '';
   },
   refresh() { applyI18n(); this.show(this.screen || 'main'); },
   updMoney() { $('money').textContent = money(SAVE.money); },
@@ -6518,7 +6926,7 @@ const UI = {
     const q = this.q;
     $('q-modes').innerHTML = ['race', 'tt', 'chase'].map(k => `<button class="mode ${q.mode === k ? 'on' : ''}" data-m="${k}"><b>${t('m_' + k)}</b><small>${t('m_' + k + 'D')}</small></button>`).join('');
     $('q-modes').querySelectorAll('button').forEach(b => b.onclick = () => { q.mode = b.dataset.m; if (q.mode === 'chase') q.traffic = 1; this.renderQuick(); });
-    const trackFilters=[['all','TOUS'],['city','VILLES'],['desert','DÉSERT'],['mountain','MONTAGNE'],['coast','CÔTE'],['circuit','CIRCUIT']];
+    const trackFilters=['all','city','desert','mountain','coast','circuit'].map(k=>[k,t('f_'+k)]);
     $('q-track-filters').innerHTML=trackFilters.map(([key,label])=>`<button type="button" data-filter="${key}" class="${(q.trackFilter||'all')===key?'on':''}">${label}</button>`).join('');
     $('q-track-filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{q.trackFilter=b.dataset.filter;this.renderQuick();});
     const visibleTracks=TRACKS.map((d,i)=>({d,i})).filter(x=>(q.trackFilter||'all')==='all'||x.d.theme===(q.trackFilter||'all'));
@@ -6536,7 +6944,7 @@ const UI = {
     const done = SAVE.careerDone.length;
     $('c-prog').innerHTML = `<span>${t('progress')}</span><div class="pb"><i style="transform:scaleX(${done / CAREER.length})"></i></div><span>${done} / ${CAREER.length}</span>`;
     const phaseNames = ['Qualifications','Éliminatoires','Play-offs','Finales','Tournée continentale','Série Élite','Maîtres','Ligue Pro','Légendes','Championnat ultime'];
-    const phases = phaseNames.map((n, k) => LANG === 'en' ? ['QUALIFIERS','ELIMINATION','PLAYOFFS','FINALS','CONTINENTAL TOUR','ELITE SERIES','MASTERS','PRO LEAGUE','LEGENDS','ULTIMATE CHAMPIONSHIP'][k] + ' · STAGES ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0') : LANG === 'ar' || LANG === 'tn' ? 'المرحلة ' + (k + 1) + ' · ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0') : n.toUpperCase() + ' · ÉTAPES ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0'));
+    const phases = phaseNames.map((n, k) => LEN() ? ['QUALIFIERS','ELIMINATION','PLAYOFFS','FINALS','CONTINENTAL TOUR','ELITE SERIES','MASTERS','PRO LEAGUE','LEGENDS','ULTIMATE CHAMPIONSHIP'][k] + ' · STAGES ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0') : LANG === 'ar' || LANG === 'tn' ? 'المرحلة ' + (k + 1) + ' · ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0') : n.toUpperCase() + ' · ÉTAPES ' + String(k * 5 + 1).padStart(2,'0') + '–' + String(k * 5 + 5).padStart(2,'0'));
     $('c-list').innerHTML = CAREER.map((e, i) => {
       const isDone = SAVE.careerDone.includes(i), lock = i > SAVE.career, next = i === SAVE.career, tc = tierCars(e.tier)[0].cls;
       const SEP = LANG === 'ar' || LANG === 'tn' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');
@@ -6552,7 +6960,7 @@ const UI = {
     const rng = (key, min, max) => `<input type="range" data-k="${key}" min="${min}" max="${max}" value="${s[key]}">`;
     const row = (l, c) => `<div class="orow"><label>${l}</label>${c}</div>`;
     $('o-panel').innerHTML = [
-      row(t('o_lang'), seg('lang', [['fr', 'Français'], ['tn', 'تونسي'], ['ar', 'العربية'], ['en', 'English']])),
+      row(t('o_lang'), seg('lang', LANG_LIST)),
       row(t('o_music'), rng('music', 0, 100)), row(t('o_sfx'), rng('sfx', 0, 100)),
       row(t('o_gfx'), seg('quality', [['low', t('o_low')], ['medium', t('o_med')], ['high', t('o_high')], ['ultra', t('o_ultra')]])),
       row(t('o_dyn'), seg('dyn', [[true, t('yes')], [false, t('no')]])), row(t('o_fps'), seg('fps', [[true, t('yes')], [false, t('no')]])),
@@ -6569,7 +6977,7 @@ const UI = {
     $('o-panel').querySelectorAll('.seg').forEach(g => g.querySelectorAll('button').forEach(b => b.onclick = () => {
       const k = g.dataset.k, raw = b.dataset.v; s[k] = raw === 'true' ? true : raw === 'false' ? false : (k === 'cam' ? +raw : raw);
       if (k === 'steer' && raw === 'tilt') askTilt();
-      saveGame(); applySettings(); if (k === 'lang') { LANG = s.lang; applyI18n(); } this.renderOptions(); AU.shot(800, 0.04, 'sine', 0.05);
+      saveGame(); applySettings(); if (k === 'lang') { LANG = s.lang; applyI18n(); $('lang-sel').value = LANG; this.updMoney(); } this.renderOptions(); AU.shot(800, 0.04, 'sine', 0.05);
     }));
     $('o-panel').querySelectorAll('input[type=range]').forEach(i => i.oninput = () => { s[i.dataset.k] = +i.value; saveGame(); applySettings(); });
     if ($('o-adpriv')) $('o-adpriv').onclick = () => { try { ADS.P.showPrivacyOptionsForm().catch(() => { }); } catch (e) { } };
@@ -6595,7 +7003,7 @@ const UI = {
     G.state = 'loading'; AU.init();
     requestAnimationFrame(() => requestAnimationFrame(() => {
       try {
-        $('loadtxt').textContent = LANG==='en'?'Building track and vehicles…':(LANG==='ar'||LANG==='tn'?'جارٍ تجهيز الحلبة والسيارات…':'Construction du circuit et des véhicules…');
+        $('loadtxt').textContent = LEN()?'Building track and vehicles…':(LANG==='ar'||LANG==='tn'?'جارٍ تجهيز الحلبة والسيارات…':'Construction du circuit et des véhicules…');
         const def = TRACKS[cfg.track];
         if (G.trackId !== def.id) { if (G.T) for (const m of G.T.meshes) R.free(m); G.T = null; G.T = buildTrack(def); G.trackId = def.id; makeMinimap(G.T); }
         G.camMode = SAVE.settings.cam; G.resultsShown = false;
@@ -6614,14 +7022,16 @@ const UI = {
       this.hudCache = {};
       const crew=radioCrew(DRIVERS[drvIndex(SAVE.driver)]);
       $('radio-members').innerHTML=crew.map(m=>'<span><b>'+m.role+'</b> · '+m.name+'</span>').join('');
-      $('radio-message').textContent=LANG==='en'?'Race control connected. Your crew is ready.':(LANG==='ar'||LANG==='tn'?'تم الاتصال بالفريق. نحن جاهزون لمساعدتك.':'Liaison établie. Ton équipe est prête à te conseiller.');
+      $('radio-message').textContent=LEN()?'Race control connected. Your crew is ready.':(LANG==='ar'||LANG==='tn'?'تم الاتصال بالفريق. نحن جاهزون لمساعدتك.':'Liaison établie. Ton équipe est prête à te conseiller.');
       $('radio-team').classList.remove('hidden');
-      $('radio-team').classList.add('radio-collapsed');
+      $('radio-team').classList.remove('radio-auto');$('radio-team').classList.add('radio-collapsed');
       $('radio-toggle').textContent='＋';
       $('radio-toggle').setAttribute('aria-expanded','false');
-      $('radio-talk').textContent=LANG==='en'?'◉ TEST TEAM VOICE':(LANG==='ar'||LANG==='tn'?'◉ اختبر صوت الفريق':'◉ TESTER LA VOIX DE L’ÉQUIPE');
+      $('radio-talk').textContent=LEN()?'◉ TEST TEAM VOICE':(LANG==='ar'||LANG==='tn'?'◉ اختبر صوت الفريق':'◉ TESTER LA VOIX DE L’ÉQUIPE');
       crewTtsStatus('Appuie une fois sur « TESTER LA VOIX » pour autoriser la voix automatique.');
-      $('radio-team').querySelector('.radio-head span:first-child').textContent=LANG==='en'?'TEAM RADIO · BOX':(LANG==='ar'||LANG==='tn'?'اتصال الفريق · الحلبة':'RADIO ÉQUIPE · STAND');
+      $('radio-team').querySelector('.radio-head span:first-child').textContent=LEN()?'TEAM RADIO · BOX':(LANG==='ar'||LANG==='tn'?'اتصال الفريق · الحلبة':'RADIO ÉQUIPE · STAND');
+      $('radio-open').textContent=L3('OUVRIR LE CANAL','OPEN CHANNEL','افتح القناة');$('radio-join').textContent=L3('REJOINDRE','JOIN','انضمّ');$('radio-room-l').textContent=L3('CANAL ÉQUIPE','TEAM CHANNEL','قناة الفريق');
+      if(!RADIO_VOICE.stream){$('radio-ptt').textContent=L3('MAINTENIR POUR PARLER','HOLD TO TALK','اضغط مطوّلاً للتكلّم');radioVoiceStatus('Radio vocale désactivée · micro requis');}
       radioVoiceAutoReconnect();
       MUS.play('race'); MUS.muffle(false);
     }));
@@ -6630,6 +7040,7 @@ const UI = {
     radioVoiceCleanup();
     G.state = 'menu'; AU.silence(); $('hud').classList.add('hidden'); $('radio-team').classList.add('hidden'); $('pause').classList.remove('show'); $('results').classList.remove('show'); $('h-count').className = '';
     this.show('main');
+    if (window.__swPending) { window.__swPending = false; saveGame(); bootGuardOk(); location.reload(); }
   },
   pause(on) {
     if (on && (G.state === 'race' || G.state === 'countdown')) { G.prev = G.state; G.state = 'paused'; AU.silence(); MUS.muffle(true); $('pause').classList.add('show'); }
@@ -6671,7 +7082,7 @@ const UI = {
     let evLine = '';
     if (ev !== null) evLine = res.success ? `<p class="okline">${res.firstWin ? t('r_evOk', tEvName(ev)) : t('r_evAgain')}</p>` : `<p class="failline">${t('r_evFail', tEvName(ev))}</p>`;
     const next = ev !== null && res.success && ev + 1 < CAREER.length;
-    $('res-body').innerHTML = `<div class="res-title ${cls}">${title}</div><div class="note">${modeName(res.mode)}, ${T.name}${res.record ? ` — <b class="rec">${t('r_record')}</b>` : ''}</div><div class="note" style="color:#63dba0;font-weight:700">✓ ${LANG === 'en' ? 'RACE, REWARD & BALANCE SAVED' : LANG === 'ar' ? '✓ تم حفظ السباق والجائزة والرصيد' : 'PARCOURS, RÉCOMPENSE ET SOLDE ENREGISTRÉS AUTOMATIQUEMENT'}</div><div class="rcols"><div class="rcol1">${body}${evLine}</div><div class="rcol2">
+    $('res-body').innerHTML = `<div class="res-title ${cls}">${title}</div><div class="note">${modeName(res.mode)}, ${T.name}${res.record ? ` — <b class="rec">${t('r_record')}</b>` : ''}</div><div class="note" style="color:#63dba0;font-weight:700">✓ ${t('r_saved')}</div><div class="rcols"><div class="rcol1">${body}${evLine}</div><div class="rcol2">
       <div class="rgrid"><span>${t('r_reward')}</span><b>${money(res.reward)}</b><span>${t('r_style', res.style)}</span><b>${money(res.styleBonus)}</b><span>${t('r_gain')}</span><b class="tot">${money(res.total)}</b><span>${t('r_money')}</span><b id="r-money">${money(SAVE.money)}</b></div>
       ${ADS.on && res.total > 0 ? `<button id="r-ad" class="adbtn"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg>${t('adDouble', money(res.total))}</button>` : ''}
       <div class="rbtns"><button id="r-menu">${t('r_menu')}</button><button id="r-garage">${t('r_garage')}</button><button id="r-again" class="${next ? '' : 'cta'}">${t('r_again')}</button>${next ? `<button id="r-next" class="cta">${t('r_next')}</button>` : ''}</div></div></div>`;
@@ -6787,6 +7198,8 @@ const BOOT_KEY = 'superjoud_boot';
 function bootGuardStart() {
   let safe = false;
   try { safe = localStorage.getItem(BOOT_KEY) === 'pending'; localStorage.setItem(BOOT_KEY, 'pending'); } catch (e) { }
+  // quitter ou recharger la page pendant le démarrage n'est pas un plantage graphique : on ne pénalise pas le lancement suivant
+  addEventListener('pagehide', () => { if (BOOT_FRAMES >= 0) bootGuardOk(); });
   if (safe && SAVE.settings.quality !== 'low') { SAVE.settings.quality = 'low'; return true; }
   return false;
 }
@@ -6973,7 +7386,8 @@ function bindInputs() {
   cv.addEventListener('wheel', e => { if (G.state === 'menu') GAR.zoom = clamp(GAR.zoom + e.deltaY * 0.001, 0.7, 1.4); }, { passive: true });
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { AU.shot(700, 0.04, 'sine', 0.05); UI.show(b.dataset.go); }));
   $('m-play').onclick = () => { AU.shot(900, 0.06, 'sine', 0.07); UI.startRace(UI.nextCfg()); };
-  document.querySelectorAll('#langs button').forEach(b => b.onclick = () => { SAVE.settings.lang = LANG = b.dataset.l; saveGame(); UI.refresh(); });
+  $('lang-sel').innerHTML = LANG_LIST.map(([v, l]) => `<option value="${v}">${l}</option>`).join(''); $('lang-sel').value = LANG;
+  $('lang-sel').onchange = e => { SAVE.settings.lang = LANG = e.target.value; saveGame(); UI.refresh(); };
   document.querySelectorAll('#g-tabs button').forEach(b => b.onclick = () => { UI.tab = b.dataset.tab; UI.renderGarage(); });
   $('q-laps').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.laps = clamp(UI.q.laps + +b.dataset.d, 1, 6); UI.renderQuick(); });
   $('q-opp').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.opp = clamp(UI.q.opp + +b.dataset.d, 1, 7); UI.renderQuick(); });
@@ -7001,7 +7415,7 @@ function bindInputs() {
   document.addEventListener('visibilitychange',()=>{if(document.hidden)releasePtt();});
   addEventListener('pagehide',radioVoiceCleanup);
   $('radio-toggle').onclick = () => {
-    const box=$('radio-team'), closed=box.classList.toggle('radio-collapsed');
+    const box=$('radio-team'), wasAuto=box.classList.contains('radio-auto'); box.classList.remove('radio-auto'); if(wasAuto) box.classList.add('radio-collapsed'); const closed=box.classList.toggle('radio-collapsed');
     $('radio-toggle').textContent=closed?'＋':'−';
     $('radio-toggle').setAttribute('aria-expanded',String(!closed));
   };
@@ -7060,7 +7474,8 @@ function boot() {
       SAVE.settings.quality = 'medium'; saveGame(); localStorage.setItem('superjoud_v84_gfx_migrated', '1');
     }
   } catch(e) {}
-  LANG = SAVE.settings.lang || 'fr'; applyI18n();
+  LANG = LANGS[SAVE.settings.lang] ? SAVE.settings.lang : (SAVE.settings.lang = detectLang()); applyI18n();
+  $('build-tag').textContent = GAME_VERSION;
   const safe = bootGuardStart();
   let ok = false;
   R.liteWanted = SAVE.settings.quality === 'low';
@@ -7086,10 +7501,14 @@ window.addEventListener('load', boot);
 
 
 if ('serviceWorker' in navigator) {
+  // Première installation : aucun rechargement (l'ancien code rechargeait la page et déclenchait à tort le « mode sans échec »).
+  // Mise à jour : un seul rechargement, jamais pendant une course (reporté au retour au menu).
+  const hadController = !!navigator.serviceWorker.controller;
   let swReloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (swReloading) return;
-    swReloading = true;
+    if (swReloading || !hadController) return;
+    if (G.state !== 'menu' && G.state !== 'loading') { window.__swPending = true; return; }
+    swReloading = true; bootGuardOk();
     location.reload();
   });
   addEventListener('load', () => {

@@ -1419,6 +1419,37 @@ html[dir=rtl] #hud #radio-team.radio-collapsed .radio-head span:first-child::bef
   .box h2{font-size:24px!important}
 }
 
+/* ---------- téléphones tenus debout (site web) : en-tête sur sa propre ligne, contenu en colonne ---------- */
+@media (orientation:portrait) and (max-width:760px){
+  #ui .screen:not(#scr-main){flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;padding:112px 10px max(16px,env(safe-area-inset-bottom))!important;overflow-x:hidden!important;overflow-y:auto!important;max-height:100dvh!important;gap:10px!important}
+  #ui .screen .scr-head{position:fixed!important;top:calc(max(0px,env(safe-area-inset-top)) + 58px)!important;inset-inline-start:8px!important;inset-inline-end:auto!important;margin:0!important;padding:5px 12px 5px 6px!important;gap:10px!important;max-width:calc(100vw - 16px)!important;z-index:9!important;display:flex!important;flex-direction:row!important;align-items:center!important;align-self:auto!important;border-radius:11px!important}
+  #ui .screen .scr-head h1{font-size:clamp(16px,5vw,22px)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  #ui .screen .scr-head .back,#ui .screen .scr-head .hdbtn{flex:none;min-height:38px;padding:6px 11px!important;font-size:12px!important;white-space:nowrap}
+  #scr-quick .qwrap,#scr-career .qwrap{width:100%!important}
+  #scr-options #o-panel,#scr-help #h-panel{width:100%!important;margin:0!important;max-height:none!important}
+  #scr-garage .garpanel,#scr-drivers .garpanel{order:1!important;width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important;margin:0!important;flex:none}
+  #scr-garage .carlist,#scr-drivers .carlist,#scr-garage .garpanel,#scr-drivers .garpanel{position:static!important;inset:auto!important;transform:none!important}
+  #scr-garage .carlist,#scr-drivers .carlist{order:2!important;width:100%!important;max-height:none!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;overflow:visible!important;flex:none}
+  #scr-garage .carlist .cats{grid-column:1/-1}
+  #scr-garage .garpanel .cname{order:-3}
+  #scr-garage #g-action{order:-2;flex:none}
+  .toast{bottom:max(14px,env(safe-area-inset-bottom));width:max-content}
+  #hud #radio-team.radio-collapsed{left:max(10px,env(safe-area-inset-left))!important;right:auto!important;top:calc(max(8px,env(safe-area-inset-top)) + 112px)!important;bottom:auto!important;transform:none!important;max-width:104px!important;max-height:32px!important}
+  #hud #radio-team.radio-auto{left:50%!important;right:auto!important;top:calc(max(8px,env(safe-area-inset-top)) + 150px)!important;bottom:auto!important;transform:translateX(-50%)!important;width:calc(100vw - 24px)!important;max-width:340px!important;pointer-events:none!important}
+}
+
+/* aide aux commandes tactiles, affichée pendant le compte à rebours des deux premières courses */
+#touch-hint{position:absolute;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;width:max-content;max-width:max(216px,calc(100vw - 372px));display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;padding:9px 11px;border:1px solid rgba(255,255,255,.2);border-radius:13px;background:rgba(6,12,22,.9);box-shadow:0 10px 28px #0009;pointer-events:none;transition:opacity .5s}
+#touch-hint.out{opacity:0}
+#touch-hint div{display:flex;align-items:center;gap:7px;min-width:0;font:700 11px/1.2 var(--fb);color:#f3f5f9}
+#touch-hint i{flex:none;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font:900 9px var(--fh);font-style:normal;color:#fff}
+#touch-hint i svg{width:16px;height:16px}
+#touch-hint .k-steer i{background:#1570b8}#touch-hint .k-gas i{background:#e0660c}#touch-hint .k-brake i{background:#c4202c}#touch-hint .k-nitro i{background:#0f6fd0}#touch-hint .k-hand i{background:#a8740f}
+@media (orientation:portrait){#touch-hint{bottom:auto;top:38%;max-width:calc(100vw - 24px)}}
+#hud #radio-team.radio-collapsed{overflow:hidden!important}
+#hud #radio-team.radio-collapsed .radio-head{border:0!important;padding:0!important;margin:0!important;height:22px;align-items:center!important}
+#hud #radio-team.radio-collapsed .radio-toggle{min-height:0!important;height:22px!important;min-width:26px!important;padding:0 6px!important;line-height:1!important}
+
 </style>
 </head>
 <body>
@@ -1432,7 +1463,7 @@ html[dir=rtl] #hud #radio-team.radio-collapsed .radio-head span:first-child::bef
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V201</span>
+    <span id="build-tag" aria-label="Version">V202</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -6788,7 +6819,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V201';
+const GAME_VERSION = 'V202';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
@@ -7026,6 +7057,15 @@ const UI = {
       $('touch').classList.toggle('hidden', !tt); document.body.classList.toggle('touch', tt);
       document.body.dataset.steer = SAVE.settings.steer; $('stick').classList.toggle('hidden', SAVE.settings.steer !== 'stick');
       requestAnimationFrame(stickHome);
+      // aide aux commandes : les boutons n'ont plus de texte, on rappelle leur rôle aux deux premières courses
+      { const old = $('touch-hint'); if (old) old.remove();
+        if (tt && (SAVE.hints || 0) < 2) {
+          SAVE.hints = (SAVE.hints || 0) + 1; saveGame();
+          const ic = k => { const b = document.querySelector('#touch [data-t=' + k + ']'); return b ? b.innerHTML : ''; };
+          const h = document.createElement('div'); h.id = 'touch-hint';
+          h.innerHTML = [['steer', ic('left'), 'h_turn'], ['gas', ic('gas'), 'h_accel'], ['brake', ic('brake'), 'h_brake'], ['nitro', 'N₂O', 'h_nitro'], ['hand', ic('hand'), 'h_hand']].map(([k, i, key]) => `<div class="k-${k}"><i>${i}</i><span>${t(key)}</span></div>`).join('');
+          $('hud').appendChild(h); setTimeout(() => h.classList.add('out'), 7000); setTimeout(() => h.remove(), 7600);
+        } }
       TILT.zero = null;
       $('h-chase').classList.toggle('hidden', cfg.mode !== 'chase'); $('h-posbox').classList.toggle('hidden', cfg.mode !== 'race');
       $('h-tt').classList.toggle('hidden', !G.target);

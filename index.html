@@ -1432,7 +1432,7 @@ html[dir=rtl] #hud #radio-team.radio-collapsed .radio-head span:first-child::bef
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V200</span>
+    <span id="build-tag" aria-label="Version">V201</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -5186,7 +5186,7 @@ const LANGS = {
     lapHud: 'LAP {0}/{1}', chaseHud: 'CHASE', bestLap: 'Best lap {0}', bounty: 'Bounty {0}', target: 'Target {0}', targetOver: ' — missed',
     nearMiss: 'NEAR MISS! +300', drift: 'DRIFT +{0}', draft: 'SLIPSTREAM', nitroReady: 'NITRO READY', replaced: 'BACK ON THE ROAD', lapN2: 'LAP {0}', lastLap: 'FINAL LAP!', victory: 'VICTORY!', finish: 'FINISH',
     heatUp: 'HEAT LEVEL {0}', roadblock: 'ROADBLOCK AHEAD!', busted: 'BUSTED!', escaped: 'ESCAPED!', copDown: 'COP TAKEN DOWN! +1000', go: 'GO!', perfectStart: 'PERFECT START!', wheelspin: 'WHEELSPIN!', you: 'You',
-    r_place: '{0}th PLACE', r_ok: 'TARGET BEATEN!', r_slow: 'TOO SLOW…', r_escaped: 'POLICE LOST!', r_busted: 'BUSTED!', r_total: 'Total time', r_best: 'Best lap', r_target: 'Target', r_dur: 'Chase duration', r_heat: 'Heat level', r_wrecked: 'Cops taken down', r_bounty: 'Bounty',
+    r_place: '{0} PLACE', r_ok: 'TARGET BEATEN!', r_slow: 'TOO SLOW…', r_escaped: 'POLICE LOST!', r_busted: 'BUSTED!', r_total: 'Total time', r_best: 'Best lap', r_target: 'Target', r_dur: 'Chase duration', r_heat: 'Heat level', r_wrecked: 'Cops taken down', r_bounty: 'Bounty',
     r_record: 'New lap record!', r_reward: 'Reward', r_style: 'Style bonus ({0} pts)', r_gain: 'Total earned', r_money: 'Your money', r_menu: 'Menu', r_garage: 'Garage', r_again: 'Race again', r_next: 'NEXT EVENT ›',
     r_evOk: '✓ Event “{0}” completed! Next event unlocked.', r_evAgain: 'Event already completed — reduced reward.', r_evFail: 'Event “{0}” failed. Try again or upgrade your car.',
   },
@@ -5606,6 +5606,17 @@ const V200_TXT = {
   tn: ['الكلّ', 'المدن', 'الصحراء', 'الجبال', 'البحر', 'الحلبة', 'تسجّل السباق والجائزة والفلوس'],
 };
 for (const l in V200_TXT) { const v = V200_TXT[l]; LANGS[l] = Object.assign(LANGS[l] || {}, { f_all: v[0], f_city: v[1], f_desert: v[2], f_mountain: v[3], f_coast: v[4], f_circuit: v[5], r_saved: v[6] }); }
+// V200 — bonus quotidien : 500 par jour consécutif (jusqu'à 3 500 le 7e jour), remis au premier lancement de la journée
+const DAILY_TXT = { fr: 'Bonus du jour {0} : +{1}', en: 'Daily bonus, day {0}: +{1}', es: 'Bonus diario, día {0}: +{1}', pt: 'Bônus diário, dia {0}: +{1}', de: 'Tagesbonus, Tag {0}: +{1}', it: 'Bonus giornaliero, giorno {0}: +{1}', tr: 'Günlük bonus, {0}. gün: +{1}', ar: 'مكافأة اليوم {0}: +{1}', tn: 'بونيس النهار {0}: +{1}' };
+for (const l in DAILY_TXT) LANGS[l].daily = DAILY_TXT[l];
+function dailyBonus() {
+  const day = d => { const x = new Date(d); return x.getFullYear() + '-' + (x.getMonth() + 1) + '-' + x.getDate(); };
+  const now = Date.now(), today = day(now), last = SAVE.daily || {};
+  if (last.d === today) return 0;
+  const streak = last.d === day(now - 864e5) ? Math.min(7, (last.n || 0) + 1) : 1, gain = 500 * streak;
+  SAVE.daily = { d: today, n: streak }; SAVE.money += gain; saveGame();
+  return { streak, gain };
+}
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -6317,7 +6328,7 @@ function endRace() {
   } else {
     const ch = G.chase; res.chase = { result: ch.result, t: ch.t, heat: ch.heat, wrecked: ch.wrecked, bounty: Math.round(ch.bounty) };
     res.success = ch.result === 'escaped';
-    res.reward = res.success ? Math.round((1500 + ch.t * 40 + ch.bounty * 0.5) / 10) * 10 : 0;
+    res.reward = res.success ? Math.min(12000, Math.round((1200 + ch.t * 20 + ch.bounty * 0.3) / 10) * 10) : 0;
   }
   const rec = SAVE.best[G.T.def.id];
   if (G.best < Infinity && (!rec || G.best < rec)) { SAVE.best[G.T.def.id] = G.best; res.record = true; }
@@ -6777,7 +6788,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V200';
+const GAME_VERSION = 'V201';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
@@ -6786,7 +6797,7 @@ function detectLang() {
   for (const raw of all) { const l = String(raw).toLowerCase(); if (l === 'ar-tn') return 'tn'; const b = l.split('-')[0]; if (b !== 'tn' && LANGS[b]) return b; }
   return 'en';
 }
-function defaultSettings() { return { sfx: 80, music: 50, quality: IS_TOUCH ? 'high' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
+function defaultSettings() { return { sfx: 80, music: 50, quality: (IS_TOUCH && ((navigator.deviceMemory || 4) <= 3 || (navigator.hardwareConcurrency || 8) <= 4)) ? 'medium' : 'high', dyn: true, fps: false, cam: 0, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
   return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
 }
@@ -7069,7 +7080,7 @@ const UI = {
   results(res) {
     const T = TRACKS[res.track]; let title, cls, body = '';
     if (res.mode === 'race') {
-      title = res.pos === 1 ? t('victory') : t('r_place', res.pos); cls = res.pos <= 3 ? 'win' : 'lose';
+      title = res.pos === 1 ? t('victory') : t('r_place', LANG === 'en' ? res.pos + (['th', 'st', 'nd', 'rd'][res.pos % 100 > 10 && res.pos % 100 < 14 ? 0 : res.pos % 10] || 'th') : res.pos); cls = res.pos <= 3 ? 'win' : 'lose';
       body = `<table class="rtab">${res.rows.map(r => `<tr class="${r.me ? 'me' : ''}"><td>${r.pos}</td><td>${r.me ? t('you') : r.name}</td><td class="mut">${r.car || ''}</td><td>${r.est ? '≈ ' : ''}${fmtT(r.time)}</td></tr>`).join('')}</table>`;
     } else if (res.mode === 'tt') {
       title = res.target ? (res.success ? t('r_ok') : t('r_slow')) : t('finish'); cls = res.success ? 'win' : 'lose';
@@ -7493,6 +7504,7 @@ function boot() {
   UI.show('main');
   setTimeout(() => $('loading').classList.remove('show'), 350);
   if (safe) setTimeout(() => toast(t('safeMode')), 900);
+  try { const db = dailyBonus(); if (db) { UI.updMoney(); setTimeout(() => toast(t('daily', db.streak, money(db.gain))), safe ? 5600 : 1200); } } catch (e) { }
   BOOT_FRAMES = 0;
   ADS.init();
   requestAnimationFrame(x => { LAST = x; frame(x); });

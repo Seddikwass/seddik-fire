@@ -1463,7 +1463,7 @@ html[dir=rtl] #hud #radio-team.radio-collapsed .radio-head span:first-child::bef
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V203</span>
+    <span id="build-tag" aria-label="Version">V204</span>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -3237,30 +3237,30 @@ function buildBus() {
    (assis au volant ou sur une moto, casque coloré en moto)
    ===================================================================== */
 const DRIVERS = [
-  { id: 'aziz', name: 'Seddik', role: 'Champion · pilote légendaire', price: 0, skin: '#c58c62', hair: 'short', hairC: '#1d1410', beard: 'stubble', suit: '#d81e1e', helmet: '#d81e1e', perk: 'speed' },
-  { id: 'rania', name: 'Joud', role: 'Stratège · précision et sang-froid', price: 0, skin: '#e0b48c', hair: 'long', hairC: '#2a1a12', suit: '#1e56d8', helmet: '#f2f2f2', perk: 'nitro' },
-  { id: 'skander', name: 'Skander', role: 'Tacticien · maîtrise technique', price: 6000, skin: '#a8714b', hair: 'cap', hairC: '#111111', capC: '#ffb020', suit: '#24262e', helmet: '#ffb020', perk: 'accel' },
-  { id: 'yosra', name: 'Yosra', role: 'Pilote d’élite · trajectoires propres', price: 9000, skin: '#8a5a3c', hair: 'bun', hairC: '#140d0a', suit: '#1fb84a', helmet: '#1fb84a', perk: 'grip' },
-  { id: 'fares', name: 'Fares', role: 'Rival agressif · puissance brute', price: 12000, skin: '#b97f55', hair: 'curly', hairC: '#20140e', beard: 'full', suit: '#6a2bd8', helmet: '#2b2d31', perk: 'tough' },
-  { id: 'ines', name: 'Inès', role: 'Vétéran · expérience de course', price: 15000, skin: '#f0c9a5', hair: 'bob', hairC: '#7a2a1a', suit: '#e0218a', helmet: '#e0218a', perk: 'drift' },
-  { id: 'omar', name: 'Omar', role: 'Spécialiste des dépassements', price: 20000, skin: '#6b4430', hair: 'bald', hairC: '#0b0807', beard: 'goatee', glasses: true, suit: '#101114', helmet: '#101114', perk: 'ghost' },
-  { id: 'salma', name: 'Salma', role: 'Pilote lourd · attaque frontale', price: 25000, skin: '#d29e74', hair: 'pony', hairC: '#3a2416', glasses: true, suit: '#00b3c7', helmet: '#f2f2f2', perk: 'money' },
+  { id: 'aziz', name: 'Frankenstein', role: 'Champion masqué · pilote légendaire', price: 0, skin: '#c58c62', hair: 'short', hairC: '#1d1410', beard: 'stubble', suit: '#d81e1e', helmet: '#d81e1e', perk: 'speed' },
+  { id: 'rania', name: 'Elizabeth Case', role: 'Stratège · précision et sang-froid', price: 0, skin: '#e0b48c', hair: 'long', hairC: '#2a1a12', suit: '#1e56d8', helmet: '#f2f2f2', perk: 'nitro' },
+  { id: 'skander', name: '14K', role: 'Tacticien · maîtrise technique', price: 6000, skin: '#a8714b', hair: 'cap', hairC: '#111111', capC: '#ffb020', suit: '#24262e', helmet: '#ffb020', perk: 'accel' },
+  { id: 'yosra', name: 'Katrina Banks', role: 'Pilote d’élite · trajectoires propres', price: 9000, skin: '#8a5a3c', hair: 'bun', hairC: '#140d0a', suit: '#1fb84a', helmet: '#1fb84a', perk: 'grip' },
+  { id: 'fares', name: 'Machine Gun Joe', role: 'Rival agressif · puissance brute', price: 12000, skin: '#b97f55', hair: 'curly', hairC: '#20140e', beard: 'full', suit: '#6a2bd8', helmet: '#2b2d31', perk: 'tough' },
+  { id: 'ines', name: 'Coach', role: 'Vétéran · expérience de course', price: 15000, skin: '#f0c9a5', hair: 'bob', hairC: '#7a2a1a', suit: '#e0218a', helmet: '#e0218a', perk: 'drift' },
+  { id: 'omar', name: 'Grimm', role: 'Spécialiste des dépassements', price: 20000, skin: '#6b4430', hair: 'bald', hairC: '#0b0807', beard: 'goatee', glasses: true, suit: '#101114', helmet: '#101114', perk: 'ghost' },
+  { id: 'salma', name: 'Gunner', role: 'Pilote lourd · attaque frontale', price: 25000, skin: '#d29e74', hair: 'pony', hairC: '#3a2416', glasses: true, suit: '#00b3c7', helmet: '#f2f2f2', perk: 'money' },
   // quatre pilotes originaux supplémentaires, silhouettes et livrées distinctes
-  { id: 'nader', name: 'Nader', role: 'Expert des courses nocturnes', price: 32000, skin: '#bd8059', hair: 'short', hairC: '#17120f', beard: 'stubble', suit: '#f0a51b', helmet: '#f0a51b', perk: 'speed' },
-  { id: 'maya', name: 'Maya', role: 'Pilote d’attaque · grande vitesse', price: 38000, skin: '#e2b28d', hair: 'bob', hairC: '#26150f', suit: '#8c36d9', helmet: '#8c36d9', perk: 'drift' },
-  { id: 'kais', name: 'Kaïs', role: 'Spécialiste du contact', price: 45000, skin: '#8d5c40', hair: 'curly', hairC: '#17100d', beard: 'full', suit: '#e8e8e8', helmet: '#d51f2a', perk: 'tough' },
-  { id: 'lina', name: 'Lina', role: 'Pilote furtive · conduite précise', price: 52000, skin: '#c98d68', hair: 'long', hairC: '#21130f', suit: '#16a6a0', helmet: '#16a6a0', perk: 'nitro' },
+  { id: 'nader', name: 'Blackout', role: 'Expert des courses nocturnes', price: 32000, skin: '#bd8059', hair: 'short', hairC: '#17120f', beard: 'stubble', suit: '#f0a51b', helmet: '#f0a51b', perk: 'speed' },
+  { id: 'maya', name: 'Valkyrie', role: 'Pilote d’attaque · grande vitesse', price: 38000, skin: '#e2b28d', hair: 'bob', hairC: '#26150f', suit: '#8c36d9', helmet: '#8c36d9', perk: 'drift' },
+  { id: 'kais', name: 'Road Reaper', role: 'Spécialiste du contact', price: 45000, skin: '#8d5c40', hair: 'curly', hairC: '#17100d', beard: 'full', suit: '#e8e8e8', helmet: '#d51f2a', perk: 'tough' },
+  { id: 'lina', name: 'Nightshade', role: 'Pilote furtive · conduite précise', price: 52000, skin: '#c98d68', hair: 'long', hairC: '#21130f', suit: '#16a6a0', helmet: '#16a6a0', perk: 'nitro' },
   // Pilotes fictifs supplémentaires en combinaisons et casques de compétition.
-  { id: 'mehdi', name: 'Mehdi', role: 'Sprinteur · accélération', price: 60000, skin: '#a87351', hair: 'short', hairC: '#17110e', beard: 'stubble', suit: '#c91e32', helmet: '#f0f0f0', perk: 'accel' },
-  { id: 'amira', name: 'Amira', role: 'Pilote tactique · régularité', price: 68000, skin: '#d8a27d', hair: 'pony', hairC: '#2a1912', suit: '#087d83', helmet: '#08a9b2', perk: 'grip' },
-  { id: 'walid', name: 'Walid', role: 'Technicien · réglages fins', price: 76000, skin: '#87583f', hair: 'short', hairC: '#16110e', beard: 'full', suit: '#20242e', helmet: '#ffb020', perk: 'tough' },
-  { id: 'rim', name: 'Rim', role: 'Maître des circuits · lecture de piste', price: 84000, skin: '#c98e6d', hair: 'bun', hairC: '#24140e', suit: '#8a2bba', helmet: '#f4f4f4', perk: 'drift' },
+  { id: 'mehdi', name: 'Pachenko', role: 'Sprinteur · accélération', price: 60000, skin: '#a87351', hair: 'short', hairC: '#17110e', beard: 'stubble', suit: '#c91e32', helmet: '#f0f0f0', perk: 'accel' },
+  { id: 'amira', name: 'Steel Rose', role: 'Pilote tactique · régularité', price: 68000, skin: '#d8a27d', hair: 'pony', hairC: '#2a1912', suit: '#087d83', helmet: '#08a9b2', perk: 'grip' },
+  { id: 'walid', name: 'Lists', role: 'Technicien · réglages fins', price: 76000, skin: '#87583f', hair: 'short', hairC: '#16110e', beard: 'full', suit: '#20242e', helmet: '#ffb020', perk: 'tough' },
+  { id: 'rim', name: 'The Navigator', role: 'Maître des circuits · lecture de piste', price: 84000, skin: '#c98e6d', hair: 'bun', hairC: '#24140e', suit: '#8a2bba', helmet: '#f4f4f4', perk: 'drift' },
 ];
 function radioCrew(driver) {
   const ix=Math.max(0,DRIVERS.findIndex(d=>d.id===driver.id));
-  const names=[['Hatem','Inès','Fares','Aymen'],['Sana','Walid','Mouna','Tarek'],['Bilel','Rim','Anis','Nour'],['Khalil','Amira','Mehdi','Yassine']];
+  const names=[['Seddik','Joud','Dali','Nouh'],['Emna','Nour','Mazen','Haroun'],['Skander','Molka','Aziz','Yassine'],['Joseph','Arafet','Rayhane','Yasmine']];
   const roles=[L3('INGÉNIEUR','ENGINEER','المهندس'),L3('STRATÈGE','STRATEGIST','الاستراتيجي'),L3('MÉCANICIEN','MECHANIC','الميكانيكي'),L3('SPOTTER','SPOTTER','المراقب')];
-  const extra=[['Sofiene','Lilia'],['Amine','Nour'],['Tarek','Yasmine'],['Fedi','Meriem']];
+  const extra=[['Aziz','Molka'],['Joseph','Rayhane'],['Seddik','Joud'],['Dali','Emna']];
   return roles.map((role,i)=>({name:names[ix%names.length][i],role})).concat([{name:extra[ix%extra.length][0],role:L3('CHEF D’ÉQUIPE','TEAM BOSS','رئيس الفريق')},{name:extra[ix%extra.length][1],role:L3('ANALYSTE DATA','DATA ANALYST','محلّل البيانات')}]);
 }
 function radioAdvice() {
@@ -5777,7 +5777,7 @@ function carStats(car, up) { up = up || {}; return { vmax: car.vmax / 3.6 * (1 +
 function upgPrice(car, lvl) { return Math.round((1500 + car.price * 0.05) * (lvl + 1) / 100) * 100; }
 const PAINTS = ['#d81e1e', '#ff6a00', '#ffc400', '#1fb84a', '#00b3c7', '#1e56d8', '#6a2bd8', '#e0218a', '#f2f2f2', '#9aa0a6', '#2b2d31', '#0d0d0f'];
 const NEONS = [null, '#00e5ff', '#ff2bd6', '#39ff5a', '#ff8a00', '#9d4bff', '#ffffff'];
-const AI_NAMES = ['Rayen', 'Yassine', 'Nour', 'Amine', 'Sarra', 'Mehdi', 'Skander', 'Lina', 'Omar', 'Ines', 'Karim', 'Hela'];
+const AI_NAMES = ['Seddik', 'Joud', 'Dali', 'Nouh', 'Emna', 'Nour', 'Mazen', 'Haroun', 'Skander', 'Molka', 'Aziz', 'Yassine', 'Joseph', 'Arafet', 'Rayhane', 'Yasmine'];
 const CAREER = [
   { name: 'Premier départ', mode: 'race', track: 0, laps: 2, opp: 3, tier: 0, diff: 0, reward: 4000, desc: 'Termine premier dans les rues de Tunis.' },
   { name: 'Chrono du désert', mode: 'tt', track: 1, laps: 1, tier: 0, reward: 5000, desc: 'Bats le temps cible sur la piste du Sahara.' },
@@ -6819,7 +6819,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V203';
+const GAME_VERSION = 'V204';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais

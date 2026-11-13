@@ -1474,6 +1474,18 @@ body.sub #btn-install,.native #btn-install{display:none!important}
   body.lefty.touch #hud:has(#h-posbox.hidden) #radio-team.radio-collapsed{top:calc(max(8px,env(safe-area-inset-top)) + 60px)!important}
 }
 
+/* V209 — défis du jour (écran Carrière) */
+.daily{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:rgba(10,16,26,.82)}
+.daily h3{margin:0 0 8px;font:800 13px var(--fh);letter-spacing:.08em;text-transform:uppercase;color:var(--acc2)}
+.daily>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:7px}
+.daily p{margin:0;display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.05);font:600 13px/1.25 var(--fb)}
+.daily p i{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font:900 12px var(--fb);font-style:normal}
+.daily p span{flex:1;min-width:0}
+.daily p b{color:var(--acc2);white-space:nowrap}
+.daily p.ok{opacity:.7}
+.daily p.ok i{background:#1fb84a;border-color:#1fb84a;color:#fff}
+.daily p.ok span{text-decoration:line-through}
+
 </style>
 </head>
 <body>
@@ -1487,7 +1499,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V208</span>
+    <span id="build-tag" aria-label="Version">V209</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1543,7 +1555,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 
   <section id="scr-career" class="screen">
     <div class="scr-head"><button class="back" data-go="main" data-i18n="back">‹ RETOUR</button><h1 data-i18n="career">CARRIÈRE</h1></div>
-    <div class="qwrap"><div class="prog" id="c-prog"></div><div class="evlist" id="c-list"></div></div>
+    <div class="qwrap"><div class="daily" id="c-daily"></div><div class="prog" id="c-prog"></div><div class="evlist" id="c-list"></div></div>
   </section>
 
   <section id="scr-options" class="screen">
@@ -5713,6 +5725,33 @@ for (const l in V208_TXT) { const v = V208_TXT[l]; Object.assign(LANGS[l], { o_u
 const MPH = () => SAVE.settings.units === 'mph';
 const spdU = () => MPH() ? 0.621371 : 1;
 const spdL = () => MPH() ? 'mph' : 'km/h';
+// V209 — défis du jour : trois objectifs tirés chaque jour, 1 500 par défi réussi
+const V209_TXT = {"fr": ["Défis du jour", "Gagne une course", "Termine sur le podium", "Sème la police", "Bats le temps cible en contre-la-montre", "Marque 1 500 points de style en une course", "Atteins 220 km/h", "Défi réussi : {0} · +{1}"], "en": ["Daily challenges", "Win a race", "Finish on the podium", "Escape the police", "Beat the target in a time trial", "Score 1,500 style points in one race", "Reach 220 km/h", "Challenge done: {0} · +{1}"], "es": ["Retos del día", "Gana una carrera", "Termina en el podio", "Despista a la policía", "Supera el objetivo en contrarreloj", "Consigue 1.500 puntos de estilo en una carrera", "Alcanza 220 km/h", "Reto superado: {0} · +{1}"], "pt": ["Desafios do dia", "Vença uma corrida", "Termine no pódio", "Despiste a polícia", "Bata a meta no contrarrelógio", "Faça 1.500 pontos de estilo em uma corrida", "Chegue a 220 km/h", "Desafio concluído: {0} · +{1}"], "de": ["Tagesaufgaben", "Gewinne ein Rennen", "Komm aufs Podium", "Häng die Polizei ab", "Schlag die Zielzeit im Zeitfahren", "Hol 1.500 Stilpunkte in einem Rennen", "Erreiche 220 km/h", "Aufgabe geschafft: {0} · +{1}"], "it": ["Sfide del giorno", "Vinci una gara", "Arriva sul podio", "Semina la polizia", "Batti l’obiettivo nella prova a tempo", "Fai 1.500 punti stile in una gara", "Raggiungi 220 km/h", "Sfida completata: {0} · +{1}"], "tr": ["Günün görevleri", "Bir yarış kazan", "Podyumda bitir", "Polisi atlat", "Zamana karşı hedefi geç", "Tek yarışta 1.500 stil puanı topla", "220 km/sa hıza ulaş", "Görev tamam: {0} · +{1}"], "ar": ["تحديات اليوم", "اربح سباقاً", "أنهِ السباق على منصّة التتويج", "اهرب من الشرطة", "حطّم الوقت المستهدف في سباق ضد الساعة", "اجمع 1500 نقطة أسلوب في سباق واحد", "بلغ سرعة 220 كم/س", "تمّ التحدي: {0} · +{1}"], "tn": ["تحدّيات النهار", "اربح سباق", "كمّل في الثلاثة الأوائل", "اهرب من الحاكم", "اضرب الوقت في سباق ضدّ الساعة", "لمّ 1500 نقطة ستيل في سباق واحد", "أوصل 220 كم/س", "التحدّي تعدّى: {0} · +{1}"]};
+for (const l in V209_TXT) { const v = V209_TXT[l]; Object.assign(LANGS[l], { ch_title: v[0], ch_win: v[1], ch_podium: v[2], ch_chase: v[3], ch_tt: v[4], ch_style: v[5], ch_speed: v[6], ch_done: v[7] }); }
+const CH_POOL = ['win', 'podium', 'chase', 'tt', 'style', 'speed'], CH_REWARD = 1500;
+const CH_TEST = {
+  win: r => r.mode === 'race' && r.pos === 1, podium: r => r.mode === 'race' && r.pos <= 3, chase: r => r.mode === 'chase' && r.success,
+  tt: r => r.mode === 'tt' && r.success && !!r.target, style: r => r.style >= 1500, speed: () => (G.topV || 0) * 3.6 >= 220,
+};
+function dailyChallenges() {
+  const x = new Date(), today = x.getFullYear() + '-' + (x.getMonth() + 1) + '-' + x.getDate();
+  if (!SAVE.chal || SAVE.chal.d !== today) {
+    let h = 0; for (const c of today) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    const pool = CH_POOL.slice(), ids = [];
+    while (ids.length < 3) { ids.push(pool.splice(h % pool.length, 1)[0]); h = (h * 1103515245 + 12345) >>> 0; }
+    SAVE.chal = { d: today, ids, done: [false, false, false] };
+  }
+  return SAVE.chal;
+}
+function dailyCheck(res) {
+  let gain = 0;
+  try {
+    const ch = dailyChallenges();
+    ch.ids.forEach((id, i) => { if (!ch.done[i] && CH_TEST[id] && CH_TEST[id](res)) { ch.done[i] = true; gain += CH_REWARD; const label = t('ch_' + id); setTimeout(() => toast(t('ch_done', label, money(CH_REWARD))), 1800 + i * 2600); } });
+    if (gain) SAVE.money += gain;
+  } catch (e) { }
+  return gain;
+}
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -6436,7 +6475,7 @@ function endRace() {
     else res.reward = Math.round(res.reward * 0.3 / 10) * 10;
   }
   res.total = Math.round((res.reward + res.styleBonus) * ((p.perk && p.perk.money) || 1) / 10) * 10;
-  SAVE.money += res.total; SAVE.stats.races++; if (res.success) SAVE.stats.wins++;
+  res.daily = dailyCheck(res); SAVE.money += res.total; SAVE.stats.races++; if (res.success) SAVE.stats.wins++;
   SAVE.stats.dist = (SAVE.stats.dist || 0) + Math.max(0, G.odo || 0); SAVE.stats.time = (SAVE.stats.time || 0) + Math.max(0, G.cfg.mode === 'chase' ? G.chase.t : G.raceT); SAVE.stats.top = Math.max(SAVE.stats.top || 0, G.topV || 0); G.odo = 0; G.topV = 0;
   // Historique persistant : chaque parcours conserve résultat, gains et solde après paiement.
   const trackDef = TRACKS[cfg.track];
@@ -6886,7 +6925,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V208';
+const GAME_VERSION = 'V209';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
@@ -7050,6 +7089,7 @@ const UI = {
   },
   /* ----- carrière ----- */
   renderCareer() {
+    { const ch = dailyChallenges(); $('c-daily').innerHTML = `<h3>${t('ch_title')} · ${ch.done.filter(Boolean).length}/3</h3><div>` + ch.ids.map((id, i) => `<p class="${ch.done[i] ? 'ok' : ''}"><i>${ch.done[i] ? '✓' : ''}</i><span>${t('ch_' + id)}</span><b>${money(CH_REWARD)}</b></p>`).join('') + '</div>'; }
     const done = SAVE.careerDone.length;
     $('c-prog').innerHTML = `<span>${t('progress')}</span><div class="pb"><i style="transform:scaleX(${done / CAREER.length})"></i></div><span>${done} / ${CAREER.length}</span>`;
     const phaseNames = ['Qualifications','Éliminatoires','Play-offs','Finales','Tournée continentale','Série Élite','Maîtres','Ligue Pro','Légendes','Championnat ultime'];

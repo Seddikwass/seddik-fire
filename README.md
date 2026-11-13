@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Version 2.2 — application Android à jour
+
+- L'application Android (branche `android`, Capacitor + AdMob) embarque maintenant cette version du jeu, avec les textures pré-rendues des 8 cartes.
+- Numéro de version affiché dans Réglages.
+- Vérifié : une partie complète jusqu'à la dernière zone, et le test des armes, soins, grenades, véhicules, largage et zone rouge, sans erreur.
+- Cache hors ligne : `seddik-fire-v202`.
+
 ## Version 2.1 — cartes Côte et Sahara réparées, difficulté, partage
 
 Corrections

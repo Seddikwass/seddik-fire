@@ -7,3 +7,11 @@ branche `android-out`.
 - `www/` : le jeu (copie de la version en ligne)
 - `ads.json` : identifiants AdMob (actuellement les identifiants de TEST de Google) et numéro de version
 - `res/` : icônes
+
+## Mettre le jeu à jour dans l'appli
+
+1. Copier `index.html`, `manifest.webmanifest`, `privacy.html` et `icons/` de la branche `main` dans `www/`.
+2. Si `buildGround`, `genWorld`, `decoCity` ou `gradeCanvas` ont changé, les textures de `www/ground/` ne correspondent plus (leur nom contient une empreinte de ce code) : il faut les régénérer, sinon le jeu les recalcule au lancement et elles pèsent pour rien dans l'appli.
+3. Augmenter `versionCode` dans `ads.json` à chaque envoi sur Google Play.
+
+Version actuelle : 2.2.0 (versionCode 65), 8 cartes, textures `900ezk`.

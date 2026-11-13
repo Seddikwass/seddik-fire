@@ -1,5 +1,19 @@
 # Seddik Fire
 
+## Version 2.3 — combats de nuit, tirs à la tête, options modernes
+
+Réalisme
+- Heure du combat au choix dans le menu : Jour (du matin au coucher du soleil) ou Nuit. De nuit, l'obscurité est percée par la lampe torche du joueur, les lampadaires, les phares, les feux et la lueur des tirs ; les adversaires voient moins loin.
+- Tirs à la tête : 10 % des balles (26 % au fusil de précision) infligent jusqu'à +60 % de dégâts, réduits par le casque.
+- Séries d'éliminations annoncées (double, triple, série).
+
+Options (Réglages)
+- Tir auto : le soldat vise et tire seul sur l'adversaire visible à portée (tactile).
+- Chiffres de dégâts, Sang, Compteur d'images par seconde : activables ou non.
+
+Divers
+- Cache hors ligne : `seddik-fire-v203`.
+
 ## Version 2.2 — application Android à jour
 
 - L'application Android (branche `android`, Capacitor + AdMob) embarque maintenant cette version du jeu, avec les textures pré-rendues des 8 cartes.

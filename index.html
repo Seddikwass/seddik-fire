@@ -1505,7 +1505,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V210</span>
+    <span id="build-tag" aria-label="Version">V211</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -3386,7 +3386,7 @@ function unlockCrewSpeech() {
   RADIO_TTS_UNLOCKED = true;
   try {
     const prime = new SpeechSynthesisUtterance(' ');
-    prime.lang = 'fr-FR'; prime.volume = 0; window.speechSynthesis.speak(prime);
+    prime.volume = 0; window.speechSynthesis.speak(prime);
   } catch (e) { console.warn('Amorçage vocal indisponible', e); }
   if (RADIO_TTS_PENDING) { const pending = RADIO_TTS_PENDING; RADIO_TTS_PENDING = ''; speakCrewAdvice(pending); }
 }
@@ -3431,20 +3431,38 @@ function speakCrewAdvice(message) {
   if (!RADIO_TTS_UNLOCKED) { RADIO_TTS_PENDING = message; return; }
   const synth = window.speechSynthesis;
   const lang = LEN() ? 'en-US' : (LANG === 'ar' || LANG === 'tn' ? 'ar-TN' : 'fr-FR');
-  const say = () => { try {
-    const utter = new SpeechSynthesisUtterance(message); utter.lang = lang; utter.rate = 0.94; utter.pitch = 0.98; utter.volume = 1;
-    utter.onstart = () => crewTtsStatus('VOIX ACTIVE · ' + lang.toUpperCase());
-    utter.onend = () => crewTtsStatus('Voix équipe prête · prochaine consigne automatique');
-    utter.onerror = (e) => crewTtsStatus('Voix bloquée : ' + (e.error || 'moteur vocal Android'), true);
-    const voices = synth.getVoices(), base = lang.slice(0,2).toLowerCase();
-    utter.voice = voices.find(v => v.lang && v.lang.toLowerCase() === lang.toLowerCase()) || voices.find(v => v.lang && v.lang.toLowerCase().startsWith(base)) || null;
-    synth.cancel(); synth.resume(); synth.speak(utter);
+  // V211 — Chrome Android renvoyait « synthesis-failed » : on n'impose plus de voix précise (non pris en charge sur Android),
+  // on n'annule plus la file juste avant de parler, et en cas d'échec on réessaie : langue seule, puis langue du téléphone,
+  // puis voix par défaut, puis la même consigne en anglais.
+  const plans = [
+    { text: message, lang },
+    { text: message, lang: lang.slice(0, 2) },
+    { text: message, lang: '' },
+    { text: null, lang: 'en-US' },
+  ];
+  const say = (step) => { try {
+    const plan = plans[step]; if (!plan) { crewTtsStatus('Voix indisponible dans ce navigateur. Vérifie « Synthèse vocale » dans les réglages Android, ou utilise l’application installée.', true); return; }
+    let text = plan.text;
+    if (text === null) { if (lang === 'en-US') { say(step + 1); return; } const keep = LANG; LANG = 'en'; try { text = radioAdvice(); } catch (e) { text = ''; } LANG = keep; if (!text) { say(step + 1); return; } }
+    const utter = new SpeechSynthesisUtterance(text); if (plan.lang) utter.lang = plan.lang; utter.rate = 0.94; utter.pitch = 1; utter.volume = 1;
+    let settled = false;
+    utter.onstart = () => { settled = true; crewTtsStatus('VOIX ACTIVE · ' + (plan.lang || 'AUTO').toUpperCase()); };
+    utter.onend = () => { settled = true; crewTtsStatus('Voix équipe prête · prochaine consigne automatique'); };
+    utter.onerror = (e) => {
+      const code = e && e.error || '';
+      if (code === 'interrupted' || code === 'canceled') return;       // remplacée par une consigne plus récente
+      if (settled) { crewTtsStatus('Voix équipe prête · prochaine consigne automatique'); return; }
+      settled = true; setTimeout(() => say(step + 1), 150);
+    };
+    window.__crewUtter = utter;                                         // référence gardée : sinon Chrome peut libérer l'énoncé avant la lecture
+    const go = () => { try { synth.resume(); synth.speak(utter); } catch (e) { say(step + 1); } };
+    if (synth.speaking || synth.pending) { synth.cancel(); setTimeout(go, 180); } else go();
   } catch(e) { crewTtsStatus('Erreur de lecture vocale : ' + (e && e.message || 'inconnue'), true); } };
-  if (synth.getVoices().length) say();
+  if (synth.getVoices().length) say(0);
   else {
     crewTtsStatus('Chargement des voix du téléphone…');
     let done=false;
-    const ready=()=>{if(done)return;done=true;synth.removeEventListener('voiceschanged',ready);say();};
+    const ready=()=>{if(done)return;done=true;synth.removeEventListener('voiceschanged',ready);say(0);};
     synth.addEventListener('voiceschanged',ready);
     setTimeout(ready,1600);
   }
@@ -5676,6 +5694,7 @@ const RADIO_EN = [
   ['Canal introuvable : demande au chef d’équipe de l’ouvrir d’abord.', 'Channel not found: ask the team leader to open it first.'],
   ['Accès au micro refusé. Autorise le microphone dans ton navigateur.', 'Microphone access denied. Allow the microphone in your browser.'],
   ['Aucun microphone détecté.', 'No microphone detected.'],
+  ['Voix indisponible dans ce navigateur. Vérifie « Synthèse vocale » dans les réglages Android, ou utilise l’application installée.', 'Voice unavailable in this browser. Check “Text-to-speech” in the Android settings, or use the installed app.'],
   ['Aucune voix (français, anglais ou arabe) installée sur ce téléphone. Installe une voix dans les réglages Android.', 'No French, English or Arabic voice is installed on this phone. Install a voice in the Android settings.'],
 ];
 function rtx(m) {
@@ -6948,7 +6967,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V210';
+const GAME_VERSION = 'V211';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais

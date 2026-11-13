@@ -1,5 +1,19 @@
 # Seddik Fire
 
+## Version 2.1 — cartes Côte et Sahara réparées, difficulté, partage
+
+Corrections
+- Cartes « Côte méditerranéenne » et « Sahara & Sud » : la génération du monde plantait (`hash is not defined`), un bloc de dessin y avait été collé par erreur. Il est replacé dans le rendu, les deux cartes se génèrent entièrement.
+- Écran de fin sur ordinateur et tablette : les statistiques étaient décalées à droite.
+- Menu en portrait : le bouton Jouer était tout en bas d'une page de trois écrans ; il reste maintenant visible en bas de l'écran. Cartes en bandeau défilant, barre du haut sur deux lignes.
+- Bords de carte côté mer : plus de cadre rectangulaire visible, la mer se fond dans le large.
+
+Améliorations
+- Réglage « Difficulté » (Facile / Normale / Difficile) pour les adversaires.
+- Bouton « Partager » sur l'écran de fin (partage natif du téléphone, sinon copie du résultat).
+- Noms et descriptions des 9 personnages traduits en anglais et en arabe.
+- Cache hors ligne : `seddik-fire-v201`.
+
 ## Version 2.0 — corrections, trois langues et finitions
 
 Corrections

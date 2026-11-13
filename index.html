@@ -1029,7 +1029,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <label class="rg"><span>Taille joueurs</span><input id="oPsize" type="range" min=".8" max="1.8" step=".05"><em id="oPsizeV"></em></label>
       <label class="rg"><span>Zoom caméra</span><input id="oCam" type="range" min=".75" max="1.25" step=".05"><em id="oCamV"></em></label>
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
-      <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
+      <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
     <button id="oClose" class="cta">Terminé</button>
   </div>
@@ -1069,7 +1069,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <button id="adXp" class="adbtn sm" hidden><b>▶</b> Regarder une pub · <em>XP ×2</em></button>
     </div>
     <ul id="endMiss" class="endmiss"></ul>
-    <div class="row"><button id="again" class="cta">Rejouer</button><button id="toMenu" class="ghost">Menu</button></div>
+    <div class="row"><button id="again" class="cta">Rejouer</button><button id="toMenu" class="ghost">Menu</button><button id="shareBtn" class="ghost">Partager</button></div>
   </div>
 </section>
 
@@ -1639,59 +1639,7 @@ function genWorld(mid){
   if(MAP.id==='djerba'){
     const pts=[[1650,1730],[1420,760],[2540,965],[2875,2250],[520,2450],[1600,500],[1320,3160],[2525,2690]];
     POIS.forEach((p,i)=>{p.x=pts[i][0];p.y=pts[i][1]});
-  }else if(MAP.id==='cote'){
-  // Quartier blanc et bleu inspiré de Sidi Bou Saïd : terrasses, portes et volets azur.
-  const cx=POIS[3].x,cy=POIS[3].y;
-  for(let row=-2;row<=2;row++)for(let col=-2;col<=2;col++){
-   const x=cx+col*62+(row%2)*18,y=cy+row*54,h=hash(x,y);
-   if(h<.12||!inside(x,y,34)||isWater(x,y)||nearRoad(x,y,19)||bldAt(x,y))continue;
-   const w=25+h*13,hh=20+hash(x+7,y-3)*10;
-   ctx.save();ctx.translate(x,y);
-   ctx.fillStyle='rgba(30,35,34,.23)';ctx.beginPath();ctx.ellipse(5,8,w*.72,hh*.62,.12,0,TAU);ctx.fill();
-   ctx.fillStyle='#e8e5d9';ctx.fillRect(-w/2,-hh/2,w,hh);
-   ctx.fillStyle='#fffdf3';ctx.fillRect(-w/2+2,-hh/2+2,w-4,hh-4);
-   ctx.fillStyle='#d4d0c4';ctx.fillRect(-w/2-2,-hh/2-2,w+4,3);
-   ctx.fillStyle='#2584ad';ctx.fillRect(-w*.28,-hh*.18,5,7);ctx.fillRect(w*.12,-hh*.18,5,7);
-   ctx.fillStyle='#155d88';ctx.fillRect(-2,hh*.08,5,hh*.42);
-   ctx.fillStyle='#f1eee3';ctx.fillRect(-w*.28,-hh*.18,5,.8);ctx.fillRect(w*.12,-hh*.18,5,.8);
-   ctx.fillStyle='#4c9bb8';ctx.fillRect(-w*.31,hh*.18,w*.62,1.5);
-   if(h>.62){ctx.fillStyle='#f5f0df';ctx.beginPath();ctx.arc(w*.29,-hh*.28,5,Math.PI,TAU);ctx.fill();ctx.fillStyle='#2c7fa5';ctx.fillRect(w*.29-5,-hh*.28,10,2)}
-   ctx.restore();
-  }
-  if(inside(cx,cy,110)&&!isWater(cx,cy)){
-   ctx.save();ctx.translate(cx+112,cy-72);
-   ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(5,11,15,8,0,0,TAU);ctx.fill();
-   ctx.fillStyle='#e9e4d7';ctx.fillRect(-8,-2,16,21);ctx.fillStyle='#fffaf0';ctx.fillRect(-6,-16,12,16);
-   ctx.fillStyle='#2b83a6';ctx.fillRect(-7,-8,14,3);ctx.fillStyle='#e9e4d7';ctx.beginPath();ctx.arc(0,-16,6,Math.PI,TAU);ctx.fill();
-   ctx.fillStyle='#277da0';ctx.fillRect(-2,-22,4,6);ctx.restore();
-  }
- }else if(MAP.id==='sahara'){
-  // Architecture de terre ocre et palmeraie autour de Tozeur, avec cours intérieures.
-  const cx=POIS[0].x,cy=POIS[0].y;
-  for(let row=-2;row<=2;row++)for(let col=-2;col<=2;col++){
-   const x=cx+col*66+(row%2)*22,y=cy+row*58,h=hash(x,y);
-   if(h<.16||!inside(x,y,36)||isWater(x,y)||nearRoad(x,y,20)||bldAt(x,y))continue;
-   const w=26+h*17,hh=20+hash(x+13,y+5)*12;
-   ctx.save();ctx.translate(x,y);
-   ctx.fillStyle='rgba(39,25,15,.25)';ctx.fillRect(-w/2+5,-hh/2+7,w,hh);
-   ctx.fillStyle='#a86f43';ctx.fillRect(-w/2,-hh/2,w,hh);
-   ctx.fillStyle='#c28b59';ctx.fillRect(-w/2+2,-hh/2+2,w-4,hh-4);
-   ctx.fillStyle='#805033';ctx.fillRect(-w/2-2,-hh/2-2,w+4,3);
-   ctx.fillStyle='#553a29';ctx.fillRect(-2,hh*.04,5,hh*.46);
-   ctx.fillStyle='#e4bd88';ctx.fillRect(-w*.28,-hh*.2,5,5);ctx.fillRect(w*.13,-hh*.2,5,5);
-   ctx.fillStyle='rgba(255,225,177,.28)';ctx.fillRect(-w*.4,-hh*.35,w*.28,1.2);
-   if(h>.68){ctx.fillStyle='#6f4b32';ctx.fillRect(-w*.18,-hh*.5,w*.36,3);ctx.fillStyle='#d5a16c';ctx.fillRect(-w*.12,-hh*.5,w*.24,1)}
-   ctx.restore();
-  }
-  // Palmiers isolés dans les zones libres de l'oasis.
-  for(let i=0;i<9;i++){
-   const x=cx+190+(i%3)*42,y=cy-145+Math.floor(i/3)*43,h=hash(x,y);
-   if(!inside(x,y,30)||isWater(x,y)||nearRoad(x,y,18)||bldAt(x,y))continue;
-   ctx.save();ctx.translate(x,y);ctx.strokeStyle='#795333';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,7);ctx.quadraticCurveTo(2,-4,0,-15);ctx.stroke();
-   for(let k=0;k<7;k++){const a=k*TAU/7+h*2;ctx.strokeStyle=k%2?'#4e7138':'#78924a';ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(0,-15);ctx.quadraticCurveTo(Math.cos(a)*9,-18+Math.sin(a)*5,Math.cos(a)*18,-15+Math.sin(a)*11);ctx.stroke()}
-   ctx.restore();
-  }
- }else if(MAP.id==='capbon'){
+  }else if(MAP.id==='capbon'){
     const pts=[[1650,1730],[1600,500],[2540,965],[2875,2250],[1950,440],[1320,3160],[520,2450],[2525,2690]];
     POIS.forEach((p,i)=>{p.x=pts[i][0];p.y=pts[i][1]});
   }
@@ -2274,6 +2222,7 @@ function startMatch(){
   if(MDcur.team)ents.forEach((e,i)=>{e.team=Math.floor(i/MDcur.team)+1});
   if(MDcur.easy)for(const e of ents)if(e.bot)e.skill*=.45;
   if(MDcur.sk)for(const e of ents)if(e.bot)e.skill*=MDcur.sk;
+  {const dm=[.7,1,1.3][stats.diff===0||stats.diff===2?stats.diff:1];if(dm!==1)for(const e of ents)if(e.bot)e.skill*=dm}
   for(const e of ents){if(MDcur.bare){e.cur=-1;continue}const t=e.bot?pick(SIDEARMS):stats.sidearm,W=WEAP[t];e.slots[0]={type:t,mag:W.mag};e.cur=0;e.ammo[W.am]=e.bot?W.mag:W.mag*2}
   for(const e of ents)if(e.sk&&e.sk.sp&&!e.mel)e.mel='gladius';
   for(const B of blds)B._dn=0;
@@ -2366,7 +2315,7 @@ function hitCrate(c,dmg,src){
     if(src===player)blip(520,.06,.05)
   }
 }
-function damage(t,amt,src,wn){if(src&&src!==t&&src.team&&src.team===t.team)return;if(t===player&&src&&src.bot){if(t.landT!==undefined&&matchT-t.landT<4)return;const g=MDcur.nostat?99:(stats.games|0);if(g<6&&stats.mode!=='cup')amt*=.4+g*.1}if(src&&src.bot&&t.bot&&src!==t&&matchT<210)amt*=matchT<130?.5:.7;
+function damage(t,amt,src,wn){if(src&&src!==t&&src.team&&src.team===t.team)return;if(t===player&&src&&src.bot){if(t.landT!==undefined&&matchT-t.landT<4)return;const g=MDcur.nostat||stats.diff===2?99:(stats.games|0);if(g<6&&stats.mode!=='cup')amt*=.4+g*.1}if(src&&src.bot&&t.bot&&src!==t&&matchT<210)amt*=matchT<130?.5:.7;
   if(!t.alive||t.air>0||t.inPlane)return;
   if(t.shield>0&&src&&src!==t&&(GUNN.has(wn)||MELEEN.has(wn))){const a=Math.atan2(src.y-t.y,src.x-t.x),face=curW(t)?t.angle+Math.PI:t.angle;if(Math.abs(angDiff(face,a))<1.1){const ab=Math.min(t.shield,amt*.6);t.shield-=ab;amt-=ab;if(t.shield<=.5){t.shield=0;puff(t.x,t.y,10,'#8a6a3a',160,.6,4);if(t===player)toast('Bouclier brisé',1.4)}else puff(t.x+Math.cos(a)*16,t.y+Math.sin(a)*16,3,'#d9b45a',120,.25,2.5);if(src===player&&amt<.5){sfxImpact(t.x,t.y);return}}}
   let d=amt*(1-HELM_RED[t.helmet]);
@@ -3213,6 +3162,60 @@ function drawRegionalLandmarks(x0,y0,x1,y1){
  if(!Q.hi||LOWD)return;
  const inside=(x,y,r=90)=>x+r>=x0&&x-r<=x1&&y+r>=y0&&y-r<=y1;
  const hash=(a,b)=>{let n=(Math.imul(a|0,374761393)+Math.imul(b|0,668265263)+Math.imul(MAP.seed|0,1442695041))|0;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295};
+ /* v2.1 — quartiers de Sidi Bou Saïd et de Tozeur : ce dessin était placé par erreur dans la génération du monde et la faisait planter. */
+ if(MAP.id==='cote'&&POIS[3]){
+  // Quartier blanc et bleu inspiré de Sidi Bou Saïd : terrasses, portes et volets azur.
+  const cx=POIS[3].x,cy=POIS[3].y;
+  for(let row=-2;row<=2;row++)for(let col=-2;col<=2;col++){
+   const x=cx+col*62+(row%2)*18,y=cy+row*54,h=hash(x,y);
+   if(h<.12||!inside(x,y,34)||isWater(x,y)||nearRoad(x,y,19)||bldAt(x,y))continue;
+   const w=25+h*13,hh=20+hash(x+7,y-3)*10;
+   ctx.save();ctx.translate(x,y);
+   ctx.fillStyle='rgba(30,35,34,.23)';ctx.beginPath();ctx.ellipse(5,8,w*.72,hh*.62,.12,0,TAU);ctx.fill();
+   ctx.fillStyle='#e8e5d9';ctx.fillRect(-w/2,-hh/2,w,hh);
+   ctx.fillStyle='#fffdf3';ctx.fillRect(-w/2+2,-hh/2+2,w-4,hh-4);
+   ctx.fillStyle='#d4d0c4';ctx.fillRect(-w/2-2,-hh/2-2,w+4,3);
+   ctx.fillStyle='#2584ad';ctx.fillRect(-w*.28,-hh*.18,5,7);ctx.fillRect(w*.12,-hh*.18,5,7);
+   ctx.fillStyle='#155d88';ctx.fillRect(-2,hh*.08,5,hh*.42);
+   ctx.fillStyle='#f1eee3';ctx.fillRect(-w*.28,-hh*.18,5,.8);ctx.fillRect(w*.12,-hh*.18,5,.8);
+   ctx.fillStyle='#4c9bb8';ctx.fillRect(-w*.31,hh*.18,w*.62,1.5);
+   if(h>.62){ctx.fillStyle='#f5f0df';ctx.beginPath();ctx.arc(w*.29,-hh*.28,5,Math.PI,TAU);ctx.fill();ctx.fillStyle='#2c7fa5';ctx.fillRect(w*.29-5,-hh*.28,10,2)}
+   ctx.restore();
+  }
+  if(inside(cx,cy,110)&&!isWater(cx,cy)){
+   ctx.save();ctx.translate(cx+112,cy-72);
+   ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(5,11,15,8,0,0,TAU);ctx.fill();
+   ctx.fillStyle='#e9e4d7';ctx.fillRect(-8,-2,16,21);ctx.fillStyle='#fffaf0';ctx.fillRect(-6,-16,12,16);
+   ctx.fillStyle='#2b83a6';ctx.fillRect(-7,-8,14,3);ctx.fillStyle='#e9e4d7';ctx.beginPath();ctx.arc(0,-16,6,Math.PI,TAU);ctx.fill();
+   ctx.fillStyle='#277da0';ctx.fillRect(-2,-22,4,6);ctx.restore();
+  }
+ }else if(MAP.id==='sahara'&&POIS[0]){
+  // Architecture de terre ocre et palmeraie autour de Tozeur, avec cours intérieures.
+  const cx=POIS[0].x,cy=POIS[0].y;
+  for(let row=-2;row<=2;row++)for(let col=-2;col<=2;col++){
+   const x=cx+col*66+(row%2)*22,y=cy+row*58,h=hash(x,y);
+   if(h<.16||!inside(x,y,36)||isWater(x,y)||nearRoad(x,y,20)||bldAt(x,y))continue;
+   const w=26+h*17,hh=20+hash(x+13,y+5)*12;
+   ctx.save();ctx.translate(x,y);
+   ctx.fillStyle='rgba(39,25,15,.25)';ctx.fillRect(-w/2+5,-hh/2+7,w,hh);
+   ctx.fillStyle='#a86f43';ctx.fillRect(-w/2,-hh/2,w,hh);
+   ctx.fillStyle='#c28b59';ctx.fillRect(-w/2+2,-hh/2+2,w-4,hh-4);
+   ctx.fillStyle='#805033';ctx.fillRect(-w/2-2,-hh/2-2,w+4,3);
+   ctx.fillStyle='#553a29';ctx.fillRect(-2,hh*.04,5,hh*.46);
+   ctx.fillStyle='#e4bd88';ctx.fillRect(-w*.28,-hh*.2,5,5);ctx.fillRect(w*.13,-hh*.2,5,5);
+   ctx.fillStyle='rgba(255,225,177,.28)';ctx.fillRect(-w*.4,-hh*.35,w*.28,1.2);
+   if(h>.68){ctx.fillStyle='#6f4b32';ctx.fillRect(-w*.18,-hh*.5,w*.36,3);ctx.fillStyle='#d5a16c';ctx.fillRect(-w*.12,-hh*.5,w*.24,1)}
+   ctx.restore();
+  }
+  // Palmiers isolés dans les zones libres de l'oasis.
+  for(let i=0;i<9;i++){
+   const x=cx+190+(i%3)*42,y=cy-145+Math.floor(i/3)*43,h=hash(x,y);
+   if(!inside(x,y,30)||isWater(x,y)||nearRoad(x,y,18)||bldAt(x,y))continue;
+   ctx.save();ctx.translate(x,y);ctx.strokeStyle='#795333';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,7);ctx.quadraticCurveTo(2,-4,0,-15);ctx.stroke();
+   for(let k=0;k<7;k++){const a=k*TAU/7+h*2;ctx.strokeStyle=k%2?'#4e7138':'#78924a';ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(0,-15);ctx.quadraticCurveTo(Math.cos(a)*9,-18+Math.sin(a)*5,Math.cos(a)*18,-15+Math.sin(a)*11);ctx.stroke()}
+   ctx.restore();
+  }
+ }
  if(MAP.id==='djerba'){
   for(let gx=360;gx<WS-180;gx+=210)for(let gy=260;gy<WS-180;gy+=190){
    const h=hash(gx,gy);if(h<.26)continue;const x=gx+(hash(gx+11,gy-7)-.5)*110,y=gy+(hash(gx-13,gy+9)-.5)*90;
@@ -3280,7 +3283,7 @@ function drawTunisianRelief(x0,y0,x1,y1){
 
 /* v2.0 — plage et hauts-fonds autour de la carte : la terre ne s'arrête plus sur une ligne droite. */
 function drawWorldRim(x0,y0,x1,y1){
-  if(x0>=0&&y0>=0&&y1<=WS&&x1<=WS)return;
+  if(x0>=0&&y0>=110&&y1<=WS-110&&x1<=WS-110)return;
   const B=190,sand=(MAP&&MAP.shore)||'#e6d3a6',sea=(MAP&&MAP.sea)||['#3fa0aa','#2c8196','#1f5f78'];
   const stops=g=>{g.addColorStop(0,sand);g.addColorStop(.2,sand);g.addColorStop(.34,'rgba(214,236,224,.95)');g.addColorStop(.46,sea[0]);g.addColorStop(.72,sea[1]);g.addColorStop(1,'rgba(14,95,134,0)')};
   const cN=Math.min(WS,coastX(0)),cS=Math.min(WS,coastX(WS));
@@ -3289,17 +3292,14 @@ function drawWorldRim(x0,y0,x1,y1){
   if(y1>WS){const g=ctx.createLinearGradient(0,WS,0,WS+B);stops(g);ctx.fillStyle=g;ctx.fillRect(0,WS-1,cS,B+1)}
   if(x0<0&&y0<0){const g=ctx.createRadialGradient(0,0,0,0,0,B);stops(g);ctx.fillStyle=g;ctx.fillRect(-B,-B,B,B)}
   if(x0<0&&y1>WS){const g=ctx.createRadialGradient(0,WS,0,0,WS,B);stops(g);ctx.fillStyle=g;ctx.fillRect(-B,WS,B,B)}
-  if(y0<0&&x1>cN){const g=ctx.createRadialGradient(cN,0,0,cN,0,B);stops(g);ctx.fillStyle=g;ctx.fillRect(cN,-B,B,B)}
-  if(y1>WS&&x1>cS){const g=ctx.createRadialGradient(cS,WS,0,cS,WS,B);stops(g);ctx.fillStyle=g;ctx.fillRect(cS,WS,B,B)}
-  /* côté mer : on prolonge la dernière ligne de la texture puis on fond vers le large */
-  const GW=ground.width,GH=ground.height,deep='#0e5f86',clear='rgba(14,95,134,0)';
-  const lin=(x,y,w,h,ax,ay,bx,by)=>{const g=ctx.createLinearGradient(ax,ay,bx,by);g.addColorStop(0,clear);g.addColorStop(1,deep);ctx.fillStyle=g;ctx.fillRect(x,y,w,h)};
-  const rad=(x,y,cx,cy)=>{const g=ctx.createRadialGradient(cx,cy,0,cx,cy,B);g.addColorStop(0,clear);g.addColorStop(1,deep);ctx.fillStyle=g;ctx.fillRect(x,y,B,B)};
-  if(x1>WS){ctx.drawImage(ground,GW-1,0,1,GH,WS,0,B,WS);lin(WS-1,0,B+2,WS,WS,0,WS+B,0)}
-  if(y0<0&&x1>cN&&cN<WS){ctx.drawImage(ground,cN*GS,0,(WS-cN)*GS,1,cN,-B,WS-cN,B);lin(cN,-B-1,WS-cN,B+2,0,0,0,-B)}
-  if(y1>WS&&x1>cS&&cS<WS){ctx.drawImage(ground,cS*GS,GH-1,(WS-cS)*GS,1,cS,WS,WS-cS,B);lin(cS,WS-1,WS-cS,B+2,0,WS,0,WS+B)}
-  if(x1>WS&&y0<0){ctx.drawImage(ground,GW-1,0,1,1,WS,-B,B,B);rad(WS,-B,WS,0)}
-  if(x1>WS&&y1>WS){ctx.drawImage(ground,GW-1,GH-1,1,1,WS,WS,B,B);rad(WS,WS,WS,WS)}
+  /* côté mer : la texture se fond dans la couleur du large avant le bord, il n'y a donc plus de cadre visible */
+  const deep='#0e5f86',clear='rgba(14,95,134,0)',F=110;
+  const lin=(x,y,w,h,ax,ay,bx,by)=>{if(w<=0||h<=0)return;const g=ctx.createLinearGradient(ax,ay,bx,by);g.addColorStop(0,clear);g.addColorStop(.75,'rgba(14,95,134,.92)');g.addColorStop(1,deep);ctx.fillStyle=g;ctx.fillRect(x,y,w,h)};
+  const ya=clamp(y0,0,WS),yb=clamp(y1,0,WS);
+  if(x1>WS-F)lin(WS-F,ya,F+1,yb-ya,WS-F,0,WS,0);
+  const strip=(top)=>{const N=22,h=F/N;for(let k=0;k<N;k++){const d=(k+.5)*h,y=top?d:WS-d,cx=coastX(y)+10;if(cx>=WS)continue;const t=1-d/F;ctx.fillStyle='rgba(14,95,134,'+(t*t*.2+t*.8).toFixed(3)+')';ctx.fillRect(cx,top?k*h:WS-(k+1)*h,WS-cx,h+.6)}};
+  if(y0<F)strip(true);
+  if(y1>WS-F)strip(false);
 }
 function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;{const pz=z/baseZoom();PK=.0021*pz;PTY=-.27*pz}const sh=reduceMotion?0:cam.shake*10;const ox=(Math.random()-.5)*sh,oy=(Math.random()-.5)*sh;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0e5f86';ctx.fillRect(0,0,VW,VH);
@@ -4811,6 +4811,7 @@ requestAnimationFrame(()=>{const gp=gcBoot();setTimeout(()=>{try{preStart()}catc
    sans toucher à la logique : en français il ne fait strictement rien. */
 const I18N={
 en:{
+'Difficulté':'Difficulty','Facile':'Easy','Normale':'Normal','Difficile':'Hard','Partager':'Share','Copié !':'Copied!','Unité Atlas — Assaut':'Atlas Unit — Assault','Patrouille du Sahara':'Sahara Patrol','Section Spectre':'Spectre Squad','Police — Intervention':'Police — Riot Unit','Police — Groupe tactique':'Police — Tactical Team','Police — Patrouille':'Police — Patrol','La Famille — Don':'The Family — Don','La Famille — Homme de main':'The Family — Enforcer','Syndicat — Exécuteur':'Syndicate — Hitman','Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.':'Multicam assault soldier: ballistic helmet, goggles, heavy vest, radio and fatigues.','Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.':'Desert scout: sand helmet, goggles, scarf, pads and ochre camouflage.','Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.':'Night operator: visor helmet, balaclava, graphite-black gear and reinforced plates.','Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.':'Riot officer: midnight-blue uniform, riot helmet, visor, vest and neutral patches.','Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.':'Urban tactical unit: black helmet, goggles, mask, pads and charcoal uniform.','Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.':'Field officer: service cap, deep-blue uniform, duty belt and radio.','Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.':'Fictional crime boss: tailored black suit, ivory shirt, burgundy tie and gold chain.','Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.':'Heavy enforcer: dark brown leather jacket, dark shirt, black trousers and street look.','Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.':'Fictional urban hitman: graphite coat, high collar, black shirt and dark gloves.',
 'Votre pseudo':'Your name','Niv.':'Lv.','Niveau':'Level','Armurerie':'Armory','Son : activé':'Sound: on','Son : coupé':'Sound: off',
 'Choisissez votre soldat, votre arme de départ, sautez de l\'avion et tenez face à la tempête de feu.':'Pick your soldier and starting weapon, jump from the plane and outlast the firestorm.',
 'Votre personnage':'Your character','Votre personnage ·':'Your character ·','CHOISIR UN COMBATTANT':'CHOOSE A FIGHTER','9 portraits · sélection directe':'9 portraits · tap to select','COMBATTANT':'FIGHTER','GLADIATEUR':'GLADIATOR',
@@ -4831,7 +4832,7 @@ en:{
 'Deux largages aériens tombent pendant la partie, avec un Léviathan et du matériel de niveau 3. Suivez la fumée rouge.':'Two airdrops land during the match, with a Léviathan and level 3 gear. Follow the red smoke.',
 'Zone rouge : un bombardement frappe le cercle rouge. Sortez-en ou abritez-vous dans un bâtiment.':'Red zone: an airstrike hits the red circle. Get out or take cover inside a building.',
 'Le gilet absorbe une partie des dégâts, le casque les réduit.':'The vest absorbs part of the damage, the helmet reduces it.',
-'Parties':'Matches','Top 1':'Wins','Record élim.':'Best kills','Élim. totales':'Total kills','Jouer':'Play','Pub :':'Ad:',
+'Parties':'Matches','Record élim.':'Best kills','Élim. totales':'Total kills','Jouer':'Play','Pub :':'Ad:',
 'Fermer':'Close','Les armes que vous trouverez sur l\'île. Au sol, la couleur du cercle indique la rareté :':'The weapons you will find on the island. On the ground, the circle colour shows rarity:',
 'commun':'common','peu commun':'uncommon','rare':'rare','largage':'airdrop',
 'Pause':'Pause','Reprendre':'Resume','Quitter la partie':'Quit match','Confirmer : quitter la partie':'Confirm: quit match',
@@ -4898,6 +4899,7 @@ en:{
 'Se débloque au niveau':'Unlocks at level','Vous jouez avec votre dernier personnage débloqué.':'You are playing with your last unlocked character.'
 },
 ar:{
+'Difficulté':'الصعوبة','Facile':'ساهلة','Normale':'عادية','Difficile':'صعيبة','Partager':'شارك','Copié !':'تنسخ!','Unité Atlas — Assaut':'وحدة الأطلس — هجوم','Patrouille du Sahara':'دورية الصحراء','Section Spectre':'فرقة الشبح','Police — Intervention':'الشرطة — التدخل','Police — Groupe tactique':'الشرطة — الفرقة التكتيكية','Police — Patrouille':'الشرطة — الدورية','La Famille — Don':'العايلة — الزعيم','La Famille — Homme de main':'العايلة — رجل اليد','Syndicat — Exécuteur':'النقابة — المنفّذ','Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.':'جندي هجوم: خوذة باليستية، نظارات حماية، درع ثقيل وراديو.','Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.':'كشّاف الصحراء: خوذة رملية، نظارات، شاش ولباس تمويه.','Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.':'مقاتل الليل: خوذة بواقي، قناع وعتاد أسود مدعّم.','Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.':'عون تدخل: زي أزرق داكن، خوذة مكافحة الشغب ودرع.','Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.':'وحدة تكتيكية: خوذة سوداء، نظارات، قناع وزي رمادي داكن.','Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.':'شرطي ميدان: كاسكات، زي أزرق، حزام وراديو.','Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.':'زعيم عصابة خيالي: كسوة سوداء، قميص عاجي، كرافات وسلسلة ذهبية.','Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.':'رجل يد ضخم: فيستة جلد بنّي، قميص داكن وسروال أسود.','Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.':'منفّذ خيالي: معطف رمادي، ياقة عالية، قميص أسود وقفازات.',
 'Votre pseudo':'اسمك','Niv.':'مستوى','Niveau':'المستوى','Armurerie':'مخزن الأسلحة','Son : activé':'الصوت: يخدم','Son : coupé':'الصوت: مسكّر',
 'Choisissez votre soldat, votre arme de départ, sautez de l\'avion et tenez face à la tempête de feu.':'اختار مقاتلك وسلاحك، اهبط من الطيارة وواجه عاصفة النار.',
 'Votre personnage':'شخصيتك','Votre personnage ·':'شخصيتك ·','CHOISIR UN COMBATTANT':'اختار المقاتل','9 portraits · sélection directe':'9 صور · اختيار مباشر','COMBATTANT':'مقاتل','GLADIATEUR':'مصارع',
@@ -4985,12 +4987,14 @@ const I18N_RX=[
 [/^(\d+) combattants$/,{en:'$1 fighters',ar:'$1 مقاتل'}],
 [/^Étape (\d+)\/(\d+)$/,{en:'Stage $1/$2',ar:'المرحلة $1/$2'}],
 [/^menace (\d+)\/100$/,{en:'threat $1/100',ar:'الخطر $1/100'}],
+[/^Difficulté : (.+)$/,{en:(m,a)=>'Difficulty: '+trS(a),ar:(m,a)=>'الصعوبة: '+trS(a)}],
 [/^Qualité : (.+)$/,{en:(m,a)=>'Quality: '+trS(a),ar:(m,a)=>'الجودة: '+trS(a)}],
 [/^Qualité ajustée : (.+)$/,{en:(m,a)=>'Quality adjusted: '+trS(a),ar:(m,a)=>'تعدّلت الجودة: '+trS(a)}],
 [/^Ramasser (.+)$/,{en:'Pick up $1',ar:'إلّم $1'}],
 [/^Plus de munitions (.+)$/,{en:'Out of $1 ammo',ar:'وفات ذخيرة $1'}],
 [/^Tombé au combat face à (.+)\.$/,{en:'Killed in action by $1.',ar:'طحت في المعركة قدّام $1.'}],
-[/^L’île est à vous, (.+)\.$/,{en:'The island is yours, $1.',ar:'الجزيرة متاعك يا $1.'}],
+[/^L’île est à vous, (.+)\.$/,{en:(m,a)=>'The island is yours, '+(a==='Joueur'?'Player':a)+'.',ar:(m,a)=>'الجزيرة متاعك يا '+(a==='Joueur'?'بطل':a)+'.'}],
+[/^Succès : (.+)$/,{en:(m,a)=>'Achievement: '+trS(a),ar:(m,a)=>'إنجاز: '+trS(a)}],
 [/^(.+) (\d+) éliminations?$/,{en:'$1 $2 kills',ar:'$1 $2 إقصاء'}],
 [/^(\d+) éliminations?$/,{en:'$1 kills',ar:'$1 إقصاء'}],
 [/^Éliminez (\d+) adversaires?$/,{en:'Eliminate $1 opponents',ar:'قصّي $1 خصوم'}],
@@ -5065,7 +5069,17 @@ function paintRoster(){const root=$('#sfRosterGrid');if(!root)return;
   rosterMark()}
 {const _ss=setSkin;setSkin=function(i){_ss(i);rosterMark()}}
 (function waitReady(){if(window.__sfReady){try{paintRoster()}catch(e){console.warn(e)}}else setTimeout(waitReady,150)})();
+/* ===== v2.1 — difficulté des adversaires et partage du résultat ===== */
+const DIFF_N=['Facile','Normale','Difficile'];
+function diffLabel(){const b=$('#diffBtn');if(b)b.textContent='Difficulté : '+DIFF_N[stats.diff===0||stats.diff===2?stats.diff:1]}
+$('#diffBtn').addEventListener('click',()=>{const d=stats.diff===0||stats.diff===2?stats.diff:1;stats.diff=(d+1)%3;saveStats();diffLabel()});diffLabel();
+$('#shareBtn').addEventListener('click',()=>{const b=$('#shareBtn'),url='https://seddik-fire.onrender.com/';
+  const txt=trS('Seddik Fire')+' — '+$('#endRank').textContent+' · '+$('#eKills').textContent+' '+trS('Éliminations').toLowerCase()+' · '+$('#eTime').textContent;
+  const done=()=>{b.textContent='Copié !';setTimeout(()=>{b.textContent='Partager'},1600)};
+  try{if(navigator.share){navigator.share({title:'Seddik Fire',text:txt,url}).catch(()=>{});return}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt+' '+url).then(done,()=>{});return}}catch(e){}});
 setLang(detectLang(),false);
+
 
 if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())){let swReloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!swReloading){swReloading=true;location.reload()}});addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(reg=>reg.update()).catch(()=>{})})}
 })();
@@ -5100,7 +5114,6 @@ if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePl
 }
 
 /* v2.0 — langues */
-html[data-sf-lang="en"] #skinDesc,html[data-sf-lang="ar"] #skinDesc{display:none}
 .screen[dir="rtl"]{font-family:system-ui,"Noto Sans Arabic",Tahoma,sans-serif}
 .screen[dir="rtl"] .set,.screen[dir="rtl"] .mlist{text-align:right}
 html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-sf-lang="ar"] #hud .zone small{font-family:system-ui,"Noto Sans Arabic",Tahoma,sans-serif;letter-spacing:0}
@@ -5115,6 +5128,19 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 #lobby .sf-portrait canvas{width:100%;max-width:92px;height:auto;aspect-ratio:1}
 #lobby .sf-portrait b{font-size:11px}
 #lobby .brand .stamp{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* v2.1 — écran de fin centré, menu portrait plus court, bouton Jouer toujours accessible */
+#end .stats{align-self:stretch;width:100%}
+@media (max-width:760px){
+  #lobby .go{position:sticky!important;bottom:0!important;z-index:5!important;padding:10px 0 max(8px,var(--ib))!important;background:linear-gradient(180deg,rgba(8,10,14,0),rgba(8,10,14,.97) 34%)!important}
+  #lobby #play{min-height:64px}
+  #lobby #maps{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(150px,46%);overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding-bottom:6px}
+  #lobby #maps .map-card{scroll-snap-align:start}
+  #lobby .ltop{flex-direction:column;align-items:stretch;gap:8px}
+  #lobby .prof{max-width:none}
+  #lobby .ltop-r{flex-direction:row!important;flex-wrap:nowrap;justify-content:stretch}
+  #lobby .ltop-r .ghost.sm{flex:1 1 0;min-width:0;justify-content:center}
+}
 </style>
 </body>
 </html>

@@ -16,7 +16,7 @@ on:
       - '.github/workflows/android-apk.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -323,6 +323,22 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+      - name: Publish APK to the apk branch and as a release
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/apkout"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/apkout/super-seddik-joud.apk"
+          cd "$RUNNER_TEMP/apkout"
+          git init -q -b apk
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add super-seddik-joud.apk
+          git commit -q -m "APK build from ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" apk
+          gh release delete apk-latest --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+          gh release create apk-latest super-seddik-joud.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "SUPER SEDDIK & JOUD — APK Android (test)" --notes "APK de test (debug). Désinstaller l'ancienne version avant d'installer."
       - name: Build signed release (AAB for Google Play + APK)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}

@@ -1486,6 +1486,12 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 .daily p.ok i{background:#1fb84a;border-color:#1fb84a;color:#fff}
 .daily p.ok span{text-decoration:line-through}
 
+/* V210 — écart en direct avec le meilleur tour (vert = en avance, rouge = en retard) */
+#h-delta{margin-inline-start:7px;padding:1px 6px;border-radius:6px;font:800 12px var(--fh);font-variant-numeric:tabular-nums}
+#h-delta:empty{display:none}
+#h-delta.fast{background:#12853a;color:#fff}
+#h-delta.slow{background:#b3202b;color:#fff}
+
 </style>
 </head>
 <body>
@@ -1499,7 +1505,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V209</span>
+    <span id="build-tag" aria-label="Version">V210</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1573,7 +1579,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
   <div class="hud-tl">
     <div class="pos" id="h-posbox"><b id="h-pos">1</b><span id="h-postot">/6</span></div>
     <div class="lap"><svg viewBox="0 0 24 24" class="ic"><path d="M5 21V4h11l-1.5 3.5L16 11H7" fill="none" stroke="currentColor" stroke-width="2.2"/></svg><span id="h-lap"></span></div>
-    <div class="time"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="13" r="7.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 13V9M10 3h4" stroke="currentColor" stroke-width="2.2"/></svg><span id="h-time"></span></div>
+    <div class="time"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="13" r="7.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 13V9M10 3h4" stroke="currentColor" stroke-width="2.2"/></svg><span id="h-time"></span><span id="h-delta"></span></div>
     <div id="h-best" class="best"></div>
   </div>
   <div id="h-tt" class="hidden"></div>
@@ -5981,6 +5987,9 @@ function setupRace(cfg) {
   const nn = SAVE.neon[car.id]; p.under = nn ? hexToRgb(nn) : null; const rm = SAVE.rims[car.id] || {}; p.rimS = rm.s; p.rimC = rm.c ? hexToRgb(rm.c) : null; p.mass = (car.mass || 1) * (pk.mass || 1);
   G.env = makeEnv(T.def.env, cfg.weather || T.def.weather); if (G.env.rain && !G.rainSys) G.rainSys = new Rain(R.detail ? 1400 : 600); if (G.rainSys) G.rainSys.init = false;
   G.player = p;
+  // V210 — tour de référence : meilleur tour enregistré sur ce circuit (temps et position tous les 20 m)
+  G.lapRec = { t: [], x: [], z: [] }; G.delta = null; G.ghostI = 0; G.ghost = null;
+  try { const g = JSON.parse(localStorage.getItem('superjoud_ghost_' + T.def.id) || 'null'); if (g && g.lap > 0 && Array.isArray(g.t) && g.t.length > 3) G.ghost = g; } catch (e) { }
   const diff = DIFFS[cfg.diff === undefined ? 1 : cfg.diff];
   G.rb = diff.rb;
   const names = AI_NAMES.slice().sort(() => Math.random() - 0.5);
@@ -6385,8 +6394,22 @@ function updateGame(dt) {
   // tours
   if (G.cfg.mode !== 'chase') {
     const lapsDone = Math.floor(p.progress / T.L);
+    if (racing && !p.finished) {
+      // écart en direct avec le tour de référence
+      const sLap = p.progress - G.laps.length * T.L, r = G.lapRec;
+      if (sLap >= 0 && sLap < T.L) {
+        const b = Math.floor(sLap / 20), lapT = G.raceT - G.lapStart;
+        while (r.t.length <= b && r.t.length < 1500) { r.t.push(Math.round(lapT * 100) / 100); r.x.push(Math.round(p.x)); r.z.push(Math.round(p.z)); }
+        if (G.ghost && b < G.ghost.t.length && b > 0) G.delta = lapT - G.ghost.t[b];
+      }
+    }
     if (racing && lapsDone > G.laps.length && lapsDone >= 1) {
       const lt = G.raceT - G.lapStart; G.laps.push(lt); G.lapStart = G.raceT;
+      if (G.lapRec.t.length > 3 && (!G.ghost || lt < G.ghost.lap)) {
+        G.ghost = { lap: Math.round(lt * 1000) / 1000, t: G.lapRec.t, x: G.lapRec.x, z: G.lapRec.z };
+        try { localStorage.setItem('superjoud_ghost_' + T.def.id, JSON.stringify(G.ghost)); } catch (e) { }
+      }
+      G.lapRec = { t: [], x: [], z: [] }; G.ghostI = 0;
       if (lt < G.best) G.best = lt;
       AU.crowdPulse(0.8);
       if (lapsDone < G.cfg.laps) { popup(lapsDone === G.cfg.laps - 1 ? t('lastLap') : t('lapN2', lapsDone + 1), '#fff'); AU.chime(); }
@@ -6925,7 +6948,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V209';
+const GAME_VERSION = 'V210';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
@@ -7225,8 +7248,9 @@ const UI = {
     drawSpeedo(p); drawMinimap();
     if ((this.hudTick = (this.hudTick + 1) % 4) !== 0) return;
     if (cfg.mode === 'race') { let n = 0; for (const c of G.cars) if (c.kind === 'ai' || c.kind === 'player') n++; this.set('h-pos', String(rankOf(p))); this.set('h-postot', '/' + n); }
-    if (cfg.mode !== 'chase') { const lap = clamp(Math.floor(p.progress / T.L) + 1, 1, cfg.laps); this.set('h-lap', t('lapHud', lap, cfg.laps)); this.set('h-time', fmtT(G.raceT)); this.set('h-best', G.best < Infinity ? t('bestLap', fmtT(G.best)) : ''); }
-    else { const ch = G.chase; this.set('h-lap', t('chaseHud')); this.set('h-time', fmtT(ch.t)); this.set('h-best', ''); this.set('h-heat', '★'.repeat(ch.heat) + '☆'.repeat(5 - ch.heat)); this.set('h-bounty', t('bounty', money(ch.bounty))); this.bar('h-evade', ch.evade); this.bar('h-bust', ch.bust); }
+    if (cfg.mode !== 'chase') { const lap = clamp(Math.floor(p.progress / T.L) + 1, 1, cfg.laps); this.set('h-lap', t('lapHud', lap, cfg.laps)); this.set('h-time', fmtT(G.raceT)); this.set('h-best', G.best < Infinity ? t('bestLap', fmtT(G.best)) : '');
+      { const d = G.delta, el = $('h-delta'); if (d === null || d === undefined || !G.ghost) { if (el.textContent) el.textContent = ''; } else { const v = Math.round(d * 10); if (el._v !== v) { el._v = v; el.textContent = (v > 0 ? '+' : v < 0 ? '−' : '±') + (Math.abs(v) / 10).toFixed(1); el.className = v > 0 ? 'slow' : 'fast'; } } } }
+    else { const ch = G.chase; if ($('h-delta').textContent) $('h-delta').textContent = ''; this.set('h-lap', t('chaseHud')); this.set('h-time', fmtT(ch.t)); this.set('h-best', ''); this.set('h-heat', '★'.repeat(ch.heat) + '☆'.repeat(5 - ch.heat)); this.set('h-bounty', t('bounty', money(ch.bounty))); this.bar('h-evade', ch.evade); this.bar('h-bust', ch.bust); }
     if (G.target) this.set('h-tt', t('target', fmtT(G.target)) + (G.raceT > G.target ? t('targetOver') : ''));
     const ww = G.wrongT > 1.2 && G.state === 'race'; if (this.hudCache.ww !== ww) { this.hudCache.ww = ww; $('h-wrong').classList.toggle('hidden', !ww); }
     if (SAVE.settings.fps) this.set('h-fps', Math.round(FPS.v) + ' FPS · ' + R.stats.calls + ' draw · ' + Math.round(R.stats.tris / 1000) + 'k tri · ' + Math.round(DYN * 100) + '%');
@@ -7298,6 +7322,13 @@ function drawMinimap() {
     const x = S / 2 + T.mini.mx(c.x) * S * 0.82, y = S / 2 + T.mini.mz(c.z) * S * 0.82;
     ctx.fillStyle = c.kind === 'ai' ? '#ff4040' : c.kind === 'cop' ? (c.wreck ? '#555' : blink ? '#3a7bff' : '#ff3030') : 'rgba(170,175,185,.7)';
     ctx.beginPath(); if (c.kind === 'ai') { ctx.rect(x - 6, y - 6, 12, 12); } else ctx.arc(x, y, c.kind === 'traffic' ? 4 : 7, 0, Math.PI * 2); ctx.fill();
+  }
+  // tour de référence : pastille blanche sur la mini-carte
+  if (G.ghost && G.cfg.mode !== 'chase' && G.state === 'race') {
+    const g = G.ghost, lapT = G.raceT - G.lapStart; let i = G.ghostI || 0; if (i >= g.t.length || g.t[i] > lapT) i = 0;
+    while (i + 1 < g.t.length && g.t[i + 1] <= lapT) i++;
+    G.ghostI = i;
+    if (lapT <= g.lap) { const gx = S / 2 + T.mini.mx(g.x[i]) * S * 0.82, gy = S / 2 + T.mini.mz(g.z[i]) * S * 0.82; ctx.beginPath(); ctx.arc(gx, gy, 7, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#0a1018'; ctx.stroke(); }
   }
   const p = G.player, x = S / 2 + T.mini.mx(p.x) * S * 0.82, y = S / 2 + T.mini.mz(p.z) * S * 0.82;
   ctx.translate(x, y); ctx.rotate(Math.PI - p.h); ctx.fillStyle = '#ffd400'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3;

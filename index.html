@@ -984,6 +984,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <div><dt>Top 1</dt><dd id="stW">0</dd></div>
       <div><dt>Record élim.</dt><dd id="stB">0</dd></div>
       <div><dt>Élim. totales</dt><dd id="stK">0</dd></div>
+      <div class="car-cell"><button id="carBtn" type="button">Carrière</button></div>
     </dl>
     <div class="go">
       <button id="play" class="cta">Jouer<small>Île de Seddik · classique</small></button>
@@ -1037,7 +1038,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.4</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.5</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1048,6 +1049,15 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
     <div class="set"><h3>Missions du jour</h3><ul id="missList" class="mlist"></ul><p>Elles changent chaque jour. Le mode Entraînement ne compte pas.</p></div>
     <div class="set"><h3 id="achH">Succès</h3><ul id="achList" class="mlist"></ul></div>
     <button id="missClose" class="cta">Fermer</button>
+  </div>
+</section>
+
+<section id="career" class="screen center" hidden>
+  <div class="endbox">
+    <h2 class="ptitle">Carrière</h2>
+    <div class="set"><h3 id="carLg">Ligue Bronze</h3><div class="lgbar"><i id="carLgFill"></i></div><p id="carLgTxt"></p></div>
+    <div class="set"><h3>Statistiques</h3><dl id="carList" class="carlist"></dl></div>
+    <button id="carClose" class="cta">Fermer</button>
   </div>
 </section>
 
@@ -1069,6 +1079,8 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <div><dt>Survie</dt><dd id="eTime">0:00</dd></div>
       <div><dt>Éliminé par</dt><dd id="eBy">—</dd></div>
     </dl>
+    <p class="endrep" id="endRep"></p>
+    <p class="endlg" id="endLg"></p>
     <div class="xpbox" id="xpBox">
       <div class="xp-h"><span>Niveau <b id="eLvl">1</b></span><span class="g" id="eXpG"></span></div>
       <div class="xp"><i id="eXpFill"></i></div>
@@ -2271,7 +2283,7 @@ function tryFire(e){
   parts.push({x:mx,y:my,vx:0,vy:0,l:.085,m:.085,s:(Wp.cls==='sg'?13:Wp.cls==='p'?8:11),c:'#ffd27a',g:0,fl:1,a:e.angle});if(Q.hi&&vis(mx,my,40)&&parts.length<468){parts.push({x:mx,y:my,vx:Math.cos(e.angle)*30,vy:Math.sin(e.angle)*30-12,l:.9,m:.9,s:Wp.cls==='sg'?11:7,c:'#c9c3b8',g:-10});for(let z=0;z<2;z++){const sa=e.angle+rand(-.55,.55),sv=rand(45,85);parts.push({x:mx,y:my,vx:Math.cos(sa)*sv,vy:Math.sin(sa)*sv,l:.16,m:.16,s:rand(2,3.2),c:z?'#ff9a3c':'#fff0b0',g:0,spk:1})}}
   if(Math.abs(e.x-cam.x)<800&&Math.abs(e.y-cam.y)<900&&parts.length<500){const ca=Math.cos(e.angle),sa=Math.sin(e.angle),k=rand(70,120);parts.push({x:e.x+ca*8-sa*5,y:e.y+sa*8+ca*5,vx:-sa*k+ca*rand(-25,10),vy:ca*k+sa*rand(-25,10),l:1.6,m:1.6,s:1,c:Wp.cls==='sg'?'#c0392b':'#d9a441',g:0,sh:1,rot:Math.random()*TAU,vr:rand(-14,14)})}
   sfxShot(SND[Wp.cls],sndVol(e.x,e.y)*(e===player?1:.7),e===player,sndPan(e.x));gpHeard(e,Wp);
-  if(e===player){cam.shake=Math.min(.35,cam.shake+(Wp.cls==='sn'?.3:Wp.cls==='sg'?.22:Wp.cls==='dmr'?.12:.06));const K=Wp.cls==='sn'?11:Wp.cls==='sg'?8:Wp.cls==='dmr'?5:Wp.cls==='p'?2.4:2;cam.kx=clamp((cam.kx||0)-Math.cos(e.angle)*K,-16,16);cam.ky=clamp((cam.ky||0)-Math.sin(e.angle)*K,-16,16)}
+  if(e===player){cam.shake=Math.min(.35,cam.shake+(Wp.cls==='sn'?.3:Wp.cls==='sg'?.22:Wp.cls==='dmr'?.12:.06));e.shotsN=(e.shotsN||0)+1;const K=Wp.cls==='sn'?11:Wp.cls==='sg'?8:Wp.cls==='dmr'?5:Wp.cls==='p'?2.4:2;cam.kx=clamp((cam.kx||0)-Math.cos(e.angle)*K,-16,16);cam.ky=clamp((cam.ky||0)-Math.sin(e.angle)*K,-16,16)}
   if(w.mag===0&&e.ammo[Wp.am]>0)startReload(e);
 }
 function drawShieldDisc(c,x,y,r){c.save();c.translate(x,y);c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.arc(1.5,2,r,0,TAU);c.fill();c.fillStyle='#1d1c1c';c.beginPath();c.arc(0,0,r,0,TAU);c.fill();
@@ -2360,7 +2372,7 @@ function kill(t,src,wn){
   const w=src?wn:'Tempête';
   pushFeed(src?src.name:'Tempête de feu',t.name,src?wn:'',src===player||t===player);
   if(src===player&&t!==player){showKB(t.name);hitMarks.push({x:t.x,y:t.y,t:.4,k:true});blip(660,.09,.06,'triangle');setTimeout(()=>blip(990,.12,.06,'triangle'),90)}
-  if(src===player&&t!==player)cam.zp=.05;
+  if(src===player&&t!==player){cam.zp=.05;player.longK=Math.max(player.longK||0,Math.hypot(t.x-player.x,t.y-player.y))}
   if(t===player){endAt=matchT+(stats.camClassic?1.8:2.6);cam.shake=.5;cam.dT=0}
   else if(oneTeam()&&player.alive)endAt=matchT+1.4;
   return w;
@@ -2984,7 +2996,7 @@ function updateBullets(dt){const pl=player&&player.alive&&!player.inPlane&&playe
     for(const e of ents){if(!e.alive||e===b.o||e.air>0||e.inPlane||e.veh||(b.o&&b.o.team&&e.team===b.o.team))continue;const t=segCirc(b.x,b.y,nx,ny,e.x,e.y,e.r);if(t>=0&&t<hitT){hitT=t;hitObj=null;hitEnt=e}}
     for(const v of vehs){if(!v.alive||v.drv===b.o||Math.abs(v.x-nx)>140||Math.abs(v.y-ny)>140)continue;const t=segVeh(b.x,b.y,nx,ny,v);if(t>=0&&t<hitT){hitT=t;hitObj=null;hitEnt=null;hitV=v}}
     if(hitT<=1){const hx=b.x+(nx-b.x)*hitT,hy=b.y+(ny-b.y)*hitT;
-      if(hitEnt){const f=b.tr>b.rg*.6?lerp(1,.6,(b.tr-b.rg*.6)/(b.rg*.4)):1;let dm=b.dmg*f;if(b.o&&Math.random()<(b.sn?.26:.1)*(hitEnt===player?.5:1)){dm*=Math.max(1.1,1.6-.15*(hitEnt.helmet||0));if(b.o===player||hitEnt===player)addFloat(hitEnt.x,hitEnt.y-34,trS('Tête !'),'#ffd54a');if(b.o===player){player.hs=(player.hs||0)+1;blip(1320,.05,.05,'square')}}damage(hitEnt,dm,b.o,b.wn)}
+      if(hitEnt){const f=b.tr>b.rg*.6?lerp(1,.6,(b.tr-b.rg*.6)/(b.rg*.4)):1;let dm=b.dmg*f;if(b.o===player)player.hitsN=(player.hitsN||0)+1;if(b.o&&Math.random()<(b.sn?.26:.1)*(hitEnt===player?.5:1)){dm*=Math.max(1.1,1.6-.15*(hitEnt.helmet||0));if(b.o===player||hitEnt===player)addFloat(hitEnt.x,hitEnt.y-34,trS('Tête !'),'#ffd54a');if(b.o===player){player.hs=(player.hs||0)+1;blip(1320,.05,.05,'square')}}damage(hitEnt,dm,b.o,b.wn)}
       else if(hitV)hitVeh(hitV,b.dmg,b.o,b.wn);
       else{if(hitObj){fxImpacts.push({x:hx,y:hy,t:matchT,k:hitObj.k,a:Math.atan2(ny-b.y,nx-b.x)});if(fxImpacts.length>36)fxImpacts.shift()}puff(hx,hy,3,hitObj.k==='wall'?'#e9dfc9':hitObj.k==='crate'?'#8a5a2c':'#cdb88f',110,.35,3);if(vis(hx,hy,40)){const met=hitObj.k==='cont'||hitObj.k==='pcar'||hitObj.k==='pump';puff(hx,hy,met?6:2,'#ffe08a',met?260:170,.16,1.6);puff(hx,hy,2,'#bdb5a6',30,1.1,9,-8)}if(hitObj.k==='crate')hitCrate(hitObj,b.dmg,b.o);sfxImpact(hx,hy)}
       bullets.splice(i,1);continue}
@@ -2994,7 +3006,7 @@ function updateCam(dt){const bz=baseZoom(),CINE=!stats.camClassic;let tx,ty,zt,f
   if(player.inPlane){tx=plane.x;ty=plane.y;zt=bz*.24;fk=5}
   else{tx=player.x;ty=player.y;if(player.air>0)zt=bz*(.3+.7*(1-player.air));else{const w=curW(player);zt=bz*(w?1-(1-WEAP[w.type].z)*.7:1);if(!player.alive)zt=bz*.85;
     const aiming=(sticks.aim.id!==null&&sticks.aim.mag>.2)||(isDesk&&mouse.active);let lx=0,ly=0;
-    const vx=dt>0?(player.x-(cam.px??player.x))/dt:0,vy=dt>0?(player.y-(cam.py??player.y))/dt:0,sp=Math.hypot(vx,vy);cam.sp=(cam.sp||0)+(Math.min(sp,900)-(cam.sp||0))*Math.min(1,dt*2.5);
+    const vx=dt>0?(player.x-(cam.px??player.x))/dt:0,vy=dt>0?(player.y-(cam.py??player.y))/dt:0,sp=Math.hypot(vx,vy);cam.sp=(cam.sp||0)+(Math.min(sp,900)-(cam.sp||0))*Math.min(1,dt*2.5);if(player.alive&&sp<1200)player.distW=(player.distW||0)+sp*dt;
     if(aiming&&player.alive&&!player.veh){const snp=w&&WEAP[w.type].cls==='sn',la=snp?Math.min(400,Math.min(VW,VH)*.44/zt):Math.min(170,Math.min(VW,VH)*.34/zt);lx=Math.cos(player.angle)*la;ly=Math.sin(player.angle)*la}
     // la caméra anticipe le déplacement (davantage en véhicule) et s'éloigne si un ennemi est juste hors de l'écran
     else if(player.alive&&sp>20){const cap=CINE&&player.veh?Math.min(300,Math.min(VW,VH)*.36/zt):150,m=Math.min(cap,sp*(CINE&&player.veh?.62:.45))/sp;lx=vx*m;ly=vy*m}
@@ -4707,11 +4719,11 @@ function adsUI(){const on=ADS.ok&&ADS.ready&&!ADS.busy;const a=$('#adXp'),b=$('#
 tapOn($('#adXp'),async()=>{if(ADS.xpUsed)return;const g=Math.round(+stats.lastXp||0);if(!g)return;if(await adsShow()){ADS.xpUsed=true;addXp(g);stats.lastXp=g*2;saveStats();fillEnd(!!(player&&player.alive));toast('XP doublée : +'+g+' XP')}adsUI()});
 tapOn($('#adBonus'),async()=>{if(await adsShow()){stats.adT=Date.now();addXp(300);saveStats();try{fillXP();fillStats()}catch(e){}toast('+300 XP')}adsUI()});
 setInterval(adsUI,5000);
-function finish(){const win=player.alive;ADS.xpUsed=false;game.mode='end';if(!MDcur.nostat){stats.games++;if(win)stats.wins++;stats.kills+=player.kills;stats.best=Math.max(stats.best,player.kills)}gpXp(win);const MP=metaProgress(win);saveStats();
+function finish(){const win=player.alive;ADS.xpUsed=false;game.mode='end';if(!MDcur.nostat){stats.games++;if(win)stats.wins++;stats.kills+=player.kills;stats.best=Math.max(stats.best,player.kills)}gpXp(win);const LG=leagueApply(win);const MP=metaProgress(win);saveStats();
   const rank=win?1:player.rank;$('#endRank').textContent='#'+rank;$('#endRank').classList.toggle('win',win);
   $('#endEye').textContent=win?(stats.mode==='cup'?cupAdv():'Dernier debout'):'Partie terminée';
   $('#endMsg').textContent=win?'L’île est à vous, '+player.name+'.':player.killer===player?'Vous vous êtes éliminé vous-même.':player.killerName==='Zone rouge'?'Pris sous le bombardement de la zone rouge.':player.killer?'Tombé au combat face à '+player.killerName+'.':'Emporté par la tempête de feu.';
-  $('#eKills').textContent=player.kills;$('#eDmg').textContent=Math.round(player.dmg);$('#eTime').textContent=fmtT(win?matchT:player.deathT);fillEnd(win);$('#endMiss').innerHTML=MP.map(x=>'<li>'+esc(x)+'</li>').join('');
+  $('#eKills').textContent=player.kills;$('#eDmg').textContent=Math.round(player.dmg);$('#eTime').textContent=fmtT(win?matchT:player.deathT);fillEnd(win);endReport(LG);$('#endMiss').innerHTML=MP.map(x=>'<li>'+esc(x)+'</li>').join('');
   $('#hud').hidden=true;$('#bigmap').hidden=true;bigOpen=false;$('#end').hidden=false;releaseWake();rankCount(rank);adsLoad();adsUI();
   if(win){blip(523,.15,.06,'triangle');setTimeout(()=>blip(659,.15,.06,'triangle'),150);setTimeout(()=>blip(784,.3,.06,'triangle'),300)}}
 
@@ -4854,6 +4866,7 @@ requestAnimationFrame(()=>{const gp=gcBoot();setTimeout(()=>{try{preStart()}catc
    sans toucher à la logique : en français il ne fait strictement rien. */
 const I18N={
 en:{
+'Carrière':'Career','Statistiques':'Statistics','Victoires':'Wins','Taux de victoire':'Win rate','Ratio élim. / défaite':'Kills per loss','Précision':'Accuracy','Tirs à la tête':'Headshots','Plus longue élimination':'Longest kill','Temps de jeu':'Play time','Distance':'Distance','Bronze':'Bronze','Argent':'Silver','Or':'Gold','Platine':'Platinum','Diamant':'Diamond','Promotion':'Promoted','Relégation':'Relegated',
 'Caméra':'Camera','cinématique':'cinematic','standard':'standard',
 'Heure du combat':'Time of battle','Jour':'Day','Nuit':'Night','Du matin au coucher du soleil.':'From morning to sunset.','Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'Pitch-dark night: flashlight, street lamps and muzzle flashes. Opponents see less far.','Tir auto':'Auto fire','Chiffres de dégâts':'Damage numbers','Sang':'Blood','Compteur i/s':'FPS counter','oui':'on','non':'off','Tête !':'Headshot!','Double élimination !':'Double kill!','Triple élimination !':'Triple kill!',
 'Difficulté':'Difficulty','Facile':'Easy','Normale':'Normal','Difficile':'Hard','Partager':'Share','Copié !':'Copied!','Unité Atlas — Assaut':'Atlas Unit — Assault','Patrouille du Sahara':'Sahara Patrol','Section Spectre':'Spectre Squad','Police — Intervention':'Police — Riot Unit','Police — Groupe tactique':'Police — Tactical Team','Police — Patrouille':'Police — Patrol','La Famille — Don':'The Family — Don','La Famille — Homme de main':'The Family — Enforcer','Syndicat — Exécuteur':'Syndicate — Hitman','Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.':'Multicam assault soldier: ballistic helmet, goggles, heavy vest, radio and fatigues.','Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.':'Desert scout: sand helmet, goggles, scarf, pads and ochre camouflage.','Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.':'Night operator: visor helmet, balaclava, graphite-black gear and reinforced plates.','Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.':'Riot officer: midnight-blue uniform, riot helmet, visor, vest and neutral patches.','Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.':'Urban tactical unit: black helmet, goggles, mask, pads and charcoal uniform.','Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.':'Field officer: service cap, deep-blue uniform, duty belt and radio.','Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.':'Fictional crime boss: tailored black suit, ivory shirt, burgundy tie and gold chain.','Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.':'Heavy enforcer: dark brown leather jacket, dark shirt, black trousers and street look.','Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.':'Fictional urban hitman: graphite coat, high collar, black shirt and dark gloves.',
@@ -4944,6 +4957,7 @@ en:{
 'Se débloque au niveau':'Unlocks at level','Vous jouez avec votre dernier personnage débloqué.':'You are playing with your last unlocked character.'
 },
 ar:{
+'Carrière':'المسيرة','Statistiques':'الإحصائيات','Victoires':'الانتصارات','Taux de victoire':'نسبة الفوز','Ratio élim. / défaite':'إقصاءات لكل خسارة','Précision':'الدقة','Tirs à la tête':'ضربات في الراس','Plus longue élimination':'أبعد إقصاء','Temps de jeu':'وقت اللعب','Distance':'المسافة','Bronze':'برونز','Argent':'فضة','Or':'ذهب','Platine':'بلاتين','Diamant':'ألماس','Promotion':'ترقية','Relégation':'نزول',
 'Caméra':'الكاميرا','cinématique':'سينمائية','standard':'عادية',
 'Heure du combat':'وقت المعركة','Jour':'نهار','Nuit':'ليل','Du matin au coucher du soleil.':'من الصباح للمغرب.','Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'ليل مظلم: مصباح يدوي وأضواء الشارع ولمعة الرصاص. الخصوم يشوفو أقل.','Tir auto':'ضرب تلقائي','Chiffres de dégâts':'أرقام الضرر','Sang':'الدم','Compteur i/s':'عدّاد الصور','oui':'إيه','non':'لا','Tête !':'في الراس!','Double élimination !':'إقصاء مزدوج!','Triple élimination !':'إقصاء ثلاثي!',
 'Difficulté':'الصعوبة','Facile':'ساهلة','Normale':'عادية','Difficile':'صعيبة','Partager':'شارك','Copié !':'تنسخ!','Unité Atlas — Assaut':'وحدة الأطلس — هجوم','Patrouille du Sahara':'دورية الصحراء','Section Spectre':'فرقة الشبح','Police — Intervention':'الشرطة — التدخل','Police — Groupe tactique':'الشرطة — الفرقة التكتيكية','Police — Patrouille':'الشرطة — الدورية','La Famille — Don':'العايلة — الزعيم','La Famille — Homme de main':'العايلة — رجل اليد','Syndicat — Exécuteur':'النقابة — المنفّذ','Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.':'جندي هجوم: خوذة باليستية، نظارات حماية، درع ثقيل وراديو.','Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.':'كشّاف الصحراء: خوذة رملية، نظارات، شاش ولباس تمويه.','Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.':'مقاتل الليل: خوذة بواقي، قناع وعتاد أسود مدعّم.','Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.':'عون تدخل: زي أزرق داكن، خوذة مكافحة الشغب ودرع.','Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.':'وحدة تكتيكية: خوذة سوداء، نظارات، قناع وزي رمادي داكن.','Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.':'شرطي ميدان: كاسكات، زي أزرق، حزام وراديو.','Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.':'زعيم عصابة خيالي: كسوة سوداء، قميص عاجي، كرافات وسلسلة ذهبية.','Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.':'رجل يد ضخم: فيستة جلد بنّي، قميص داكن وسروال أسود.','Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.':'منفّذ خيالي: معطف رمادي، ياقة عالية، قميص أسود وقفازات.',
@@ -5036,6 +5050,15 @@ const I18N_RX=[
 [/^menace (\d+)\/100$/,{en:'threat $1/100',ar:'الخطر $1/100'}],
 [/^Série de (\d+) éliminations !$/,{en:'$1-kill streak!',ar:'سلسلة $1 إقصاءات!'}],
 [/^(\d+) i\/s$/,{en:'$1 fps',ar:'$1 fps'}],
+[/^Ligue (.+) à (\d+) pts$/,{en:(m,a,b)=>trS(a)+' League at '+b+' pts',ar:(m,a,b)=>'دوري '+trS(a)+' عند '+b+' نقطة'}],
+[/^Ligue (.+)$/,{en:(m,a)=>trS(a)+' League',ar:(m,a)=>'دوري '+trS(a)}],
+[/^(\d+) pts( \([+-]?\d+\))?$/,{en:'$1 pts$2',ar:'$1 نقطة$2'}],
+[/^ligue la plus haute$/,{en:'top league',ar:'أعلى دوري'}],
+[/^Précision (\d+) %$/,{en:'Accuracy $1%',ar:'الدقة $1%'}],
+[/^Tirs à la tête (\d+)$/,{en:'Headshots $1',ar:'ضربات في الراس $1'}],
+[/^Plus longue élimination (\d+) m$/,{en:'Longest kill $1 m',ar:'أبعد إقصاء $1 م'}],
+[/^Distance (\d+) m$/,{en:'Distance $1 m',ar:'المسافة $1 م'}],
+[/^(\d+) h (\d+) min$/,{en:'$1 h $2 min',ar:'$1 س $2 د'}],
 [/^Éliminé par (.+)$/,{en:'Killed by $1',ar:'قصّاك $1'}],
 [/^Difficulté : (.+)$/,{en:(m,a)=>'Difficulty: '+trS(a),ar:(m,a)=>'الصعوبة: '+trS(a)}],
 [/^Qualité : (.+)$/,{en:(m,a)=>'Quality: '+trS(a),ar:(m,a)=>'الجودة: '+trS(a)}],
@@ -5093,7 +5116,7 @@ function setLang(l,save){if(!LANGS.includes(l))l='fr';TR_BUSY=true;
   if(TR_OBS){TR_OBS.disconnect();TR_OBS=null}
   trRestore();LANG=l;
   const rtl=l==='ar',H=document.documentElement;H.lang=l==='ar'?'ar-TN':l;H.dataset.sfLang=l;
-  for(const id of ['lobby','armory','pause','opts','miss','end'])if($('#'+id))$('#'+id).dir=rtl?'rtl':'ltr';
+  for(const id of ['lobby','armory','pause','opts','miss','career','end'])if($('#'+id))$('#'+id).dir=rtl?'rtl':'ltr';
   for(const a of TR_ATTR){const el=$(a[0]);if(el)el.setAttribute(a[1],trS(a[2]))}
   const nx=LANGS[(LANGS.indexOf(l)+1)%LANGS.length];const b=$('#langBtn');if(b){b.textContent=LANG_NAME[nx];b.setAttribute('aria-label','Language · Langue · اللغة : '+LANG_NAME[nx])}
   if(l!=='fr'){trWalk(document.body);
@@ -5136,6 +5159,29 @@ function optLabels(){const on=v=>v?'oui':'non';
   $('#todD').textContent=n?'Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'Du matin au coucher du soleil.'}
 for(const [id,k] of [['#camBtn','camClassic'],['#afBtn','autoFire'],['#numBtn','noNums'],['#bloodBtn','noBlood'],['#fpsBtn','fps']])$(id).addEventListener('click',()=>{stats[k]=!stats[k];saveStats();optLabels()});
 document.querySelectorAll('#tod .chip').forEach(b=>b.addEventListener('click',()=>{stats.tod=b.dataset.t==='night'?'night':'day';saveStats();optLabels()}));
+/* ===== v2.5 — ligues, rapport de partie et carrière ===== */
+const LEAGUES=[['Bronze',0],['Argent',300],['Or',700],['Platine',1200],['Diamant',1800],['Légende',2600]];
+function leagueOf(rp){let k=0;for(let i=0;i<LEAGUES.length;i++)if(rp>=LEAGUES[i][1])k=i;return k}
+function leagueApply(win){if(MDcur.nostat)return null;const p=player,np=Math.max(2,ents.length),rank=win?1:p.rank,rp0=Math.max(0,stats.rp|0),t0=leagueOf(rp0);
+  let gain=Math.round(60*(1-(rank-1)/(np-1)))+(win?30:0)+Math.min(10,p.kills)*8;gain=Math.round(gain*[.7,1,1.3][stats.diff===0||stats.diff===2?stats.diff:1]);
+  const d=gain-(20+t0*10),rp1=Math.max(0,rp0+d);stats.rp=rp1;
+  stats.hsT=(stats.hsT|0)+(p.hs|0);stats.shotsT=(stats.shotsT|0)+(p.shotsN|0);stats.hitsT=(stats.hitsT|0)+Math.min(p.hitsN|0,p.shotsN|0);stats.timeT=(stats.timeT|0)+Math.round(win?matchT:p.deathT||0);stats.longK=Math.max(stats.longK|0,Math.round((p.longK||0)/10));
+  return {d:rp1-rp0,rp:rp1,t0,t1:leagueOf(rp1)}}
+function endReport(LG){const p=player,sh=p.shotsN|0,parts=[];
+  parts.push('Précision '+(sh?Math.min(100,Math.round((p.hitsN|0)/sh*100)):0)+' %');parts.push('Tirs à la tête '+(p.hs|0));
+  if(p.longK)parts.push('Plus longue élimination '+Math.round(p.longK/10)+' m');parts.push('Distance '+Math.round((p.distW||0)/10)+' m');
+  $('#endRep').textContent=parts.join(' · ');
+  const el=$('#endLg');if(!LG){el.textContent='';return}
+  el.textContent=(LG.t1>LG.t0?'Promotion · ':LG.t1<LG.t0?'Relégation · ':'')+'Ligue '+LEAGUES[LG.t1][0]+' · '+LG.rp+' pts ('+(LG.d>=0?'+':'')+LG.d+')';el.className='endlg'+(LG.d>=0?' up':' down')}
+function leagueLabel(){const rp=Math.max(0,stats.rp|0);return 'Ligue '+LEAGUES[leagueOf(rp)][0]+' · '+rp+' pts'}
+function careerBtn(){const b=$('#carBtn');if(b)b.textContent='Carrière · '+leagueLabel()}
+function openCareer(){const rp=Math.max(0,stats.rp|0),t=leagueOf(rp),nx=LEAGUES[t+1],g=stats.games|0,w=stats.wins|0,k=stats.kills|0,sh=stats.shotsT|0,tm=stats.timeT|0;
+  $('#carLg').textContent='Ligue '+LEAGUES[t][0];$('#carLgFill').style.width=(nx?Math.round((rp-LEAGUES[t][1])/(nx[1]-LEAGUES[t][1])*100):100)+'%';
+  $('#carLgTxt').textContent=nx?rp+' pts · Ligue '+nx[0]+' à '+nx[1]+' pts':rp+' pts · ligue la plus haute';
+  const rows=[['Parties',g],['Victoires',w],['Taux de victoire',(g?Math.round(w/g*100):0)+' %'],['Éliminations',k],['Ratio élim. / défaite',(k/Math.max(1,g-w)).toFixed(2)],['Record élim.',stats.best|0],['Précision',(sh?Math.round((stats.hitsT|0)/sh*100):0)+' %'],['Tirs à la tête',stats.hsT|0],['Plus longue élimination',(stats.longK|0)+' m'],['Temps de jeu',Math.floor(tm/3600)+' h '+Math.floor(tm%3600/60)+' min']];
+  $('#carList').innerHTML=rows.map(r=>'<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>').join('');$('#career').hidden=false}
+$('#carBtn').addEventListener('click',openCareer);$('#carClose').addEventListener('click',()=>{$('#career').hidden=true});
+{const _fs=fillStats;fillStats=function(){_fs();careerBtn()}}careerBtn();
 {const c=document.createElement('div');c.id='sfCine';c.innerHTML='<i></i><i></i>';document.body.appendChild(c)}
 optLabels();
 setInterval(()=>{if(game.mode!=='play'&&cam.bars){cam.bars=false;$('#sfCine').classList.remove('on')}const el=$('#sfFps'),on=!!stats.fps&&game.mode==='play';if(el.hidden===on)el.hidden=!on;if(on)el.textContent=SFF+' i/s';SFF=0},1000);
@@ -5218,6 +5264,22 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 #sfCine i:last-child{bottom:0;transform:translateY(101%)}
 #sfCine.on i{transform:none}
 @media (prefers-reduced-motion:reduce){#sfCine i{transition:none}}
+
+/* v2.5 — ligues, rapport de partie, carrière */
+.endrep{margin:0;font-size:12px;letter-spacing:.04em;color:var(--mute,#aab);text-align:center;line-height:1.5}
+.endlg{margin:0;text-align:center;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#ffd08a}
+.endlg.down{color:#ff9d8a}
+.endlg:empty,.endrep:empty{display:none}
+#lobby .stats .car-cell{grid-column:1/-1;background:rgba(10,13,18,.82);padding:0}
+#carBtn{width:100%;min-height:40px;padding:8px 12px;border:0;background:none;color:#ffd08a;font:inherit;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+#carBtn::after{content:' ›'}
+.lgbar{height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin:6px 0}
+.lgbar i{display:block;height:100%;background:linear-gradient(90deg,#ff9b42,#ffd08a);border-radius:99px}
+.carlist{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0}
+.carlist div{padding:9px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.04)}
+.carlist dt{font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.carlist dd{margin:2px 0 0;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+#career{background:rgba(6,8,12,.95)}
 </style>
 </body>
 </html>

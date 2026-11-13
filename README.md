@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Version 2.5 — ligues, rapport de partie, carrière
+
+- Ligues : Bronze, Argent, Or, Platine, Diamant, Légende. Chaque partie (hors Entraînement) fait gagner ou perdre des points selon le classement, les éliminations et la difficulté ; la mise d'entrée augmente avec la ligue.
+- Rapport de fin de partie : précision, tirs à la tête, plus longue élimination, distance parcourue, évolution dans la ligue.
+- Écran Carrière (bouton sous les statistiques du menu) : taux de victoire, ratio, précision, temps de jeu, progression vers la ligue suivante.
+- Cache hors ligne : `seddik-fire-v205`.
+
 ## Version 2.4 — caméra cinématique
 
 - Tremblement fluide (plus de saccades aléatoires) et recul de la vue à chaque tir, plus marqué au fusil à pompe et au fusil de précision.

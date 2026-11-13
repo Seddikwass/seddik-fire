@@ -1420,7 +1420,7 @@ html[dir=rtl] #hud #radio-team.radio-collapsed .radio-head span:first-child::bef
 }
 
 /* ---------- téléphones tenus debout (site web) : en-tête sur sa propre ligne, contenu en colonne ---------- */
-@media (orientation:portrait) and (max-width:760px){
+@media (orientation:portrait) and (max-width:1100px){
   #ui .screen:not(#scr-main){flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;padding:112px 10px max(16px,env(safe-area-inset-bottom))!important;overflow-x:hidden!important;overflow-y:auto!important;max-height:100dvh!important;gap:10px!important}
   #ui .screen .scr-head{position:fixed!important;top:calc(max(0px,env(safe-area-inset-top)) + 58px)!important;inset-inline-start:8px!important;inset-inline-end:auto!important;margin:0!important;padding:5px 12px 5px 6px!important;gap:10px!important;max-width:calc(100vw - 16px)!important;z-index:9!important;display:flex!important;flex-direction:row!important;align-items:center!important;align-self:auto!important;border-radius:11px!important}
   #ui .screen .scr-head h1{font-size:clamp(16px,5vw,22px)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -1450,6 +1450,12 @@ html[dir=rtl] #hud #radio-team.radio-collapsed .radio-head span:first-child::bef
 #hud #radio-team.radio-collapsed .radio-head{border:0!important;padding:0!important;margin:0!important;height:22px;align-items:center!important}
 #hud #radio-team.radio-collapsed .radio-toggle{min-height:0!important;height:22px!important;min-width:26px!important;padding:0 6px!important;line-height:1!important}
 
+@media (min-height:541px) and (orientation:landscape){#touch-hint{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 150px)}}
+@media (orientation:portrait) and (min-width:600px){#scr-garage .sw{grid-template-columns:repeat(12,1fr)!important}}
+/* installation du jeu depuis le site (bouton affiché seulement quand le navigateur le propose) */
+#btn-install{color:var(--acc2);border-color:rgba(255,209,102,.55)}
+body.sub #btn-install,.native #btn-install{display:none!important}
+
 </style>
 </head>
 <body>
@@ -1463,7 +1469,8 @@ html[dir=rtl] #hud #radio-team.radio-collapsed .radio-head span:first-child::bef
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V205</span>
+    <span id="build-tag" aria-label="Version">V206</span>
+    <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
 
@@ -6819,7 +6826,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V205';
+const GAME_VERSION = 'V206';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
@@ -7551,6 +7558,12 @@ function boot() {
 }
 window.addEventListener('load', boot);
 
+
+// Installation sur l'écran d'accueil : le bouton n'apparaît que si le navigateur propose l'installation.
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; const b = $('btn-install'); if (b) b.classList.remove('hidden'); });
+addEventListener('appinstalled', () => { installEvt = null; const b = $('btn-install'); if (b) b.classList.add('hidden'); });
+addEventListener('load', () => { const b = $('btn-install'); if (b) b.onclick = () => { if (!installEvt) return; const e = installEvt; installEvt = null; b.classList.add('hidden'); try { e.prompt(); } catch (x) { } }; });
 
 if ('serviceWorker' in navigator) {
   // Première installation : aucun rechargement (l'ancien code rechargeait la page et déclenchait à tort le « mode sans échec »).

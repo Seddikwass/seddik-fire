@@ -1,5 +1,14 @@
 # Seddik Fire
 
+## Version 2.4 — caméra cinématique
+
+- Tremblement fluide (plus de saccades aléatoires) et recul de la vue à chaque tir, plus marqué au fusil à pompe et au fusil de précision.
+- En véhicule : la vue s'élargit avec la vitesse et regarde plus loin devant. En intérieur : elle se resserre.
+- Élimination : légère impulsion de zoom. Atterrissage : impact.
+- Mort : bandes cinéma, la caméra glisse vers l'adversaire qui vous a éliminé, avec son nom. Victoire : gros plan sur le vainqueur.
+- Réglage « Caméra : cinématique / standard » pour revenir à l'ancienne vue. Respecte « réduire les animations » du système.
+- Cache hors ligne : `seddik-fire-v204`.
+
 ## Version 2.3 — combats de nuit, tirs à la tête, options modernes
 
 Réalisme

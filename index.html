@@ -1035,9 +1035,9 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <label class="rg"><span>Taille joueurs</span><input id="oPsize" type="range" min=".8" max="1.8" step=".05"><em id="oPsizeV"></em></label>
       <label class="rg"><span>Zoom caméra</span><input id="oCam" type="range" min=".75" max="1.25" step=".05"><em id="oCamV"></em></label>
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
-      <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
+      <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.3</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.4</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -2271,7 +2271,7 @@ function tryFire(e){
   parts.push({x:mx,y:my,vx:0,vy:0,l:.085,m:.085,s:(Wp.cls==='sg'?13:Wp.cls==='p'?8:11),c:'#ffd27a',g:0,fl:1,a:e.angle});if(Q.hi&&vis(mx,my,40)&&parts.length<468){parts.push({x:mx,y:my,vx:Math.cos(e.angle)*30,vy:Math.sin(e.angle)*30-12,l:.9,m:.9,s:Wp.cls==='sg'?11:7,c:'#c9c3b8',g:-10});for(let z=0;z<2;z++){const sa=e.angle+rand(-.55,.55),sv=rand(45,85);parts.push({x:mx,y:my,vx:Math.cos(sa)*sv,vy:Math.sin(sa)*sv,l:.16,m:.16,s:rand(2,3.2),c:z?'#ff9a3c':'#fff0b0',g:0,spk:1})}}
   if(Math.abs(e.x-cam.x)<800&&Math.abs(e.y-cam.y)<900&&parts.length<500){const ca=Math.cos(e.angle),sa=Math.sin(e.angle),k=rand(70,120);parts.push({x:e.x+ca*8-sa*5,y:e.y+sa*8+ca*5,vx:-sa*k+ca*rand(-25,10),vy:ca*k+sa*rand(-25,10),l:1.6,m:1.6,s:1,c:Wp.cls==='sg'?'#c0392b':'#d9a441',g:0,sh:1,rot:Math.random()*TAU,vr:rand(-14,14)})}
   sfxShot(SND[Wp.cls],sndVol(e.x,e.y)*(e===player?1:.7),e===player,sndPan(e.x));gpHeard(e,Wp);
-  if(e===player)cam.shake=Math.min(.35,cam.shake+(Wp.cls==='sn'?.3:Wp.cls==='sg'?.22:Wp.cls==='dmr'?.12:.06));
+  if(e===player){cam.shake=Math.min(.35,cam.shake+(Wp.cls==='sn'?.3:Wp.cls==='sg'?.22:Wp.cls==='dmr'?.12:.06));const K=Wp.cls==='sn'?11:Wp.cls==='sg'?8:Wp.cls==='dmr'?5:Wp.cls==='p'?2.4:2;cam.kx=clamp((cam.kx||0)-Math.cos(e.angle)*K,-16,16);cam.ky=clamp((cam.ky||0)-Math.sin(e.angle)*K,-16,16)}
   if(w.mag===0&&e.ammo[Wp.am]>0)startReload(e);
 }
 function drawShieldDisc(c,x,y,r){c.save();c.translate(x,y);c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.arc(1.5,2,r,0,TAU);c.fill();c.fillStyle='#1d1c1c';c.beginPath();c.arc(0,0,r,0,TAU);c.fill();
@@ -2360,7 +2360,8 @@ function kill(t,src,wn){
   const w=src?wn:'Tempête';
   pushFeed(src?src.name:'Tempête de feu',t.name,src?wn:'',src===player||t===player);
   if(src===player&&t!==player){showKB(t.name);hitMarks.push({x:t.x,y:t.y,t:.4,k:true});blip(660,.09,.06,'triangle');setTimeout(()=>blip(990,.12,.06,'triangle'),90)}
-  if(t===player){endAt=matchT+1.8;cam.shake=.5}
+  if(src===player&&t!==player)cam.zp=.05;
+  if(t===player){endAt=matchT+(stats.camClassic?1.8:2.6);cam.shake=.5;cam.dT=0}
   else if(oneTeam()&&player.alive)endAt=matchT+1.4;
   return w;
 }
@@ -2410,7 +2411,7 @@ function separate(){for(let i=0;i<ents.length;i++){const a=ents[i];if(!a.alive||
 function jump(e){if(!e.inPlane)return;e.inPlane=false;e.air=1;e.x=plane.x+rand(-24,24);e.y=plane.y+rand(-24,24);if(e===player){blip(300,.12,.05,'sawtooth');toast('Dirigez votre parachute',1.8)}}
 function updateAir(e,dt,mx,my){e.air-=dt/7.5;if(e.bot){const dx=e.lx-e.x,dy=e.ly-e.y,d=Math.hypot(dx,dy);if(d>20){mx=dx/d;my=dy/d}else mx=my=0}
   e.x=clamp(e.x+mx*240*dt,20,WS-20);e.y=clamp(e.y+my*240*dt,20,WS-20);if(mx||my)e.angle=Math.atan2(my,mx);
-  if(e.air<=0){e.air=0;e.landT=matchT;collide(e);puff(e.x,e.y,10,'rgba(225,205,160,.9)',110,.7,6);if(e===player)onLand()}}
+  if(e.air<=0){e.air=0;e.landT=matchT;collide(e);puff(e.x,e.y,10,'rgba(225,205,160,.9)',110,.7,6);if(e===player){onLand();cam.shake=Math.min(.6,cam.shake+.32);cam.zp=-.05}}}
 function onLand(){if(!hintDone){hintDone=true;if(stats.tutoDone)showHint(isDesk?'ZQSD / WASD : bouger · souris : viser et tirer · E : ramasser · R : recharger · F : se soigner · G : grenade · V : véhicule':'Pouce gauche : bouger · pouce droit : viser, poussez jusqu’au bord pour tirer',6)}}
 
 /* ===== bots ===== */
@@ -2989,17 +2990,28 @@ function updateBullets(dt){const pl=player&&player.alive&&!player.inPlane&&playe
       bullets.splice(i,1);continue}
     if(pl&&!b.wz&&b.o!==pl&&Math.abs(nx-pl.x)<120&&Math.abs(ny-pl.y)<120&&segDist(pl.x,pl.y,b.x,b.y,nx,ny)<60){b.wz=1;sfxWhiz(sndPan(nx))}
     b.tr+=Math.hypot(nx-b.x,ny-b.y);b.px=b.x;b.py=b.y;b.x=nx;b.y=ny;if(b.tr>b.rg||nx<0||ny<0||nx>WS||ny>WS)bullets.splice(i,1)}}
-function updateCam(dt){const bz=baseZoom();let tx,ty,zt;
-  if(player.inPlane){tx=plane.x;ty=plane.y;zt=bz*.24}
+function updateCam(dt){const bz=baseZoom(),CINE=!stats.camClassic;let tx,ty,zt,fk=9;
+  if(player.inPlane){tx=plane.x;ty=plane.y;zt=bz*.24;fk=5}
   else{tx=player.x;ty=player.y;if(player.air>0)zt=bz*(.3+.7*(1-player.air));else{const w=curW(player);zt=bz*(w?1-(1-WEAP[w.type].z)*.7:1);if(!player.alive)zt=bz*.85;
-    const aiming=(sticks.aim.id!==null&&sticks.aim.mag>.2)||(isDesk&&mouse.active);let lx=0,ly=0;if(aiming&&player.alive){const snp=w&&WEAP[w.type].cls==='sn',la=snp?Math.min(400,Math.min(VW,VH)*.44/zt):Math.min(170,Math.min(VW,VH)*.34/zt);lx=Math.cos(player.angle)*la;ly=Math.sin(player.angle)*la}
-    // v53 : la caméra anticipe le déplacement et s'éloigne si un ennemi est juste hors de l'écran
-    else if(player.alive&&dt>0){const vx=(player.x-(cam.px??player.x))/dt,vy=(player.y-(cam.py??player.y))/dt,sp=Math.hypot(vx,vy);if(sp>20){const m=Math.min(150,sp*.45)/sp;lx=vx*m;ly=vy*m}}
+    const aiming=(sticks.aim.id!==null&&sticks.aim.mag>.2)||(isDesk&&mouse.active);let lx=0,ly=0;
+    const vx=dt>0?(player.x-(cam.px??player.x))/dt:0,vy=dt>0?(player.y-(cam.py??player.y))/dt:0,sp=Math.hypot(vx,vy);cam.sp=(cam.sp||0)+(Math.min(sp,900)-(cam.sp||0))*Math.min(1,dt*2.5);
+    if(aiming&&player.alive&&!player.veh){const snp=w&&WEAP[w.type].cls==='sn',la=snp?Math.min(400,Math.min(VW,VH)*.44/zt):Math.min(170,Math.min(VW,VH)*.34/zt);lx=Math.cos(player.angle)*la;ly=Math.sin(player.angle)*la}
+    // la caméra anticipe le déplacement (davantage en véhicule) et s'éloigne si un ennemi est juste hors de l'écran
+    else if(player.alive&&sp>20){const cap=CINE&&player.veh?Math.min(300,Math.min(VW,VH)*.36/zt):150,m=Math.min(cap,sp*(CINE&&player.veh?.62:.45))/sp;lx=vx*m;ly=vy*m}
     cam.lx=(cam.lx||0)+(lx-(cam.lx||0))*Math.min(1,dt*3);cam.ly=(cam.ly||0)+(ly-(cam.ly||0))*Math.min(1,dt*3);tx+=cam.lx;ty+=cam.ly;
     if(player.alive){let nd=1e9;for(const e of ents){if(e===player||!e.alive||e.inPlane||e.air>0||(player.team&&e.team===player.team))continue;const d=Math.hypot(e.x-player.x,e.y-player.y);if(d<nd)nd=d}const half=Math.min(VW,VH)*.46/zt;if(nd>half&&nd<half*1.7)zt=Math.max(bz*.72,Math.min(zt,Math.min(VW,VH)*.46/nd))}
+    if(CINE&&player.alive){
+      // vitesse : la vue s'élargit en véhicule ; intérieur : elle se resserre ; victoire : gros plan sur le vainqueur
+      if(player.veh)zt*=1-clamp((cam.sp-160)/420,0,1)*.2;
+      else if(bldAt(player.x,player.y))zt*=1.08;
+      if(endAt>0&&oneTeam()){zt=bz*1.18;tx=player.x;ty=player.y;fk=3}}
+    // mort : la caméra glisse vers l'adversaire qui vous a éliminé
+    if(CINE&&!player.alive){cam.dT=(cam.dT||0)+dt;const k=player.killer;if(k&&k!==player&&k.alive&&!k.inPlane){const u=clamp((cam.dT-.35)/1.1,0,1),e=u*u*(3-2*u);tx=player.x+(k.x-player.x)*e;ty=player.y+(k.y-player.y)*e;zt=bz*(.85+.2*e);fk=6}}
     if(VH>VW*1.15&&player.alive)ty+=70/zt}
   cam.px=player.x;cam.py=player.y}
-  const k=1-Math.exp(-dt*(player.inPlane?5:9));cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;cam.z+=(zt-cam.z)*(1-Math.exp(-dt*2.5));cam.shake=Math.max(0,cam.shake-dt*2)}
+  const k=1-Math.exp(-dt*fk);cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;cam.z+=(zt-cam.z)*(1-Math.exp(-dt*2.5));cam.shake=Math.max(0,cam.shake-dt*2);
+  {const dead=CINE&&!player.alive&&game.mode==='play';if(dead!==!!cam.bars){cam.bars=dead;const el=$('#sfCine');if(el){if(dead){const k=player.killer;el.lastChild.textContent=k&&k!==player?'Éliminé par '+k.name:'Éliminé'}el.classList.toggle('on',dead)}}}
+  const kd=Math.exp(-dt*13);cam.kx=(cam.kx||0)*kd;cam.ky=(cam.ky||0)*kd;cam.zp=(cam.zp||0)*Math.exp(-dt*7)}
 function drawWeather(){const wx=MAP.wx;
   if(wx==='sand'){ctx.fillStyle='rgba(214,172,104,.11)';ctx.fillRect(0,0,VW,VH);
     const haze=ctx.createLinearGradient(0,VH*.18,0,VH);haze.addColorStop(0,'rgba(229,190,126,0)');haze.addColorStop(.55,'rgba(220,177,111,.055)');haze.addColorStop(1,'rgba(190,143,82,.13)');ctx.fillStyle=haze;ctx.fillRect(0,0,VW,VH);
@@ -3330,7 +3342,7 @@ function drawNight(toS,z){const S=LOWD?5:3,w=Math.ceil(VW/S),h=Math.ceil(VH/S);
     for(const d of drops)hole(d.x,d.y,170,.55)}
   ctx.drawImage(NCV,0,0,VW,VH);
   if(!fly){ctx.fillStyle='rgba(40,70,140,.07)';ctx.fillRect(0,0,VW,VH)}}
-function render(){SFF++;LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;{const pz=z/baseZoom();PK=.0021*pz;PTY=-.27*pz}const sh=reduceMotion?0:cam.shake*10;const ox=(Math.random()-.5)*sh,oy=(Math.random()-.5)*sh;
+function render(){SFF++;LOWD=stats.perfC==='low'&&stats.quality==='eco';const CINE=!stats.camClassic&&!reduceMotion,z=cam.z*(CINE?1+(cam.zp||0):1);{const pz=z/baseZoom();PK=.0021*pz;PTY=-.27*pz}let ox,oy;if(CINE){const sh=cam.shake*6+cam.shake*cam.shake*14,tt=TIME*38;ox=(Math.sin(tt*1.13+1.7)+Math.sin(tt*.71+.3)*.6)*sh*.55+(cam.kx||0);oy=(Math.sin(tt*.97+4.1)+Math.sin(tt*1.37+2.2)*.6)*sh*.55+(cam.ky||0)}else{const sh=reduceMotion?0:cam.shake*10;ox=(Math.random()-.5)*sh;oy=(Math.random()-.5)*sh}
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0e5f86';ctx.fillRect(0,0,VW,VH);
   const vw=VW/z,vh=VH/z,x0=cam.x-vw/2,y0=cam.y-vh/2,x1=x0+vw,y1=y0+vh;V.x0=x0;V.y0=y0;V.x1=x1;V.y1=y1;
   ctx.setTransform(DPR*z,0,0,DPR*z,DPR*(VW/2-cam.x*z+ox),DPR*(VH/2-cam.y*z+oy));
@@ -4842,6 +4854,7 @@ requestAnimationFrame(()=>{const gp=gcBoot();setTimeout(()=>{try{preStart()}catc
    sans toucher à la logique : en français il ne fait strictement rien. */
 const I18N={
 en:{
+'Caméra':'Camera','cinématique':'cinematic','standard':'standard',
 'Heure du combat':'Time of battle','Jour':'Day','Nuit':'Night','Du matin au coucher du soleil.':'From morning to sunset.','Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'Pitch-dark night: flashlight, street lamps and muzzle flashes. Opponents see less far.','Tir auto':'Auto fire','Chiffres de dégâts':'Damage numbers','Sang':'Blood','Compteur i/s':'FPS counter','oui':'on','non':'off','Tête !':'Headshot!','Double élimination !':'Double kill!','Triple élimination !':'Triple kill!',
 'Difficulté':'Difficulty','Facile':'Easy','Normale':'Normal','Difficile':'Hard','Partager':'Share','Copié !':'Copied!','Unité Atlas — Assaut':'Atlas Unit — Assault','Patrouille du Sahara':'Sahara Patrol','Section Spectre':'Spectre Squad','Police — Intervention':'Police — Riot Unit','Police — Groupe tactique':'Police — Tactical Team','Police — Patrouille':'Police — Patrol','La Famille — Don':'The Family — Don','La Famille — Homme de main':'The Family — Enforcer','Syndicat — Exécuteur':'Syndicate — Hitman','Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.':'Multicam assault soldier: ballistic helmet, goggles, heavy vest, radio and fatigues.','Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.':'Desert scout: sand helmet, goggles, scarf, pads and ochre camouflage.','Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.':'Night operator: visor helmet, balaclava, graphite-black gear and reinforced plates.','Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.':'Riot officer: midnight-blue uniform, riot helmet, visor, vest and neutral patches.','Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.':'Urban tactical unit: black helmet, goggles, mask, pads and charcoal uniform.','Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.':'Field officer: service cap, deep-blue uniform, duty belt and radio.','Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.':'Fictional crime boss: tailored black suit, ivory shirt, burgundy tie and gold chain.','Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.':'Heavy enforcer: dark brown leather jacket, dark shirt, black trousers and street look.','Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.':'Fictional urban hitman: graphite coat, high collar, black shirt and dark gloves.',
 'Votre pseudo':'Your name','Niv.':'Lv.','Niveau':'Level','Armurerie':'Armory','Son : activé':'Sound: on','Son : coupé':'Sound: off',
@@ -4931,6 +4944,7 @@ en:{
 'Se débloque au niveau':'Unlocks at level','Vous jouez avec votre dernier personnage débloqué.':'You are playing with your last unlocked character.'
 },
 ar:{
+'Caméra':'الكاميرا','cinématique':'سينمائية','standard':'عادية',
 'Heure du combat':'وقت المعركة','Jour':'نهار','Nuit':'ليل','Du matin au coucher du soleil.':'من الصباح للمغرب.','Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'ليل مظلم: مصباح يدوي وأضواء الشارع ولمعة الرصاص. الخصوم يشوفو أقل.','Tir auto':'ضرب تلقائي','Chiffres de dégâts':'أرقام الضرر','Sang':'الدم','Compteur i/s':'عدّاد الصور','oui':'إيه','non':'لا','Tête !':'في الراس!','Double élimination !':'إقصاء مزدوج!','Triple élimination !':'إقصاء ثلاثي!',
 'Difficulté':'الصعوبة','Facile':'ساهلة','Normale':'عادية','Difficile':'صعيبة','Partager':'شارك','Copié !':'تنسخ!','Unité Atlas — Assaut':'وحدة الأطلس — هجوم','Patrouille du Sahara':'دورية الصحراء','Section Spectre':'فرقة الشبح','Police — Intervention':'الشرطة — التدخل','Police — Groupe tactique':'الشرطة — الفرقة التكتيكية','Police — Patrouille':'الشرطة — الدورية','La Famille — Don':'العايلة — الزعيم','La Famille — Homme de main':'العايلة — رجل اليد','Syndicat — Exécuteur':'النقابة — المنفّذ','Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.':'جندي هجوم: خوذة باليستية، نظارات حماية، درع ثقيل وراديو.','Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.':'كشّاف الصحراء: خوذة رملية، نظارات، شاش ولباس تمويه.','Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.':'مقاتل الليل: خوذة بواقي، قناع وعتاد أسود مدعّم.','Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.':'عون تدخل: زي أزرق داكن، خوذة مكافحة الشغب ودرع.','Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.':'وحدة تكتيكية: خوذة سوداء، نظارات، قناع وزي رمادي داكن.','Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.':'شرطي ميدان: كاسكات، زي أزرق، حزام وراديو.','Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.':'زعيم عصابة خيالي: كسوة سوداء، قميص عاجي، كرافات وسلسلة ذهبية.','Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.':'رجل يد ضخم: فيستة جلد بنّي، قميص داكن وسروال أسود.','Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.':'منفّذ خيالي: معطف رمادي، ياقة عالية، قميص أسود وقفازات.',
 'Votre pseudo':'اسمك','Niv.':'مستوى','Niveau':'المستوى','Armurerie':'مخزن الأسلحة','Son : activé':'الصوت: يخدم','Son : coupé':'الصوت: مسكّر',
@@ -5022,6 +5036,7 @@ const I18N_RX=[
 [/^menace (\d+)\/100$/,{en:'threat $1/100',ar:'الخطر $1/100'}],
 [/^Série de (\d+) éliminations !$/,{en:'$1-kill streak!',ar:'سلسلة $1 إقصاءات!'}],
 [/^(\d+) i\/s$/,{en:'$1 fps',ar:'$1 fps'}],
+[/^Éliminé par (.+)$/,{en:'Killed by $1',ar:'قصّاك $1'}],
 [/^Difficulté : (.+)$/,{en:(m,a)=>'Difficulty: '+trS(a),ar:(m,a)=>'الصعوبة: '+trS(a)}],
 [/^Qualité : (.+)$/,{en:(m,a)=>'Quality: '+trS(a),ar:(m,a)=>'الجودة: '+trS(a)}],
 [/^Qualité ajustée : (.+)$/,{en:(m,a)=>'Quality adjusted: '+trS(a),ar:(m,a)=>'تعدّلت الجودة: '+trS(a)}],
@@ -5115,14 +5130,15 @@ $('#shareBtn').addEventListener('click',()=>{const b=$('#shareBtn'),url='https:/
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt+' '+url).then(done,()=>{});return}}catch(e){}});
 /* ===== v2.3 — options modernes : heure du combat, tir auto, chiffres, sang, compteur d'images ===== */
 function optLabels(){const on=v=>v?'oui':'non';
-  $('#afBtn').textContent='Tir auto : '+on(stats.autoFire);$('#numBtn').textContent='Chiffres de dégâts : '+on(!stats.noNums);
+  $('#camBtn').textContent='Caméra : '+(stats.camClassic?'standard':'cinématique');$('#afBtn').textContent='Tir auto : '+on(stats.autoFire);$('#numBtn').textContent='Chiffres de dégâts : '+on(!stats.noNums);
   $('#bloodBtn').textContent='Sang : '+on(!stats.noBlood);$('#fpsBtn').textContent='Compteur i/s : '+on(stats.fps);
   const n=stats.tod==='night';document.querySelectorAll('#tod .chip').forEach(b=>b.setAttribute('aria-checked',String((b.dataset.t==='night')===n)));
   $('#todD').textContent=n?'Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'Du matin au coucher du soleil.'}
-for(const [id,k] of [['#afBtn','autoFire'],['#numBtn','noNums'],['#bloodBtn','noBlood'],['#fpsBtn','fps']])$(id).addEventListener('click',()=>{stats[k]=!stats[k];saveStats();optLabels()});
+for(const [id,k] of [['#camBtn','camClassic'],['#afBtn','autoFire'],['#numBtn','noNums'],['#bloodBtn','noBlood'],['#fpsBtn','fps']])$(id).addEventListener('click',()=>{stats[k]=!stats[k];saveStats();optLabels()});
 document.querySelectorAll('#tod .chip').forEach(b=>b.addEventListener('click',()=>{stats.tod=b.dataset.t==='night'?'night':'day';saveStats();optLabels()}));
+{const c=document.createElement('div');c.id='sfCine';c.innerHTML='<i></i><i></i>';document.body.appendChild(c)}
 optLabels();
-setInterval(()=>{const el=$('#sfFps'),on=!!stats.fps&&game.mode==='play';if(el.hidden===on)el.hidden=!on;if(on)el.textContent=SFF+' i/s';SFF=0},1000);
+setInterval(()=>{if(game.mode!=='play'&&cam.bars){cam.bars=false;$('#sfCine').classList.remove('on')}const el=$('#sfFps'),on=!!stats.fps&&game.mode==='play';if(el.hidden===on)el.hidden=!on;if(on)el.textContent=SFF+' i/s';SFF=0},1000);
 setLang(detectLang(),false);
 
 
@@ -5194,6 +5210,14 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 
 /* v2.3 — le titre ne déborde plus sur le soldat quand la police de secours (plus large) est utilisée */
 @media (min-width:761px){#lobby .brand .logo{font-size:clamp(38px,6.3vw,104px);max-width:100%}}
+
+/* v2.4 — bandes cinéma et légende pendant le plan sur l'adversaire */
+#sfCine{position:fixed;inset:0;z-index:4;pointer-events:none}
+#sfCine i{position:absolute;left:0;right:0;height:12vh;background:#05070b;transition:transform .5s cubic-bezier(.2,.7,.2,1);display:flex;align-items:center;justify-content:center;font:italic 800 clamp(15px,2.6vw,24px)/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#f3e9d4}
+#sfCine i:first-child{top:0;transform:translateY(-101%)}
+#sfCine i:last-child{bottom:0;transform:translateY(101%)}
+#sfCine.on i{transform:none}
+@media (prefers-reduced-motion:reduce){#sfCine i{transition:none}}
 </style>
 </body>
 </html>

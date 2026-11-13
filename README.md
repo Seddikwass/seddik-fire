@@ -1,5 +1,24 @@
 # Seddik Fire
 
+## Version 2.0 — corrections, trois langues et finitions
+
+Corrections
+- Le changement de langue plantait au chargement (script hors de portée du jeu) : réécrit et intégré au moteur.
+- La grille « Choisir un combattant » restait vide : elle affiche maintenant les vrais personnages et la sélection fonctionne.
+- Un soldat générique fixe masquait l'aperçu du personnage choisi : supprimé, l'aperçu montre le personnage réellement sélectionné.
+- Le module « combat 3D » contenait une erreur de syntaxe et ne s'exécutait jamais ; l'aperçu 3D dépendait d'un CDN externe (indisponible hors ligne et dans l'APK). Les deux sont retirés : chargement plus léger, plus aucune dépendance externe hormis les polices.
+- Menu : la colonne centrale débordait et coupait le soldat sur téléphone en paysage et sur ordinateur.
+
+Améliorations
+- Trois langues : français, English, العربية (droite à gauche). Détection automatique selon la langue du téléphone, bouton de langue dans le menu, choix mémorisé.
+- Débuts plus justes : 4 secondes de protection à l'atterrissage et dégâts des adversaires réduits pendant les 6 premières parties (hors Parcours).
+- Bords de carte : plage et hauts-fonds à la place de la coupure droite terre/mer.
+- Cache hors ligne : `seddik-fire-v200`.
+
+Limites connues
+- Les descriptions longues des personnages et les noms de lieux restent en français (masquées dans les autres langues pour les descriptions).
+- L'APK généré par GitHub Actions est un APK de test (debug). La publication Google Play demande un AAB signé avec la clé de l'application.
+
 ## Version 1.37 — progression renforcée sur 50 étapes
 
 - Les 50 étapes conservent leurs cartes régionales tunisiennes et leurs noms de lieux.

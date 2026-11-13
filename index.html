@@ -863,7 +863,6 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
 <script>(function(){var sp=document.getElementById('splash');if(!sp)return;var done=false;function hide(){if(done)return;done=true;sp.classList.add('out');setTimeout(function(){sp.remove()},360)}sp.addEventListener('click',hide);var t0=Date.now(),app=/^android-app:/.test(document.referrer)||matchMedia('(display-mode: fullscreen),(display-mode: standalone)').matches,mn=app?0:600;(function chk(){if(window.__sfReady&&Date.now()-t0>mn)return hide();setTimeout(chk,50)})();setTimeout(hide,8000)})();</script>
 
 <canvas id="game" aria-label="Seddik Fire, zone de jeu"></canvas>
-<canvas id="sf3dBattle" aria-label="Champ de bataille 3D"></canvas>
 
 <div id="hud" class="hud" hidden>
   <div class="tl">
@@ -926,7 +925,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
           <span class="xpt" id="xpTxt">0 XP</span>
         </div>
       </div>
-      <div class="ltop-r"><button id="langBtn" class="ghost sm" type="button" aria-label="Changer la langue">العربية</button><button id="armBtn" class="ghost sm">Armurerie</button><button id="sndBtn" class="ghost sm">Son : activé</button></div>
+      <div class="ltop-r"><button id="langBtn" class="ghost sm" type="button" aria-label="Language">English</button><button id="armBtn" class="ghost sm">Armurerie</button><button id="sndBtn" class="ghost sm">Son : activé</button></div>
     </div>
     <div class="brand">
       <span class="stamp">Île de Seddik · 30 joueurs · 1 survivant</span>
@@ -937,55 +936,6 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <div class="stage">
         <button id="skinPrev" class="arrow" aria-label="Soldat précédent">‹</button>
         <canvas id="skinCv" aria-label="Aperçu du soldat"></canvas>
-        <canvas id="sf3dCanvas" aria-label="Aperçu 3D du soldat, de son arme et du véhicule" hidden></canvas>
-        <div id="lobbySoldierFallback" aria-hidden="true">
-          <svg viewBox="0 0 220 260" role="presentation" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="sfVest" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#788568"/><stop offset=".55" stop-color="#3e4a3b"/><stop offset="1" stop-color="#202a24"/></linearGradient>
-              <linearGradient id="sfHelmet" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#9ba582"/><stop offset="1" stop-color="#303b30"/></linearGradient>
-              <linearGradient id="sfCloth" x1="0" x2="1"><stop stop-color="#66745b"/><stop offset="1" stop-color="#252f27"/></linearGradient>
-              <filter id="sfShadow" x="-40%" y="-30%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
-            </defs>
-            <ellipse cx="110" cy="244" rx="58" ry="9" fill="#000" opacity=".65" filter="url(#sfShadow)"/>
-            <path d="M83 151 76 218 68 236 96 238 108 170 114 170 126 238 154 236 145 216 137 151Z" fill="#293229" stroke="#111a14" stroke-width="4"/>
-            <path d="m70 229 29 1-3 15H62Zm56 1 29-1 9 16h-34Z" fill="#151c19" stroke="#879078" stroke-width="2"/>
-            <path d="m73 75-22 17-13 66 17 9 24-49 5-33Zm74 0 22 17 13 66-17 9-24-49-5-33Z" fill="url(#sfCloth)" stroke="#18231b" stroke-width="4"/>
-            <path d="m51 151 14 5-5 18-17-5Zm118 0-14 5 5 18 17-5Z" fill="#1a211b"/>
-            <path d="M80 65 68 89l9 70q33 17 66 0l9-70-12-24Z" fill="#313c31" stroke="#141d17" stroke-width="5"/>
-            <path d="m81 76 29 8 29-8 7 77q-36 15-72 0Z" fill="url(#sfVest)" stroke="#9aa184" stroke-opacity=".65" stroke-width="2"/>
-            <path d="m91 87 19 5 19-5 5 61H86Z" fill="#29352c" stroke="#a5a889" stroke-opacity=".5" stroke-width="2"/>
-            <path d="M88 100h17v23H88zm27 0h17v23h-17z" fill="#1c261f" stroke="#899275" stroke-width="2"/>
-            <path d="M91 105h11v5H91zm27 0h11v5h-11z" fill="#a0a27b"/>
-            <path d="M101 58h18v20h-18Z" fill="#9b6d51"/>
-            <path d="M87 42q2-27 23-27t23 27l-5 25q-18 13-36 0Z" fill="#bb8967" stroke="#533e32" stroke-width="3"/>
-            <path d="M80 43q0-34 30-36 31 2 31 36l-9 2-5-18q-17-9-34 0l-5 18Z" fill="url(#sfHelmet)" stroke="#17221a" stroke-width="4"/>
-            <path d="M78 43q32-8 64 0l-4 8q-28-5-56 0Z" fill="#202a22" stroke="#a0a887" stroke-width="2"/>
-            <path d="M91 53q19 7 38 0" fill="none" stroke="#3a3029" stroke-width="3"/>
-            <path d="m147 91 8 4-6 75-10-2Z" fill="#171d19" stroke="#899078" stroke-width="2"/>
-            <path d="m143 111 17 2 3 7-20-1Z" fill="#59634e"/>
-            <path d="m148 164 9 2-2 24-10-1Z" fill="#171d19"/>
-            <path d="m76 92-11 47m79-47 11 47" stroke="#a2a789" stroke-width="4" opacity=".75"/>
-            <path d="M94 154h32" stroke="#d0bd8b" stroke-width="3" opacity=".8"/>
-            <!-- v120: détails tactiques haute définition -->
-            <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m78 84 17 8 15 4 15-4 17-8" stroke="#b0b99a" stroke-width="2" opacity=".8"/>
-              <path d="m83 91-5 57m64-57 5 57" stroke="#141d17" stroke-width="3" opacity=".8"/>
-              <path d="M88 128h18v17H88zM114 128h18v17h-18z" fill="#414b3b" stroke="#9da586" stroke-width="2"/>
-              <path d="M92 132h10m-10 5h10m17-5h10m-10 5h10" stroke="#c2bd91" stroke-width="1" opacity=".7"/>
-              <path d="m72 103-8 35m84-35 8 35" stroke="#c2c7a7" stroke-width="1.4" opacity=".65"/>
-              <path d="m82 161 15 3m26 0 15-3" stroke="#0e1511" stroke-width="3"/>
-              <path d="m83 181 14 1-2 8-14-1zm40 1 14-1 2 8-14 1z" fill="#4b5745" stroke="#87947a" stroke-width="2"/>
-              <path d="m80 195 15 1m30-1 15-1" stroke="#9ca68a" stroke-width="2" opacity=".7"/>
-            </g>
-            <g id="sf-rifle" stroke-linejoin="round">
-              <path d="m145 100 7-2 7 4-2 7-7 2-4-4Z" fill="#202722" stroke="#a0a889" stroke-width="1.5"/>
-              <path d="m151 106 7 2 10 42-5 2-12-39Z" fill="#303a31" stroke="#111a14" stroke-width="2"/>
-              <path d="m161 146 7 1 4 27-7 2-5-24Z" fill="#202820" stroke="#929b7d" stroke-width="1.5"/>
-              <path d="m166 150 9 1 2 4-9 1Z" fill="#a0a889"/>
-              <path d="m153 111 3-2 4 13-3 1Z" fill="#b7ad83"/>
-            </g>
-          </svg>
-        </div>
         <button id="skinNext" class="arrow" aria-label="Soldat suivant">›</button>
       </div>
       <div class="pc-name"><span class="lbl">Votre personnage · <span id="skinIdx">2 / 7</span></span><b id="skinName">Forêt</b><span id="skinDesc"></span></div>
@@ -996,7 +946,6 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
         <span class="lbl">Carte</span>
         <div id="maps" class="chips" role="radiogroup" aria-label="Carte"></div>
         <small id="mapD" class="czn"></small>
-        <div class="env-mode" role="note" style="display:inline-flex;align-items:center;gap:7px;margin-top:9px;padding:7px 10px;border:1px solid rgba(255,140,55,.35);border-radius:9px;background:rgba(255,115,35,.09);color:#ffd0a8;font-size:10px;font-weight:900;letter-spacing:1.1px"><span style="width:7px;height:7px;border-radius:50%;background:#ff7b32;box-shadow:0 0 8px #ff7b32"></span>ENVIRONNEMENTS 2D · 6 CARTES</div>
       </div>
       <div class="card">
         <span class="lbl">Mode de jeu</span>
@@ -2417,7 +2366,7 @@ function hitCrate(c,dmg,src){
     if(src===player)blip(520,.06,.05)
   }
 }
-function damage(t,amt,src,wn){if(src&&src!==t&&src.team&&src.team===t.team)return;if(src&&src.bot&&t.bot&&src!==t&&matchT<210)amt*=matchT<130?.5:.7;
+function damage(t,amt,src,wn){if(src&&src!==t&&src.team&&src.team===t.team)return;if(t===player&&src&&src.bot){if(t.landT!==undefined&&matchT-t.landT<4)return;const g=MDcur.nostat?99:(stats.games|0);if(g<6&&stats.mode!=='cup')amt*=.4+g*.1}if(src&&src.bot&&t.bot&&src!==t&&matchT<210)amt*=matchT<130?.5:.7;
   if(!t.alive||t.air>0||t.inPlane)return;
   if(t.shield>0&&src&&src!==t&&(GUNN.has(wn)||MELEEN.has(wn))){const a=Math.atan2(src.y-t.y,src.x-t.x),face=curW(t)?t.angle+Math.PI:t.angle;if(Math.abs(angDiff(face,a))<1.1){const ab=Math.min(t.shield,amt*.6);t.shield-=ab;amt-=ab;if(t.shield<=.5){t.shield=0;puff(t.x,t.y,10,'#8a6a3a',160,.6,4);if(t===player)toast('Bouclier brisé',1.4)}else puff(t.x+Math.cos(a)*16,t.y+Math.sin(a)*16,3,'#d9b45a',120,.25,2.5);if(src===player&&amt<.5){sfxImpact(t.x,t.y);return}}}
   let d=amt*(1-HELM_RED[t.helmet]);
@@ -3329,12 +3278,36 @@ function drawTunisianRelief(x0,y0,x1,y1){
  ctx.restore();
 }
 
+/* v2.0 — plage et hauts-fonds autour de la carte : la terre ne s'arrête plus sur une ligne droite. */
+function drawWorldRim(x0,y0,x1,y1){
+  if(x0>=0&&y0>=0&&y1<=WS&&x1<=WS)return;
+  const B=190,sand=(MAP&&MAP.shore)||'#e6d3a6',sea=(MAP&&MAP.sea)||['#3fa0aa','#2c8196','#1f5f78'];
+  const stops=g=>{g.addColorStop(0,sand);g.addColorStop(.2,sand);g.addColorStop(.34,'rgba(214,236,224,.95)');g.addColorStop(.46,sea[0]);g.addColorStop(.72,sea[1]);g.addColorStop(1,'rgba(14,95,134,0)')};
+  const cN=Math.min(WS,coastX(0)),cS=Math.min(WS,coastX(WS));
+  if(x0<0){const g=ctx.createLinearGradient(0,0,-B,0);stops(g);ctx.fillStyle=g;ctx.fillRect(-B,0,B+1,WS)}
+  if(y0<0){const g=ctx.createLinearGradient(0,0,0,-B);stops(g);ctx.fillStyle=g;ctx.fillRect(0,-B,cN,B+1)}
+  if(y1>WS){const g=ctx.createLinearGradient(0,WS,0,WS+B);stops(g);ctx.fillStyle=g;ctx.fillRect(0,WS-1,cS,B+1)}
+  if(x0<0&&y0<0){const g=ctx.createRadialGradient(0,0,0,0,0,B);stops(g);ctx.fillStyle=g;ctx.fillRect(-B,-B,B,B)}
+  if(x0<0&&y1>WS){const g=ctx.createRadialGradient(0,WS,0,0,WS,B);stops(g);ctx.fillStyle=g;ctx.fillRect(-B,WS,B,B)}
+  if(y0<0&&x1>cN){const g=ctx.createRadialGradient(cN,0,0,cN,0,B);stops(g);ctx.fillStyle=g;ctx.fillRect(cN,-B,B,B)}
+  if(y1>WS&&x1>cS){const g=ctx.createRadialGradient(cS,WS,0,cS,WS,B);stops(g);ctx.fillStyle=g;ctx.fillRect(cS,WS,B,B)}
+  /* côté mer : on prolonge la dernière ligne de la texture puis on fond vers le large */
+  const GW=ground.width,GH=ground.height,deep='#0e5f86',clear='rgba(14,95,134,0)';
+  const lin=(x,y,w,h,ax,ay,bx,by)=>{const g=ctx.createLinearGradient(ax,ay,bx,by);g.addColorStop(0,clear);g.addColorStop(1,deep);ctx.fillStyle=g;ctx.fillRect(x,y,w,h)};
+  const rad=(x,y,cx,cy)=>{const g=ctx.createRadialGradient(cx,cy,0,cx,cy,B);g.addColorStop(0,clear);g.addColorStop(1,deep);ctx.fillStyle=g;ctx.fillRect(x,y,B,B)};
+  if(x1>WS){ctx.drawImage(ground,GW-1,0,1,GH,WS,0,B,WS);lin(WS-1,0,B+2,WS,WS,0,WS+B,0)}
+  if(y0<0&&x1>cN&&cN<WS){ctx.drawImage(ground,cN*GS,0,(WS-cN)*GS,1,cN,-B,WS-cN,B);lin(cN,-B-1,WS-cN,B+2,0,0,0,-B)}
+  if(y1>WS&&x1>cS&&cS<WS){ctx.drawImage(ground,cS*GS,GH-1,(WS-cS)*GS,1,cS,WS,WS-cS,B);lin(cS,WS-1,WS-cS,B+2,0,WS,0,WS+B)}
+  if(x1>WS&&y0<0){ctx.drawImage(ground,GW-1,0,1,1,WS,-B,B,B);rad(WS,-B,WS,0)}
+  if(x1>WS&&y1>WS){ctx.drawImage(ground,GW-1,GH-1,1,1,WS,WS,B,B);rad(WS,WS,WS,WS)}
+}
 function render(){LOWD=stats.perfC==='low'&&stats.quality==='eco';const z=cam.z;{const pz=z/baseZoom();PK=.0021*pz;PTY=-.27*pz}const sh=reduceMotion?0:cam.shake*10;const ox=(Math.random()-.5)*sh,oy=(Math.random()-.5)*sh;
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0e5f86';ctx.fillRect(0,0,VW,VH);
   const vw=VW/z,vh=VH/z,x0=cam.x-vw/2,y0=cam.y-vh/2,x1=x0+vw,y1=y0+vh;V.x0=x0;V.y0=y0;V.x1=x1;V.y1=y1;
   ctx.setTransform(DPR*z,0,0,DPR*z,DPR*(VW/2-cam.x*z+ox),DPR*(VH/2-cam.y*z+oy));
   const gx0=clamp(x0,0,WS),gy0=clamp(y0,0,WS),gx1=clamp(x1,0,WS),gy1=clamp(y1,0,WS);
   if(gx1>gx0&&gy1>gy0)ctx.drawImage(ground,gx0*GS,gy0*GS,(gx1-gx0)*GS,(gy1-gy0)*GS,gx0,gy0,gx1-gx0,gy1-gy0);
+   drawWorldRim(x0,y0,x1,y1);
    draw2DSurfaceDetail(x0,y0,x1,y1);
    drawWorldMicroDetail(x0,y0,x1,y1);drawRegionalLandmarks(x0,y0,x1,y1);drawTunisianRelief(x0,y0,x1,y1);
    drawCoastalBoats(x0,y0,x1,y1);drawCityTrafficSignals(x0,y0,x1,y1);
@@ -4716,7 +4689,6 @@ function frame(now){if((FR30||stats.fr30)&&game.mode==='play'){FRC^=1;if(FRC){re
   if(!lobbyEl.hidden){try{drawPreview()}catch(previewErr){console.error('Aperçu du soldat:',previewErr)}}
   try{tutoTick(dt);adaptRes(dt);if(game.mode==='play'){if(HSTOP>0)HSTOP-=dt;else update(dt)}else if(game.mode==='lobby')updateLobby(dt);
     render();
-    if(game.mode==='play'&&window.__sf3dBattleReady&&TIME-(window.__sf3dLastSnapshot||0)>.075){window.__sf3dLastSnapshot=TIME;if(window.__sf3dMapKey!==MAP.id){window.__sf3dMapKey=MAP.id;window.__sf3dMapData={mapId:MAP.id,buildings:blds.map((b,i)=>({id:i,x:b.x,y:b.y,w:b.w,h:b.h,height:b.fh||18,style:b.st})),trees:trees.map((t,i)=>({id:i,x:t.x,y:t.y,r:t.r,kind:t.k,rot:t.rot}))};}window.__sf3dBattleData={...window.__sf3dMapData,mode:game.mode,worldSize:WS,ground:ground,matchTime:matchT,player:player?{x:player.veh?player.veh.x:player.x,y:player.veh?player.veh.y:player.y,angle:player.veh&&player.veh.a!==undefined?player.veh.a:player.angle}:null,actors:ents.filter(e=>e.alive).map((e,i)=>({id:e.id??i,x:e.veh?e.veh.x:e.x,y:e.veh?e.veh.y:e.y,angle:e.veh&&e.veh.a!==undefined?e.veh.a:e.angle,team:e.team,alive:e.alive,vehicle:!!e.veh,moveMag:e.moveMag||0,isPlayer:e===player,weaponType:e.veh?null:(curW(e)?.type||null),vehicleSpeed:e.veh?e.veh.sp:0,vehicleDamage:e.veh?clamp(1-e.veh.hp/(VEH[e.veh.type]?.hp||100),0,1):0,hurtT:e.hurtT||0,hp:e.hp??100,firedT:e.firedT||0})),playerTeam:player?.team,impacts:fxImpacts.slice(-24).map((v,i)=>({id:i,x:v.x,y:v.y,t:v.t,k:v.k,a:v.a})),bullets:bullets.slice(-90).map((b,i)=>({id:i,x:b.x,y:b.y,vx:b.vx,vy:b.vy,sn:!!b.sn}))};}else if(game.mode!=='play'&&window.__sf3dBattleData){window.__sf3dBattleData.mode=game.mode;}
     if(game.mode==='end')drawEndHero();
     if(game.mode==='play'&&player){drawMini();updateHUD();uiFire();if(bigOpen)drawMapView(bctx,bigcv.width,WS/2,WS/2,WS,true)}}catch(err){console.error(err)}
   requestAnimationFrame(frame)}
@@ -4833,404 +4805,274 @@ function armBack(){try{if(!histArmed){history.pushState({sf:1},'');histArmed=tru
 addEventListener('popstate',()=>{histArmed=false;if(bigOpen){toggleMap();armBack();return}if(game.mode==='play'){setPause(true);armBack()}else if(game.mode==='paused'){setPause(false);armBack()}});
 function start(){preStart();genWorld();buildSidearms();buildArmory();setSkin(skinI);sndLabel();fillStats();window.__sfReady=1;requestAnimationFrame(t=>{last=t;frame(t)});warmSprites();adsLater()}
 requestAnimationFrame(()=>{const gp=gcBoot();setTimeout(()=>{try{preStart()}catch(e){console.error(e)}gp.then(()=>setTimeout(start,0),()=>setTimeout(start,0))},0)});
+
+/* ===== v2.0 — langues : français / English / العربية =====
+   Le jeu est écrit en français. Ce module traduit l'interface à l'affichage,
+   sans toucher à la logique : en français il ne fait strictement rien. */
+const I18N={
+en:{
+'Votre pseudo':'Your name','Niv.':'Lv.','Niveau':'Level','Armurerie':'Armory','Son : activé':'Sound: on','Son : coupé':'Sound: off',
+'Choisissez votre soldat, votre arme de départ, sautez de l\'avion et tenez face à la tempête de feu.':'Pick your soldier and starting weapon, jump from the plane and outlast the firestorm.',
+'Votre personnage':'Your character','Votre personnage ·':'Your character ·','CHOISIR UN COMBATTANT':'CHOOSE A FIGHTER','9 portraits · sélection directe':'9 portraits · tap to select','COMBATTANT':'FIGHTER','GLADIATEUR':'GLADIATOR',
+'Carte':'Map','ZONE DE COMBAT':'COMBAT ZONE','Mode de jeu':'Game mode','Arme de départ · faites défiler':'Starting weapon · scroll','Personnalisation':'Customization',
+'Accessoire':'Accessory','Chaussures':'Boots','Housse de sac':'Backpack cover',
+'Les maillots et accessoires se débloquent en montant de niveau. Housse de sac : soldats uniquement.':'Jerseys and accessories unlock as you level up. Backpack cover: soldiers only.',
+'Comment jouer':'How to play','Réglages':'Settings','Missions':'Missions','Sur téléphone':'On phone','Au clavier':'On keyboard','Règles':'Rules',
+'Pouce gauche : se déplacer.':'Left thumb: move.',
+'Pouce droit : viser. Poussez jusqu\'au cercle extérieur pour tirer, ou touchez brièvement pour un tir.':'Right thumb: aim. Push to the outer ring to fire, or tap briefly for a single shot.',
+'Touchez une arme en bas pour changer, touchez-la encore pour ranger.':'Tap a weapon at the bottom to switch, tap it again to holster.',
+'Bandage, trousse, boisson : touchez pour vous soigner.':'Bandage, medkit, drink: tap to heal.',
+'Grenade : touchez le bouton, visez avec le pouce droit, relâchez pour lancer. Le petit bouton change de grenade.':'Grenade: tap the button, aim with the right thumb, release to throw. The small button switches grenade type.',
+'Près d\'un véhicule : Monter, puis conduisez avec le pouce gauche.':'Near a vehicle: Get in, then drive with the left thumb.',
+'ZQSD ou WASD : bouger · souris : viser · clic : tirer':'WASD or ZQSD: move · mouse: aim · click: fire',
+'R recharger · E ramasser · 1 / 2 armes · F se soigner · G grenade · T changer de grenade · V véhicule · M carte · Échap pause':'R reload · E pick up · 1 / 2 weapons · F heal · G grenade · T switch grenade · V vehicle · M map · Esc pause',
+'Chaque joueur saute avec l\'arme choisie au menu (une seule arme, peu de munitions). Le reste se trouve sur l\'île.':'Every player jumps with the weapon chosen in the menu (one weapon, little ammo). Everything else is found on the island.',
+'La tempête de feu réduit la zone en 7 phases. Hors zone, vous perdez des PV chaque seconde.':'The firestorm shrinks the zone in 7 phases. Outside the zone you lose HP every second.',
+'Deux largages aériens tombent pendant la partie, avec un Léviathan et du matériel de niveau 3. Suivez la fumée rouge.':'Two airdrops land during the match, with a Léviathan and level 3 gear. Follow the red smoke.',
+'Zone rouge : un bombardement frappe le cercle rouge. Sortez-en ou abritez-vous dans un bâtiment.':'Red zone: an airstrike hits the red circle. Get out or take cover inside a building.',
+'Le gilet absorbe une partie des dégâts, le casque les réduit.':'The vest absorbs part of the damage, the helmet reduces it.',
+'Parties':'Matches','Top 1':'Wins','Record élim.':'Best kills','Élim. totales':'Total kills','Jouer':'Play','Pub :':'Ad:',
+'Fermer':'Close','Les armes que vous trouverez sur l\'île. Au sol, la couleur du cercle indique la rareté :':'The weapons you will find on the island. On the ground, the circle colour shows rarity:',
+'commun':'common','peu commun':'uncommon','rare':'rare','largage':'airdrop',
+'Pause':'Pause','Reprendre':'Resume','Quitter la partie':'Quit match','Confirmer : quitter la partie':'Confirm: quit match',
+'Économie : moins de particules et de détails, image moins fine. Utile sur les téléphones modestes.':'Low: fewer particles and details, softer image. Useful on modest phones.',
+'Son':'Sound','Musique':'Music','Effets':'Effects','Voix : le jeu n\'a pas encore de voix, ce réglage viendra avec elles.':'Voice: the game has no voices yet; this setting will arrive with them.',
+'Commandes tactiles':'Touch controls','Sensibilité':'Sensitivity','Taille':'Size','Opacité':'Opacity','Hauteur':'Height','Taille joueurs':'Player size','Zoom caméra':'Camera zoom',
+'Taille, opacité et hauteur s\'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.':'Size, opacity and height apply to the Fire, Pistol and action buttons. Sensitivity sets the travel of the aiming thumb.',
+'Réinitialiser':'Reset','Revoir le tutoriel':'Replay tutorial','Terminé':'Done','Langue':'Language',
+'Missions du jour':'Daily missions','Elles changent chaque jour. Le mode Entraînement ne compte pas.':'They change every day. Training mode does not count.','Succès':'Achievements',
+'Partie terminée':'Match over','Dernier debout':'Last one standing','Éliminations':'Kills','Dégâts':'Damage','Survie':'Survival','Éliminé par':'Killed by',
+'Rejouer':'Play again','Menu':'Menu','Regarder une pub ·':'Watch an ad ·','XP ×2':'XP ×2','Touchez pour fermer':'Tap to close',
+'en vie':'alive','élim.':'kills','Éliminé':'Eliminated','Tempête de feu · rejoignez la zone':'Firestorm · get back to the zone',
+'Rechargement':'Reloading','Sauter':'Jump','Espace':'Space','Ramasser':'Pick up','Monter':'Get in','Descendre':'Get out','Recharger':'Reload','Grenade':'Grenade',
+'Gilet':'Vest','Casque':'Helmet','PV':'HP','Vide':'Empty','Arme 1':'Weapon 1','Arme 2':'Weapon 2','Poings':'Fists',
+'La tempête avance':'Storm closing in','Dernière zone':'Final zone','Tempête':'Storm','Zone rouge':'Red zone','Vous-même':'Yourself',
+'Classique':'Classic','Rapide':'Quick','Équipe':'Team','Parcours':'Campaign','Entraînement':'Training',
+'30 joueurs · 1 survivant':'30 players · 1 survivor','16 joueurs · tempête plus rapide':'16 players · faster storm',
+'Équipes de 3 contre l’IA · 24 joueurs · vos alliés ont un anneau bleu':'Squads of 3 vs AI · 24 players · your allies have a blue ring',
+'20 joueurs · personne n’a d’arme au départ : fouillez vite':'20 players · nobody starts armed: loot fast',
+'8 adversaires faibles · tempête lente · XP réduit, sans stats ni missions':'8 weak opponents · slow storm · reduced XP, no stats or missions',
+'1 survivant':'1 survivor','équipes':'squads','gagnez pour débloquer la suivante':'win to unlock the next one',
+'Recrue':'Recruit','Soldat':'Soldier','Vétéran':'Veteran','Élite':'Elite','Légende':'Legend',
+'Île de Seddik':'Seddik Island','Côte méditerranéenne':'Mediterranean Coast','Sahara & Sud':'Sahara & South','Grande Ville':'Big City','Forêt profonde':'Deep Forest','Hautes Terres':'Highlands','Djerba & Zarzis':'Djerba & Zarzis','Cap Bon & Kélibia':'Cap Bon & Kelibia',
+'La carte d’origine : médina, port, base militaire et oasis.':'The original map: medina, harbour, military base and oasis.',
+'Villes du nord, végétation dense et mer turquoise. Brise marine.':'Northern towns, dense vegetation and turquoise sea. Sea breeze.',
+'Dunes, oasis et villes du désert. Tempête de sable : visibilité réduite.':'Dunes, oases and desert towns. Sandstorm: reduced visibility.',
+'Ville moderne façon américaine : avenues, gratte-ciel, parkings, parc central et port.':'Modern city: avenues, skyscrapers, car parks, central park and harbour.',
+'Forêt dense de pins et de chênes, sentiers de terre, grand lac, camps de bûcherons et scierie.':'Dense pine and oak forest, dirt trails, a large lake, logging camps and a sawmill.',
+'Collines, forêts d’oliviers et rochers. Brume et bruine.':'Hills, olive groves and rocks. Mist and drizzle.',
+'Île du Sud : Houmt Souk, Midoun, Guellala, Ajim et les plages de Zarzis.':'Southern island: Houmt Souk, Midoun, Guellala, Ajim and the beaches of Zarzis.',
+'Péninsule du Cap Bon : Nabeul, Hammamet, Kélibia, Korba et El Haouaria.':'Cap Bon peninsula: Nabeul, Hammamet, Kelibia, Korba and El Haouaria.',
+'Parcours : la carte dépend de l’étape.':'Campaign: the map depends on the stage.',
+'Pistolet':'Pistol','Pistolet-mitrailleur':'Submachine gun','Fusil à pompe':'Shotgun','Fusil d\'assaut':'Assault rifle','Fusil de précision':'Marksman rifle','Fusil de sniper':'Sniper rifle',
+'Grenade à fragmentation':'Frag grenade','Fumigène':'Smoke grenade','Cocktail incendiaire':'Molotov cocktail','Grenade flash':'Flashbang','Fumi.':'Smoke',
+'Bandage':'Bandage','Trousse de soins':'Medkit','Boisson énergisante':'Energy drink',
+'Aucun':'None','Aucune':'None','Bandeau':'Headband','Lunettes':'Glasses','Laurier':'Laurel','Lunettes dorées':'Golden glasses','Couronne':'Crown','Peinture de guerre':'War paint','Couronne de feu':'Crown of fire',
+'Basse':'Low','Moyenne':'Medium','Haute':'High','Ultra':'Ultra',
+'Premier sang':'First blood','Éliminez un adversaire':'Eliminate an opponent','Chasseur':'Hunter','10 éliminations au total':'10 kills in total','50 éliminations au total':'50 kills in total',
+'Gagnez une partie':'Win a match','Survivant':'Survivor','Finissez dans le Top 5':'Finish in the Top 5','Gladiateur':'Gladiator','Éliminez un adversaire au corps à corps':'Eliminate an opponent in melee',
+'Artificier':'Grenadier','Éliminez un adversaire à la grenade':'Eliminate an opponent with a grenade','Habitué':'Regular','Jouez 25 parties':'Play 25 matches','Atteignez le niveau 10':'Reach level 10',
+'Esprit d’équipe':'Team spirit','Gagnez en mode Équipe':'Win in Team mode',
+'Aucune grenade':'No grenades','Bouclier brisé':'Shield broken','Dirigez votre parachute':'Steer your parachute','Impossible de descendre ici':'Cannot get out here',
+'Impossible de lancer la partie. Réessayez.':'Could not start the match. Try again.','La tempête de feu avance !':'The firestorm is closing in!',
+'Largage au sol : suivez la fumée rouge':'Airdrop landed: follow the red smoke','Largage aérien en approche !':'Airdrop incoming!','Le bandage soigne jusqu’à 75 PV':'Bandages heal up to 75 HP',
+'Le tutoriel recommencera à votre prochaine partie':'The tutorial will restart in your next match','Mode fluide 30 i/s activé':'Smooth 30 fps mode enabled','Nouvelle zone sur la carte':'New zone on the map',
+'Pas d’autre type de grenade':'No other grenade type','Santé déjà au maximum':'Health already full','Survolez l’île et sautez où vous voulez':'Fly over the island and jump wherever you like',
+'Tutoriel terminé !':'Tutorial complete!','Zone rouge : bombardement imminent':'Red zone: airstrike imminent',
+'Quittez le cercle rouge ou abritez-vous dans un bâtiment':'Leave the red circle or take cover inside a building',
+'Cliquez pour lancer vers la souris · T : changer de grenade':'Click to throw toward the mouse · T: switch grenade',
+'Pouce droit : visez, la distance suit la poussée. Relâchez pour lancer.':'Right thumb: aim, distance follows the push. Release to throw.',
+'ZQSD / WASD : bouger · souris : viser et tirer · E : ramasser · R : recharger · F : se soigner · G : grenade · V : véhicule':'WASD / ZQSD: move · mouse: aim and fire · E: pick up · R: reload · F: heal · G: grenade · V: vehicle',
+'Pouce gauche : bouger · pouce droit : viser, poussez jusqu’au bord pour tirer':'Left thumb: move · right thumb: aim, push to the edge to fire',
+'ZQSD / WASD : conduire dans cette direction · V : descendre':'WASD / ZQSD: drive in that direction · V: get out',
+'Pouce gauche : conduire dans cette direction · bouton Descendre pour sortir':'Left thumb: drive in that direction · Get out button to exit',
+'1/4 · Pouce gauche : glissez pour vous déplacer':'1/4 · Left thumb: drag to move','1/4 · ZQSD ou WASD : déplacez-vous':'1/4 · WASD or ZQSD: move around',
+'2/4 · Pouce droit : glissez pour viser, poussez au bord (ou bouton Tirer) pour tirer':'2/4 · Right thumb: drag to aim, push to the edge (or Fire button) to shoot',
+'2/4 · Souris : visez, clic gauche : tirez':'2/4 · Mouse: aim, left click: fire',
+'3/4 · Approchez-vous d’un objet au sol et touchez Ramasser':'3/4 · Walk up to an item on the ground and tap Pick up',
+'3/4 · Approchez-vous d’un objet et appuyez sur E pour le ramasser':'3/4 · Walk up to an item and press E to pick it up',
+'4/4 · 1 / 2 : armes · F : soin · G : grenade · M : carte':'4/4 · 1 / 2: weapons · F: heal · G: grenade · M: map',
+'4/4 · Boutons du bas : armes et soins. Grenade et carte en haut. Bonne chance !':'4/4 · Bottom buttons: weapons and healing. Grenade and map at the top. Good luck!',
+'Vous vous êtes éliminé vous-même.':'You eliminated yourself.','Pris sous le bombardement de la zone rouge.':'Caught in the red zone airstrike.','Emporté par la tempête de feu.':'Taken by the firestorm.',
+'Protection de départ active':'Spawn protection active','Vibration : activée':'Vibration: on','Vibration : désactivée':'Vibration: off',
+'Se débloque au niveau':'Unlocks at level','Vous jouez avec votre dernier personnage débloqué.':'You are playing with your last unlocked character.'
+},
+ar:{
+'Votre pseudo':'اسمك','Niv.':'مستوى','Niveau':'المستوى','Armurerie':'مخزن الأسلحة','Son : activé':'الصوت: يخدم','Son : coupé':'الصوت: مسكّر',
+'Choisissez votre soldat, votre arme de départ, sautez de l\'avion et tenez face à la tempête de feu.':'اختار مقاتلك وسلاحك، اهبط من الطيارة وواجه عاصفة النار.',
+'Votre personnage':'شخصيتك','Votre personnage ·':'شخصيتك ·','CHOISIR UN COMBATTANT':'اختار المقاتل','9 portraits · sélection directe':'9 صور · اختيار مباشر','COMBATTANT':'مقاتل','GLADIATEUR':'مصارع',
+'Carte':'الخريطة','ZONE DE COMBAT':'منطقة القتال','Mode de jeu':'نمط اللعب','Arme de départ · faites défiler':'السلاح الأول · مرّر للاختيار','Personnalisation':'التخصيص',
+'Accessoire':'الإكسسوارات','Chaussures':'الصباط','Housse de sac':'غطاء الحقيبة',
+'Les maillots et accessoires se débloquent en montant de niveau. Housse de sac : soldats uniquement.':'تتحلّ الملابس والإكسسوارات كي تطلع في المستوى. غطاء الحقيبة للمقاتلين فقط.',
+'Comment jouer':'كيفاش تلعب','Réglages':'الإعدادات','Missions':'المهام','Sur téléphone':'على التليفون','Au clavier':'بالكلافيي','Règles':'القوانين',
+'Pouce gauche : se déplacer.':'الإبهام الأيسر: تحرّك.',
+'Pouce droit : viser. Poussez jusqu\'au cercle extérieur pour tirer, ou touchez brièvement pour un tir.':'الإبهام الأيمن: صوّب. ادفع للدائرة الخارجية باش تضرب، ولا المس لمسة خفيفة لطلقة وحدة.',
+'Touchez une arme en bas pour changer, touchez-la encore pour ranger.':'المس سلاح من تحت باش تبدّل، والمسو مرة أخرى باش تخبّيه.',
+'Bandage, trousse, boisson : touchez pour vous soigner.':'ضمادة، حقيبة إسعاف، مشروب: المس باش تداوي روحك.',
+'Grenade : touchez le bouton, visez avec le pouce droit, relâchez pour lancer. Le petit bouton change de grenade.':'القنبلة: المس الزر، صوّب بالإبهام الأيمن، وسيّب باش ترمي. الزر الصغير يبدّل نوع القنبلة.',
+'Près d\'un véhicule : Monter, puis conduisez avec le pouce gauche.':'قرب الكرهبة: اركب، ومبعد سوق بالإبهام الأيسر.',
+'ZQSD ou WASD : bouger · souris : viser · clic : tirer':'ZQSD ولا WASD: تحرّك · الفأرة: صوّب · نقرة: اضرب',
+'Chaque joueur saute avec l\'arme choisie au menu (une seule arme, peu de munitions). Le reste se trouve sur l\'île.':'كل لاعب يهبط بالسلاح اللي اختارو (سلاح واحد وشوية ذخيرة). الباقي تلقاه في الجزيرة.',
+'La tempête de feu réduit la zone en 7 phases. Hors zone, vous perdez des PV chaque seconde.':'عاصفة النار تصغّر المنطقة على 7 مراحل. برّا المنطقة تخسر صحة كل ثانية.',
+'Deux largages aériens tombent pendant la partie, avec un Léviathan et du matériel de niveau 3. Suivez la fumée rouge.':'زوز إنزالات جوية يطيحو في المباراة، فيهم Léviathan وعتاد مستوى 3. تبّع الدخان الأحمر.',
+'Zone rouge : un bombardement frappe le cercle rouge. Sortez-en ou abritez-vous dans un bâtiment.':'المنطقة الحمراء: قصف يضرب الدائرة الحمراء. اخرج منها ولا تخبّى في بناية.',
+'Le gilet absorbe une partie des dégâts, le casque les réduit.':'الدرع يمتصّ جزء من الضرر والخوذة تنقّصو.',
+'Parties':'المباريات','Top 1':'الأول','Record élim.':'أعلى إقصاءات','Élim. totales':'الإقصاءات الكل','Jouer':'إلعب','Pub :':'إشهار:',
+'Fermer':'سكّر','Les armes que vous trouverez sur l\'île. Au sol, la couleur du cercle indique la rareté :':'الأسلحة اللي تلقاها في الجزيرة. لون الدائرة على الأرض يبيّن الندرة:',
+'commun':'عادي','peu commun':'موش شائع','rare':'نادر','largage':'إنزال',
+'Pause':'توقّف','Reprendre':'كمّل','Quitter la partie':'اخرج من المباراة','Confirmer : quitter la partie':'تأكيد: اخرج من المباراة',
+'Économie : moins de particules et de détails, image moins fine. Utile sur les téléphones modestes.':'اقتصادي: تفاصيل أقل وصورة أخف. ينفع للتليفونات الضعيفة.',
+'Son':'الصوت','Musique':'الموسيقى','Effets':'المؤثرات','Voix : le jeu n\'a pas encore de voix, ce réglage viendra avec elles.':'التعليق الصوتي مازال ما تزادش.',
+'Commandes tactiles':'أزرار اللمس','Sensibilité':'الحساسية','Taille':'الحجم','Opacité':'الشفافية','Hauteur':'الارتفاع','Taille joueurs':'حجم اللاعبين','Zoom caméra':'تقريب الكاميرا',
+'Taille, opacité et hauteur s\'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.':'الحجم والشفافية والارتفاع يخصّو أزرار الضرب والمسدس والحركات. الحساسية تعدّل مسافة إبهام التصويب.',
+'Réinitialiser':'رجّع الإعدادات','Revoir le tutoriel':'عاود الشرح','Terminé':'تمّ','Langue':'اللغة',
+'Missions du jour':'مهام اليوم','Elles changent chaque jour. Le mode Entraînement ne compte pas.':'تتبدّل كل يوم. نمط التدريب ما يتحسبش.','Succès':'الإنجازات',
+'Partie terminée':'وفات المباراة','Dernier debout':'آخر واحد واقف','Éliminations':'الإقصاءات','Dégâts':'الضرر','Survie':'وقت البقاء','Éliminé par':'قصّاك',
+'Rejouer':'عاود إلعب','Menu':'القائمة','Regarder une pub ·':'تفرّج في إشهار ·','Touchez pour fermer':'إضغط باش تسكّر',
+'en vie':'عايشين','élim.':'إقصاءات','Éliminé':'تقصّى','Tempête de feu · rejoignez la zone':'عاصفة النار · ارجع للمنطقة',
+'Rechargement':'تعمير','Sauter':'إقفز','Espace':'مسافة','Ramasser':'إلّم','Monter':'اركب','Descendre':'اهبط','Recharger':'عمّر','Grenade':'قنبلة',
+'Gilet':'درع','Casque':'خوذة','PV':'الصحة','Vide':'فارغ','Arme 1':'سلاح 1','Arme 2':'سلاح 2','Poings':'بالبونية',
+'La tempête avance':'العاصفة تقرّب','Dernière zone':'آخر منطقة','Tempête':'العاصفة','Zone rouge':'المنطقة الحمراء','Vous-même':'إنت بيدك',
+'Classique':'كلاسيكي','Rapide':'سريع','Équipe':'فريق','Parcours':'مراحل','Entraînement':'تدريب',
+'30 joueurs · 1 survivant':'30 لاعب · ناجي واحد','16 joueurs · tempête plus rapide':'16 لاعب · العاصفة أسرع',
+'Équipes de 3 contre l’IA · 24 joueurs · vos alliés ont un anneau bleu':'فرق من 3 ضد الذكاء الاصطناعي · 24 لاعب · أصحابك عندهم حلقة زرقاء',
+'20 joueurs · personne n’a d’arme au départ : fouillez vite':'20 لاعب · حتى حد ما عندو سلاح: لوّج بسرعة',
+'8 adversaires faibles · tempête lente · XP réduit, sans stats ni missions':'8 خصوم ضعاف · عاصفة بطيئة · خبرة أقل، من غير إحصائيات',
+'1 survivant':'ناجي واحد','équipes':'فرق','gagnez pour débloquer la suivante':'اربح باش تفتح المرحلة الجاية',
+'Recrue':'مبتدئ','Soldat':'جندي','Vétéran':'متمرّس','Élite':'نخبة','Légende':'أسطورة',
+'Île de Seddik':'جزيرة صدّيق','Côte méditerranéenne':'الساحل التونسي','Sahara & Sud':'الصحراء والجنوب','Grande Ville':'المدينة الكبيرة','Forêt profonde':'الغابة','Hautes Terres':'المرتفعات','Djerba & Zarzis':'جربة وجرجيس','Cap Bon & Kélibia':'الوطن القبلي وقليبية',
+'La carte d’origine : médina, port, base militaire et oasis.':'المدينة العتيقة والميناء والقاعدة العسكرية والواحة.',
+'Villes du nord, végétation dense et mer turquoise. Brise marine.':'مدن الشمال التونسي، خضرة كثيفة وبحر فيروزي.',
+'Dunes, oasis et villes du désert. Tempête de sable : visibilité réduite.':'كثبان وواحات ومدن الجنوب. عاصفة رملية تنقص الرؤية.',
+'Ville moderne façon américaine : avenues, gratte-ciel, parkings, parc central et port.':'شوارع عريضة ومباني عالية وميناء وفضاءات حضرية.',
+'Forêt dense de pins et de chênes, sentiers de terre, grand lac, camps de bûcherons et scierie.':'غابة صنوبر وبلوط ومسالك ترابية وبحيرة.',
+'Collines, forêts d’oliviers et rochers. Brume et bruine.':'تلال وزياتين وصخور وضباب خفيف.',
+'Île du Sud : Houmt Souk, Midoun, Guellala, Ajim et les plages de Zarzis.':'جزيرة الجنوب: حومة السوق وميدون وڨلالة وشواطئ جرجيس.',
+'Péninsule du Cap Bon : Nabeul, Hammamet, Kélibia, Korba et El Haouaria.':'الوطن القبلي: نابل والحمامات وقليبية والهوارية.',
+'Parcours : la carte dépend de l’étape.':'المراحل: الخريطة تتبدّل حسب المرحلة.',
+'Pistolet':'مسدس','Pistolet-mitrailleur':'رشاش خفيف','Fusil à pompe':'بندقية صيد','Fusil d\'assaut':'بندقية هجومية','Fusil de précision':'بندقية دقيقة','Fusil de sniper':'قنّاصة',
+'Grenade à fragmentation':'قنبلة يدوية','Fumigène':'قنبلة دخان','Cocktail incendiaire':'مولوتوف','Grenade flash':'قنبلة ضوئية',
+'Bandage':'ضمادة','Trousse de soins':'حقيبة إسعاف','Boisson énergisante':'مشروب طاقة',
+'Aucun':'بلاش','Aucune':'بلاش','Bandeau':'عصابة','Lunettes':'نظارات','Laurier':'إكليل','Lunettes dorées':'نظارات ذهبية','Couronne':'تاج','Peinture de guerre':'طلاء الحرب','Couronne de feu':'تاج النار',
+'Basse':'منخفضة','Moyenne':'متوسطة','Haute':'عالية','Ultra':'قصوى',
+'Premier sang':'أول دم','Éliminez un adversaire':'قصّي خصم','Chasseur':'صيّاد','10 éliminations au total':'10 إقصاءات في الجملة','50 éliminations au total':'50 إقصاء في الجملة',
+'Gagnez une partie':'اربح مباراة','Survivant':'ناجي','Finissez dans le Top 5':'كمّل في أول 5','Gladiateur':'مصارع','Éliminez un adversaire au corps à corps':'قصّي خصم باليدين',
+'Artificier':'خبير متفجرات','Éliminez un adversaire à la grenade':'قصّي خصم بقنبلة','Habitué':'وفيّ','Jouez 25 parties':'إلعب 25 مباراة','Atteignez le niveau 10':'أوصل للمستوى 10',
+'Esprit d’équipe':'روح الفريق','Gagnez en mode Équipe':'اربح في نمط الفريق',
+'Aucune grenade':'ما عندكش قنابل','Bouclier brisé':'الدرع تكسّر','Dirigez votre parachute':'وجّه الباراشوت','Impossible de descendre ici':'ما تنجمش تهبط هوني',
+'Impossible de lancer la partie. Réessayez.':'ما نجمناش نبداو المباراة. عاود جرّب.','La tempête de feu avance !':'عاصفة النار تقرّب!',
+'Largage au sol : suivez la fumée rouge':'الإنزال وصل: تبّع الدخان الأحمر','Largage aérien en approche !':'إنزال جوي جاي!','Le bandage soigne jusqu’à 75 PV':'الضمادة تداوي حتى 75 صحة',
+'Le tutoriel recommencera à votre prochaine partie':'الشرح يتعاود في المباراة الجاية','Mode fluide 30 i/s activé':'نمط 30 صورة/ث تفعّل','Nouvelle zone sur la carte':'منطقة جديدة على الخريطة',
+'Pas d’autre type de grenade':'ما فمّاش نوع آخر من القنابل','Santé déjà au maximum':'الصحة كاملة','Survolez l’île et sautez où vous voulez':'طير فوق الجزيرة واقفز وين تحب',
+'Tutoriel terminé !':'كمّل الشرح!','Zone rouge : bombardement imminent':'المنطقة الحمراء: قصف قريب',
+'Quittez le cercle rouge ou abritez-vous dans un bâtiment':'اخرج من الدائرة الحمراء ولا تخبّى في بناية',
+'Pouce droit : visez, la distance suit la poussée. Relâchez pour lancer.':'الإبهام الأيمن: صوّب، والمسافة حسب الدفعة. سيّب باش ترمي.',
+'Pouce gauche : bouger · pouce droit : viser, poussez jusqu’au bord pour tirer':'الإبهام الأيسر: تحرّك · الأيمن: صوّب، ادفع للطرف باش تضرب',
+'Pouce gauche : conduire dans cette direction · bouton Descendre pour sortir':'الإبهام الأيسر: سوق في الاتجاه هذا · زر اهبط باش تخرج',
+'1/4 · Pouce gauche : glissez pour vous déplacer':'1/4 · الإبهام الأيسر: اسحب باش تتحرّك',
+'2/4 · Pouce droit : glissez pour viser, poussez au bord (ou bouton Tirer) pour tirer':'2/4 · الإبهام الأيمن: اسحب باش تصوّب، ادفع للطرف (ولا زر الضرب) باش تضرب',
+'3/4 · Approchez-vous d’un objet au sol et touchez Ramasser':'3/4 · قرّب لحاجة على الأرض والمس إلّم',
+'4/4 · Boutons du bas : armes et soins. Grenade et carte en haut. Bonne chance !':'4/4 · أزرار تحت: أسلحة ودواء. القنبلة والخريطة الفوق. بالتوفيق!',
+'Vous vous êtes éliminé vous-même.':'قصّيت روحك بيدك.','Pris sous le bombardement de la zone rouge.':'طحت تحت قصف المنطقة الحمراء.','Emporté par la tempête de feu.':'هزّتك عاصفة النار.',
+'Protection de départ active':'حماية البداية تخدم','Vibration : activée':'الاهتزاز: يخدم','Vibration : désactivée':'الاهتزاز: مسكّر',
+'Se débloque au niveau':'يتحلّ في المستوى','Vous jouez avec votre dernier personnage débloqué.':'تلعب بآخر شخصية محلولة.'
+}};
+/* Phrases à variables : [expression, {langue: remplacement}] */
+const I18N_RX=[
+[/^Zone (\d+)\/(\d+) dans$/,{en:'Zone $1/$2 in',ar:'المنطقة $1/$2 بعد'}],
+[/^sur (\d+) soldats$/,{en:'of $1 soldiers',ar:'من $1 مقاتل'}],
+[/^(\d+) joueurs$/,{en:'$1 players',ar:'$1 لاعب'}],
+[/^(\d+) combattants$/,{en:'$1 fighters',ar:'$1 مقاتل'}],
+[/^Étape (\d+)\/(\d+)$/,{en:'Stage $1/$2',ar:'المرحلة $1/$2'}],
+[/^menace (\d+)\/100$/,{en:'threat $1/100',ar:'الخطر $1/100'}],
+[/^Qualité : (.+)$/,{en:(m,a)=>'Quality: '+trS(a),ar:(m,a)=>'الجودة: '+trS(a)}],
+[/^Qualité ajustée : (.+)$/,{en:(m,a)=>'Quality adjusted: '+trS(a),ar:(m,a)=>'تعدّلت الجودة: '+trS(a)}],
+[/^Ramasser (.+)$/,{en:'Pick up $1',ar:'إلّم $1'}],
+[/^Plus de munitions (.+)$/,{en:'Out of $1 ammo',ar:'وفات ذخيرة $1'}],
+[/^Tombé au combat face à (.+)\.$/,{en:'Killed in action by $1.',ar:'طحت في المعركة قدّام $1.'}],
+[/^L’île est à vous, (.+)\.$/,{en:'The island is yours, $1.',ar:'الجزيرة متاعك يا $1.'}],
+[/^(.+) (\d+) éliminations?$/,{en:'$1 $2 kills',ar:'$1 $2 إقصاء'}],
+[/^(\d+) éliminations?$/,{en:'$1 kills',ar:'$1 إقصاء'}],
+[/^Éliminez (\d+) adversaires?$/,{en:'Eliminate $1 opponents',ar:'قصّي $1 خصوم'}],
+[/^Jouez (\d+) parties$/,{en:'Play $1 matches',ar:'إلعب $1 مباريات'}],
+[/^Survivez (\d+) minutes au total$/,{en:'Survive $1 minutes in total',ar:'ابقى حي $1 دقايق في الجملة'}],
+[/^Finissez (\d+) fois dans le Top 5$/,{en:'Finish in the Top 5 $1 time(s)',ar:'كمّل في أول 5 · $1 مرات'}],
+[/^Éliminez (\d+) adversaires? au corps à corps$/,{en:'Eliminate $1 opponent(s) in melee',ar:'قصّي $1 خصوم باليدين'}],
+[/^Éliminez (\d+) adversaires? à la grenade$/,{en:'Eliminate $1 opponent(s) with a grenade',ar:'قصّي $1 خصوم بقنبلة'}],
+[/^Infligez (\d+) points de dégâts$/,{en:'Deal $1 damage',ar:'دير $1 ضرر'}],
+[/^Terminée$/,{en:'Completed',ar:'كملت'}],
+[/^récompense (.+)$/,{en:'reward $1',ar:'الجائزة $1'}],
+[/^récompense$/,{en:'reward',ar:'الجائزة'}],
+[/^Niv\. (\d+)$/,{en:'Lv. $1',ar:'مستوى $1'}],
+[/^niv\.(\d+)$/,{en:'lv.$1',ar:'م.$1'}],
+[/^Parcours étape (\d+)$/,{en:'Campaign stage $1',ar:'المرحلة $1'}],
+[/^parcours étape (\d+)$/,{en:'campaign stage $1',ar:'المرحلة $1'}],
+[/^Se débloque$/,{en:'Unlocks',ar:'يتحلّ'}],
+[/^Mission accomplie$/,{en:'Mission complete',ar:'المهمة كملت'}],
+[/^Étape réussie$/,{en:'Stage cleared',ar:'المرحلة نجحت'}],
+[/^étape (\d+) débloquée$/,{en:'stage $1 unlocked',ar:'المرحلة $1 تحلّت'}],
+[/^Se débloque au niveau (\d+)\. Vous jouez avec votre dernier personnage débloqué\.$/,{en:'Unlocks at level $1. You are playing with your last unlocked character.',ar:'يتحلّ في المستوى $1. تلعب بآخر شخصية محلولة.'}],
+[/^verrouillé$/,{en:'locked',ar:'مسكّر'}],
+[/^(.+) Villes : (.+)$/,{en:(m,a,b)=>trS(a)+' Towns: '+b,ar:(m,a,b)=>trS(a)+' المدن: '+b}],
+[/^XP doublée$/,{en:'XP doubled',ar:'الخبرة تضاعفت'}]
+].filter(r=>r[1]);
+let LANG='fr';
+const LANGS=['fr','en','ar'],LANG_NAME={fr:'Français',en:'English',ar:'العربية'};
+function trOne(k){const d=I18N[LANG];if(!d)return k;if(Object.prototype.hasOwnProperty.call(d,k))return d[k];
+  for(const r of I18N_RX){if(r[0].test(k)){const v=r[1][LANG];if(v!==undefined)return k.replace(r[0],v)}}
+  const low=k.charAt(0).toUpperCase()+k.slice(1);if(low!==k&&Object.prototype.hasOwnProperty.call(d,low)){const v=d[low];return v.charAt(0).toLowerCase()+v.slice(1)}
+  return null}
+/* Traduit une chaîne française ; renvoie l'original si rien ne correspond. */
+function trS(s){if(LANG==='fr'||s==null)return s;s=String(s);const k=s.trim();if(!k||!/[A-Za-zÀ-ÿ]/.test(k))return s;
+  if(k.startsWith('✓ ')){const r=trS(k.slice(2));return s.replace(k,'✓ '+r)}
+  let v=trOne(k);
+  if(v==null&&k.indexOf(' · ')>0){let hit=false;v=k.split(' · ').map(p=>{let t=trOne(p);if(t==null&&p.indexOf(' : ')>0){const q=p.split(' : ').map(x=>{const y=trOne(x);if(y!=null)hit=true;return y==null?x:y});return q.join(LANG==='en'?': ':' : ')}if(t!=null)hit=true;return t==null?p:t}).join(' · ');if(!hit)v=null}
+  if(v==null&&k.indexOf(' : ')>0){let hit=false;v=k.split(' : ').map(p=>{const t=trOne(p);if(t!=null)hit=true;return t==null?p:t}).join(LANG==='en'?': ':' : ');if(!hit)v=null}
+  if(v==null)return s;return s.replace(k,v)}
+const TR_ORIG=new WeakMap(),TR_SET=new WeakMap();let TR_OBS=null,TR_BUSY=false;
+function trNode(n){const cur=n.nodeValue;if(TR_SET.get(n)===cur&&TR_ORIG.has(n))return;TR_ORIG.set(n,cur);const t=trS(cur);TR_SET.set(n,t);if(t!==cur)n.nodeValue=t}
+function trWalk(root){if(!root)return;if(root.nodeType===3){trNode(root);return}if(root.nodeType!==1||root.tagName==='SCRIPT'||root.tagName==='STYLE'||root.tagName==='CANVAS'||root.id==='pname')return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;const L=[];while((n=w.nextNode()))L.push(n);for(const x of L)trNode(x)}
+function trRestore(){const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(TR_ORIG.has(n)&&TR_SET.get(n)===n.nodeValue){const o=TR_ORIG.get(n);if(o!==n.nodeValue)n.nodeValue=o}TR_ORIG.delete(n);TR_SET.delete(n)}}
+const TR_ATTR=[['#pname','placeholder','Votre pseudo']];
+function setLang(l,save){if(!LANGS.includes(l))l='fr';TR_BUSY=true;
+  if(TR_OBS){TR_OBS.disconnect();TR_OBS=null}
+  trRestore();LANG=l;
+  const rtl=l==='ar',H=document.documentElement;H.lang=l==='ar'?'ar-TN':l;H.dataset.sfLang=l;
+  for(const id of ['lobby','armory','pause','opts','miss','end'])if($('#'+id))$('#'+id).dir=rtl?'rtl':'ltr';
+  for(const a of TR_ATTR){const el=$(a[0]);if(el)el.setAttribute(a[1],trS(a[2]))}
+  const nx=LANGS[(LANGS.indexOf(l)+1)%LANGS.length];const b=$('#langBtn');if(b){b.textContent=LANG_NAME[nx];b.setAttribute('aria-label','Language · Langue · اللغة : '+LANG_NAME[nx])}
+  if(l!=='fr'){trWalk(document.body);
+    TR_OBS=new MutationObserver(ms=>{if(TR_BUSY)return;TR_BUSY=true;try{for(const m of ms){if(m.type==='characterData')trNode(m.target);else for(const a of m.addedNodes)trWalk(a)}}finally{TR_BUSY=false}});
+    TR_OBS.observe(document.body,{subtree:true,childList:true,characterData:true})}
+  TR_BUSY=false;
+  if(save){stats.lang=l;saveStats()}}
+function detectLang(){if(LANGS.includes(stats.lang))return stats.lang;const n=(navigator.language||'fr').toLowerCase();return n.startsWith('ar')?'ar':n.startsWith('fr')?'fr':'en'}
+$('#langBtn').addEventListener('click',()=>{setLang(LANGS[(LANGS.indexOf(LANG)+1)%LANGS.length],true)});
+
+/* ===== v2.0 — grille de portraits : vrais personnages du jeu, sélection directe ===== */
+const ROSTER_IDS=['raider','lion','vipere','ours','roc','vent','ombre','hannibal','mirmillon','spartiate'];
+function rosterMark(){document.querySelectorAll('#sfRosterGrid .sf-portrait').forEach(el=>el.setAttribute('aria-pressed',String(Number(el.dataset.index)===skinI)))}
+function paintRoster(){const root=$('#sfRosterGrid');if(!root)return;
+  const chosen=[];for(const id of ROSTER_IDS){const i=SOLDIERS.findIndex(x=>x.id===id);if(i>=0&&!chosen.includes(i)&&chosen.length<9)chosen.push(i)}
+  for(let i=0;chosen.length<9&&i<SOLDIERS.length;i++)if(!chosen.includes(i))chosen.push(i);
+  root.innerHTML='';
+  for(const i of chosen){const sk=SOLDIERS[i],btn=document.createElement('button');btn.type='button';btn.className='sf-portrait';btn.dataset.index=String(i);
+    const c2=document.createElement('canvas');c2.width=180;c2.height=190;const label=document.createElement('b');label.textContent=sk.n;const tag=document.createElement('small');tag.textContent=sk.sp?'GLADIATEUR':'COMBATTANT';
+    btn.append(c2,label,tag);
+    try{drawShowcase(c2.getContext('2d'),180,{sk,skin:'#c8946a',slot:{type:stats.sidearm,mag:1},vest:0,cust:stats.cust})}catch(e){}
+    btn.addEventListener('click',()=>{setSkin(i);try{drawPreview()}catch(e){}});root.appendChild(btn)}
+  rosterMark()}
+{const _ss=setSkin;setSkin=function(i){_ss(i);rosterMark()}}
+(function waitReady(){if(window.__sfReady){try{paintRoster()}catch(e){console.warn(e)}}else setTimeout(waitReady,150)})();
+setLang(detectLang(),false);
+
 if('serviceWorker' in navigator&&!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())){let swReloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!swReloading){swReloading=true;location.reload()}});addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(reg=>reg.update()).catch(()=>{})})}
 })();
 </script>
 
-<script type="module">
-/* SEDDIK FIRE 3D SHOWROOM v1 — procedural WebGL assets, gracefully falls back to the 2D preview. */
-(async()=>{
- const canvas=document.getElementById('sf3dCanvas'),old=document.getElementById('skinCv');
- if(!canvas||!old)return;
- try{
-  const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
-  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));renderer.setSize(290,290,false);
-  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x111820,10,23);
-  const camera=new THREE.PerspectiveCamera(34,1,.1,80);camera.position.set(5.7,4.2,8.4);camera.lookAt(0,1.15,0);
-  scene.add(new THREE.HemisphereLight(0xc8e5ff,0x453522,2.1));
-  const key=new THREE.DirectionalLight(0xffd1a0,3.1);key.position.set(4,8,5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);scene.add(key);
-  const rim=new THREE.PointLight(0x3d9dff,24,13);rim.position.set(-4,3,-3);scene.add(rim);
-  const mat=(color,roughness=.78,metalness=.05)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
-  const olive=mat(0x4d5c3e),dark=mat(0x202a25),cloth=mat(0x687456),metal=mat(0x39434a,.35,.78),black=mat(0x171b20,.38,.65),skin=mat(0xb98768),glass= new THREE.MeshStandardMaterial({color:0x182b35,roughness:.18,metalness:.5});
-  const root=new THREE.Group();scene.add(root);
-  const ground=new THREE.Mesh(new THREE.CylinderGeometry(3.5,3.7,.22,64),mat(0x424c42));ground.position.y=-.15;ground.receiveShadow=true;root.add(ground);
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(3.05,.035,8,80),mat(0xe36c32,.45,.4));ring.rotation.x=Math.PI/2;ring.position.y=-.02;root.add(ring);
-  // Raised terrain island with rock strata and grass patches.
-  const island=new THREE.Mesh(new THREE.CylinderGeometry(2.65,2.35,.38,48),mat(0x8d7956));island.position.set(0,.12,0);island.castShadow=true;island.receiveShadow=true;root.add(island);
-  const turf=new THREE.Mesh(new THREE.CylinderGeometry(2.62,2.62,.08,48),mat(0x64764a));turf.position.y=.34;turf.receiveShadow=true;root.add(turf);
-  for(let i=0;i<9;i++){const b=new THREE.Mesh(new THREE.BoxGeometry(.48+Math.random()*.5,.45+Math.random()*.9,.48+Math.random()*.5),mat(i%2?0x8b8066:0x9b8b70));const a=i*2.399;b.position.set(Math.cos(a)*(1.5+(i%3)*.22),.45+b.geometry.parameters.height/2,Math.sin(a)*(1.5+(i%3)*.22));b.castShadow=true;b.receiveShadow=true;root.add(b)}
-  // Character rig: boots, articulated limbs, tactical torso, plate carrier and helmet.
-  const soldier=new THREE.Group();soldier.position.set(-.55,.42,.15);root.add(soldier);
-  const sphere=(parent,g,m,x,y,z,sx=1,sy=1,sz=1)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o};
-  const box=(p,w,h,d,m,x,y,z)=>sphere(p,new THREE.BoxGeometry(w,h,d),m,x,y,z);
-  const cyl=(p,r1,r2,h,m,x,y,z)=>sphere(p,new THREE.CylinderGeometry(r1,r2,h,12),m,x,y,z);
-  for(const x of [-.19,.19]){box(soldier,.2,.16,.34,black,x,.13,.03);cyl(soldier,.105,.12,.66,olive,x,.49,0)}
-  box(soldier,.62,.72,.34,cloth,0,1.05,0);
-  box(soldier,.49,.52,.37,olive,0,1.08,.2);
-  for(let i=0;i<4;i++)box(soldier,.09,.22,.08,dark,-.18+i*.12,1.04,.405);
-  for(const x of [-.38,.38]){const arm=cyl(soldier,.105,.14,.63,olive,x,1.02,.02);arm.rotation.z=x<0?-.22:.22; sphere(soldier,new THREE.SphereGeometry(.12,12,10),dark,x, .68,.13)}
-  cyl(soldier,.105,.11,.17,skin,0,1.52,0);
-  sphere(soldier,new THREE.SphereGeometry(.235,20,16),skin,0,1.79,0,1,1.15,.95);
-  sphere(soldier,new THREE.SphereGeometry(.25,20,12,0,Math.PI*2,0,Math.PI*.58),olive,0,1.91,-.015,1.06,.72,1.02);
-  box(soldier,.34,.08,.12,dark,0,1.82,.22);
-  // Detailed assault rifle held across the chest.
-  const rifle=new THREE.Group();rifle.position.set(.12,1.02,.48);rifle.rotation.z=-.18;soldier.add(rifle);
-  box(rifle,.82,.09,.11,metal,0,0,0);box(rifle,.34,.14,.13,olive,-.22,-.12,0);box(rifle,.22,.08,.1,dark,.34,-.02,0);
-  cyl(rifle,.035,.035,.48,black,.55,.015,0).rotation.z=Math.PI/2;
-  box(rifle,.16,.16,.12,dark,-.38,.06,0);box(rifle,.12,.18,.1,black,.02,-.13,0);
-  box(rifle,.12,.08,.08,metal,.05,.09,0);
-  // Tactical 4x4 vehicle, wheels and windows.
-  const car=new THREE.Group();car.position.set(1.35,.48,.25);car.rotation.y=-.5;root.add(car);
-  box(car,1.15,.32,.72,olive,0,.27,0);box(car,.67,.36,.62,dark,-.03,.59,0);
-  box(car,.58,.25,.025,glass,-.03,.62,.32);box(car,.58,.25,.025,glass,-.03,.62,-.32);
-  box(car,.22,.1,.75,metal,.52,.42,0);
-  for(const x of [-.39,.39])for(const z of [-.39,.39]){const w=sphere(car,new THREE.CylinderGeometry(.17,.17,.12,20),black,x,.16,z);w.rotation.x=Math.PI/2;const hub=sphere(car,new THREE.CylinderGeometry(.075,.075,.125,16),metal,x,.16,z);hub.rotation.x=Math.PI/2}
-  const head=mat(0xffd58a,.25,.15);for(const z of [-.23,.23])sphere(car,new THREE.SphereGeometry(.07,12,10),head,.59,.34,z);
-  // Small trees and rocks bring depth to the island diorama.
-  for(let i=0;i<7;i++){const a=i*2.4,x=Math.cos(a)*2.05,z=Math.sin(a)*2.05; cyl(root,.045,.06,.35,mat(0x59452d),x,.58,z);sphere(root,new THREE.ConeGeometry(.28,.72,8),mat(0x38583a),x,.98,z)}
-  // v2 detail pass: tactical silhouette, weapon optics, vehicle fittings and a miniature city block.
-  const backpack=box(soldier,.34,.48,.23,dark,0,1.12,-.29);
-  box(soldier,.39,.08,.26,olive,0,.79,-.28);
-  for(const x of [-.24,.24]){
-   box(soldier,.12,.18,.12,olive,x,1.36,.015);
-   box(soldier,.13,.13,.1,dark,x,.78,.02);
-   box(soldier,.22,.09,.12,black,x,.22,.04);
-   box(soldier,.065,.34,.075,dark,x*.55,1.12,.245);
-  }
-  for(let i=0;i<3;i++){box(soldier,.11,.12,.08,olive,-.23+i*.23,.91,.24);box(soldier,.1,.1,.08,dark,-.23+i*.23,1.25,-.42)}
-  // v3 — intervention-police equipment pass: helmet, goggles, face cover, carrier and protective pads.
-  const policeBlack=mat(0x11191a,.52,.18),rubber=mat(0x171b1b,.88),oliveEdge=mat(0x9aa184,.72),lens= new THREE.MeshStandardMaterial({color:0x152a32,roughness:.16,metalness:.68,emissive:0x07141a,emissiveIntensity:.22});
-  // Tactical helmet shell with reinforced rim and side rails.
-  sphere(soldier,new THREE.SphereGeometry(.255,24,16,0,Math.PI*2,0,Math.PI*.58),policeBlack,0,1.94,-.015,1.12,.82,1.06);
-  box(soldier,.48,.045,.28,oliveEdge,0,1.79,.015);
-  box(soldier,.53,.055,.055,black,0,1.77,.035);
-  for(const x of[-.245,.245]){
-    sphere(soldier,new THREE.SphereGeometry(.075,12,10),metal,x,1.82,.015,.85,1,.55);
-    box(soldier,.055,.16,.08,policeBlack,x,1.86,-.015);
-    box(soldier,.035,.19,.045,oliveEdge,x*1.04,1.88,.02);
-  }
-  // Wide dual-lens ballistic goggles and bridge.
-  for(const x of[-.105,.105]){
-    const g=sphere(soldier,new THREE.BoxGeometry(.19,.105,.045),lens,x,1.84,.225);
-    g.rotation.z=x<0?-.06:.06;
-    box(soldier,.205,.018,.055,policeBlack,x,1.895,.225);
-    box(soldier,.018,.12,.05,metal,x+(x<0?-.105:.105),1.84,.218);
-  }
-  box(soldier,.045,.035,.052,metal,0,1.84,.252);
-  // Balaclava / lower-face protection and reinforced collar.
-  sphere(soldier,new THREE.SphereGeometry(.16,18,12,0,Math.PI*2,0,Math.PI*.58),policeBlack,0,1.69,.11,1,.76,.72);
-  box(soldier,.32,.09,.12,black,0,1.57,.12);
-  box(soldier,.68,.12,.39,policeBlack,0,1.43,.035);
-  // Plate carrier panels, shoulder straps and reinforced webbing.
-  box(soldier,.53,.48,.075,policeBlack,0,1.08,.405);
-  for(const x of[-.22,.22]){
-    const strap=box(soldier,.075,.5,.085,oliveEdge,x,1.13,.445);strap.rotation.z=x<0?-.12:.12;
-    box(soldier,.12,.2,.09,policeBlack,x*1.7,1.36,.39);
-    box(soldier,.1,.12,.1,metal,x*1.7,1.36,.445);
-  }
-  box(soldier,.39,.045,.035,metal,0,1.32,.455);
-  for(let i=0;i<3;i++){
-    const x=-.17+i*.17;
-    box(soldier,.135,.15,.09,olive,x,1.08,.465);
-    box(soldier,.11,.025,.018,oliveEdge,x,1.15,.515);
-    box(soldier,.135,.105,.09,dark,x,.88,.455);
-    box(soldier,.11,.018,.018,metal,x,.91,.505);
-  }
-  // Shoulder insignia, radio, antenna, belt and utility pouches.
-  box(soldier,.13,.12,.06,metal,-.32,1.32,.12);
-  box(soldier,.105,.17,.075,policeBlack,.34,1.2,.12);
-  cyl(soldier,.012,.012,.34,black,.39,1.45,.1).rotation.z=-.08;
-  box(soldier,.66,.095,.39,black,0,.72,.035);
-  for(const x of[-.27,-.12,.12,.27])box(soldier,.105,.13,.11,olive,x,.69,.25);
-  // Forearm guards, gloves, elbow and knee protection.
-  for(const x of[-.43,.43]){
-    const fore=box(soldier,.17,.23,.18,policeBlack,x,.79,.12);fore.rotation.z=x<0?-.18:.18;
-    sphere(soldier,new THREE.SphereGeometry(.105,12,10),rubber,x,.62,.16);
-    box(soldier,.19,.11,.19,oliveEdge,x,.59,.16);
-  }
-  for(const x of[-.19,.19]){
-    box(soldier,.23,.18,.09,policeBlack,x,.38,.12);
-    box(soldier,.19,.045,.025,oliveEdge,x,.4,.17);
-    box(soldier,.22,.14,.36,black,x,.18,.04);
-    box(soldier,.21,.045,.34,oliveEdge,x,.105,.055);
-  }
-  // High-ankle boots, toe caps and visible tread.
-  for(const x of[-.19,.19]){
-    box(soldier,.22,.12,.38,policeBlack,x,.065,.1);
-    box(soldier,.23,.035,.39,rubber,x,.018,.105);
-    for(let i=0;i<3;i++)box(soldier,.09,.018,.012,metal,x-.045+i*.045,.105,.295);
-  }
-  // Stitching and reflective trim make the dark tactical uniform legible.
-  for(const x of[-.31,.31])box(soldier,.025,.58,.018,oliveEdge,x,1.04,.205);
-  // Weapon rail, optic, front sight, handguard grooves and sling.
-  box(rifle,.46,.045,.15,black,.02,.085,0);
-  cyl(rifle,.055,.055,.12,metal,-.02,.17,0);
-  cyl(rifle,.042,.042,.08,glass,-.02,.235,0);
-  box(rifle,.045,.12,.07,metal,.39,.1,0);
-  for(let i=0;i<5;i++)box(rifle,.035,.025,.16,dark,-.04+i*.085,-.015,.02);
-  const sling=sphere(rifle,new THREE.TorusGeometry(.23,.018,6,24),olive,-.03,-.12,-.09,1,1.45,.6);sling.rotation.z=.25;
-  // Vehicle details: bumpers, grille, mirrors, spare wheel and rear rack.
-  box(car,1.25,.11,.12,black,-.02,.13,.39);
-  box(car,1.25,.11,.12,black,-.02,.13,-.39);
-  for(let i=0;i<6;i++)box(car,.035,.13,.018,metal,.38+i*.055,.34,.374);
-  for(const z of [-.39,.39]){box(car,.12,.07,.12,black,-.34,.84,z*1.04);box(car,.1,.1,.08,glass,-.34,.84,z*1.13)}
-  const spare=sphere(car,new THREE.TorusGeometry(.145,.055,8,20),black,-.48,.48,-.02);spare.rotation.y=Math.PI/2;
-  box(car,.72,.045,.48,metal,-.03,.83,0);
-  // Additional miniature settlement on the island, with layered roofs and lit windows.
-  for(let i=0;i<5;i++){
-   const a=i*1.257+.4,x=Math.cos(a)*1.15,z=Math.sin(a)*1.15;
-   const h=.55+(i%3)*.18,w=.38+(i%2)*.12;
-   const house=box(root,w,h,w,mat(i%2?0xc1ad8a:0x9b927d),x,.39+h/2,z);
-   box(root,w*1.12,.08,w*1.12,mat(0x65594c),x,.39+h+.04,z);
-   for(const side of [-1,1])box(root,.07,.11,.018,mat(0x263c48,.4,.25),x+side*w*.22,.48+h*.38,z+w/2+.012);
-  }
-  // Low vegetation, rocks and shoreline boulders add scale to the map diorama.
-  for(let i=0;i<18;i++){
-   const a=i*2.4,r=2.28+(i%3)*.08,x=Math.cos(a)*r,z=Math.sin(a)*r;
-   sphere(root,new THREE.DodecahedronGeometry(.09+(i%4)*.025,0),mat(i%2?0x77715d:0x8b8068),x,.43,z,1.3,.7,1);
-  }
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),mat(0x101820));floor.rotation.x=-Math.PI/2;floor.position.y=-.29;floor.receiveShadow=true;scene.add(floor);
-  let dragging=false,lastX=0,rotation=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(dragging){rotation+=(e.clientX-lastX)*.012;lastX=e.clientX}});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointercancel',()=>dragging=false);
-  const resize=()=>{const w=Math.max(180,canvas.clientWidth||290),h=Math.max(180,canvas.clientHeight||290);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe(canvas);resize();
-  canvas.hidden=false;old.style.display='none';
-  const badge=document.querySelector('#lobby .env-mode');if(badge){badge.textContent='APERÇU 3D WEBGL · SOLDAT · ARME · 4×4';badge.classList.add('sf3d-mode')}
-  // Interactive inspection controls: drag to orbit, wheel/pinch-style pointer gesture to zoom.
-  let wheelZoom=0;
-  canvas.addEventListener('wheel',e=>{e.preventDefault();wheelZoom=THREE.MathUtils.clamp(wheelZoom+Math.sign(e.deltaY)*.35,-2.2,3.5);camera.position.setLength(10+wheelZoom)},{passive:false});
-  const soldierBody=soldier.children.find(o=>o.geometry&&o.geometry.type==='BoxGeometry'&&Math.abs(o.position.y-1.05)<.02);
-  const headMesh=soldier.children.find(o=>o.geometry&&o.geometry.type==='SphereGeometry'&&o.position.y>1.7);
-  const wheelMeshes=car.children.filter(o=>o.geometry&&o.geometry.type==='CylinderGeometry'&&o.geometry.parameters.radiusTop<.2);
-  const lamps=car.children.filter(o=>o.material===head);
-  const clock=new THREE.Clock();
-  let raf=0;const tick=()=>{raf=requestAnimationFrame(tick);if(!document.hidden){
-   const t=clock.getElapsedTime();
-   root.rotation.y=rotation+Math.sin(t*.42)*.035;
-   if(soldierBody)soldierBody.position.y=1.05+Math.sin(t*2.1)*.018;
-   if(headMesh)headMesh.rotation.y=Math.sin(t*.48)*.07;
-   wheelMeshes.forEach((w,i)=>{w.rotation.x=Math.PI/2+Math.sin(t*1.2+i)*.018});
-   lamps.forEach(l=>{l.material.emissive.setHex(0xffa64d);l.material.emissiveIntensity=.15+.12*(.5+.5*Math.sin(t*2))});
-   renderer.render(scene,camera)
-  }};tick();
-  window.__sf3dShowroom={renderer,scene,camera,root,dispose(){cancelAnimationFrame(raf);renderer.dispose()}};
- }catch(error){console.warn('Aperçu 3D indisponible, retour au rendu classique',error);canvas.hidden=true;old.style.display='block'}
-})();
-</script>
-<script type="module">
-(async()=>{const canvas=document.getElementById("sf3dBattle");try{
-const T=await import("https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js");
-const r=new T.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});r.setPixelRatio(Math.min(devicePixelRatio||1,1.35));r.outputColorSpace=T.SRGBColorSpace;r.toneMapping=T.ACESFilmicToneMapping;r.shadowMap.enabled=true;r.shadowMap.type=T.PCFSoftShadowMap;
-const scene=new T.Scene();scene.background=new T.Color(0x8db5c5);scene.fog=new T.Fog(0x8db5c5,180,520);
-const camera=new T.PerspectiveCamera(58,1,.1,900);scene.add(new T.HemisphereLight(0xd9edff,0x4a4937,2));const sun=new T.DirectionalLight(0xffe0b2,2.4);sun.position.set(-90,150,65);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-180;sun.shadow.camera.right=180;sun.shadow.camera.top=180;sun.shadow.camera.bottom=-180;scene.add(sun);
-const gm=new T.MeshStandardMaterial({color:0xffffff,roughness:1});const floor=new T.Mesh(new T.PlaneGeometry(1,1),gm);floor.rotation.x=-Math.PI/2;floor.position.y=-.08;scene.add(floor);const actors=new T.Group();scene.add(actors);const structures=new T.Group();scene.add(structures);const vegetation=new T.Group();scene.add(vegetation);const tracers=new T.Group();scene.add(tracers);const impacts=new T.Group();scene.add(impacts);const cache=new Map();let mapSignature='';
-const bodyMat=new T.MeshStandardMaterial({color:0x65734c}),enemyMat=new T.MeshStandardMaterial({color:0x914b3b}),skin=new T.MeshStandardMaterial({color:0xb98768}),dark=new T.MeshStandardMaterial({color:0x20272b,metalness:.3});
-function soldier(m,weaponType){const g=new T.Group();g.scale.setScalar(9);const cloth=m,vest=new T.MeshStandardMaterial({color:m===enemyMat?0x55423a:0x343e32,roughness:.92}),web=new T.MeshStandardMaterial({color:0x77715b,roughness:1}),helmet=new T.MeshStandardMaterial({color:m===enemyMat?0x51483d:0x4d5940,roughness:.86}),boot=new T.MeshStandardMaterial({color:0x211f1b,roughness:.95}),metal=new T.MeshStandardMaterial({color:0x20272b,metalness:.62,roughness:.38}),glass=new T.MeshStandardMaterial({color:0x182c31,metalness:.35,roughness:.2});const mesh=(geo,mat,x,y,z,rx=0,ry=0,rz=0,parent=g)=>{const o=new T.Mesh(geo,mat);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o};const torso=new T.Group();torso.position.y=1.55;g.add(torso);mesh(new T.CapsuleGeometry(.48,.95,5,9),cloth,0,.08,0,0,0,0,torso);mesh(new T.BoxGeometry(1.08,1.12,.48),vest,0,.1,.17,0,0,0,torso);mesh(new T.BoxGeometry(.5,.48,.22),web,0,.36,.43,0,0,0,torso);for(const x of [-.34,0,.34])mesh(new T.BoxGeometry(.22,.28,.18),vest,x,-.08,.44,0,0,0,torso);mesh(new T.BoxGeometry(.34,.62,.34),web,0,.15,-.38,0,0,0,torso);mesh(new T.BoxGeometry(.72,.42,.42),vest,0,.02,-.48,0,0,0,torso);/* Équipement tactique détaillé + insigne tunisien sur l'unité amie. */mesh(new T.BoxGeometry(.82,.12,.54),web,0,-.43,.16,0,0,0,torso);for(const px of [-.34,-.11,.12,.35]){mesh(new T.BoxGeometry(.19,.25,.16),vest,px,-.19,.48,0,0,0,torso);mesh(new T.BoxGeometry(.13,.035,.035),web,px,-.08,.57,0,0,0,torso)}mesh(new T.BoxGeometry(.14,.42,.1),web,-.31,.12,.43,0,0,-.24,torso);mesh(new T.BoxGeometry(.14,.42,.1),web,.31,.12,.43,0,0,.24,torso);mesh(new T.BoxGeometry(.16,.28,.13),dark,-.56,.42,-.02,0,0,0,torso);mesh(new T.BoxGeometry(.08,.08,.04),metal,-.56,.59,.05,0,0,0,torso);if(m===bodyMat){const flag=new T.Group();flag.position.set(-.39,.48,.255);mesh(new T.BoxGeometry(.28,.2,.035),new T.MeshStandardMaterial({color:0xe32636,roughness:.8}),0,0,0,0,0,0,flag);mesh(new T.CircleGeometry(.071,20),new T.MeshBasicMaterial({color:0xffffff}),-.015,0,.021,0,0,0,flag);mesh(new T.CircleGeometry(.052,20),new T.MeshBasicMaterial({color:0xe32636}),.012,.006,.024,0,0,0,flag);const starShape=new T.Shape();for(let si=0;si<10;si++){const rr=si%2?.012:.027,ang=si*Math.PI/5-Math.PI/2;const x=.045+Math.cos(ang)*rr,y=Math.sin(ang)*rr;if(si===0)starShape.moveTo(x,y);else starShape.lineTo(x,y)}starShape.closePath();const star=new T.Mesh(new T.ShapeGeometry(starShape),new T.MeshBasicMaterial({color:0xffffff,side:T.DoubleSide}));star.position.set(.045,0,.027);flag.add(star);torso.add(flag)}const head=new T.Group();head.position.set(0,2.9,0);g.add(head);mesh(new T.SphereGeometry(.39,16,12),skin,0,0,0,0,0,0,head);mesh(new T.SphereGeometry(.44,16,10,0,Math.PI*2,0,Math.PI*.56),helmet,0,.19,-.015,0,0,0,head);mesh(new T.BoxGeometry(.62,.09,.48),helmet,0,.12,.2,0,0,0,head);mesh(new T.BoxGeometry(.48,.1,.08),glass,0,-.035,.34,0,0,0,head);for(const x of [-.23,.23])mesh(new T.CylinderGeometry(.09,.09,.1,10),helmet,x,-.02,-.02,Math.PI/2,0,0,head);/* v177 : protections de combat et silhouette plus lisible. */const maskMat=new T.MeshStandardMaterial({color:0x343b38,roughness:.96}),goggleMat=new T.MeshStandardMaterial({color:0x101a20,metalness:.45,roughness:.18}),padMat=new T.MeshStandardMaterial({color:0x303a32,roughness:.92});mesh(new T.BoxGeometry(.46,.19,.18),maskMat,0,-.19,.32,0,0,0,head);for(const gx of [-.13,.13]){mesh(new T.CylinderGeometry(.105,.105,.055,12),metal,gx,.015,.34,Math.PI/2,0,0,head);mesh(new T.CylinderGeometry(.078,.078,.06,12),goggleMat,gx,.015,.37,Math.PI/2,0,0,head)}mesh(new T.BoxGeometry(.42,.045,.08),web,0,.105,.34,0,0,0,head);mesh(new T.BoxGeometry(.07,.32,.09),web,-.39,.08,-.02,0,0,-.2,head);mesh(new T.BoxGeometry(.07,.32,.09),web,.39,.08,-.02,0,0,.2,head);const legs=[];for(const x of [-.3,.3]){const leg=new T.Group();leg.position.set(x,.75,0);g.add(leg);mesh(new T.CapsuleGeometry(.19,.72,4,8),cloth,0,-.18,0,0,0,0,leg);mesh(new T.BoxGeometry(.38,.28,.18),web,0,-.22,.16,0,0,0,leg);mesh(new T.BoxGeometry(.36,.16,.58),boot,0,-.68,.16,0,0,0,leg);legs.push(leg)}const arms=[];for(const x of [-.56,.56]){const arm=new T.Group();arm.position.set(x,2.22,.12);arm.rotation.z=x<0?-.18:.18;g.add(arm);mesh(new T.CapsuleGeometry(.16,.66,4,8),cloth,0,-.28,.04,0,0,0,arm);mesh(new T.CylinderGeometry(.14,.14,.17,10),web,0,-.52,.05,Math.PI/2,0,0,arm);mesh(new T.SphereGeometry(.14,10,8),skin,0,-.62,.1,0,0,0,arm);arms.push(arm)}const rifle=new T.Group();rifle.position.set(.18,1.93,.48);g.add(rifle);mesh(new T.BoxGeometry(.2,.18,.52),metal,0,0,0,0,0,0,rifle);mesh(new T.BoxGeometry(.13,.14,.68),web,-.02,-.02,-.42,0,0,0,rifle);mesh(new T.CylinderGeometry(.045,.045,1.05,10),metal,0,.02,.48,Math.PI/2,0,0,rifle);mesh(new T.CylinderGeometry(.025,.025,.18,8),metal,0,.02,1.02,Math.PI/2,0,0,rifle);mesh(new T.BoxGeometry(.12,.34,.18),metal,.02,-.24,.08,-.2,0,0,rifle);mesh(new T.BoxGeometry(.1,.12,.22),metal,0,.13,.2,0,0,0,rifle);mesh(new T.BoxGeometry(.12,.1,.22),glass,0,.17,.23,0,0,0,rifle);if(weaponType==='sn'||weaponType==='dmr'||weaponType==='m24'||weaponType==='awm'){mesh(new T.CylinderGeometry(.095,.095,.38,10),glass,0,.18,.36,Math.PI/2,0,0,rifle);mesh(new T.CylinderGeometry(.055,.055,.3,8),metal,0,.18,.66,Math.PI/2,0,0,rifle);mesh(new T.BoxGeometry(.1,.08,.35),metal,0,.22,.55,0,0,0,rifle)}else if(weaponType==='sg'||weaponType==='m870'||weaponType==='spas'){mesh(new T.CylinderGeometry(.075,.075,.42,10),metal,0,.03,.72,Math.PI/2,0,0,rifle);mesh(new T.BoxGeometry(.18,.16,.38),web,0,-.12,-.12,0,0,0,rifle)}else if(weaponType==='p'||weaponType==='m9'||weaponType==='m1911'){rifle.scale.set(.72,.72,.72);mesh(new T.BoxGeometry(.16,.12,.16),metal,0,.04,.34,0,0,0,rifle)}else if(weaponType==='smg'||weaponType==='uzi'||weaponType==='mp5'){mesh(new T.BoxGeometry(.12,.12,.25),metal,0,-.2,-.08,0,0,0,rifle);mesh(new T.BoxGeometry(.08,.08,.3),metal,0,.13,.5,0,0,0,rifle)}const flash=new T.Group();flash.position.set(0,.02,1.48);flash.visible=false;const flashMat=new T.MeshBasicMaterial({color:0xffb34f,transparent:true,opacity:.96,depthWrite:false});const flashCore=new T.Mesh(new T.SphereGeometry(.16,8,6),new T.MeshBasicMaterial({color:0xfff1bd,transparent:true,opacity:.98,depthWrite:false}));const flashFlare=new T.Mesh(new T.ConeGeometry(.23,.78,7),flashMat);flashFlare.rotation.x=Math.PI/2;flashFlare.position.z=.28;flash.add(flashCore,flashFlare);rifle.add(flash);const hitMat=new T.MeshBasicMaterial({color:0xff6b35,transparent:true,opacity:0,depthWrite:false});const hitPulse=new T.Mesh(new T.OctahedronGeometry(.58,1),hitMat);hitPulse.position.set(0,.12,.58);hitPulse.scale.set(.9,1.15,.28);torso.add(hitPulse);g.userData.parts={legs,arms,torso,head,rifle,flash,hitPulse,hitMat};g.userData.weaponType=weaponType;return g}
-function vehicle(){const g=new T.Group();g.scale.setScalar(12);const wheels=[];const paint=new T.MeshStandardMaterial({color:0x59634a,roughness:.82,metalness:.18}),rubber=new T.MeshStandardMaterial({color:0x171a19,roughness:1}),glass=new T.MeshStandardMaterial({color:0x263c43,metalness:.35,roughness:.22}),lamp=new T.MeshStandardMaterial({color:0xffe5a5,emissive:0xffb84b,emissiveIntensity:1.5});const add=(geo,mat,x,y,z,rx=0,ry=0,rz=0)=>{const o=new T.Mesh(geo,mat);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.castShadow=true;o.receiveShadow=true;g.add(o);return o};add(new T.BoxGeometry(3.9,1.05,2.25),paint,0,.85,0);add(new T.BoxGeometry(2.15,1.08,1.88),paint,-.12,1.78,0);for(const x of [-.58,.58]){add(new T.BoxGeometry(.82,.72,.055),glass,-.12,1.83,x*.98);add(new T.BoxGeometry(.74,.66,.055),glass,-.94,1.83,x*.98)}add(new T.BoxGeometry(1.45,.12,2.4),dark,.35,2.38,0);add(new T.BoxGeometry(1.25,.12,.16),dark,.25,2.55,0);for(const x of [-1.35,1.35])for(const z of [-1.12,1.12]){const w=add(new T.CylinderGeometry(.5,.5,.28,18),rubber,x,.5,z,0,0,Math.PI/2);wheels.push(w);add(new T.CylinderGeometry(.25,.25,.3,12),dark,x,.5,z,0,0,Math.PI/2)}for(const z of [-.72,.72]){add(new T.BoxGeometry(.32,.22,.08),lamp,1.98,1.02,z);add(new T.BoxGeometry(.3,.18,.08),lamp,-1.98,1.02,z)}add(new T.BoxGeometry(.12,.12,.12),dark,-1.05,2.55,-.65);add(new T.CylinderGeometry(.025,.04,1.2,8),dark,-1.05,3.18,-.65);const steel=new T.MeshStandardMaterial({color:0x8b918b,metalness:.72,roughness:.32}),grille=new T.MeshStandardMaterial({color:0x101719,metalness:.3,roughness:.6});add(new T.BoxGeometry(.42,.28,.12),steel,2.02,.48,0);add(new T.BoxGeometry(.38,.25,.12),steel,-2.02,.48,0);add(new T.BoxGeometry(.9,.32,.08),grille,2.005,.82,0);for(let i=0;i<5;i++)add(new T.BoxGeometry(.055,.24,.035),steel,2.06,.82,(i-2)*.16);for(const z of [-.99,.99]){add(new T.BoxGeometry(.3,.12,.22),dark,.05,1.45,z*1.18);add(new T.BoxGeometry(.22,.16,.1),glass,-.62,2.1,z*1.02);add(new T.BoxGeometry(.12,.08,.1),steel,.35,1.28,z*1.02);add(new T.BoxGeometry(.16,.08,.1),steel,-.72,1.28,z*1.02)}add(new T.BoxGeometry(.22,.08,.08),steel,-1.3,2.45,.72);add(new T.BoxGeometry(.22,.08,.08),steel,-1.3,2.45,-.72);/* v177 : blindage, optiques et équipements extérieurs du 4x4. */const bumperMat=new T.MeshStandardMaterial({color:0x252c2b,metalness:.72,roughness:.34}),rubberDetail=new T.MeshStandardMaterial({color:0x111514,roughness:1}),amber=new T.MeshStandardMaterial({color:0xffa72e,emissive:0xff7a16,emissiveIntensity:1.25}),redLamp=new T.MeshStandardMaterial({color:0xc83326,emissive:0x5c0805,emissiveIntensity:.5});add(new T.BoxGeometry(.16,.42,2.48),bumperMat,2.12,.48,0);for(const z of [-.82,-.42,0,.42,.82])add(new T.CylinderGeometry(.035,.035,.14,8),steel,2.22,.53,z,Math.PI/2,0,0);add(new T.BoxGeometry(.12,.18,2.2),bumperMat,-2.12,.48,0);for(const z of [-.82,.82]){add(new T.BoxGeometry(.13,.1,.18),amber,1.99,1.34,z);add(new T.BoxGeometry(.12,.09,.16),redLamp,-1.99,1.22,z);add(new T.BoxGeometry(.18,.12,.16),bumperMat,-.48,2.12,z*1.08);add(new T.BoxGeometry(.08,.36,.08),steel,-.48,2.28,z*1.08)}add(new T.BoxGeometry(.72,.12,1.72),bumperMat,-.2,2.48,0);for(const z of [-.52,-.17,.17,.52])add(new T.BoxGeometry(.2,.12,.09),amber,-.2,2.57,z);add(new T.CylinderGeometry(.42,.42,.2,16),rubberDetail,-1.35,1.58,0,Math.PI/2,0,0);add(new T.CylinderGeometry(.25,.25,.22,12),steel,-1.35,1.58,.12,Math.PI/2,0,0);for(const z of [-.99,.99]){add(new T.BoxGeometry(.32,.055,.035),steel,-.12,1.18,z*1.04);add(new T.BoxGeometry(.24,.07,.045),steel,-.92,1.18,z*1.04)}const damageFx=new T.Group();const smokeMat=new T.MeshStandardMaterial({color:0x343638,transparent:true,opacity:.58,roughness:1,depthWrite:false});const smoke=[];for(let n=0;n<4;n++){const puff=new T.Mesh(new T.SphereGeometry(.19+n*.035,8,7),smokeMat.clone());puff.position.set(-.35+n*.16,3.05+n*.34,(n%2?1:-1)*.12);damageFx.add(puff);smoke.push(puff)}const flameMat=new T.MeshBasicMaterial({color:0xff6a22,transparent:true,opacity:.9});const flame=new T.Mesh(new T.ConeGeometry(.23,.82,8),flameMat);flame.position.set(.25,2.95,.05);damageFx.add(flame);const glow=new T.Mesh(new T.SphereGeometry(.28,8,6),new T.MeshBasicMaterial({color:0xffb23e,transparent:true,opacity:.55}));glow.position.set(.25,2.7,.05);damageFx.add(glow);g.add(damageFx);g.userData.damageFx={group:damageFx,smoke,flame,glow,smokeMat};g.userData.wheels=wheels;return g}
-let texCanvas=null;function terrainHeight(x,z){return 1.35*Math.sin(x*.0021)*Math.cos(z*.0018)+.65*Math.sin((x+z)*.0042)}function ground(d){if(!d.ground||!d.worldSize||texCanvas===d.ground)return;texCanvas=d.ground;const t=new T.CanvasTexture(d.ground);t.colorSpace=T.SRGBColorSpace;t.anisotropy=Math.min(8,r.capabilities.getMaxAnisotropy());gm.map=t;gm.needsUpdate=true;floor.geometry.dispose();const geo=new T.PlaneGeometry(d.worldSize,d.worldSize,100,100);const pos=geo.attributes.position;for(let i=0;i<pos.count;i++){const x=pos.getX(i)+d.worldSize/2,z=d.worldSize/2-pos.getY(i);pos.setZ(i,terrainHeight(x,z))}geo.computeVertexNormals();floor.geometry=geo;floor.scale.set(1,1,1);floor.position.set(d.worldSize/2,0,d.worldSize/2)}
-function disposeGroup(group){const geometries=new Set(),materials=new Set();group.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>materials.add(m));else materials.add(o.material)}});group.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose())}
-function syncMap(d){const sig=(d.mapId||'')+':'+(d.buildings||[]).length+':'+(d.trees||[]).length;if(sig===mapSignature)return;mapSignature=sig;disposeGroup(structures);disposeGroup(vegetation);const mats={med:new T.MeshStandardMaterial({color:0xb9a58a,roughness:.95}),tower:new T.MeshStandardMaterial({color:0x8c9292,roughness:.8}),glass:new T.MeshStandardMaterial({color:0x647e83,roughness:.35,metalness:.18}),mil:new T.MeshStandardMaterial({color:0x77796b,roughness:.9}),shop:new T.MeshStandardMaterial({color:0xb4a38d,roughness:.9}),default:new T.MeshStandardMaterial({color:0xa99b84,roughness:.95}),shutter:new T.MeshStandardMaterial({color:0x286b91,roughness:.82}),trim:new T.MeshStandardMaterial({color:0xe5d7bd,roughness:.95}),rail:new T.MeshStandardMaterial({color:0x343b3b,roughness:.55,metalness:.62}),lit:new T.MeshStandardMaterial({color:0xffd99b,emissive:0xffa64d,emissiveIntensity:.42,roughness:.55})};for(const b of (d.buildings||[])){const m=mats[b.style]||mats.default;const mesh=new T.Mesh(new T.BoxGeometry(Math.max(12,b.w),Math.max(8,b.height),Math.max(12,b.h)),m);const bx=b.x+b.w/2,bz=b.y+b.h/2,base=terrainHeight(bx,bz);mesh.position.set(bx,base+b.height/2,bz);mesh.castShadow=true;mesh.receiveShadow=true;structures.add(mesh);const roof=new T.Mesh(new T.BoxGeometry(Math.max(12,b.w+3),2,Math.max(12,b.h+3)),new T.MeshStandardMaterial({color:0x625b50,roughness:1}));roof.position.set(bx,base+b.height+1,bz);roof.castShadow=true;roof.receiveShadow=true;structures.add(roof);const rooftop=new T.Group();rooftop.position.set(bx,base+b.height+2,bz);const concrete=new T.MeshStandardMaterial({color:0x77776e,roughness:.95}),tankMat=new T.MeshStandardMaterial({color:0x9a9b91,roughness:.72,metalness:.12});for(let ri=0;ri<2;ri++){const vent=new T.Mesh(new T.BoxGeometry(Math.max(5,b.w*.13),Math.max(3,b.height*.035),Math.max(5,b.h*.12)),concrete);vent.position.set((ri?1:-1)*b.w*.22,1,0);vent.castShadow=true;rooftop.add(vent);const cap=new T.Mesh(new T.BoxGeometry(Math.max(6,b.w*.14),1.2,Math.max(6,b.h*.13)),tankMat);cap.position.set((ri?1:-1)*b.w*.22,2.8,0);rooftop.add(cap)}if(b.height>24){const tank=new T.Mesh(new T.CylinderGeometry(Math.max(4,Math.min(b.w,b.h)*.1),Math.max(4,Math.min(b.w,b.h)*.1),Math.max(8,b.height*.12),12),tankMat);tank.position.set(b.w*.2,Math.max(5,b.height*.06),-b.h*.18);tank.castShadow=true;rooftop.add(tank)}structures.add(rooftop);const winMat=mats.glass,litMat=mats.lit;const floors=Math.max(1,Math.floor((b.height||18)/18));const cols=Math.max(1,Math.min(5,Math.floor((b.w||20)/24)));for(let fy=0;fy<floors;fy++)for(let wx=0;wx<cols;wx++){const px=b.x+(wx+.5)*b.w/cols;const py=8+fy*Math.max(12,(b.height||18)/floors);const paneH=Math.max(4,(b.height||18)/floors*.32),paneZ=b.y+b.h+.45,paneY=base+Math.min((b.height||18)-3,py);const pane=new T.Mesh(new T.BoxGeometry(Math.max(3,b.w/cols*.28),paneH,.8),(wx+fy)%4===0?litMat:winMat);pane.position.set(px,paneY,paneZ);structures.add(pane);for(const sideSign of [-1,1]){const shutter=new T.Mesh(new T.BoxGeometry(Math.max(1.2,b.w/cols*.095),paneH*.88,.65),mats.shutter);shutter.position.set(px+sideSign*Math.max(2.2,b.w/cols*.19),paneY,paneZ+.18);structures.add(shutter)}const lintel=new T.Mesh(new T.BoxGeometry(Math.max(5,b.w/cols*.43),1.15,.95),mats.trim);lintel.position.set(px,paneY+paneH*.57,paneZ+.08);structures.add(lintel);if((wx+fy)%3===0){const balcony=new T.Mesh(new T.BoxGeometry(Math.max(5,b.w/cols*.48),1.1,4),concrete);balcony.position.set(px,paneY-paneH*.62,b.y+b.h+2.5);balcony.castShadow=true;structures.add(balcony);const rail=new T.Mesh(new T.BoxGeometry(Math.max(5,b.w/cols*.48),.12,.12),mats.rail);rail.position.set(px,paneY-paneH*.62+1.05,b.y+b.h+4.3);structures.add(rail);for(let bi=-2;bi<=2;bi++){const bar=new T.Mesh(new T.BoxGeometry(.09,1,.09),mats.rail);bar.position.set(px+bi*Math.max(1,b.w/cols*.085),paneY-paneH*.62+.52,b.y+b.h+4.3);structures.add(bar)}}const side=new T.Mesh(new T.BoxGeometry(.8,Math.max(4,(b.height||18)/floors*.32),Math.max(3,b.h*.2)),winMat);side.position.set(b.x+b.w+.45,base+Math.min((b.height||18)-3,py),b.y+b.h/2);structures.add(side)}const door=new T.Mesh(new T.BoxGeometry(Math.min(9,b.w*.18),Math.min(13,b.height*.55),1),new T.MeshStandardMaterial({color:0x443b31,roughness:.95}));door.position.set(b.x+b.w*.5,base+Math.min(7,(b.height||18)*.3),b.y+b.h+.5);structures.add(door)}/* v178 : éclairage urbain tunisien pour mieux lire les rues et les façades. */const lampPole=new T.MeshStandardMaterial({color:0x303a3b,metalness:.68,roughness:.42}),lampGlow=new T.MeshStandardMaterial({color:0xffd18a,emissive:0xffa947,emissiveIntensity:1.65,roughness:.35});for(let li=0;li<(d.buildings||[]).length;li+=4){const b=d.buildings[li],lx=b.x-10,lz=b.y+b.h+8,ly=terrainHeight(lx,lz),pole=new T.Group();pole.position.set(lx,ly,lz);const base=new T.Mesh(new T.CylinderGeometry(2.1,2.7,2.2,8),lampPole);base.position.y=1.1;pole.add(base);const shaft=new T.Mesh(new T.CylinderGeometry(.55,.78,24,8),lampPole);shaft.position.y=13;pole.add(shaft);const arm=new T.Mesh(new T.BoxGeometry(8,.62,.62),lampPole);arm.position.set(3.5,24,0);pole.add(arm);const head=new T.Mesh(new T.BoxGeometry(3.6,.8,2.1),lampPole);head.position.set(6.2,23.6,0);pole.add(head);const bulb=new T.Mesh(new T.BoxGeometry(2.4,.18,1.35),lampGlow);bulb.position.set(6.2,23.12,0);pole.add(bulb);pole.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});structures.add(pole)}for(const t of (d.trees||[])){const g=new T.Group();g.position.set(t.x,terrainHeight(t.x,t.y),t.y);g.rotation.y=t.rot||0;const trunk=new T.Mesh(new T.CylinderGeometry(2.2,3.2,Math.max(12,t.r*1.8),7),new T.MeshStandardMaterial({color:0x60462d}));trunk.position.y=Math.max(7,t.r*.9);g.add(trunk);if(t.kind==='palm'){const crownY=Math.max(17,t.r*2);const crown=new T.Mesh(new T.SphereGeometry(Math.max(2.8,t.r*.2),9,7),new T.MeshStandardMaterial({color:0x5d713d,roughness:1}));crown.position.y=crownY;g.add(crown);for(let fr=0;fr<9;fr++){const a=fr*Math.PI*2/9;const length=Math.max(13,t.r*1.35);const leaf=new T.Mesh(new T.ConeGeometry(Math.max(1.2,t.r*.16),length,5),new T.MeshStandardMaterial({color:fr%3===0?0x527b43:0x426d3b,roughness:1}));leaf.position.set(Math.cos(a)*length*.36,crownY+2.2,Math.sin(a)*length*.36);leaf.rotation.z=Math.PI*.5-Math.cos(a)*.42;leaf.rotation.x=Math.sin(a)*.42;leaf.rotation.y=-a;leaf.castShadow=true;g.add(leaf)}}else{const crown=new T.Mesh(new T.ConeGeometry(Math.max(9,t.r*.9),Math.max(20,t.r*2.6),7),new T.MeshStandardMaterial({color:0x34563b,roughness:1}));crown.position.y=Math.max(17,t.r*2);g.add(crown)}vegetation.add(g)}}
-function sync(d){syncMap(d);const seen=new Set();for(const a of (d.actors||[]).slice(0,40)){if(!Number.isFinite(a.x)||!Number.isFinite(a.y))continue;const id=String(a.id);seen.add(id);let o=cache.get(id);const v=!!a.vehicle,wt=a.weaponType||'ar';if(!o||o.userData.v!==v||(!v&&o.userData.weaponType!==wt)){if(o)actors.remove(o);o=v?vehicle():soldier(a.isPlayer?bodyMat:(a.team===d.playerTeam?bodyMat:enemyMat),wt);o.userData.v=v;cache.set(id,o);actors.add(o)}o.position.set(a.x,terrainHeight(a.x,a.y),a.y);o.rotation.y=Math.PI/2-(a.angle||0);o.userData.walking=(a.moveMag||0)>.12;o.userData.moveMag=Math.max(0,Math.min(1,a.moveMag||0));if(o.userData.phase===undefined)o.userData.phase=id.split('').reduce((n,c)=>n+c.charCodeAt(0),0)%628/100;o.userData.vehicleSpeed=a.vehicleSpeed||0;o.userData.vehicleDamage=a.vehicleDamage||0;o.userData.hurtT=a.hurtT||0;o.userData.hp=a.hp??100;o.userData.recoil=(a.firedT||0)>.92?1:0;o.userData.flash=(a.firedT||0)>1.04}for(const [id,o] of cache)if(!seen.has(id)){actors.remove(o);cache.delete(id)}}
-function syncTracers(d){for(const child of [...tracers.children]){tracers.remove(child);child.geometry.dispose();child.material.dispose()}for(const b of (d.bullets||[])){if(!Number.isFinite(b.x)||!Number.isFinite(b.y))continue;const len=b.sn?18:11,dx=(b.vx||0)*.035,dy=(b.vy||0)*.035;const pts=[new T.Vector3(b.x-dx, terrainHeight(b.x-dx,b.y-dy)+(b.sn?2.8:2.1), b.y-dy),new T.Vector3(b.x, terrainHeight(b.x,b.y)+(b.sn?2.8:2.1), b.y)];const geo=new T.BufferGeometry().setFromPoints(pts);const mat=new T.LineBasicMaterial({color:b.sn?0xffe6a8:0xffa34e,transparent:true,opacity:b.sn?.95:.78});tracers.add(new T.Line(geo,mat))}}
-function syncImpacts(d){for(const c of [...impacts.children]){impacts.remove(c);c.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose()}})}for(const h of (d.impacts||[])){if(!Number.isFinite(h.x)||!Number.isFinite(h.y))continue;const age=Math.max(0,(d.matchTime||h.t)-h.t);if(age>.9)continue;const g=new T.Group();g.position.set(h.x,terrainHeight(h.x,h.y)+.8,h.y);g.rotation.y=-(h.a||0);const metal=h.k==='cont'||h.k==='pcar'||h.k==='pump',mat=new T.MeshBasicMaterial({color:metal?0xffc66e:0xe8d8b7,transparent:true,opacity:Math.max(.08,1-age/.9),depthWrite:false});const ring=new T.Mesh(new T.TorusGeometry(metal?2.4:1.5,.22,5,12),mat);ring.rotation.x=-Math.PI/2;ring.scale.setScalar(1+age*2.2);g.add(ring);for(let n=0;n<3;n++){const ray=new T.Mesh(new T.BoxGeometry(.22, .22, metal?4.2:2.6),mat);ray.position.set(Math.cos(n*2.094)*1.7,.15,Math.sin(n*2.094)*1.7);ray.rotation.y=n*2.094;g.add(ray)}impacts.add(g)}}
-function resize(){r.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/Math.max(1,innerHeight);camera.updateProjectionMatrix()}addEventListener("resize",resize);resize();window.__sf3dBattleReady=true;
-let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dBattleData;if(!d||d.mode!=="play"){document.body.classList.remove("sf3d-battle");return}document.body.classList.add("sf3d-battle");if(now-last>70){last=now;ground(d);sync(d);syncTracers(d);syncImpacts(d)}const frameDelta=Math.min(2,Math.max(.25,(now-(window.__sf3dAnimLast||now))/16.67));window.__sf3dAnimLast=now;const gait=now*.012;for(const o of cache.values()){if(o.userData.v){for(const w of (o.userData.wheels||[]))w.rotation.x+=(o.userData.vehicleSpeed||0)*.00014*frameDelta;o.position.y=terrainHeight(o.position.x,o.position.z)+Math.min(1.2,Math.abs(o.userData.vehicleSpeed||0)*.001)*Math.sin(now*.018);const fx=o.userData.damageFx,damage=o.userData.vehicleDamage||0;if(fx){fx.group.visible=damage>.32;fx.flame.visible=damage>.78;fx.glow.visible=damage>.78;fx.smoke.forEach((p,n)=>{p.visible=damage>.32;p.position.y=3.05+n*.34+((now*.001+n*.23)%1)*.55;p.scale.setScalar(.72+damage*.8+Math.sin(now*.004+n)*.12);p.material.opacity=Math.min(.68,.22+damage*.42)});fx.flame.scale.setScalar(.8+Math.sin(now*.025)*.22);fx.glow.material.opacity=.3+Math.sin(now*.03)*.22}}else{const p=o.userData.parts;if(p){const phase=o.userData.phase||0,move=Math.min(1,o.userData.moveMag||0),swing=Math.sin(gait+phase)*(.025+move*.43),idle=Math.sin(gait*.72+phase)*.012;p.legs[0].rotation.x=swing;p.legs[1].rotation.x=-swing;p.legs[0].rotation.z=Math.max(0,Math.cos(gait+phase))*.07*move;p.legs[1].rotation.z=Math.max(0,Math.cos(gait+phase+Math.PI))*.07*move;p.arms[0].rotation.x=-swing*.48+idle;p.arms[1].rotation.x=swing*.48-idle;p.arms[0].rotation.z=-.18-Math.abs(swing)*.08;p.arms[1].rotation.z=.18+Math.abs(swing)*.08;const hit=Math.min(1,Math.max(0,(o.userData.hurtT||0)/.3));p.torso.position.y=1.55+Math.abs(Math.sin(gait+phase))*.035*move+idle;p.torso.rotation.z=Math.sin(gait*2+phase)*(.006+move*.02)+hit*.16*Math.sin(now*.075);p.torso.rotation.x=idle*.7+hit*.12;p.head.rotation.y=Math.sin(gait*.4+phase)*.035-hit*.09;p.head.rotation.x=Math.sin(gait*.7+phase)*.012;if(p.hitPulse){p.hitPulse.visible=hit>.04;p.hitMat.opacity=hit*.82;p.hitPulse.scale.set(.9+hit*.3,1.15+hit*.2,.28)}if(p.rifle)p.rifle.rotation.x+=( (o.userData.recoil?-.19:0)-p.rifle.rotation.x)*(.18*frameDelta);if(p.flash){p.flash.visible=!!o.userData.flash;p.flash.scale.setScalar(.78+Math.sin(now*.11)*.18)}}}}}const p=d.player;if(p){const a=p.angle||0;camera.position.lerp(new T.Vector3(p.x-Math.cos(a)*105,82,p.y-Math.sin(a)*105),.16);camera.lookAt(p.x,10,p.y)}r.render(scene,camera)}tick(performance.now());window.__sf3dBattle={renderer:r,scene,camera};
-}catch(e){console.warn("3D combat non disponible, retour 2D",e);window.__sf3dBattleReady=false;document.body.classList.remove("sf3d-battle")}})();
-</script>
 
-<script>
-/* v184 — vrais aperçus de personnages issus du moteur de sprites du jeu */
-(function(){
-  const ids=['lion','vipere','ours','roc','vent','ombre','hannibal','mirmillon','spartiate'];
-  function paintRoster(){
-    const root=document.getElementById('sfRosterGrid');
-    if(!root || typeof SOLDIERS==='undefined' || typeof drawShowcase!=='function') return;
-    const chosen=ids.map(id=>SOLDIERS.findIndex(x=>x.id===id)).filter(i=>i>=0);
-    root.innerHTML='';
-    chosen.forEach(i=>{
-      const sk=SOLDIERS[i],btn=document.createElement('button');
-      btn.type='button';btn.className='sf-portrait';btn.dataset.index=String(i);
-      btn.setAttribute('aria-pressed',String(i===skinI));
-      const cv=document.createElement('canvas');cv.width=180;cv.height=190;cv.setAttribute('aria-label','Portrait '+sk.n);
-      const label=document.createElement('b');label.textContent=sk.n;
-      const tag=document.createElement('small');tag.textContent=sk.sp?'GLADIATEUR':'COMBATTANT';
-      btn.append(cv,label,tag);
-      try{const c=cv.getContext('2d');drawShowcase(c,180,{sk,skin:'#c8946a',slot:{type:stats.sidearm,mag:1},vest:0,cust:stats.cust})}catch(e){console.warn('Portrait non rendu:',sk.id,e)}
-      btn.addEventListener('click',()=>{
-        setSkin(i);
-        root.querySelectorAll('.sf-portrait').forEach(el=>el.setAttribute('aria-pressed',String(Number(el.dataset.index)===skinI)));
-        if(typeof drawPreview==='function')drawPreview();
-      });
-      root.appendChild(btn);
-    });
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(paintRoster,0),{once:true});
-  else setTimeout(paintRoster,0);
-  window.addEventListener('resize',()=>{if(!document.getElementById('sfRosterGrid')?.children.length)paintRoster()});
-})();
-</script>
 
-<script>
-/* v185 — interface du lobby en français / arabe tunisien, préférence mémorisée. */
-(function(){
-  const btn=document.getElementById('langBtn'), lobby=document.getElementById('lobby');
-  if(!btn||!lobby)return;
-  const dict={
-    fr:{
-      armBtn:'Armurerie',howBtn:'Comment jouer',optBtn:'Réglages',missBtn:'Missions',
-      stamp:'Île de Seddik · 30 joueurs · 1 survivant',
-      tagline:'Choisissez votre soldat, votre arme de départ, sautez de l’avion et tenez face à la tempête de feu.',
-      roster:'CHOISIR UN COMBATTANT',rosterMeta:'9 portraits · sélection directe',
-      alive:'en vie',killsShort:'élim.',zone:'Zone',storm:'Tempête de feu · rejoignez la zone',
-      eliminated:'Éliminé',reload:'Recharger',pick:'Ramasser',jump:'Sauter',
-      bandage:'Bandage',medkit:'Trousse de soins',drink:'Boisson énergisante',
-      armoryTitle:'Armurerie',armoryClose:'Fermer',armoryNote:"Les armes que vous trouverez sur l'île.",
-      missionsTitle:'Missions',daily:'Missions du jour',achievements:'Succès',
-      gameOver:'Partie terminée',soldiers:'sur 30 soldats',eliminations:'Éliminations',
-      damage:'Dégâts',survival:'Survie',eliminatedBy:'Éliminé par',
-      replay:'Rejouer',menu:'Menu',mapClose:'Touchez pour fermer',
-      armor:'Gilet',helmet:'Casque',hp:'PV',pauseLabel:'Pause',mapLabel:"Mini-carte, touchez pour l'agrandir",
-      currentLevel:'Niveau',xp:'Expérience',soundOn:'Son : activé',
-      map:'Carte',mode:'Mode de jeu',weapon:'Arme de départ · faites défiler',
-      custom:'Personnalisation',accessory:'Accessoire',shoes:'Chaussures',bag:'Housse de sac',
-      unlock:'Les maillots et accessoires se débloquent en montant de niveau. Housse de sac : soldats uniquement.',
-      phone:'Sur téléphone',keyboard:'Au clavier',rules:'Règles',play:'Jouer',close:'Fermer',
-      games:'Parties',wins:'Top 1',best:'Record élim.',kills:'Élim. totales',
-      pause:'Pause',resume:'Reprendre',quit:'Quitter la partie',settings:'Réglages',
-      sound:'Son',music:'Musique',effects:'Effets',touch:'Commandes tactiles',
-      voice:'Voix : le jeu n’a pas encore de voix, ce réglage viendra avec elles.'
-    },
-    ar:{
-      armBtn:'مخزن الأسلحة',howBtn:'كيفاش تلعب',optBtn:'الإعدادات',missBtn:'المهام',
-      alive:'عايشين',killsShort:'إقصاءات',zone:'المنطقة',storm:'عاصفة النار · ارجع للمنطقة',
-      eliminated:'تقصّيت',reload:'عمّر السلاح',pick:'إلّم',jump:'إقفز',
-      bandage:'ضمادة',medkit:'حقيبة إسعاف',drink:'مشروب طاقة',
-      armoryTitle:'مخزن الأسلحة',armoryClose:'سكر',armoryNote:'الأسلحة اللي تلقاها في الجزيرة.',
-      missionsTitle:'المهام',daily:'مهام اليوم',achievements:'الإنجازات',
-      gameOver:'وفات المباراة',soldiers:'من 30 مقاتل',eliminations:'الإقصاءات',
-      damage:'الضرر',survival:'وقت البقاء',eliminatedBy:'قصّاك',
-      replay:'عاود إلعب',menu:'القائمة',mapClose:'إضغط باش تسكّر',
-      armor:'درع',helmet:'خوذة',hp:'الصحة',pauseLabel:'توقّف',mapLabel:'الخريطة المصغّرة، إضغط باش تكبّرها',
-      currentLevel:'المستوى',xp:'نقاط الخبرة',soundOn:'الصوت: يخدم',
-      stamp:'جزيرة صدّيق · 30 لاعب · ناجي واحد',
-      tagline:'اختار مقاتلك وسلاحك، اهبط من الطيارة وواجه عاصفة النار.',
-      roster:'اختار المقاتل',rosterMeta:'9 صور · اختيار مباشر',
-      map:'الخريطة',mode:'نمط اللعب',weapon:'السلاح الأول · مرّر للاختيار',
-      custom:'التخصيص',accessory:'الإكسسوارات',shoes:'الصباط',bag:'غطاء الحقيبة',
-      unlock:'تتحلّ الملابس والإكسسوارات كي تطلع في المستوى. غطاء الحقيبة للمقاتلين فقط.',
-      phone:'على التليفون',keyboard:'بالكلافيي',rules:'القوانين',play:'إلعب',close:'سكر',
-      games:'المباريات',wins:'الأول',best:'أعلى عدد إقصاءات',kills:'الإقصاءات الكل',
-      pause:'توقّف',resume:'كمّل',quit:'اخرج من المباراة',settings:'الإعدادات',
-      sound:'الصوت',music:'الموسيقى',effects:'المؤثرات',touch:'أزرار اللمس',
-      voice:'التعليق الصوتي مازال قيد الإضافة.'
-    }
-  };
-  const nodes={
-    armBtn:'#armBtn',howBtn:'#howBtn',optBtn:'#optBtn',missBtn:'#missBtn',
-    stamp:'.brand .stamp',tagline:'.brand .tag',
-    roster:'#sf-portrait-roster .sf-roster-head b',
-    rosterMeta:'#sf-portrait-roster .sf-roster-head span',
-    alive:'#hud .count:first-child small',killsShort:'#hud .count.k small',
-    storm:'#warn',eliminated:'#kb b',pick:'#btnPick',
-    armoryTitle:'#armory h2',armoryClose:'#armClose',armoryNote:'#armory .arm-note',
-    missionsTitle:'#miss .ptitle',daily:'#miss .set h3',achievements:'#achH',
-    gameOver:'#endEye',soldiers:'#end .of',eliminations:'#end .stats div:nth-child(1) dt',
-    damage:'#end .stats div:nth-child(2) dt',survival:'#end .stats div:nth-child(3) dt',
-    eliminatedBy:'#end .stats div:nth-child(4) dt',replay:'#again',menu:'#toMenu',
-    mapClose:'#bigmap p',
-    map:'.side .card:nth-child(1) .lbl',mode:'.side .card:nth-child(2) .lbl',
-    weapon:'.side .card:nth-child(3) .lbl',custom:'.side .card:nth-child(4) .lbl',
-    accessory:'.side .card:nth-child(4) .cz:nth-child(1) > b',
-    shoes:'.side .card:nth-child(4) .cz:nth-child(2) > b',
-    bag:'.side .card:nth-child(4) .cz:nth-child(3) > b',
-    unlock:'.side .card:nth-child(4) .czn',
-    phone:'#how h3:nth-of-type(1)',keyboard:'#how h3:nth-of-type(2)',rules:'#how h3:nth-of-type(3)',
-    games:'.stats div:nth-child(1) dt',wins:'.stats div:nth-child(2) dt',
-    best:'.stats div:nth-child(3) dt',kills:'.stats div:nth-child(4) dt',
-    pause:'#pause .ptitle',resume:'#resume',quit:'#quit',settings:'#opts .ptitle',
-    sound:'#opts .set:nth-child(1) h3',music:'#opts .set:nth-child(1) label:nth-of-type(1) span',
-    effects:'#opts .set:nth-child(1) label:nth-of-type(2) span',
-    touch:'#opts .set:nth-child(2) h3',voice:'#opts .set:nth-child(1) p'
-  };
-  const mapLabels={
-    fr:{seddik:'Île de Seddik',cote:'Côte méditerranéenne',sahara:'Sahara & Sud',ville:'Grande Ville',foret:'Forêt profonde',hautes:'Hautes Terres',djerba:'Djerba & Zarzis',capbon:'Cap Bon & Kélibia'},
-    ar:{seddik:'جزيرة صدّيق',cote:'الساحل التونسي',sahara:'الصحراء والجنوب',ville:'المدينة الكبيرة',foret:'الغابة',hautes:'المرتفعات',djerba:'جربة وجرجيس',capbon:'الوطن القبلي وقليبية'}
-  };
-  const modeLabels={
-    fr:{classic:'Classique',quick:'Rapide',team:'Équipe',surv:'Survie',cup:'Parcours',train:'Entraînement'},
-    ar:{classic:'كلاسيكي',quick:'سريع',team:'فريق',surv:'نجاة',cup:'مراحل',train:'تدريب'}
-  };
-  const modeDescs={
-    fr:{classic:'30 joueurs · 1 survivant',quick:'16 joueurs · tempête plus rapide',team:'Équipes de 3 contre l’IA · 24 joueurs',surv:'20 joueurs · trouvez vite une arme',cup:'Parcours à étapes · gagnez pour débloquer la suivante',train:'8 adversaires · entraînement sans statistiques'},
-    ar:{classic:'30 لاعب · ناجي واحد',quick:'16 لاعب · العاصفة أسرع',team:'فرق من 3 ضد الذكاء الاصطناعي · 24 لاعب',surv:'20 لاعب · لوّج على سلاح بسرعة',cup:'مراحل متتالية · اربح باش تفتح المرحلة الجاية',train:'8 خصوم · تدريب من غير إحصائيات'}
-  };
-  const mapPlaces={
-    ar:{seddik:'المدينة العتيقة · الميناء · القاعدة',cote:'تونس · المرسى · قرطاج',sahara:'توزر · دوز · نفطة',ville:'وسط المدينة · الميناء · مركز الشرطة',foret:'مخيّم الحطّابة · المنشرة · البحيرة',hautes:'القيروان · الكاف · جندوبة',djerba:'حومة السوق · ميدون · قلالة',capbon:'نابل · الحمامات · قليبية'},
-    fr:{seddik:'La Médina · Le Port · Base militaire',cote:'Tunis · La Marsa · Carthage',sahara:'Tozeur · Douz · Nefta',ville:'Centre-ville · Le Port · Commissariat',foret:'Camp des bûcherons · La Scierie · Lac des Pins',hautes:'Kairouan · Le Kef · Jendouba',djerba:'Houmt Souk · Midoun · Guellala',capbon:'Nabeul · Hammamet · Kélibia'}
-  };
-  function applyDynamic(ar){
-    const lang=ar?'ar':'fr';
-    document.querySelectorAll('#maps .map-card').forEach(el=>{
-      const key=el.dataset.k,title=el.querySelector('.map-copy b'),sub=el.querySelector('.map-copy small');
-      if(title&&mapLabels[lang][key]&&title.textContent!==mapLabels[lang][key])title.textContent=mapLabels[lang][key];
-      if(sub&&mapPlaces[lang][key]&&sub.textContent!==mapPlaces[lang][key])sub.textContent=mapPlaces[lang][key];
-    });
-    document.querySelectorAll('#modes .chip').forEach(el=>{
-      const key=el.dataset.m,label=modeLabels[lang][key];
-      if(label&&el.textContent!==label)el.textContent=label;
-    });
-    const selected=document.querySelector('#maps .map-card[aria-checked="true"]');
-    const mapD=$('#mapD');if(selected&&mapD){
-      const key=selected.dataset.k;
-      const desc=lang==='ar'?({
-        seddik:'المدينة العتيقة والميناء والقاعدة العسكرية والواحة.',
-        cote:'مدن الشمال التونسي، خضرة كثيفة وبحر فيروزي.',
-        sahara:'كثبان وواحات ومدن الجنوب. عاصفة رملية تنقص الرؤية.',
-        ville:'شوارع عريضة ومباني عالية وميناء وفضاءات حضرية.',
-        foret:'غابة صنوبر وبلوط ومسالك ترابية وبحيرة.',
-        hautes:'تلال وزياتين وصخور وضباب خفيف.',
-        djerba:'جزيرة الجنوب: حومة السوق وميدون وڨلالة وشواطئ جرجيس.',
-        capbon:'الوطن القبلي: نابل والحمامات وقليبية والهوارية.'
-      })[key] : ({
-        seddik:'Carte d’origine : médina, port, base militaire et oasis.',
-        cote:'Villes du nord tunisien, végétation dense et mer turquoise.',
-        sahara:'Dunes, oasis et villes du sud. Tempête de sable et visibilité réduite.',
-        ville:'Avenues, grands bâtiments, port et quartiers urbains.',
-        foret:'Pins, chênes, chemins de terre et lac.',
-        hautes:'Collines, oliveraies, rochers et brume.',
-        djerba:'Île du Sud : Houmt Souk, Midoun, Guellala et plages de Zarzis.',
-        capbon:'Péninsule du Cap Bon : Nabeul, Hammamet, Kélibia et El Haouaria.'
-      })[key];
-      if(desc&&mapD.textContent!==desc)mapD.textContent=desc;
-    }
-    const mode=document.querySelector('#modes .chip[aria-checked="true"]');
-    const modeD=$('#modeD');if(mode&&modeD){const desc=modeDescs[lang][mode.dataset.m];if(desc&&modeD.textContent!==desc)modeD.textContent=desc}
-  }
-  function apply(lang){
-    const ar=lang==='ar';const d=dict[ar?'ar':'fr'];
-    document.querySelectorAll('#hud .arm span').forEach((el,i)=>{if(i===0||i===1||i===3){const label=i===0?d.armor:i===1?d.helmet:d.hp;el.firstChild.nodeValue=label+' '}});
-    const pause=$('#btnPause');if(pause)pause.setAttribute('aria-label',ar?'توقّف':'Pause');
-    const miniMap=$('#mini');if(miniMap)miniMap.setAttribute('aria-label',d.mapLabel);
-    const reload=$('#btnReload');if(reload&&reload.firstChild)reload.firstChild.nodeValue=d.reload;
-    const jump=$('#btnJump');if(jump&&jump.firstChild)jump.firstChild.nodeValue=d.jump;
-    [['#mBandage',d.bandage],['#mMedkit',d.medkit],['#mDrink',d.drink]].forEach(([sel,label])=>{const el=$(sel);if(el)el.setAttribute('aria-label',label)});
-    Object.entries(nodes).forEach(([key,sel])=>{const el=document.querySelector(sel);if(el&&d[key])el.textContent=d[key]});
-    applyDynamic(ar);
-    lobby.dir=ar?'rtl':'ltr';
-    document.documentElement.lang=ar?'ar-TN':'fr';
-    btn.textContent=ar?'Français':'العربية';
-    btn.setAttribute('aria-label',ar?'التبديل إلى الفرنسية':'Changer la langue');
-    document.documentElement.dataset.sfLang=ar?'ar':'fr';
-    try{if(typeof stats!=='undefined')stats.lang=ar?'ar':'fr';const raw=JSON.parse(localStorage.getItem('seddikfire.v1')||'{}');raw.lang=ar?'ar':'fr';localStorage.setItem('seddikfire.v1',JSON.stringify(raw))}catch(e){}
-  }
-  let lang='fr';try{lang=(typeof stats!=='undefined'&&stats.lang==='ar')||JSON.parse(localStorage.getItem('seddikfire.v1')||'{}').lang==='ar'?'ar':'fr'}catch(e){}
-  btn.addEventListener('click',()=>{lang=lang==='fr'?'ar':'fr';apply(lang)});
-  apply(lang);
-  const watchTargets=['#maps','#modes'];
-  watchTargets.forEach(sel=>{const el=document.querySelector(sel);if(el&&typeof MutationObserver!=='undefined')new MutationObserver(()=>applyDynamic(lang==='ar')).observe(el,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-checked']})});
-})();
-</script>
 <style>
 #lobby[dir="rtl"]{font-family:system-ui,"Noto Sans Arabic",Tahoma,sans-serif}
 #lobby[dir="rtl"] .brand,#lobby[dir="rtl"] .card,#lobby[dir="rtl"] .how,#lobby[dir="rtl"] .stats{text-align:right}
@@ -5256,6 +5098,23 @@ let last=0;function tick(now){requestAnimationFrame(tick);const d=window.__sf3dB
   #hud .fire { width:82px; height:82px; }
   #hud .pist { width:58px; height:58px; }
 }
+
+/* v2.0 — langues */
+html[data-sf-lang="en"] #skinDesc,html[data-sf-lang="ar"] #skinDesc{display:none}
+.screen[dir="rtl"]{font-family:system-ui,"Noto Sans Arabic",Tahoma,sans-serif}
+.screen[dir="rtl"] .set,.screen[dir="rtl"] .mlist{text-align:right}
+html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-sf-lang="ar"] #hud .zone small{font-family:system-ui,"Noto Sans Arabic",Tahoma,sans-serif;letter-spacing:0}
+
+/* v2.0 — lobby : l'aperçu du soldat reste visible, la grille de portraits devient un bandeau défilant */
+@media (min-width:761px){#lobby .show{justify-content:flex-start;align-self:stretch;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+#lobby .show::-webkit-scrollbar{display:none}}
+#lobby #sf-portrait-roster{width:100%;margin:8px 0 0;padding:8px 8px 6px;flex:none}
+#lobby .sf-roster-head span{display:none}
+#lobby .sf-roster-grid{display:grid;grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:minmax(78px,1fr);gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:thin;scrollbar-color:rgba(255,155,66,.5) transparent}
+#lobby .sf-portrait{scroll-snap-align:start;padding:5px 4px 6px}
+#lobby .sf-portrait canvas{width:100%;max-width:92px;height:auto;aspect-ratio:1}
+#lobby .sf-portrait b{font-size:11px}
+#lobby .brand .stamp{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </body>
 </html>

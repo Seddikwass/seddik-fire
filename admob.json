@@ -1,0 +1,7 @@
+{
+  "_comment": "Identifiants AdMob. Tant que 'test' vaut true, ce sont les identifiants de TEST officiels de Google (publicités marquées Test Ad, aucun revenu). Avant publication : remplacer les trois identifiants par ceux du compte AdMob et passer 'test' à false.",
+  "test": true,
+  "appId": "ca-app-pub-3940256099942544~3347511713",
+  "rewarded": "ca-app-pub-3940256099942544/5224354917",
+  "interstitial": "ca-app-pub-3940256099942544/1033173712"
+}

@@ -12,6 +12,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'capacitor.config.json'
+      - 'admob.json'
       - '.github/workflows/android-apk.yml'
 
 permissions:
@@ -70,6 +71,21 @@ jobs:
           mkdir -p www/icons
           cp index.html manifest.webmanifest sw.js www/
           cp icons/*.png www/icons/
+      - name: Inject AdMob identifiers into the game
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          cfg = json.loads(Path('admob.json').read_text(encoding='utf-8'))
+          ads = {'test': bool(cfg.get('test', True)), 'rewarded': cfg['rewarded'], 'interstitial': cfg['interstitial']}
+          page = Path('www/index.html')
+          html = page.read_text(encoding='utf-8')
+          tag = '<script>window.SJ_ADS=' + json.dumps(ads) + ';</script>'
+          if '</head>' not in html:
+              raise SystemExit('index.html has no </head>')
+          page.write_text(html.replace('</head>', tag + '</head>', 1), encoding='utf-8')
+          print('AdMob config injected, test mode =', ads['test'])
+          PY
       - name: Install dependencies
         run: npm install
       - name: Generate Android project
@@ -255,6 +271,22 @@ jobs:
           (adaptive / "ic_launcher.xml").write_text(xml)
           (adaptive / "ic_launcher_round.xml").write_text(xml)
           PY
+      - name: Declare AdMob application id
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          app_id = json.loads(Path('admob.json').read_text(encoding='utf-8'))['appId']
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          source = path.read_text(encoding='utf-8')
+          meta = '        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="' + app_id + '" />\n'
+          if 'com.google.android.gms.ads.APPLICATION_ID' not in source:
+              if '</application>' not in source:
+                  raise SystemExit('Unexpected AndroidManifest: no </application>')
+              source = source.replace('</application>', meta + '    </application>', 1)
+              path.write_text(source, encoding='utf-8')
+          print('AdMob application id declared:', app_id)
+          PY
       - name: Lock game orientation to landscape
         run: |
           sed -i 's/<activity android:name=".MainActivity"/<activity android:name=".MainActivity" android:screenOrientation="landscape"/' android/app/src/main/AndroidManifest.xml
@@ -290,4 +322,33 @@ jobs:
           name: super-seddik-joud-v200-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 30
+      - name: Build signed release (AAB for Google Play + APK)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No signing secrets: signed release skipped (debug APK only)."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          cd android
+          ./gradlew bundleRelease assembleRelease \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/upload.jks" \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+          rm -f "$RUNNER_TEMP/upload.jks"
+          mkdir -p ../release
+          cp app/build/outputs/bundle/release/app-release.aab ../release/super-seddik-joud-v200.aab
+          cp app/build/outputs/apk/release/app-release.apk ../release/super-seddik-joud-v200.apk
+      - name: Publish signed release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: super-seddik-joud-v200-google-play-release
+          path: release/
+          if-no-files-found: ignore
           retention-days: 30

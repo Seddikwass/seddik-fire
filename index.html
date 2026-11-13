@@ -1469,7 +1469,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V206</span>
+    <span id="build-tag" aria-label="Version">V207</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -5655,6 +5655,24 @@ function dailyBonus() {
   SAVE.daily = { d: today, n: streak }; SAVE.money += gain; saveGame();
   return { streak, gain };
 }
+// V207 — rôles des pilotes et sous-titres de circuits : versions anglaise et arabe (étaient restés en français)
+const DRV_ROLE = {
+  aziz: ['Champion · legendary driver', 'البطل · سائق أسطوري'], rania: ['Strategist · precise and cool-headed', 'استراتيجية · دقّة وهدوء'],
+  skander: ['Tactician · technical mastery', 'تكتيكي · إتقان تقني'], yosra: ['Elite driver · clean lines', 'سائقة نخبة · مسارات نظيفة'],
+  fares: ['Aggressive rival · raw power', 'منافس شرس · قوّة خام'], ines: ['Veteran · race experience', 'مخضرمة · خبرة سباقات'],
+  omar: ['Overtaking specialist', 'مختصّ في التجاوز'], salma: ['Heavy driver · head-on attack', 'سائقة ثقيلة · هجوم مباشر'],
+  nader: ['Night-race expert', 'خبير السباقات الليلية'], maya: ['Attack driver · high speed', 'سائقة هجومية · سرعة عالية'],
+  kais: ['Contact specialist', 'مختصّ في الاحتكاك'], lina: ['Stealth driver · precise driving', 'سائقة خفيّة · قيادة دقيقة'],
+  mehdi: ['Sprinter · acceleration', 'عدّاء · تسارع'], amira: ['Tactical driver · consistency', 'سائق تكتيكي · ثبات'],
+  walid: ['Technician · fine tuning', 'تقني · ضبط دقيق'], rim: ['Circuit master · reads the track', 'سيّد الحلبات · قراءة المسار'],
+};
+const drvRole = d => { const r = DRV_ROLE[d.id]; return d.role ? (r ? L3(d.role, r[0], r[1]) : d.role) : ''; };
+Object.assign(TXT.trk, {
+  tozeur_oasis: ['Tozeur • Palmeraie et chott', 'Tozeur • Palm grove and salt lake', 'توزر • الواحة والشطّ'],
+  tabarka_forest: ['Tabarka • Forêt de chênes et côte rocheuse', 'Tabarka • Oak forest and rocky coast', 'طبرقة • غابة البلوط والساحل الصخري'],
+  kerkennah: ['Kerkennah • Lagunes, plages et salines', 'Kerkennah • Lagoons, beaches and salt pans', 'قرقنة • بحيرات وشواطئ وملّاحات'],
+  gafsa_phosphate: ['Gafsa • Mines, collines et pistes', 'Gafsa • Mines, hills and tracks', 'قفصة • مناجم وتلال ومسالك'],
+});
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -6826,7 +6844,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V206';
+const GAME_VERSION = 'V207';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
@@ -6907,13 +6925,13 @@ const UI = {
       const own = SAVE.drivers.includes(d.id), cur = SAVE.driver === d.id;
       const b = document.createElement('button');
       b.className = 'dcard' + (this.viewDriver === d.id ? ' on' : '') + (cur ? ' cur' : '') + (!own ? ' lock' : '');
-      b.innerHTML = `${driverSVG(d, 48)}<span><b>${d.name}</b><small>${d.role || (cur ? t('selected') : own ? t('perkT_' + d.perk) : money(d.price))}</small></span>`;
+      b.innerHTML = `${driverSVG(d, 48)}<span><b>${d.name}</b><small>${drvRole(d) || (cur ? t('selected') : own ? t('perkT_' + d.perk) : money(d.price))}</small></span>`;
       b.onclick = () => { this.viewDriver = d.id; AU.shot(820, 0.04, 'sine', 0.05); this.renderDrivers(); };
       list.appendChild(b);
     }
     const d = DRIVERS[drvIndex(this.viewDriver || SAVE.driver)], own = SAVE.drivers.includes(d.id);
     const pan = $('drvpanel');
-    pan.innerHTML = `<div class="dhead">${driverSVG(d, 104)}<div><h2>${d.name}</h2><p class="perkt">${d.role || t('perkT_' + d.perk)}</p></div></div><p class="desc">${t('perk_' + d.perk)}</p><p class="note">${t('driverNote')}</p><button id="d-action" class="cta"></button>`;
+    pan.innerHTML = `<div class="dhead">${driverSVG(d, 104)}<div><h2>${d.name}</h2><p class="perkt">${drvRole(d) || t('perkT_' + d.perk)}</p></div></div><p class="desc">${t('perk_' + d.perk)}</p><p class="note">${t('driverNote')}</p><button id="d-action" class="cta"></button>`;
     const act = $('d-action');
     if (!own) { act.textContent = t('buy', money(d.price)); act.disabled = SAVE.money < d.price; act.onclick = () => this.confirm(t('buyConfirm', d.name, money(d.price)), () => { SAVE.money -= d.price; SAVE.drivers.push(d.id); SAVE.driver = d.id; saveGame(); AU.chime(); this.updMoney(); this.renderDrivers(); }); }
     else if (SAVE.driver === d.id) { act.textContent = t('isSelected'); act.disabled = true; }
@@ -7019,7 +7037,7 @@ const UI = {
       row(t('o_sens'), rng('sens', 50, 150)), row(t('o_opacity'), rng('opacity', 25, 100)),
       row(t('o_vibe'), seg('vibe', [[true, t('yes')], [false, t('no')]])),
       row(t('o_save'), `<div><button class="danger" id="o-reset">${t('o_reset')}</button></div>`),
-      row(t('o_privacy'), `<div><a class="plink" href="https://super-joud.onrender.com/privacy.html#${LANG}" target="_blank" rel="noopener">${t('o_privLink')}</a></div>`),
+      row(t('o_privacy'), `<div><a class="plink" href="https://super-joud.onrender.com/privacy.html#${LEN() ? 'en' : LANG === 'tn' ? 'ar' : LANG}" target="_blank" rel="noopener">${t('o_privLink')}</a></div>`),
       ADS.on ? row(t('o_ads'), `<div>${ADS.privacy ? `<button id="o-adpriv">${t('o_adsPriv')}</button>` : ''}<p class="note">${t('o_adsInfo')}</p></div>`) : '',
       `<p class="note">${t('o_note')}</p>`,
     ].join('');

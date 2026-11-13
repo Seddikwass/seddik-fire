@@ -101,6 +101,9 @@ jobs:
           base.mkdir(parents=True, exist_ok=True)
           plugin = r"""package com.seddik.superjoud;
 
+          import android.content.Intent;
+          import android.media.AudioAttributes;
+          import android.os.Bundle;
           import android.speech.tts.TextToSpeech;
           import android.speech.tts.UtteranceProgressListener;
           import java.util.ArrayDeque;
@@ -116,6 +119,7 @@ jobs:
               private TextToSpeech engine;
               private boolean ready = false;
               private boolean failed = false;
+              private boolean triedGoogle = false;
               private final ArrayDeque<SpeechItem> queue = new ArrayDeque<>();
               private static class SpeechItem {
                   final String text, language;
@@ -129,8 +133,21 @@ jobs:
               }
 
               @Override public void onInit(int status) {
+                  if (status != TextToSpeech.SUCCESS && !triedGoogle) {
+                      triedGoogle = true;
+                      try {
+                          if (engine != null) engine.shutdown();
+                          engine = new TextToSpeech(getContext().getApplicationContext(), this, "com.google.android.tts");
+                          return;
+                      } catch (Exception e) { /* on garde l'échec ci-dessous */ }
+                  }
                   ready = status == TextToSpeech.SUCCESS;
                   failed = !ready;
+                  if (ready && engine != null) {
+                      try {
+                          engine.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build());
+                      } catch (Exception e) { /* attributs audio facultatifs */ }
+                  }
                   notifyTtsStatus(ready ? "ready" : "init_error", ready ? "Moteur vocal Android prêt" : "Android TextToSpeech initialization failed");
                   if (ready) {
                       while (!queue.isEmpty()) {
@@ -186,18 +203,13 @@ jobs:
                       return;
                   }
                   String tag = language == null ? "fr-FR" : language;
-                  Locale locale = Locale.forLanguageTag(tag);
-                  int result = engine.setLanguage(locale);
-                  if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                      String base = tag.substring(0, Math.min(2, tag.length())).toLowerCase(Locale.ROOT);
-                      locale = base.equals("ar") ? new Locale("ar") : (base.equals("en") ? Locale.US : Locale.FRANCE);
-                      result = engine.setLanguage(locale);
-                  }
-                  if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                  Locale locale = pick(tag);
+                  if (locale == null) {
                       notifyTtsStatus("language_error", "Voix " + tag + " absente. Installe les données vocales dans Android.");
                       if (call != null) call.reject("Voix " + tag + " non installée sur Android");
                       return;
                   }
+                  engine.setLanguage(locale);
                   engine.setSpeechRate(Math.max(0.75f, Math.min(1.15f, rate)));
                   String utteranceId = "sj-team-" + System.nanoTime();
                   engine.setOnUtteranceProgressListener(new UtteranceProgressListener() {
@@ -205,7 +217,9 @@ jobs:
                       @Override public void onDone(String id) { notifyTtsStatus("done", "Consigne terminée"); }
                       @Override public void onError(String id) { notifyTtsStatus("speech_error", "Le moteur vocal Android a interrompu la lecture"); }
                   });
-                  int spoken = engine.speak(text, TextToSpeech.QUEUE_ADD, null, utteranceId);
+                  Bundle params = new Bundle();
+                  params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1.0f);
+                  int spoken = engine.speak(text, TextToSpeech.QUEUE_FLUSH, params, utteranceId);
                   if (spoken == TextToSpeech.ERROR) {
                       notifyTtsStatus("speech_error", "Android a refusé la consigne vocale");
                       if (call != null) call.reject("Android a refusé la lecture vocale");
@@ -213,6 +227,39 @@ jobs:
                       JSObject resultData = new JSObject();
                       resultData.put("queued", false);
                       call.resolve(resultData);
+                  }
+              }
+
+              private Locale pick(String tag) {
+                  if (engine == null || tag == null) return null;
+                  String base = tag.length() >= 2 ? tag.substring(0, 2) : tag;
+                  for (String candidate : new String[] { tag, base }) {
+                      try {
+                          Locale locale = Locale.forLanguageTag(candidate);
+                          if (engine.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE) return locale;
+                      } catch (Exception e) { /* essai suivant */ }
+                  }
+                  return null;
+              }
+
+              @PluginMethod public void voices(PluginCall call) {
+                  JSObject result = new JSObject();
+                  result.put("ready", ready);
+                  result.put("failed", failed);
+                  if (ready && engine != null) {
+                      for (String base : new String[] { "fr", "en", "ar" }) result.put(base, pick(base) != null);
+                  }
+                  call.resolve(result);
+              }
+
+              @PluginMethod public void installVoices(PluginCall call) {
+                  try {
+                      Intent intent = new Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                      getContext().startActivity(intent);
+                      call.resolve();
+                  } catch (Exception e) {
+                      call.reject("Réglages vocaux Android inaccessibles");
                   }
               }
 
@@ -289,7 +336,18 @@ jobs:
           PY
       - name: Lock game orientation to landscape
         run: |
-          sed -i 's/<activity android:name=".MainActivity"/<activity android:name=".MainActivity" android:screenOrientation="landscape"/' android/app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          source = path.read_text(encoding="utf-8")
+          if "android:screenOrientation" not in source:
+              source, n = re.subn(r'(<activity\b)', r'\1 android:screenOrientation="sensorLandscape"', source, count=1)
+              if n != 1:
+                  raise SystemExit("Unexpected AndroidManifest: no <activity>")
+              path.write_text(source, encoding="utf-8")
+          print("Landscape orientation locked")
+          PY
       - name: Declare Android Text-to-Speech service visibility
         run: |
           python3 - <<'PY'
@@ -300,16 +358,23 @@ jobs:
               <intent>
                   <action android:name="android.intent.action.TTS_SERVICE" />
               </intent>
+              <intent>
+                  <action android:name="android.speech.tts.engine.INSTALL_TTS_DATA" />
+              </intent>
           </queries>
           """
           if "android.intent.action.TTS_SERVICE" not in source:
               source = source.replace("</manifest>", query + "</manifest>")
+          if "android.permission.RECORD_AUDIO" not in source:
+              perms = '    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n'
+              source = source.replace("</manifest>", perms + "</manifest>")
               path.write_text(source, encoding="utf-8")
-          print("Android TTS service visibility declared")
+          path.write_text(source, encoding="utf-8")
+          print("Android TTS service visibility and microphone permission declared")
           PY
       - name: Set Android version (V200)
         run: |
-          sed -i -E 's/versionCode [0-9]+/versionCode 207/; s/versionName "[^"]*"/versionName "2.0.7"/' android/app/build.gradle
+          sed -i -E 's/versionCode [0-9]+/versionCode 208/; s/versionName "[^"]*"/versionName "2.0.8"/' android/app/build.gradle
           grep -n 'version' android/app/build.gradle
       - name: Build installable debug APK
         run: |
@@ -330,11 +395,16 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/apkout"
           cp android/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/apkout/super-seddik-joud.apk"
+          (cd android && ./gradlew bundleRelease assembleRelease) || echo "release build failed"
+          cp android/app/build/outputs/bundle/release/app-release.aab "$RUNNER_TEMP/apkout/release-unsigned.aab" || true
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/apkout/release-unsigned.apk" || true
+          cp "$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)lib/apksigner.jar" "$RUNNER_TEMP/apkout/apksigner.jar" || true
+          cp android/app/src/main/AndroidManifest.xml "$RUNNER_TEMP/apkout/AndroidManifest.xml" || true
           cd "$RUNNER_TEMP/apkout"
           git init -q -b apk
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add super-seddik-joud.apk
+          git add -A
           git commit -q -m "APK build from ${GITHUB_SHA}"
           git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" apk
           gh release delete apk-latest --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true

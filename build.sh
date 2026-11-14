@@ -18,19 +18,28 @@ cat > package.json <<P
 P
 npm i --no-audit --no-fund @capacitor/core@^$PEER @capacitor/cli@^$PEER @capacitor/android@^$PEER @capacitor-community/admob@$ADMOB_VER
 # Synthèse vocale native pour la radio d'équipe (version compatible avec Capacitor $PEER, facultative)
-TTS_VER=$( (npm view "@capacitor-community/text-to-speech@*" peerDependencies --json 2>/dev/null || echo '{}') | PEER=$PEER python3 -c "
-import json,os,re,sys
-try: d=json.load(sys.stdin)
-except Exception: d={}
-P=os.environ['PEER'];best=None
-items=d.items() if isinstance(d,dict) and not ('@capacitor/core' in d) else []
-def key(v): return [int(x) for x in re.findall(r'\d+',v)[:3]]
-for v,peer in items:
-  if '-' in v or not isinstance(peer,dict): continue
-  c=peer.get('@capacitor/core','')
-  m=re.findall(r'\d+',c)
-  if m and m[0]==P and (best is None or key(v)>key(best)): best=v
-print(best or '')" )
+TTS_VER=""
+for V in $(npm view @capacitor-community/text-to-speech versions --json 2>/dev/null | python3 -c "
+import json,sys,re
+try: L=json.load(sys.stdin)
+except Exception: L=[]
+L=[v for v in (L if isinstance(L,list) else [L]) if '-' not in v]
+L.sort(key=lambda v:[int(x) for x in re.findall(r'\d+',v)[:3]],reverse=True)
+print(' '.join(L[:12]))"); do
+  R=$(npm view @capacitor-community/text-to-speech@$V peerDependencies.@capacitor/core 2>/dev/null || true)
+  OK=$(R="$R" PEER=$PEER python3 -c "
+import os,re
+r=os.environ['R'];P=int(os.environ['PEER']);ok=False
+for part in r.split('||'):
+  part=part.strip();m=re.findall(r'\d+',part)
+  if not m: continue
+  n=int(m[0])
+  if part.startswith('>='): ok=ok or (n<=P and not re.search(r'<\s*'+str(P),part) and not re.search(r'<\s*([0-'+str(max(0,P-1))+r'])\b',part))
+  elif part.startswith('^') or part.startswith('~') or re.match(r'^\d',part): ok=ok or n==P
+print(1 if ok else 0)")
+  echo "tts-candidat $V peer=$R ok=$OK" | tee -a out/versions.txt
+  if [ "$OK" = "1" ]; then TTS_VER=$V; break; fi
+done
 if [ -n "$TTS_VER" ]; then npm i --no-audit --no-fund @capacitor-community/text-to-speech@$TTS_VER && echo "tts=$TTS_VER" | tee -a out/versions.txt || echo "tts=echec" | tee -a out/versions.txt; else echo "tts=aucune" | tee -a out/versions.txt; fi
 npx cap --version | tee -a out/versions.txt
 npx cap add android

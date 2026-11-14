@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Version 2.16
+- Joueurs : rendu détaillé pour tous les soldats et à tous les niveaux de qualité (recul, rechargement et coups intégrés), image plus nette, volume éclairé par le soleil, contour doux qui détache le soldat du terrain.
+- Cartes : nouveaux détails au sol selon le type de carte — prairie (touffes d'herbe, fleurs, cailloux, terre nue), forêt (feuilles mortes, fougères, champignons, branches, mousse), désert (rides de sable, buissons secs, cailloux, terre craquelée), ville (déchets, taches, herbes folles), routes (taches d'huile, fissures, plaques d'égout, rapiéçages), bord de mer (coquillages, algues, galets).
+- Tous ces détails sont dessinés une seule fois et réutilisés : pas de perte de fluidité.
+
 ## Version 2.15
 - Fluidité : détails fixes du sol (usure, marques, relief) dessinés une fois par tuile et réutilisés ; soldats mis en cache (tenue, arme, équipement, pas de marche), animations de tir, rechargement et coup de poing toujours en direct ; arbres allégés sur téléphone. Carte forêt : environ 19 000 → 4 500 opérations de dessin par image.
 

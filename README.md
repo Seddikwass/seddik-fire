@@ -1,5 +1,20 @@
 # Seddik Fire
 
+## Version 2.6 — suspense, réalisme et finitions
+
+Suspense et motivation
+- Annonces Top 10, Top 5, Top 3 et « Duel final » avec son et tremblement.
+- Prime : l'adversaire le plus dangereux (3 éliminations ou plus) est marqué en or ; l'éliminer rapporte +250 XP et des points de ligue.
+- Santé basse : battement de cœur et bords rouges qui pulsent sous 30 PV.
+- Compte à rebours sonore dans les 5 dernières secondes avant le rétrécissement de la zone.
+- Connexion quotidienne : bonus d'XP qui grandit avec la série de jours (jusqu'à 7).
+
+Réalisme et graphismes
+- Reflets du soleil qui scintillent sur la mer et les lacs.
+- Visée laser sur les fusils de précision.
+- Le large se fond dans la mer sans ligne visible.
+- Cache hors ligne : `seddik-fire-v206`.
+
 ## Version 2.5 — ligues, rapport de partie, carrière
 
 - Ligues : Bronze, Argent, Or, Platine, Diamant, Légende. Chaque partie (hors Entraînement) fait gagner ou perdre des points selon le classement, les éliminations et la difficulté ; la mise d'entrée augmente avec la ligue.

@@ -1038,7 +1038,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.5</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.6</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -2372,8 +2372,10 @@ function kill(t,src,wn){
   const w=src?wn:'Tempête';
   pushFeed(src?src.name:'Tempête de feu',t.name,src?wn:'',src===player||t===player);
   if(src===player&&t!==player){showKB(t.name);hitMarks.push({x:t.x,y:t.y,t:.4,k:true});blip(660,.09,.06,'triangle');setTimeout(()=>blip(990,.12,.06,'triangle'),90)}
+  if(src===player&&t!==player&&t===BOUNTY&&BOUNTY){player.bountyN=(player.bountyN|0)+1;BOUNTY=null;sfBanner('Prime encaissée','+250 XP',2.4,'gold')}
+  if(t===BOUNTY)BOUNTY=null;
   if(src===player&&t!==player){cam.zp=.05;player.longK=Math.max(player.longK||0,Math.hypot(t.x-player.x,t.y-player.y))}
-  if(t===player){endAt=matchT+(stats.camClassic?1.8:2.6);cam.shake=.5;cam.dT=0}
+  if(t===player){BOUNTY=null;endAt=matchT+(stats.camClassic?1.8:2.6);cam.shake=.5;cam.dT=0}
   else if(oneTeam()&&player.alive)endAt=matchT+1.4;
   return w;
 }
@@ -2773,7 +2775,7 @@ function updateBomb(dt){
 function levelXp(n){n=Math.max(1,n);return 200*(n-1)+50*(n-1)*(n-2)}
 function xpLevel(xp){let n=1;while(n<99&&xp>=levelXp(n+1))n++;return n}
 function gpXp(win){const surv=win?matchT:player.deathT,rank=win?1:player.rank;
-  const xp=Math.max(10,Math.round((surv*.6+player.kills*60+player.dmg*.15+Math.max(0,30-rank)*8+(win?300:0))*MDcur.xp));
+  const xp=Math.max(10,Math.round((surv*.6+player.kills*60+player.dmg*.15+Math.max(0,30-rank)*8+(win?300:0)+(player.bountyN|0)*250)*MDcur.xp));
   stats.prevLevel=stats.level||1;stats.lastXp=xp;stats.xp=(stats.xp||0)+xp;stats.level=xpLevel(stats.xp);stats.lvlFrom=levelXp(stats.level);stats.lvlTo=levelXp(stats.level+1)}
 
 /* ===== gameplay tick (called from update) ===== */
@@ -3317,7 +3319,7 @@ function drawTunisianRelief(x0,y0,x1,y1){
 
 /* v2.0 — plage et hauts-fonds autour de la carte : la terre ne s'arrête plus sur une ligne droite. */
 function drawWorldRim(x0,y0,x1,y1){
-  if(x0>=0&&y0>=110&&y1<=WS-110&&x1<=WS-110)return;
+  if(x0>=0&&y0>=110&&y1<=WS-110&&x1<=WS-460)return;
   const B=190,sand=(MAP&&MAP.shore)||'#e6d3a6',sea=(MAP&&MAP.sea)||['#3fa0aa','#2c8196','#1f5f78'];
   const stops=g=>{g.addColorStop(0,sand);g.addColorStop(.2,sand);g.addColorStop(.34,'rgba(214,236,224,.95)');g.addColorStop(.46,sea[0]);g.addColorStop(.72,sea[1]);g.addColorStop(1,'rgba(14,95,134,0)')};
   const cN=Math.min(WS,coastX(0)),cS=Math.min(WS,coastX(WS));
@@ -3327,10 +3329,10 @@ function drawWorldRim(x0,y0,x1,y1){
   if(x0<0&&y0<0){const g=ctx.createRadialGradient(0,0,0,0,0,B);stops(g);ctx.fillStyle=g;ctx.fillRect(-B,-B,B,B)}
   if(x0<0&&y1>WS){const g=ctx.createRadialGradient(0,WS,0,0,WS,B);stops(g);ctx.fillStyle=g;ctx.fillRect(-B,WS,B,B)}
   /* côté mer : la texture se fond dans la couleur du large avant le bord, il n'y a donc plus de cadre visible */
-  const deep='#0e5f86',clear='rgba(14,95,134,0)',F=110;
+  const deep='#0e5f86',clear='rgba(14,95,134,0)',F=110,FE=460;
   const lin=(x,y,w,h,ax,ay,bx,by)=>{if(w<=0||h<=0)return;const g=ctx.createLinearGradient(ax,ay,bx,by);g.addColorStop(0,clear);g.addColorStop(.75,'rgba(14,95,134,.92)');g.addColorStop(1,deep);ctx.fillStyle=g;ctx.fillRect(x,y,w,h)};
   const ya=clamp(y0,0,WS),yb=clamp(y1,0,WS);
-  if(x1>WS-F)lin(WS-F,ya,F+1,yb-ya,WS-F,0,WS,0);
+  if(x1>WS-FE)lin(WS-FE,ya,FE+1,yb-ya,WS-FE,0,WS,0);
   const strip=(top)=>{const N=22,h=F/N;for(let k=0;k<N;k++){const d=(k+.5)*h,y=top?d:WS-d,cx=coastX(y)+10;if(cx>=WS)continue;const t=1-d/F;ctx.fillStyle='rgba(14,95,134,'+(t*t*.2+t*.8).toFixed(3)+')';ctx.fillRect(cx,top?k*h:WS-(k+1)*h,WS-cx,h+.6)}};
   if(y0<F)strip(true);
   if(y1>WS-F)strip(false);
@@ -3361,6 +3363,7 @@ function render(){SFF++;LOWD=stats.perfC==='low'&&stats.quality==='eco';const CI
   const gx0=clamp(x0,0,WS),gy0=clamp(y0,0,WS),gx1=clamp(x1,0,WS),gy1=clamp(y1,0,WS);
   if(gx1>gx0&&gy1>gy0)ctx.drawImage(ground,gx0*GS,gy0*GS,(gx1-gx0)*GS,(gy1-gy0)*GS,gx0,gy0,gx1-gx0,gy1-gy0);
    drawWorldRim(x0,y0,x1,y1);
+   if(!LOWD)drawSeaGlints(x0,y0,x1,y1);
    draw2DSurfaceDetail(x0,y0,x1,y1);
    drawWorldMicroDetail(x0,y0,x1,y1);drawRegionalLandmarks(x0,y0,x1,y1);drawTunisianRelief(x0,y0,x1,y1);
    drawCoastalBoats(x0,y0,x1,y1);drawCityTrafficSignals(x0,y0,x1,y1);
@@ -3386,6 +3389,7 @@ function render(){SFF++;LOWD=stats.perfC==='low'&&stats.quality==='eco';const CI
   for(const b of blds){if(b.al>.98||!vis(b.x+b.w/2,b.y+b.h/2,Math.max(b.w,b.h)))continue;ctx.fillStyle=STY[b.st].door;for(const d of b.doors){if(d.ny)ctx.fillRect(d.x-DW/2+1,d.ny<0?d.y:d.y-24,5,24);else ctx.fillRect(d.nx<0?d.x:d.x-24,d.y-DW/2+1,24,5)}}
   // ground entities
   for(const e of ents)if(e.alive&&!e.inPlane&&e.air<=0&&!e.veh&&vis(e.x,e.y))drawEnt(e);
+  drawBounty();drawLaser();
   gpDrawWorld();drawFires();
   // bullets
   ctx.lineCap='round';for(const b of bullets){if(!vis(b.x,b.y,120))continue;ctx.strokeStyle=b.sn?'rgba(255,205,130,.34)':'rgba(255,170,80,.3)';ctx.lineWidth=b.sn?9:6.5;ctx.beginPath();ctx.moveTo(b.x-b.vx*.034,b.y-b.vy*.034);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.strokeStyle=b.sn?'rgba(255,250,232,1)':'rgba(255,232,184,.98)';ctx.lineWidth=b.sn?2.8:2;ctx.beginPath();ctx.moveTo(b.x-b.vx*.018,b.y-b.vy*.018);ctx.lineTo(b.x,b.y);ctx.stroke()}
@@ -3456,6 +3460,7 @@ function render(){SFF++;LOWD=stats.perfC==='low'&&stats.quality==='eco';const CI
   drawSFAtmosphere();
   // hurt vignette
   if(player.hurtT>0){const a=Math.min(.55,player.hurtT*1.6);if(!vigH||vigH._w!==VW||vigH._h!==VH){vigH=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.35,VW/2,VH/2,Math.max(VW,VH)*.7);vigH.addColorStop(0,'rgba(229,72,43,0)');vigH.addColorStop(1,'rgba(229,72,43,1)');vigH._w=VW;vigH._h=VH}ctx.globalAlpha=a;ctx.fillStyle=vigH;ctx.fillRect(0,0,VW,VH);ctx.globalAlpha=1}
+  drawLowHp();
   // sticks
   for(const k in sticks){const s=sticks[k];if(s.id===null)continue;ctx.lineWidth=2;ctx.strokeStyle='rgba(243,233,212,.4)';ctx.fillStyle='rgba(243,233,212,.08)';ctx.beginPath();ctx.arc(s.ox,s.oy,STICK_R,0,TAU);ctx.fill();ctx.stroke();
     if(k==='aim'){ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(s.ox,s.oy,STICK_R*FIRE_AT,0,TAU);ctx.stroke();ctx.setLineDash([])}
@@ -4497,7 +4502,7 @@ const cache={};
 function setT(el,key,v){if(cache[key]!==v){cache[key]=v;el.textContent=v}}
 function setH(el,key,v){if(cache[key]!==v){cache[key]=v;el.hidden=v}}
 function setC(el,key,cls,v){const k=key+cls;if(cache[k]!==v){cache[k]=v;el.classList.toggle(cls,v)}}
-function updateHUD(){const p=player;
+function updateHUD(){const p=player;sfSuspense();
   setT(H.alive,'alive',String(alive));setT(H.kills,'kills',String(p.kills));
   if(zone.st==='wait'){setT(H.zs,'zs','Zone '+(zone.ph+1)+'/'+PH.length+' dans');setT(H.zt,'zt',fmtT(zone.t));setC(H.zone,'z','hot',zone.t<10)}
   else if(zone.st==='shrink'){setT(H.zs,'zs','La tempête avance');setT(H.zt,'zt',fmtT(zone.t));setC(H.zone,'z','hot',true)}
@@ -4866,6 +4871,7 @@ requestAnimationFrame(()=>{const gp=gcBoot();setTimeout(()=>{try{preStart()}catc
    sans toucher à la logique : en français il ne fait strictement rien. */
 const I18N={
 en:{
+'PRIME':'BOUNTY','Prime encaissée':'Bounty claimed','Top 10':'Top 10','Top 5':'Top 5','Top 3':'Top 3','Duel final':'Final duel','Plus que 10 survivants':'Only 10 survivors left','Plus que 5 survivants':'Only 5 survivors left','Le podium se joue maintenant':'The podium is decided now','Un seul sortira vivant':'Only one walks out alive','Connexion quotidienne':'Daily login',
 'Carrière':'Career','Statistiques':'Statistics','Victoires':'Wins','Taux de victoire':'Win rate','Ratio élim. / défaite':'Kills per loss','Précision':'Accuracy','Tirs à la tête':'Headshots','Plus longue élimination':'Longest kill','Temps de jeu':'Play time','Distance':'Distance','Bronze':'Bronze','Argent':'Silver','Or':'Gold','Platine':'Platinum','Diamant':'Diamond','Promotion':'Promoted','Relégation':'Relegated',
 'Caméra':'Camera','cinématique':'cinematic','standard':'standard',
 'Heure du combat':'Time of battle','Jour':'Day','Nuit':'Night','Du matin au coucher du soleil.':'From morning to sunset.','Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'Pitch-dark night: flashlight, street lamps and muzzle flashes. Opponents see less far.','Tir auto':'Auto fire','Chiffres de dégâts':'Damage numbers','Sang':'Blood','Compteur i/s':'FPS counter','oui':'on','non':'off','Tête !':'Headshot!','Double élimination !':'Double kill!','Triple élimination !':'Triple kill!',
@@ -4957,6 +4963,7 @@ en:{
 'Se débloque au niveau':'Unlocks at level','Vous jouez avec votre dernier personnage débloqué.':'You are playing with your last unlocked character.'
 },
 ar:{
+'PRIME':'مكافأة','Prime encaissée':'خذيت المكافأة','Duel final':'المواجهة الأخيرة','Plus que 10 survivants':'بقاو 10 برك','Plus que 5 survivants':'بقاو 5 برك','Le podium se joue maintenant':'المراتب الأولى تتحسم توا','Un seul sortira vivant':'واحد برك يخرج حي','Connexion quotidienne':'الدخول اليومي',
 'Carrière':'المسيرة','Statistiques':'الإحصائيات','Victoires':'الانتصارات','Taux de victoire':'نسبة الفوز','Ratio élim. / défaite':'إقصاءات لكل خسارة','Précision':'الدقة','Tirs à la tête':'ضربات في الراس','Plus longue élimination':'أبعد إقصاء','Temps de jeu':'وقت اللعب','Distance':'المسافة','Bronze':'برونز','Argent':'فضة','Or':'ذهب','Platine':'بلاتين','Diamant':'ألماس','Promotion':'ترقية','Relégation':'نزول',
 'Caméra':'الكاميرا','cinématique':'سينمائية','standard':'عادية',
 'Heure du combat':'وقت المعركة','Jour':'نهار','Nuit':'ليل','Du matin au coucher du soleil.':'من الصباح للمغرب.','Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'ليل مظلم: مصباح يدوي وأضواء الشارع ولمعة الرصاص. الخصوم يشوفو أقل.','Tir auto':'ضرب تلقائي','Chiffres de dégâts':'أرقام الضرر','Sang':'الدم','Compteur i/s':'عدّاد الصور','oui':'إيه','non':'لا','Tête !':'في الراس!','Double élimination !':'إقصاء مزدوج!','Triple élimination !':'إقصاء ثلاثي!',
@@ -5059,6 +5066,9 @@ const I18N_RX=[
 [/^Plus longue élimination (\d+) m$/,{en:'Longest kill $1 m',ar:'أبعد إقصاء $1 م'}],
 [/^Distance (\d+) m$/,{en:'Distance $1 m',ar:'المسافة $1 م'}],
 [/^(\d+) h (\d+) min$/,{en:'$1 h $2 min',ar:'$1 س $2 د'}],
+[/^Prime sur (.+)$/,{en:'Bounty on $1',ar:'مكافأة على $1'}],
+[/^(\d+) éliminations · \+(\d+) XP$/,{en:'$1 kills · +$2 XP',ar:'$1 إقصاءات · +$2 خبرة'}],
+[/^Jour (\d+) · \+(\d+) XP$/,{en:'Day $1 · +$2 XP',ar:'اليوم $1 · +$2 خبرة'}],
 [/^Éliminé par (.+)$/,{en:'Killed by $1',ar:'قصّاك $1'}],
 [/^Difficulté : (.+)$/,{en:(m,a)=>'Difficulty: '+trS(a),ar:(m,a)=>'الصعوبة: '+trS(a)}],
 [/^Qualité : (.+)$/,{en:(m,a)=>'Quality: '+trS(a),ar:(m,a)=>'الجودة: '+trS(a)}],
@@ -5163,7 +5173,7 @@ document.querySelectorAll('#tod .chip').forEach(b=>b.addEventListener('click',()
 const LEAGUES=[['Bronze',0],['Argent',300],['Or',700],['Platine',1200],['Diamant',1800],['Légende',2600]];
 function leagueOf(rp){let k=0;for(let i=0;i<LEAGUES.length;i++)if(rp>=LEAGUES[i][1])k=i;return k}
 function leagueApply(win){if(MDcur.nostat)return null;const p=player,np=Math.max(2,ents.length),rank=win?1:p.rank,rp0=Math.max(0,stats.rp|0),t0=leagueOf(rp0);
-  let gain=Math.round(60*(1-(rank-1)/(np-1)))+(win?30:0)+Math.min(10,p.kills)*8;gain=Math.round(gain*[.7,1,1.3][stats.diff===0||stats.diff===2?stats.diff:1]);
+  let gain=Math.round(60*(1-(rank-1)/(np-1)))+(win?30:0)+Math.min(10,p.kills)*8+(p.bountyN|0)*15;gain=Math.round(gain*[.7,1,1.3][stats.diff===0||stats.diff===2?stats.diff:1]);
   const d=gain-(20+t0*10),rp1=Math.max(0,rp0+d);stats.rp=rp1;
   stats.hsT=(stats.hsT|0)+(p.hs|0);stats.shotsT=(stats.shotsT|0)+(p.shotsN|0);stats.hitsT=(stats.hitsT|0)+Math.min(p.hitsN|0,p.shotsN|0);stats.timeT=(stats.timeT|0)+Math.round(win?matchT:p.deathT||0);stats.longK=Math.max(stats.longK|0,Math.round((p.longK||0)/10));
   return {d:rp1-rp0,rp:rp1,t0,t1:leagueOf(rp1)}}
@@ -5182,6 +5192,52 @@ function openCareer(){const rp=Math.max(0,stats.rp|0),t=leagueOf(rp),nx=LEAGUES[
   $('#carList').innerHTML=rows.map(r=>'<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>').join('');$('#career').hidden=false}
 $('#carBtn').addEventListener('click',openCareer);$('#carClose').addEventListener('click',()=>{$('#career').hidden=true});
 {const _fs=fillStats;fillStats=function(){_fs();careerBtn()}}careerBtn();
+/* ===== v2.6 — suspense, réalisme et finitions graphiques ===== */
+// Reflets du soleil sur la mer et les lacs
+function drawSeaGlints(x0,y0,x1,y1){const G=44,day=stats.tod!=='night';
+  const gx0=Math.floor(Math.max(0,x0)/G),gx1=Math.ceil(Math.min(WS+200,x1)/G),gy0=Math.floor(Math.max(0,y0)/G),gy1=Math.ceil(Math.min(WS,y1)/G);
+  if((gx1-gx0)*(gy1-gy0)>2600)return;
+  ctx.save();ctx.fillStyle=day?'#fffdf2':'#cfe0ff';
+  for(let gx=gx0;gx<=gx1;gx++)for(let gy=gy0;gy<=gy1;gy++){let h=Math.imul(gx,73856093)^Math.imul(gy,19349663);h=Math.imul(h^(h>>>13),1274126177);const r1=((h>>>0)%1000)/1000,r2=((h>>>10)%1000)/1000;
+    const x=gx*G+r1*G,y=gy*G+r2*G;if(!isWater(x,y)||x<coastX(y)+18&&dd2(x,y,LAKE.x,LAKE.y)>=LAKE.r*LAKE.r)continue;
+    const w=Math.sin(TIME*(1.1+r2*1.3)+r1*TAU);if(w<.55)continue;const a=Math.pow((w-.55)/.45,2)*(day?.55:.2),L=3+r2*7;
+    ctx.globalAlpha=a;ctx.beginPath();ctx.ellipse(x+Math.sin(TIME*.4+r1*9)*3,y,L,1.1+r1*.8,-.12,0,TAU);ctx.fill()}
+  ctx.restore()}
+// Prime : l'adversaire le plus dangereux est marqué
+let BOUNTY=null,SUSP={alive:-1,zs:-1,bT:0,hbT:0,hbLast:-9};
+function drawBounty(){const b=BOUNTY;if(!b||!b.alive||b.inPlane||b.air>0||b.veh||!vis(b.x,b.y))return;const R=b.r*SV*VSC*clamp(+stats.pSize||1.25,.8,1.8),p=.5+.5*Math.sin(TIME*5);
+  ctx.save();ctx.lineWidth=2.4;ctx.strokeStyle='rgba(255,201,74,'+(.55+p*.4)+')';ctx.setLineDash([7,5]);ctx.lineDashOffset=-TIME*22;ctx.beginPath();ctx.arc(b.x,b.y,R+9+p*2,0,TAU);ctx.stroke();ctx.setLineDash([]);
+  const sc=Math.max(1,.85/cam.z),y=b.y-R-30*sc;ctx.font='800 '+(10*sc)+'px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const t=trS('PRIME')+' · '+b.kills,w=ctx.measureText(t).width+12*sc;
+  ctx.fillStyle='rgba(40,26,4,.85)';rrect(ctx,b.x-w/2,y-7*sc,w,14*sc,7*sc);ctx.fill();ctx.fillStyle='#ffd25e';ctx.fillText(t,b.x,y+.5);ctx.restore()}
+// Visée laser des armes de précision
+function drawLaser(){const p=player;if(!p||!p.alive||p.veh||p.inPlane||p.air>0||game.mode!=='play')return;const w=curW(p);if(!w)return;const c=WEAP[w.type].cls;if(c!=='sn'&&c!=='dmr')return;
+  if(p.reloadT>0||p.using)return;const a=p.angle,L=c==='sn'?760:520,sx=p.x+Math.cos(a)*24,sy=p.y+Math.sin(a)*24;
+  const g=ctx.createLinearGradient(sx,sy,sx+Math.cos(a)*L,sy+Math.sin(a)*L);g.addColorStop(0,'rgba(255,48,36,.8)');g.addColorStop(1,'rgba(255,48,36,0)');
+  ctx.save();ctx.strokeStyle=g;ctx.lineWidth=1.9;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+Math.cos(a)*L,sy+Math.sin(a)*L);ctx.stroke();ctx.restore()}
+// Santé basse : battement de cœur et bords rouges qui pulsent
+function drawLowHp(){const p=player;if(!p||!p.alive||game.mode!=='play'||p.hp>=30||p.inPlane||p.air>0)return;
+  const k=p.hp<15?.62:.85;if(TIME-SUSP.hbLast>=k){SUSP.hbLast=TIME;if(AC&&stats.sound&&vOK(.4)){try{const t=AC.currentTime,o=sOut(.55,0);tone(o,t,.11,'sine',78,46,1);tone(o,t+.17,.1,'sine',70,42,.75)}catch(e){}}}
+  const b=Math.exp(-(TIME-SUSP.hbLast)*5),a=(.26+.3*b)*(p.hp<15?1.25:1);
+  const g=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.32,VW/2,VH/2,Math.max(VW,VH)*.72);g.addColorStop(0,'rgba(170,16,10,0)');g.addColorStop(1,'rgba(170,16,10,'+Math.min(.62,a).toFixed(3)+')');
+  ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH)}
+// Bandeau d'annonce
+function sfBanner(t,sub,secs,kind){const el=$('#sfBanner');if(!el)return;el.firstChild.textContent=t;el.lastChild.textContent=sub||'';el.className='on '+(kind||'');clearTimeout(el._t);el._t=setTimeout(()=>{el.className=''},(secs||2.2)*1000)}
+function sting(up){if(!AC||!stats.sound||!vOK(1))return;try{const t=AC.currentTime,o=sOut(.32,0);const f=up?[392,523,784]:[220,277,330];f.forEach((x,i)=>tone(o,t+i*.09,.5-i*.08,'triangle',x,x,.5));tone(o,t,.9,'sine',up?98:65,up?98:55,.6)}catch(e){}}
+function sfSuspense(){if(game.mode!=='play'){SUSP.alive=-1;return}const p=player;
+  if(SUSP.alive<0)SUSP.alive=alive;
+  if(alive!==SUSP.alive){const was=SUSP.alive;SUSP.alive=alive;
+    if(p.alive&&alive<was&&!p.team){const M={10:['Top 10','Plus que 10 survivants'],5:['Top 5','Plus que 5 survivants'],3:['Top 3','Le podium se joue maintenant'],2:['Duel final','Un seul sortira vivant']},th=[2,3,5,10].find(n=>was>n&&alive<=n),m=th&&alive>1?M[th]:null;
+      if(m){sfBanner(m[0],m[1],2.6,alive<=2?'red':'');sting(alive>2);if(alive<=2)cam.shake=Math.min(.6,cam.shake+.25)}}}
+  if(zone.st==='wait'&&p.alive){const s=Math.ceil(zone.t);if(s!==SUSP.zs){SUSP.zs=s;if(s>=1&&s<=5)blip(s===1?1046:880,.07,.09,'square')}}
+  if(matchT-SUSP.bT>1.5){SUSP.bT=matchT;let best=null;for(const e of ents)if(e.bot&&e.alive&&!e.inPlane&&(e.kills|0)>=3&&(!p.team||e.team!==p.team)&&(!best||e.kills>best.kills))best=e;
+    if(best&&best!==BOUNTY&&(!BOUNTY||!BOUNTY.alive||best.kills>BOUNTY.kills+1)){BOUNTY=best;if(p.alive)sfBanner('Prime sur '+best.name,best.kills+' éliminations · +250 XP',2.6,'gold')}}}
+{const d=document.createElement('div');d.id='sfBanner';d.innerHTML='<b></b><small></small>';document.body.appendChild(d)}
+// Connexion quotidienne
+(function daily(){const D=new Date(),key=D.getFullYear()+'-'+(D.getMonth()+1)+'-'+D.getDate();if(stats.lastDay===key)return;
+  const Y=new Date(D.getTime()-864e5),yk=Y.getFullYear()+'-'+(Y.getMonth()+1)+'-'+Y.getDate();stats.streak=stats.lastDay===yk?(stats.streak|0)+1:1;stats.lastDay=key;
+  if(!stats.games){saveStats();return}
+  const bonus=Math.min(7,stats.streak)*50;addXp(bonus);try{fillXP()}catch(e){}
+  setTimeout(()=>sfBanner('Connexion quotidienne','Jour '+stats.streak+' · +'+bonus+' XP',3.2,'gold'),900)})();
 {const c=document.createElement('div');c.id='sfCine';c.innerHTML='<i></i><i></i>';document.body.appendChild(c)}
 optLabels();
 setInterval(()=>{if(game.mode!=='play'&&cam.bars){cam.bars=false;$('#sfCine').classList.remove('on')}const el=$('#sfFps'),on=!!stats.fps&&game.mode==='play';if(el.hidden===on)el.hidden=!on;if(on)el.textContent=SFF+' i/s';SFF=0},1000);
@@ -5280,6 +5336,14 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 .carlist dt{font-size:10px;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
 .carlist dd{margin:2px 0 0;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
 #career{background:rgba(6,8,12,.95)}
+
+/* v2.6 — bandeau d'annonce */
+#sfBanner{position:fixed;left:50%;top:22%;z-index:30;transform:translate(-50%,-8px) scale(.96);opacity:0;pointer-events:none;text-align:center;transition:opacity .25s,transform .35s cubic-bezier(.2,.8,.2,1);padding:10px 26px 12px;background:linear-gradient(90deg,rgba(8,10,14,0),rgba(8,10,14,.78) 18%,rgba(8,10,14,.78) 82%,rgba(8,10,14,0));min-width:min(560px,86vw)}
+#sfBanner.on{opacity:1;transform:translate(-50%,0) scale(1)}
+#sfBanner b{display:block;font:italic 900 clamp(26px,5.4vw,54px)/1 system-ui,sans-serif;letter-spacing:.02em;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+#sfBanner small{display:block;margin-top:6px;font:700 clamp(11px,1.6vw,14px)/1.2 system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#f3e9d4}
+#sfBanner.gold b{color:#ffd25e}#sfBanner.red b{color:#ff5a46}
+#sfBanner small:empty{display:none}
 </style>
 </body>
 </html>

@@ -1,5 +1,11 @@
 # Seddik Fire
 
+## Version 2.12
+- Caméra au dos : soldats modélisés en 3D (jambes et bras animés, gilet, sac, casque ou coiffure, arme tenue en position de tir), ombre au sol et anneau du joueur.
+- Objets des cartes en volume : conteneurs, caisses, sacs de sable, voitures, pompes, rochers, silos, fontaines.
+- Vue dégagée : arbres et murs trop proches de la caméra retirés, bords des feuillages lissés.
+- Performance : couche dynamique allégée et détails de surface réservés à la vue standard.
+
 ## Version 2.11 — vraie 3D pour la caméra au dos du joueur
 
 - Bâtiments en volume : murs extrudés à hauteur réaliste, toits, fenêtres, ombrage par face.

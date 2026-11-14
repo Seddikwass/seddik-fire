@@ -1,5 +1,8 @@
 # Seddik Fire
 
+## Version 2.15
+- Fluidité : détails fixes du sol (usure, marques, relief) dessinés une fois par tuile et réutilisés ; soldats mis en cache (tenue, arme, équipement, pas de marche), animations de tir, rechargement et coup de poing toujours en direct ; arbres allégés sur téléphone. Carte forêt : environ 19 000 → 4 500 opérations de dessin par image.
+
 ## Version 2.14
 - Fluidité sur téléphone : suppression des effets plein écran coûteux sur mobile (filtre couleur CSS du terrain, flou derrière le HUD, passe de lumière en mode « screen », nuages).
 - Visibilité : caméra plus proche sur téléphone (surtout en portrait), arbres estompés autour du joueur, repère orange avec flèche de direction visible à travers le feuillage, coéquipiers cerclés de bleu.

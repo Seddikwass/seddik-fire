@@ -1039,7 +1039,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.14</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.15</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -3114,6 +3114,18 @@ function drawClouds(x0,y0,x1,y1){if(!CLOUD){CLOUD=document.createElement('canvas
   if(Q.hi&&x1>2900){ctx.fillStyle='rgba(255,255,240,.85)';for(let i=0;i<26;i++){const y=y0+((i*137.7)%(y1-y0+1)),cx=coastX(y)+40+((i*263.1)%Math.max(1,(x1-coastX(y)-40))),tw=Math.sin(TIME*3+i*1.7);if(tw<.75||cx>x1||cx<coastX(y)+30)continue;const r=(tw-.75)*10;ctx.fillRect(cx-r,y-.6,r*2,1.2);ctx.fillRect(cx-.6,y-r*.6,1.2,r*1.2)}}}
 let LOWD=false;
 /* 2D WORLD DETAIL PASS — deterministic ground wear, biome marks and city surface breakup. */
+/* v2.15 — détails fixes du sol (usure, marques, relief) dessinés une fois par tuile puis réutilisés :
+   ~10 000 appels de dessin en moins par image */
+const DC={m:new Map(),key:'',S:512};
+function drawDetailCached(x0,y0,x1,y1,z){const k=MAP.id+'|'+Q.lv+'|'+LOWD+'|'+walls.length+'|'+blds.length;if(k!==DC.key){DC.m.clear();DC.key=k}
+  const S=DC.S,sc=Math.min(1,Math.ceil(z*DPR*4)/4),cx0=Math.floor(Math.max(0,x0)/S),cy0=Math.floor(Math.max(0,y0)/S),cx1=Math.floor(Math.min(WS-1,x1)/S),cy1=Math.floor(Math.min(WS-1,y1)/S);let budget=game.mode==='play'?2:1;
+  for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){const id=cx+','+cy;let t=DC.m.get(id);
+    if(t&&t.sc<sc&&budget>0)t=null;
+    if(!t){if(budget<=0)continue;budget--;const c=document.createElement('canvas'),px=Math.ceil(S*sc);c.width=c.height=px;const g=c.getContext('2d'),save=ctx,X=cx*S,Y=cy*S;
+      ctx=g;try{g.setTransform(sc,0,0,sc,-X*sc,-Y*sc);g.beginPath();g.rect(X,Y,S,S);g.clip();draw2DSurfaceDetail(X-70,Y-70,X+S+70,Y+S+70);drawWorldMicroDetail(X-70,Y-70,X+S+70,Y+S+70);drawTunisianRelief(X-70,Y-70,X+S+70,Y+S+70)}catch(e){console.warn(e)}finally{ctx=save}
+      t={c,sc};DC.m.set(id,t);if(DC.m.size>40)DC.m.delete(DC.m.keys().next().value)}
+    else{DC.m.delete(id);DC.m.set(id,t)}
+    ctx.drawImage(t.c,cx*S,cy*S,S,S)}}
 function draw2DSurfaceDetail(x0,y0,x1,y1){
   if(!Q.hi||LOWD)return;
   const step=42,gx0=Math.floor(x0/step)*step,gy0=Math.floor(y0/step)*step;
@@ -3628,7 +3640,7 @@ function render(){SFF++;CAMROT=stats.camBehind&&(game.mode==='play'||game.mode==
   const gx0=clamp(x0,0,WS),gy0=clamp(y0,0,WS),gx1=clamp(x1,0,WS),gy1=clamp(y1,0,WS);
   if(!P3S&&gx1>gx0&&gy1>gy0)ctx.drawImage(ground,gx0*GS,gy0*GS,(gx1-gx0)*GS,(gy1-gy0)*GS,gx0,gy0,gx1-gx0,gy1-gy0);
    if(!P3S){drawWorldRim(x0,y0,x1,y1);if(!LOWD)drawSeaGlints(x0,y0,x1,y1)}
-   if(!P3S){draw2DSurfaceDetail(x0,y0,x1,y1);drawWorldMicroDetail(x0,y0,x1,y1)}drawRegionalLandmarks(x0,y0,x1,y1);drawTunisianRelief(x0,y0,x1,y1);
+   if(!P3S)drawDetailCached(x0,y0,x1,y1,z);drawRegionalLandmarks(x0,y0,x1,y1);
    drawCoastalBoats(x0,y0,x1,y1);drawCityTrafficSignals(x0,y0,x1,y1);
   // waves
   ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=3;ctx.beginPath();const off=(TIME*24)%140;
@@ -3777,8 +3789,8 @@ function drawPlayerMark(){if(!player||game.mode==='lobby')return;const list=[pla
     ctx.restore()}}
 function treeOff(t){if(!Q.hi)return[0,0];const th=t.k==='palm'?40:t.k==='pine'?32:22;return[(t.x-cam.x)*PK*th,(t.y-cam.y)*PK*th+PTY*th]}
 function drawTree(t){{const o=treeOff(t);TOX=o[0];TOY=o[1];if(TOX*TOX+TOY*TOY>9){ctx.lineCap='round';ctx.strokeStyle=t.k==='palm'?'#7a5c38':'#3e2c1c';ctx.lineWidth=Math.max(3,t.r*(t.k==='palm'?.1:.13));ctx.beginPath();ctx.moveTo(t.x,t.y);ctx.lineTo(t.x+TOX*.92,t.y+TOY*.92);ctx.stroke()}}
-  drawTree1(t);if(Q.hi){const rr=t.r,ox=t.x+TOX,oy=t.y+TOY;ctx.save();ctx.globalAlpha=.16;ctx.fillStyle='#f6e9c6';ctx.beginPath();ctx.ellipse(ox-rr*.28,oy-rr*.3,rr*.34,rr*.17,-.55,0,TAU);ctx.fill();ctx.globalAlpha=.12;ctx.fillStyle='#15220f';ctx.beginPath();ctx.ellipse(ox+rr*.3,oy+rr*.28,rr*.42,rr*.2,.55,0,TAU);ctx.fill();ctx.restore()}TOX=TOY=0}
-function drawTree1(t){if(Q.hi&&!reduceMotion){const sw=Math.sin(TIME*1.1+t.x*.013+t.y*.007)*t.r*.035;ctx.save();ctx.translate(sw,sw*.4);drawTree0(t);ctx.restore();return}drawTree0(t)}
+  drawTree1(t);if(Q.hi&&!MOBF){const rr=t.r,ox=t.x+TOX,oy=t.y+TOY;ctx.save();ctx.globalAlpha=.16;ctx.fillStyle='#f6e9c6';ctx.beginPath();ctx.ellipse(ox-rr*.28,oy-rr*.3,rr*.34,rr*.17,-.55,0,TAU);ctx.fill();ctx.globalAlpha=.12;ctx.fillStyle='#15220f';ctx.beginPath();ctx.ellipse(ox+rr*.3,oy+rr*.28,rr*.42,rr*.2,.55,0,TAU);ctx.fill();ctx.restore()}TOX=TOY=0}
+function drawTree1(t){if(Q.hi&&!reduceMotion&&!MOBF){const sw=Math.sin(TIME*1.1+t.x*.013+t.y*.007)*t.r*.035;ctx.save();ctx.translate(sw,sw*.4);drawTree0(t);ctx.restore();return}drawTree0(t)}
 function drawTree0(t){if(Q.hi&&(t.k==='pine'||t.k==='olive')){const pine=t.k==='pine';ctx.fillStyle='rgba(12,18,6,.2)';ctx.beginPath();ctx.ellipse(t.x+t.r*.35,t.y+t.r*.42,t.r*1.05,t.r*.9,.6,0,TAU);ctx.fill();const sp=treeSpr(pine?'pine':(MAP.gen==='forest'?(t.c<.5?'birch':'oak'):'olive'),Math.floor(t.c*6)),R=t.r*(pine?1.15:1.12);ctx.save();ctx.translate(t.x+TOX,t.y+TOY);{const wv=Math.sin(TIME*1.15+t.x*.013+t.y*.007);ctx.rotate(t.rot*.15+wv*.04);const k2=1+wv*.015;ctx.scale(k2,k2)}ctx.drawImage(sp,-R,-R,R*2,R*2);ctx.restore();return}
   if(t.k==='pine'){ctx.fillStyle='rgba(10,20,8,.2)';ctx.beginPath();ctx.ellipse(t.x+16,t.y+19,t.r*1.05,t.r*.88,.6,0,TAU);ctx.fill();
     for(const [k,col] of[[1,'#1c3a20'],[.8,'#24492a'],[.6,'#2f5c34'],[.4,'#3c7040'],[.2,'#4f8a4c']]){const R=t.r*k,n=10;ctx.fillStyle=col;ctx.beginPath();for(let i=0;i<n*2;i++){const a=t.rot+k*1.7+i*Math.PI/n,r=i%2?R*.72:R;const x=t.x+Math.cos(a)*r-(1-k)*t.r*.12,y=t.y+Math.sin(a)*r-(1-k)*t.r*.14;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.fill()}
@@ -4569,6 +4581,19 @@ function drawBody(c,e){const sk=e.sk||SOLDIERS[1],w=curW(e),Wp=w?WEAP[w.type]:nu
   }
   c.restore()}
 const VSC=1.12;let RIMS=null;
+/* v2.15 — soldat mis en cache (tenue, arme, équipement, pas de marche) : ~250 appels de dessin en moins par soldat.
+   Tir, rechargement, coup de poing et cape restent dessinés en direct. */
+const BC=new Map();
+function drawBodyCached(e){const sk=e.sk||SOLDIERS[1],w=curW(e);if(sk.cape||e.fireCd>0||e.reloadT>0||e.punchT>0||e.inPlane||e.air>0)return false;
+  const m=ctx.getTransform(),px=Math.min(5,Math.ceil(Math.hypot(m.a,m.b)*4)/4);if(px<.2)return false;
+  const ws=(e._ws||0)>.45?1:0,ph=ws?((Math.round(((e.walkPh||0)%TAU+TAU)%TAU/TAU*8)%8)):0,ab=Math.round(((e.angle||0)%TAU+TAU)%TAU/TAU*8)%8;
+  const k=sk.id+'|'+(e.cust?JSON.stringify(e.cust):'')+'|'+(w?w.type:'')+'|'+(e.helmet||0)+'|'+(e.vestLvl||0)+'|'+(e.vest>0?1:0)+'|'+(e.shield>0?1:0)+'|'+(e.mel||'')+'|'+(e.skin||'')+'|'+ws+ph+'|'+ab+'|'+px+'|'+Q.hi;
+  let c=BC.get(k);
+  if(!c){const X0=-40,X1=95,Y0=-46,Y1=46,W=Math.ceil((X1-X0)*px),H=Math.ceil((Y1-Y0)*px);c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.setTransform(px,0,0,px,-X0*px,-Y0*px);
+    const f=Object.create(e);f.walkPh=ph*TAU/8;f._ws=ws;f.fireCd=0;f.reloadT=0;f.punchT=0;f._turn=0;f.x=0;f.y=0;f.angle=ab*TAU/8;f.alive=true;
+    try{drawBody(g,f)}catch(err){return false}c._x=X0;c._y=Y0;c._w=X1-X0;c._h=Y1-Y0;BC.set(k,c);if(BC.size>320)BC.delete(BC.keys().next().value)}
+  else{BC.delete(k);BC.set(k,c)}
+  ctx.drawImage(c,c._x,c._y,c._w,c._h);return true}
 function drawEnt(e){drawEnt0(e);if(CAMROT&&e!==player&&e.alive)ctx.restore()}
 function drawEnt0(e){
   if(e._lx===undefined){e._lx=e.x;e._ly=e.y}
@@ -4586,7 +4611,7 @@ function drawEnt0(e){
   if(e!==player&&e.alive&&!(e.team&&player&&e.team===player.team)){ctx.lineWidth=2.4;ctx.strokeStyle='rgba(12,8,4,.38)';ctx.beginPath();ctx.arc(e.x,e.y,R+1.5,0,TAU);ctx.stroke()}
   /* Contact shadow: anchors each soldier to the terrain and improves depth/readability. */
   if(!e.veh&&e.air<=0){ctx.save();ctx.globalAlpha=.25;ctx.translate(e.x+R*.2,e.y+R*.42);ctx.scale(1.35,.62);const sg=ctx.createRadialGradient(0,0,1,0,0,R*1.15);sg.addColorStop(0,'rgba(5,7,8,.62)');sg.addColorStop(.58,'rgba(5,7,8,.28)');sg.addColorStop(1,'rgba(5,7,8,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(0,0,R*1.15,0,TAU);ctx.fill();ctx.restore()}
-  ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.scale(VSC*PS,VSC*PS);drawBody(ctx,e);ctx.restore();
+  ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.scale(VSC*PS,VSC*PS);if(!drawBodyCached(e))drawBody(ctx,e);ctx.restore();
   if(!e.veh){if(!RIMS){RIMS=mkCv(96,96);const c=RIMS.getContext('2d'),g=c.createRadialGradient(36,34,4,48,48,46);g.addColorStop(0,'rgba(255,244,222,.34)');g.addColorStop(.45,'rgba(255,244,222,.10)');g.addColorStop(1,'rgba(255,244,222,0)');c.fillStyle=g;c.beginPath();c.arc(48,48,46,0,TAU);c.fill()}ctx.globalAlpha=.55;ctx.drawImage(RIMS,e.x-R*1.05,e.y-R*1.05,R*2.1,R*2.1);ctx.globalAlpha=1}
   if(e.hurtT>0){ctx.globalAlpha=Math.min(.5,e.hurtT*1.8);ctx.fillStyle='#fff4e4';ctx.beginPath();ctx.arc(e.x,e.y,R*.82,0,TAU);ctx.fill();ctx.globalAlpha=1}
   if(e!==player&&e.alive){if(CAMROT){ctx.save();ctx.translate(e.x,e.y);ctx.rotate(-CAMROT);ctx.translate(-e.x,-e.y)}const sc=Math.max(1,.85/cam.z),w=38*sc,y=e.y-R-14*sc,h=4.2*sc,f=clamp(e.hp/100,0,1);ctx.globalAlpha=e.hpShowT>0?1:.82;const vb=e.vest>0?2.8*sc:0;ctx.fillStyle='rgba(8,10,14,.74)';rrect(ctx,e.x-w/2-1.8*sc,y-1.8*sc,w+3.6*sc,h+3.6*sc+vb,3.2*sc);ctx.fill();ctx.fillStyle='rgba(255,255,255,.14)';rrect(ctx,e.x-w/2,y,w,h,h/2);ctx.fill();if(f>0){ctx.fillStyle=f>.6?'#5fd38d':f>.3?'#ffb547':'#ff4d4d';rrect(ctx,e.x-w/2,y,Math.max(h,w*f),h,h/2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.3)';rrect(ctx,e.x-w/2+h*.3,y+h*.12,Math.max(0,w*f-h*.6),h*.32,h*.16);ctx.fill()}if(e.vest>0){ctx.fillStyle='#4cc3ff';rrect(ctx,e.x-w/2,y+h+1.2*sc,Math.max(1.6*sc,w*clamp(e.vest/100,0,1)),1.6*sc,.8*sc);ctx.fill()}ctx.globalAlpha=1}}

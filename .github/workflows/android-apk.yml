@@ -13,6 +13,7 @@ on:
       - 'package-lock.json'
       - 'capacitor.config.json'
       - 'admob.json'
+      - 'tools/**'
       - '.github/workflows/android-apk.yml'
 
 permissions:
@@ -66,11 +67,37 @@ jobs:
           packages: platform-tools
       - name: Install Android platform
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses && "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+      - name: Set up Python for the team voice
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Record the team radio voice (Piper)
+        continue-on-error: true
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null || true
+          pip install --quiet piper-tts==1.2.0
+          python3 tools/radio_voice.py
+      - name: Save the recorded voice in the repository
+        continue-on-error: true
+        run: |
+          if [ -n "$(git status --porcelain audio)" ]; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git add audio
+            git commit -q -m "Team radio voice recorded with Piper"
+            git fetch -q --depth=30 origin super-joud
+            git rebase -q FETCH_HEAD || { git rebase --abort; echo "rebase impossible : la voix sera enregistrée au prochain passage"; exit 0; }
+            git push -q origin HEAD:super-joud
+            echo "voix poussée sur super-joud"
+          else
+            echo "voix inchangée"
+          fi
       - name: Prepare local game assets
         run: |
           mkdir -p www/icons
           cp index.html manifest.webmanifest sw.js www/
           cp icons/*.png www/icons/
+          if [ -d audio ]; then cp -r audio www/; fi
       - name: Inject AdMob identifiers into the game
         run: |
           python3 - <<'PY'
@@ -374,7 +401,7 @@ jobs:
           PY
       - name: Set Android version (V200)
         run: |
-          sed -i -E 's/versionCode [0-9]+/versionCode 211/; s/versionName "[^"]*"/versionName "2.1.1"/' android/app/build.gradle
+          sed -i -E 's/versionCode [0-9]+/versionCode 212/; s/versionName "[^"]*"/versionName "2.1.2"/' android/app/build.gradle
           grep -n 'version' android/app/build.gradle
       - name: Build installable debug APK
         run: |

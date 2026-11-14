@@ -1505,7 +1505,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V211</span>
+    <span id="build-tag" aria-label="Version">V212</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -3306,26 +3306,70 @@ function radioCrew(driver) {
   const extra=[['Katrina Banks','Elizabeth Case'],['Katrina Banks','Elizabeth Case'],['Katrina Banks','Elizabeth Case'],['Katrina Banks','Elizabeth Case']];
   return roles.map((role,i)=>({name:names[ix%names.length][i],role})).concat([{name:extra[ix%extra.length][0],role:L3('CHEF D’ÉQUIPE','TEAM BOSS','رئيس الفريق')},{name:extra[ix%extra.length][1],role:L3('ANALYSTE DATA','DATA ANALYST','محلّل البيانات')}]);
 }
-function radioAdvice() {
-  const p=G.player,d=Math.abs(p.d),kmh=Math.round(Math.abs(p.vfw)*3.6);
-  if(LANG==='tn'){
-    if(G.wrongT>0.8) return 'المراقب: راك ماشي بالعكس! نقص في السرعة وارجع للمسار.';
-    if(d>G.T.lim-1.2) return 'المهندس: قربت تخرج على الطريق. نقص شوية وارجع بالراحة.';
-    if(p.nitro<0.18) return 'الاستراتيجي: النيترو قربت توفى. خلّي شوية للخروج من الفيراج الجاي.';
-    if(p.sliding&&kmh>90) return 'المهندس: نقص شوية من الدوران وثبّت الكروسة بالراحة.';
-    if(G.cfg.mode==='race'&&rankOf(p)>1) return 'الاستراتيجي: ما زلت تلحق في المنافسين. استغلّ الهواء وحضّر روحك للتجاوز.';
-    if(G.cfg.mode==='tt') return 'مهندس السباق: حافظ على النسق. فرمل بالراحة وارجع للبنزين بكري.';
-    if(G.cfg.mode==='chase') return 'فريق المطاردة: رد بالك من الرادار وواصل تجري. خذ الفيراجات بنظافة باش تبعّد البوليس.';
-    return 'المراقب: الطريق قدّامك واضح. ركّز في الفرملة واخرج مليح من الفيراج.';
-  }
-  if(G.wrongT>0.8) return LEN()?'SPOTTER: Wrong way! Slow down and turn around safely.':(LANG==='ar'||LANG==='tn'?'المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.':'SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.');
-  if(d>G.T.lim-1.2) return LEN()?'ENGINEER: You are near the track edge. Ease off and return smoothly.':(LANG==='ar'||LANG==='tn'?'المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.':'INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.');
-  if(p.nitro<0.18) return LEN()?'STRATEGIST: Nitro is low. Save it for the exit of the next turn.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.':'STRATÈGE : réserve ton nitro pour la sortie du prochain virage.');
-  if(p.sliding&&kmh>90) return LEN()?'ENGINEER: Reduce steering input and gently stabilize the car.':(LANG==='ar'||LANG==='tn'?'المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.':'INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.');
-  if(G.cfg.mode==='race'&&rankOf(p)>1) return LEN()?'STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.':(LANG==='ar'||LANG==='tn'?'الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.':'STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.');
-  if(G.cfg.mode==='tt') return LEN()?'RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.':(LANG==='ar'||LANG==='tn'?'مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.':'INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.');
-  if(G.cfg.mode==='chase') return LEN()?'CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.':(LANG==='ar'||LANG==='tn'?'فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.':'ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.');
-  return LEN()?'SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.':(LANG==='ar'||LANG==='tn'?'المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.':'SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.');
+// Consignes de l'équipe. Ce bloc JSON est lu tel quel par la compilation GitHub pour enregistrer
+// chaque phrase en fichier audio (audio/radio/<langue>-<situation>.mp3) : le texte et la voix restent identiques.
+const RADIO_LINES = /*RADIO_LINES_BEGIN*/{"wrong": {"fr": "SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.", "en": "SPOTTER: Wrong way! Slow down and turn around safely.", "ar": "المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.", "tn": "المراقب: راك ماشي بالعكس! نقص في السرعة وارجع للمسار."}, "edge": {"fr": "INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.", "en": "ENGINEER: You are near the track edge. Ease off and return smoothly.", "ar": "المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.", "tn": "المهندس: قربت تخرج على الطريق. نقص شوية وارجع بالراحة."}, "nitro": {"fr": "STRATÈGE : réserve ton nitro pour la sortie du prochain virage.", "en": "STRATEGIST: Nitro is low. Save it for the exit of the next turn.", "ar": "الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.", "tn": "الاستراتيجي: النيترو قربت توفى. خلّي شوية للخروج من الفيراج الجاي."}, "slide": {"fr": "INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.", "en": "ENGINEER: Reduce steering input and gently stabilize the car.", "ar": "المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.", "tn": "المهندس: نقص شوية من الدوران وثبّت الكروسة بالراحة."}, "pack": {"fr": "STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.", "en": "STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.", "ar": "الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.", "tn": "الاستراتيجي: ما زلت تلحق في المنافسين. استغلّ الهواء وحضّر روحك للتجاوز."}, "tt": {"fr": "INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.", "en": "RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.", "ar": "مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.", "tn": "مهندس السباق: حافظ على النسق. فرمل بالراحة وارجع للبنزين بكري."}, "chase": {"fr": "ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.", "en": "CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.", "ar": "فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.", "tn": "فريق المطاردة: رد بالك من الرادار وواصل تجري. خذ الفيراجات بنظافة باش تبعّد البوليس."}, "clear": {"fr": "SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.", "en": "SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.", "ar": "المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.", "tn": "المراقب: الطريق قدّامك واضح. ركّز في الفرملة واخرج مليح من الفيراج."}}/*RADIO_LINES_END*/;
+const radioLang = () => LANG === 'tn' ? 'tn' : LANG === 'ar' ? 'ar' : LEN() ? 'en' : 'fr';
+function radioSituation() {
+  const p = G.player, d = Math.abs(p.d), kmh = Math.round(Math.abs(p.vfw) * 3.6);
+  if (G.wrongT > 0.8) return 'wrong';
+  if (d > G.T.lim - 1.2) return 'edge';
+  if (p.nitro < 0.18) return 'nitro';
+  if (p.sliding && kmh > 90) return 'slide';
+  if (G.cfg.mode === 'race' && rankOf(p) > 1) return 'pack';
+  if (G.cfg.mode === 'tt') return 'tt';
+  if (G.cfg.mode === 'chase') return 'chase';
+  return 'clear';
+}
+function radioAdvice() { G.radioKey = radioSituation(); return RADIO_LINES[G.radioKey][radioLang()]; }
+
+/* V212 — voix de l'équipe enregistrée : fichiers audio joués par le moteur son du jeu, avec un filtre « radio ».
+   Ne dépend plus du moteur vocal du téléphone (absent ou défaillant sur certains appareils) ; ce dernier reste en secours. */
+const CREW_CLIPS = { list: null, loading: null, buf: {}, playing: null };
+function crewClipList() {
+  if (CREW_CLIPS.list) return Promise.resolve(CREW_CLIPS.list);
+  if (!CREW_CLIPS.loading) CREW_CLIPS.loading = fetch('audio/radio/index.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => { CREW_CLIPS.list = new Set((j && Array.isArray(j.files)) ? j.files : []); return CREW_CLIPS.list; });
+  return CREW_CLIPS.loading;
+}
+async function playCrewClip(key, lang) {
+  try {
+    if (!key || !window.fetch) return false;
+    const file = lang + '-' + key + '.mp3';
+    const list = await crewClipList(); if (!list.has(file)) return false;
+    AU.init(); const ctx = AU.ctx; if (!ctx) return false;
+    if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (e) { } }
+    let buf = CREW_CLIPS.buf[file];
+    if (!buf) {
+      const r = await fetch('audio/radio/' + file); if (!r.ok) return false;
+      const data = await r.arrayBuffer();
+      buf = await new Promise((ok, ko) => { const pr = ctx.decodeAudioData(data, ok, ko); if (pr && pr.catch) pr.catch(ko); });
+      CREW_CLIPS.buf[file] = buf;
+    }
+    if (CREW_CLIPS.playing) { try { CREW_CLIPS.playing.stop(); } catch (e) { } }
+    const t0 = ctx.currentTime + 0.12, vol = Math.max(0.35, (SAVE.settings.sfx === undefined ? 80 : SAVE.settings.sfx) / 100);
+    // chaîne « radio » : bande passante téléphonique + légère saturation
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 330;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3600;
+    const ws = ctx.createWaveShaper(); const curve = new Float32Array(256); for (let i = 0; i < 256; i++) { const x = i / 127.5 - 1; curve[i] = Math.tanh(x * 1.6) / Math.tanh(1.6); } ws.curve = curve;
+    const g = ctx.createGain(); g.gain.value = 1.15 * vol;
+    hp.connect(lp); lp.connect(ws); ws.connect(g); g.connect(ctx.destination);
+    // souffle d'ouverture du canal
+    if (AU.nb) { const n = ctx.createBufferSource(); n.buffer = AU.nb; const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 0.7; const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0.0001, ctx.currentTime); ng.gain.linearRampToValueAtTime(0.16 * vol, ctx.currentTime + 0.02); ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
+      n.connect(bp); bp.connect(ng); ng.connect(ctx.destination); n.start(ctx.currentTime, Math.random()); n.stop(t0 + 0.08); }
+    const src = ctx.createBufferSource(); src.buffer = buf; src.connect(hp); src.start(t0);
+    CREW_CLIPS.playing = src;
+    // la musique baisse pendant que l'équipe parle
+    try { if (MUS.g) { MUS.g.gain.setTargetAtTime(MUS.g.gain.value * 0.35, ctx.currentTime, 0.08); } } catch (e) { }
+    crewTtsStatus('VOIX DE L’ÉQUIPE EN COURS · radio');
+    src.onended = () => { if (CREW_CLIPS.playing === src) CREW_CLIPS.playing = null; try { MUS.setVol((SAVE.settings.music === undefined ? 60 : SAVE.settings.music) / 100); } catch (e) { } crewTtsStatus('Voix équipe prête · prochaine consigne automatique'); };
+    return true;
+  } catch (e) { console.warn('Voix enregistrée indisponible', e); return false; }
+}
+function crewSpeak(message) {
+  const key = G.radioKey, lang = radioLang();
+  playCrewClip(key, lang).then(ok => { if (!ok) speakCrewAdvice(message); });
 }
 // Radio équipe : confirmation réelle du moteur natif Android, pas seulement de l'envoi.
 let RADIO_TTS_UNLOCKED = false;
@@ -3345,7 +3389,9 @@ function isNativeAndroidApp() {
 }
 function watchNativeCrewTts(plugin) {
   if (!plugin || RADIO_TTS_LISTENER || typeof plugin.addListener !== 'function') return;
-  RADIO_TTS_LISTENER = plugin.addListener('status', event => {
+  RADIO_TTS_LISTENER = true;
+  let handle = null;
+  try { handle = plugin.addListener('status', event => {
     if (!event) return;
     const state = event.state || '';
     if (state === 'ready') {
@@ -3357,7 +3403,10 @@ function watchNativeCrewTts(plugin) {
     } else if (state === 'speaking') crewTtsStatus('VOIX DE L’ÉQUIPE EN COURS · Android');
     else if (state === 'done') crewTtsStatus('Consigne vocale terminée · radio prête');
     else if (state === 'language_error' || state === 'init_error' || state === 'speech_error') crewTtsStatus(event.message || 'Erreur du moteur vocal Android', true);
-  }).catch(e => console.warn('Écoute du moteur vocal Android indisponible', e));
+  }); } catch (e) { console.warn('Écoute du moteur vocal Android indisponible', e); }
+  // selon la version de Capacitor, addListener renvoie une promesse ou directement l'abonnement
+  if (handle && typeof handle.then === 'function') handle.then(h => { RADIO_TTS_LISTENER = h || true; }, e => console.warn('Écoute du moteur vocal Android indisponible', e));
+  else if (handle) RADIO_TTS_LISTENER = handle;
 }
 function unlockCrewSpeech() {
   if (RADIO_TTS_UNLOCKED) return;
@@ -3484,7 +3533,7 @@ function radioCall(automatic = false) {
   $('radio-message').textContent=radioAdvice();
   const box=$('radio-team');box.classList.remove('radio-ping');void box.offsetWidth;box.classList.add('radio-ping');
   try{AU.shot(920,0.055,'sine',0.045);setTimeout(()=>AU.shot(640,0.07,'sine',0.035),85);}catch(e){}
-  speakCrewAdvice($('radio-message').textContent);
+  crewSpeak($('radio-message').textContent);
 }
 
 /* Radio vocale WebRTC : le chef d'équipe ouvre un canal, les équipiers le rejoignent avec le même code. */
@@ -5694,6 +5743,7 @@ const RADIO_EN = [
   ['Canal introuvable : demande au chef d’équipe de l’ouvrir d’abord.', 'Channel not found: ask the team leader to open it first.'],
   ['Accès au micro refusé. Autorise le microphone dans ton navigateur.', 'Microphone access denied. Allow the microphone in your browser.'],
   ['Aucun microphone détecté.', 'No microphone detected.'],
+  ['VOIX DE L’ÉQUIPE EN COURS · radio', 'TEAM VOICE SPEAKING · radio'],
   ['Voix indisponible dans ce navigateur. Vérifie « Synthèse vocale » dans les réglages Android, ou utilise l’application installée.', 'Voice unavailable in this browser. Check “Text-to-speech” in the Android settings, or use the installed app.'],
   ['Aucune voix (français, anglais ou arabe) installée sur ce téléphone. Installe une voix dans les réglages Android.', 'No French, English or Arabic voice is installed on this phone. Install a voice in the Android settings.'],
 ];
@@ -6967,7 +7017,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V211';
+const GAME_VERSION = 'V212';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais

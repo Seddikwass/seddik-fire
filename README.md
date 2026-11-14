@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Version 2.17
+- Parcours : grille des 50 étapes pour rejouer n'importe quelle étape débloquée ; difficulté croissante (adversaires plus nombreux et plus précis, gilets dès l'étape 9, casques dès la 15, armes principales dès la 19, plus de points de vie dès la 35).
+- Profils : plusieurs joueurs sur le même appareil, chacun avec sa propre progression ; sauvegarde automatique toutes les 15 s en partie et dès que l'application passe en arrière-plan.
+- Radio d'équipe : le QG conseille pendant la bataille (atterrissage, arme, zone, santé, ennemis avec direction et distance, tirs reçus, grenades, rechargement, survivants restants, largage, victoire), à la voix ou par écrit, dans la langue du jeu.
+- Langues : français, anglais, arabe, espagnol, allemand, italien, portugais, turc, russe (menu de choix de langue).
+- Ville : voitures garées détaillées (pare-brise, toit, phares, feux, rétroviseurs, pick-up, taxi), motos garées, lampadaires, poubelles, jardinières, bornes et bancs le long des avenues.
+
 ## Version 2.16
 - Joueurs : rendu détaillé pour tous les soldats et à tous les niveaux de qualité (recul, rechargement et coups intégrés), image plus nette, volume éclairé par le soleil, contour doux qui détache le soldat du terrain.
 - Cartes : nouveaux détails au sol selon le type de carte — prairie (touffes d'herbe, fleurs, cailloux, terre nue), forêt (feuilles mortes, fougères, champignons, branches, mousse), désert (rides de sable, buissons secs, cailloux, terre craquelée), ville (déchets, taches, herbes folles), routes (taches d'huile, fissures, plaques d'égout, rapiéçages), bord de mer (coquillages, algues, galets).

@@ -1492,6 +1492,12 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 #h-delta.fast{background:#12853a;color:#fff}
 #h-delta.slow{background:#b3202b;color:#fff}
 
+/* V213 — fiche technique des circuits */
+.tfacts{display:flex;flex-wrap:wrap;gap:4px}
+.tfacts i{font-style:normal;font:700 11px var(--fb);padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#dfe5ee;white-space:nowrap}
+.trk.on .tfacts i{border-color:rgba(255,209,102,.45)}
+.trk canvas,.ev canvas{image-rendering:auto;border-radius:8px}
+
 </style>
 </head>
 <body>
@@ -1505,7 +1511,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V212</span>
+    <span id="build-tag" aria-label="Version">V213</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -3750,8 +3756,10 @@ function driverMesh(idx, pose) {
 
 /* ---------- portrait SVG (généré, sans image externe) ---------- */
 function shade(hex, k) { const c = hexToRgb(hex).map(v => Math.round(clamp(v * k, 0, 1) * 255)); return `rgb(${c[0]},${c[1]},${c[2]})`; }
+let DRV_SVG_N = 0;
 function driverSVG(d, size = 96) {
-  const sk = d.skin, hc = d.hairC, su = d.suit, id = 'pg' + d.id;
+  // identifiants uniques par portrait : un même pilote affiché deux fois (dont une fois masqué) ne casse plus ses dégradés
+  const sk = d.skin, hc = d.hairC, su = d.suit, id = 'pg' + d.id + '_' + (++DRV_SVG_N);
   const back = { long: `<path d="M29 46 C26 20 74 20 71 46 L73 80 L27 80 Z" fill="${hc}"/>`, pony: `<path d="M64 34 C80 40 80 66 72 74 C74 60 70 46 62 40 Z" fill="${hc}"/>`, bob: `<path d="M30 46 C28 22 72 22 70 46 L71 62 L29 62 Z" fill="${hc}"/>` }[d.hair] || '';
   const top = {
     short: `<path d="M32 42 C31 22 69 22 68 42 C64 31 36 31 32 42 Z" fill="${hc}"/>`,
@@ -3768,14 +3776,41 @@ function driverSVG(d, size = 96) {
       : d.beard === 'goatee' ? `<path d="M45 59 C46 66 54 66 55 59 C53 62 47 62 45 59 Z" fill="${hc}"/>` : '';
   const eyes = d.glasses ? `<rect x="36" y="41" width="12" height="8" rx="2.8" fill="#101923" stroke="#d8e3eb" stroke-width="1.1"/><rect x="52" y="41" width="12" height="8" rx="2.8" fill="#101923" stroke="#d8e3eb" stroke-width="1.1"/><path d="M48 44.5 H52 M35 43 L32 42 M64 43 L67 42" stroke="#d8e3eb" stroke-width="1.2" fill="none"/>`
     : `<ellipse cx="43" cy="45" rx="3.1" ry="3.5" fill="#f4e9dc"/><ellipse cx="57" cy="45" rx="3.1" ry="3.5" fill="#f4e9dc"/><ellipse cx="43.5" cy="45.5" rx="1.65" ry="2.5" fill="#241a16"/><ellipse cx="57.5" cy="45.5" rx="1.65" ry="2.5" fill="#241a16"/><circle cx="44" cy="44.5" r=".7" fill="#fff"/><circle cx="58" cy="44.5" r=".7" fill="#fff"/><path d="M38.5 40.5 Q43 38.5 47 40 M53 40 Q57 38.5 61.5 40.5" stroke="${hc}" stroke-width="2" stroke-linecap="round" fill="none"/>`;
-  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${d.name}"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(su, 0.55)}"/><stop offset="1" stop-color="#0b0e17"/></linearGradient></defs>
-<rect width="100" height="100" fill="url(#${id})"/>${back}
-<path d="M10 100 C13 79 30 73 50 73 C70 73 87 79 90 100 Z" fill="${su}"/><path d="M15 91 Q25 82 38 82 L43 100 H10 Z M85 91 Q75 82 62 82 L57 100 H90 Z" fill="${shade(su, 0.72)}" opacity=".72"/><path d="M42 74 L50 86 L58 74" stroke="${shade(su, 1.6)}" stroke-width="2.5" fill="none"/><path d="M20 94 L34 88 M80 94 L66 88" stroke="${shade(su, 1.35)}" stroke-width="1.4" opacity=".8"/><path d="M50 86 V100" stroke="#ffffff" stroke-width="1" opacity=".35"/>
-<rect x="43" y="58" width="14" height="17" rx="3" fill="${shade(sk, 0.85)}"/>
-<ellipse cx="33" cy="47" rx="3.5" ry="5" fill="${shade(sk, 0.92)}"/><ellipse cx="67" cy="47" rx="3.5" ry="5" fill="${shade(sk, 0.92)}"/>
-<ellipse cx="50" cy="45" rx="17" ry="20" fill="${sk}"/>${beard}${top}${eyes}
-<path d="M50 47 L48 53 L51 53.5" stroke="${shade(sk, 0.72)}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-<path d="M44 57 Q50 61 56 57" stroke="#5b2e22" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>`;
+  // V213 — portrait détaillé : éclairage du visage, cheveux brillants, combinaison de course à col montant,
+  // épaulettes aux couleurs du casque, fermeture éclair, badge numéroté, fond lumineux aux couleurs de l'écurie
+  const num = String((DRIVERS.indexOf(d) + 1) || 1).padStart(2, '0'), he = d.helmet || su;
+  const defs = `<defs>
+<radialGradient id="${id}b" cx=".5" cy=".38" r=".75"><stop offset="0" stop-color="${shade(su, 0.9)}"/><stop offset=".55" stop-color="${shade(su, 0.36)}"/><stop offset="1" stop-color="#05070c"/></radialGradient>
+<radialGradient id="${id}s" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="${shade(sk, 1.16)}"/><stop offset=".6" stop-color="${sk}"/><stop offset="1" stop-color="${shade(sk, 0.74)}"/></radialGradient>
+<linearGradient id="${id}h" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shade(hc, 2.2)}"/><stop offset=".35" stop-color="${hc}"/><stop offset="1" stop-color="${shade(hc, 0.6)}"/></linearGradient>
+<linearGradient id="${id}u" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(su, 1.25)}"/><stop offset="1" stop-color="${shade(su, 0.62)}"/></linearGradient>
+<linearGradient id="${id}r" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".85" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></linearGradient>
+</defs>`;
+  const hairFill = x => x.replace(new RegExp('fill="' + hc.replace(/[#]/g, '\\#') + '"', 'g'), `fill="url(#${id}h)"`);
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${d.name}">${defs}
+<rect width="100" height="100" fill="url(#${id}b)"/>
+<g opacity=".16" stroke="#fff" stroke-width="5"><path d="M-10 70 L40 -10"/><path d="M8 82 L58 2"/><path d="M60 110 L110 30"/></g>
+<text x="96" y="20" text-anchor="end" font-family="Russo One,Arial Black,sans-serif" font-size="19" font-style="italic" fill="#fff" opacity=".13">${num}</text>
+${hairFill(back)}
+<path d="M8 100 C11 80 28 72 50 72 C72 72 89 80 92 100 Z" fill="url(#${id}u)"/>
+<path d="M8 100 C10 86 17 79 27 76 L33 100 Z M92 100 C90 86 83 79 73 76 L67 100 Z" fill="${he}" opacity=".9"/>
+<path d="M27 76 L33 100 M73 76 L67 100" stroke="${shade(he, 0.55)}" stroke-width="1.2" fill="none"/>
+<path d="M36 74 C38 66 62 66 64 74 L60 82 C55 79 45 79 40 82 Z" fill="${shade(su, 0.5)}"/>
+<path d="M38 73.5 C42 69 58 69 62 73.5" stroke="${shade(su, 1.7)}" stroke-width="1.2" fill="none"/>
+<path d="M50 80 V100" stroke="${shade(su, 0.4)}" stroke-width="1.6"/><path d="M50 80 V100" stroke="#cfd6df" stroke-width=".6" stroke-dasharray="1.4 1.2"/>
+<rect x="56" y="86" width="15" height="9" rx="2" fill="#0b0f16" stroke="${he}" stroke-width="1"/><text x="63.5" y="93.2" text-anchor="middle" font-family="Russo One,Arial Black,sans-serif" font-size="7" fill="#fff">${num}</text>
+<rect x="43" y="57" width="14" height="16" rx="3" fill="${shade(sk, 0.8)}"/><path d="M43 63 Q50 67 57 63 V60 Q50 64 43 60 Z" fill="${shade(sk, 0.62)}" opacity=".7"/>
+<ellipse cx="33" cy="47" rx="3.5" ry="5" fill="${shade(sk, 0.86)}"/><ellipse cx="67" cy="47" rx="3.5" ry="5" fill="${shade(sk, 0.86)}"/>
+<ellipse cx="50" cy="45" rx="17" ry="20" fill="url(#${id}s)"/>
+<ellipse cx="50" cy="45" rx="17" ry="20" fill="url(#${id}r)"/>
+<ellipse cx="40.5" cy="53" rx="3.6" ry="2.2" fill="#e0716a" opacity=".16"/><ellipse cx="59.5" cy="53" rx="3.6" ry="2.2" fill="#e0716a" opacity=".16"/>
+${hairFill(beard)}${hairFill(top)}
+${d.glasses ? '' : `<path d="M38.5 39.6 Q43 37.4 47 39.4" stroke="${shade(hc, 0.9)}" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M53 39.4 Q57 37.4 61.5 39.6" stroke="${shade(hc, 0.9)}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`}
+${eyes}
+<path d="M50 47 L48 53 L51 53.5" stroke="${shade(sk, 0.66)}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+<path d="M44 57 Q50 61.2 56 57" stroke="#5b2e22" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M46 58.6 Q50 60.4 54 58.6" stroke="${shade(sk, 1.15)}" stroke-width=".8" fill="none" opacity=".6"/>
+<rect x=".75" y=".75" width="98.5" height="98.5" fill="none" stroke="${he}" stroke-opacity=".55" stroke-width="1.5" rx="2"/>
+</svg>`;
 }
 
 'use strict';
@@ -5423,7 +5458,7 @@ const TXT = {
     tunis: ['Centre-ville • Nuit', 'Downtown • Night', 'وسط المدينة • ليلاً'], sahara: ['Désert • Coucher de soleil', 'Desert • Sunset', 'الصحراء • الغروب'],
     atlas: ['Montagne • Grand soleil', 'Mountains • Bright sun', 'الجبال • شمس ساطعة'], corniche: ['Bord de mer • Matin', 'Seaside • Morning', 'شاطئ البحر • صباحاً'],
     circuit: ['Circuit automobile • Carthage', 'Carthage race circuit', 'حلبة قرطاج للسيارات'], port: ['Port de Radès • Nuit', 'Rades port • Night', 'ميناء رادس • الليل'], aindraham: ['Aïn Draham • Pluie et brouillard', 'Ain Draham • Rain and fog', 'عين دراهم • مطر وضباب'],
-    sousse: ['سوسة • بوجعفر والمدينة العتيقة', 'Sousse • Boujaafar and medina', 'سوسة • بوجعفر والمدينة العتيقة'], sfax: ['صفاقس • طريق قرمدة والمنطقة الصناعية', 'Sfax • Gremda industrial road', 'صفاقس • طريق قرمدة والمنطقة الصناعية'], djerba: ['جربة • حومة السوق والبحيرة', 'Djerba • Houmt Souk and lagoon', 'جربة • حومة السوق والبحيرة'], hammamet: ['الحمامات • ياسمين والمارينا', 'Hammamet • Yasmine and marina', 'الحمامات • ياسمين والمارينا'], bizerte: ['بنزرت • الميناء القديم وكاب بلان', 'Bizerte • Old port and Cap Blanc', 'بنزرت • الميناء القديم وكاب بلان'], kairouan: ['القيروان • المدينة العتيقة والأسوار', 'Kairouan • Medina and ramparts', 'القيروان • المدينة العتيقة والأسوار'], monastir: ['المنستير • الرباط والمارينا', 'Monastir • Ribat and marina', 'المنستير • الرباط والمارينا'], tunis: ['تونس • المدينة العتيقة والبحيرة', 'Tunis • Medina and lake', 'تونس • المدينة العتيقة والبحيرة'], sahara: ['دوز • كثبان شط الجريد', 'Douz • Chott el-Jerid dunes', 'دوز • كثبان شط الجريد'], atlas: ['القصرين • جبل الشعانبي', 'Kasserine • Djebel Chambi', 'القصرين • جبل الشعانبي'], corniche: ['سيدي بوسعيد • المرسى والكورنيش', 'Sidi Bou Said • La Marsa corniche', 'سيدي بوسعيد • المرسى والكورنيش'],
+    sousse: ['Sousse • Boujaafar et la médina', 'Sousse • Boujaafar and medina', 'سوسة • بوجعفر والمدينة العتيقة'], sfax: ['Sfax • Route de Gremda et zone industrielle', 'Sfax • Gremda industrial road', 'صفاقس • طريق قرمدة والمنطقة الصناعية'], djerba: ['Djerba • Houmt Souk et la lagune', 'Djerba • Houmt Souk and lagoon', 'جربة • حومة السوق والبحيرة'], hammamet: ['Hammamet • Yasmine et la marina', 'Hammamet • Yasmine and marina', 'الحمامات • ياسمين والمارينا'], bizerte: ['Bizerte • Vieux port et Cap Blanc', 'Bizerte • Old port and Cap Blanc', 'بنزرت • الميناء القديم وكاب بلان'], kairouan: ['Kairouan • Médina et remparts', 'Kairouan • Medina and ramparts', 'القيروان • المدينة العتيقة والأسوار'], monastir: ['Monastir • Ribat et marina', 'Monastir • Ribat and marina', 'المنستير • الرباط والمارينا'], tunis: ['Tunis • Médina et lac', 'Tunis • Medina and lake', 'تونس • المدينة العتيقة والبحيرة'], sahara: ['Douz • Dunes du chott el-Jérid', 'Douz • Chott el-Jerid dunes', 'دوز • كثبان شط الجريد'], atlas: ['Kasserine • Djebel Chambi', 'Kasserine • Djebel Chambi', 'القصرين • جبل الشعانبي'], corniche: ['Sidi Bou Saïd • Corniche de La Marsa', 'Sidi Bou Said • La Marsa corniche', 'سيدي بوسعيد • المرسى والكورنيش'],
   },
 };
 // التونسي: واجهة محلية باللهجة التونسية مع إبقاء بقية المحتوى متوافقاً مع الفرنسية.
@@ -7017,7 +7052,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V212';
+const GAME_VERSION = 'V213';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
@@ -7170,7 +7205,7 @@ const UI = {
     $('q-track-filters').innerHTML=trackFilters.map(([key,label])=>`<button type="button" data-filter="${key}" class="${(q.trackFilter||'all')===key?'on':''}">${label}</button>`).join('');
     $('q-track-filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{q.trackFilter=b.dataset.filter;this.renderQuick();});
     const visibleTracks=TRACKS.map((d,i)=>({d,i})).filter(x=>(q.trackFilter||'all')==='all'||x.d.theme===(q.trackFilter||'all'));
-    $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small><small>${t('record', SAVE.best[d.id] ? fmtT(SAVE.best[d.id]) : '—')}</small></button>`).join('');
+    $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small>${trackFacts(d)}<small>${t('record', SAVE.best[d.id] ? fmtT(SAVE.best[d.id]) : '—')}</small></button>`).join('');
     $('q-tracks').querySelectorAll('button').forEach(b => { b.onclick = () => { q.track = +b.dataset.i; this.renderQuick(); }; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.i], q.track === +b.dataset.i); });
     $('q-laps').classList.toggle('hidden', q.mode === 'chase'); $('q-opp').classList.toggle('hidden', q.mode !== 'race'); $('q-diff').classList.toggle('hidden', q.mode !== 'race');
     $('q-laps').querySelector('span').textContent = q.laps; $('q-opp').querySelector('span').textContent = q.opp;
@@ -7363,34 +7398,133 @@ const UI = {
 };
 
 /* ---------- dessins 2D ---------- */
+// V213 — carte de circuit détaillée : terrain selon le décor, route avec bas-côtés, vibreurs dans les virages serrés,
+// ligne de départ en damier, sens de course, numéros de virages ; la fiche (longueur, virages, dénivelé) est calculée ici.
+const TRK_INFO = {};
+function trackGeom(def) {
+  if (TRK_INFO[def.id]) return TRK_INFO[def.id];
+  const P = def.pts.map(p => [p[0], p[2] || 0, p[1]]), n = P.length, pts = [];
+  for (let i = 0; i < n; i++) for (let k = 0; k < 16; k++) { const q = crPoint(P[(i - 1 + n) % n], P[i], P[(i + 1) % n], P[(i + 2) % n], k / 16); pts.push([q[0], q[2], q[1]]); }
+  const N = pts.length, ang = [], curv = new Array(N).fill(0);
+  let L = 0, y0 = 1e9, y1 = -1e9;
+  for (let i = 0; i < N; i++) { const a = pts[i], b = pts[(i + 1) % N]; L += Math.hypot(b[0] - a[0], b[1] - a[1]); ang.push(Math.atan2(b[1] - a[1], b[0] - a[0])); y0 = Math.min(y0, a[2]); y1 = Math.max(y1, a[2]); }
+  for (let i = 0; i < N; i++) { let d = ang[i] - ang[(i - 1 + N) % N]; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; curv[i] = d; }
+  // courbure lissée sur ~60 m pour trouver les vrais virages
+  const W = 6, sm = curv.map((_, i) => { let t = 0; for (let k = -W; k <= W; k++) t += curv[(i + k + N) % N]; return t; });
+  const turns = []; let inTurn = false, best = -1, bestV = 0, sign = 0;
+  for (let i = 0; i <= N; i++) {
+    const v = sm[i % N], hot = Math.abs(v) > 0.32;
+    if (hot && (!inTurn || Math.sign(v) !== sign)) { if (inTurn && best >= 0) turns.push(best); inTurn = true; sign = Math.sign(v); best = i % N; bestV = Math.abs(v); }
+    else if (hot && Math.abs(v) > bestV) { best = i % N; bestV = Math.abs(v); }
+    else if (!hot && inTurn) { turns.push(best); inTurn = false; best = -1; bestV = 0; }
+  }
+  return TRK_INFO[def.id] = { pts, curv: sm, turns, L, elev: Math.max(0, y1 - y0) };
+}
+const TRK_TXT = { fr: ['virages', 'dénivelé'], en: ['turns', 'elevation'], es: ['curvas', 'desnivel'], pt: ['curvas', 'desnível'], de: ['Kurven', 'Höhenunterschied'], it: ['curve', 'dislivello'], tr: ['viraj', 'yükselti'], ar: ['منعطفات', 'فرق الارتفاع'], tn: ['فيراجات', 'فرق العلو'] };
+function trackFacts(def) {
+  const g = trackGeom(def), w = TRK_TXT[LANG] || TRK_TXT.en, km = g.L / 1000 * spdU();
+  return `<span class="tfacts"><i>${km.toFixed(1).replace('.', LANG === 'en' ? '.' : ',')} ${MPH() ? 'mi' : 'km'}</i><i>${g.turns.length} ${w[0]}</i><i>↕ ${Math.round(g.elev)} m</i></span>`;
+}
+const TRK_GROUND = {
+  city: ['#1a1d29', '#0d0f16', 'rgba(255,214,120,.10)'], desert: ['#a8733f', '#5f3a1d', 'rgba(255,230,180,.16)'], mountain: ['#3c5228', '#1b2614', 'rgba(220,235,200,.10)'],
+  coast: ['#2f7fae', '#164a6b', 'rgba(255,255,255,.14)'], circuit: ['#355a25', '#17290f', 'rgba(255,255,255,.08)'], port: ['#1c2633', '#0b1119', 'rgba(140,190,255,.10)'], forest: ['#24391b', '#0f1a0b', 'rgba(200,230,180,.08)'],
+};
 function drawTrackPreview(cv, def, on) {
-  const ctx = cv.getContext('2d'), P = def.pts.map(p => [p[0], 0, p[1]]), n = P.length, pts = [];
-  for (let i = 0; i < n; i++) for (let k = 0; k < 12; k++) { const q = crPoint(P[(i - 1 + n) % n], P[i], P[(i + 1) % n], P[(i + 2) % n], k / 12); pts.push([q[0], q[2]]); }
+  if (!cv.dataset.w) { cv.dataset.w = cv.width; cv.dataset.h = cv.height; }
+  const k = Math.min(2.5, Math.max(1.5, window.devicePixelRatio || 1)), Wc = +cv.dataset.w, Hc = +cv.dataset.h;
+  if (cv.width !== Math.round(Wc * k)) { cv.width = Math.round(Wc * k); cv.height = Math.round(Hc * k); }
+  const ctx = cv.getContext('2d'), g = trackGeom(def), pts = g.pts, N = pts.length;
+  ctx.setTransform(k, 0, 0, k, 0, 0);
   let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const [x, z] of pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
-  const sc = Math.min((cv.width - 30) / (x1 - x0), (cv.height - 30) / (z1 - z0)), ox = (cv.width - (x1 - x0) * sc) / 2, oz = (cv.height - (z1 - z0) * sc) / 2;
-  const M = (x, z) => [ox + (x - x0) * sc, cv.height - (oz + (z - z0) * sc)];
-  ctx.clearRect(0, 0, cv.width, cv.height); ctx.lineJoin = 'round';
-  ctx.beginPath(); pts.forEach((p, i) => { const q = M(p[0], p[1]); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.closePath();
-  ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 9; ctx.stroke(); ctx.strokeStyle = on ? PALETTE.accent : '#d8dbe4'; ctx.lineWidth = 4; ctx.stroke();
-  const s = M(pts[0][0], pts[0][1]); ctx.fillStyle = '#fff'; ctx.fillRect(s[0] - 4, s[1] - 4, 8, 8);
+  const pad = 20, sc = Math.min((Wc - pad * 2) / (x1 - x0), (Hc - pad * 2) / (z1 - z0)), ox = (Wc - (x1 - x0) * sc) / 2, oz = (Hc - (z1 - z0) * sc) / 2;
+  const M = (x, z) => [ox + (x - x0) * sc, Hc - (oz + (z - z0) * sc)];
+  // terrain
+  const gr = TRK_GROUND[def.theme] || TRK_GROUND.city, bg = ctx.createRadialGradient(Wc * 0.45, Hc * 0.35, 10, Wc / 2, Hc / 2, Wc * 0.75);
+  bg.addColorStop(0, gr[0]); bg.addColorStop(1, gr[1]); ctx.fillStyle = bg; ctx.fillRect(0, 0, Wc, Hc);
+  let seed = 0; for (const c of def.id) seed = (seed * 31 + c.charCodeAt(0)) >>> 0; const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+  ctx.fillStyle = gr[2];
+  if (def.theme === 'desert') { ctx.strokeStyle = gr[2]; ctx.lineWidth = 1.2; for (let i = 0; i < 9; i++) { const y = rnd() * Hc, x = rnd() * Wc; ctx.beginPath(); ctx.moveTo(x - 40, y); ctx.quadraticCurveTo(x, y - 10, x + 40, y); ctx.stroke(); } }
+  else if (def.theme === 'coast' || def.theme === 'port') { ctx.strokeStyle = gr[2]; ctx.lineWidth = 1; for (let i = 0; i < 12; i++) { const y = rnd() * Hc, x = rnd() * Wc; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 6, y - 3, x + 12, y); ctx.stroke(); } }
+  else if (def.theme === 'city') { for (let i = 0; i < 26; i++) ctx.fillRect(rnd() * Wc, rnd() * Hc, 4 + rnd() * 9, 4 + rnd() * 9); }
+  else { for (let i = 0; i < 70; i++) { ctx.beginPath(); ctx.arc(rnd() * Wc, rnd() * Hc, 1 + rnd() * 2.6, 0, Math.PI * 2); ctx.fill(); } }
+  const path = () => { ctx.beginPath(); pts.forEach((p, i) => { const q = M(p[0], p[1]); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.closePath(); };
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  // ombre, bas-côtés, bitume, lignes de rive
+  path(); ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 13; ctx.stroke();
+  path(); ctx.strokeStyle = def.theme === 'desert' ? '#c99b63' : '#6d6f73'; ctx.lineWidth = 10; ctx.stroke();
+  path(); ctx.strokeStyle = '#2a2c31'; ctx.lineWidth = 7.4; ctx.stroke();
+  path(); ctx.strokeStyle = on ? PALETTE.accent : 'rgba(235,238,245,.75)'; ctx.lineWidth = 1; ctx.setLineDash(on ? [] : [5, 4]); ctx.stroke(); ctx.setLineDash([]);
+  // vibreurs rouge et blanc à l'extérieur des virages serrés
+  for (let i = 0; i < N; i++) {
+    const c = g.curv[i]; if (Math.abs(c) < 0.42) continue;
+    const a = M(pts[i][0], pts[i][1]), b = M(pts[(i + 1) % N][0], pts[(i + 1) % N][1]), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, s2 = c > 0 ? 1 : -1;
+    const nx = dy / l * 5.4 * s2, ny = -dx / l * 5.4 * s2;
+    ctx.strokeStyle = (i % 2) ? '#e8333a' : '#f4f4f4'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(a[0] + nx, a[1] + ny); ctx.lineTo(b[0] + nx, b[1] + ny); ctx.stroke();
+  }
+  // ligne de départ en damier, perpendiculaire à la route
+  { const a = M(pts[0][0], pts[0][1]), b = M(pts[2][0], pts[2][1]), ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    ctx.save(); ctx.translate(a[0], a[1]); ctx.rotate(ang);
+    for (let r = 0; r < 2; r++) for (let c = -2; c < 2; c++) { ctx.fillStyle = (r + c) % 2 ? '#fff' : '#111'; ctx.fillRect(r * 1.8 - 1.8, c * 1.85, 1.8, 1.85); }
+    // flèche de sens de course
+    ctx.translate(15, 0); ctx.fillStyle = on ? PALETTE.accent : '#fff'; ctx.beginPath(); ctx.moveTo(5, 0); ctx.lineTo(-2.5, -4); ctx.lineTo(-1, 0); ctx.lineTo(-2.5, 4); ctx.closePath(); ctx.fill();
+    ctx.restore(); }
+  // numéros de virages, placés à l'intérieur de la courbe
+  ctx.font = '700 8px "Chakra Petch",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  g.turns.forEach((ti, n) => {
+    const a = M(pts[ti][0], pts[ti][1]), b = M(pts[(ti + 1) % N][0], pts[(ti + 1) % N][1]), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, s2 = g.curv[ti] > 0 ? -1 : 1;
+    const x = a[0] + dy / l * 12 * s2, y = a[1] - dx / l * 12 * s2;
+    ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fillStyle = 'rgba(8,11,17,.86)'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = on ? PALETTE.accent : 'rgba(255,255,255,.55)'; ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.fillText(String(n + 1), x, y + 0.5);
+  });
+  // cadre et voile pour la lisibilité
+  const vg = ctx.createLinearGradient(0, 0, 0, Hc); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.25)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, Wc, Hc);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 let MINI = null;
 function makeMinimap(T) {
   const S = 340, c = document.createElement('canvas'); c.width = c.height = S; const ctx = c.getContext('2d');
-  ctx.lineJoin = 'round'; ctx.beginPath(); T.mini.pts.forEach((p, i) => { const x = S / 2 + p[0] * S * 0.82, y = S / 2 + p[1] * S * 0.82; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.closePath();
-  ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.lineWidth = 12; ctx.stroke(); ctx.strokeStyle = 'rgba(235,238,245,.85)'; ctx.lineWidth = 5; ctx.stroke();
-  const s0 = T.mini.map(T.px[0], T.pz[0]); ctx.fillStyle = PALETTE.accent; ctx.fillRect(S / 2 + s0[0] * S * 0.82 - 5, S / 2 + s0[1] * S * 0.82 - 5, 10, 10);
+  const P = T.mini.pts.map(p => [S / 2 + p[0] * S * 0.82, S / 2 + p[1] * S * 0.82]), N = P.length;
+  const path = () => { ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); };
+  const bg = ctx.createRadialGradient(S / 2, S / 2, 20, S / 2, S / 2, S / 2); bg.addColorStop(0, 'rgba(30,38,52,.92)'); bg.addColorStop(1, 'rgba(8,11,17,.94)');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+  ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.lineWidth = 1; for (let k = 20; k < S; k += 40) { ctx.beginPath(); ctx.moveTo(k, 0); ctx.lineTo(k, S); ctx.moveTo(0, k); ctx.lineTo(S, k); ctx.stroke(); }
+  ctx.lineJoin = 'round';
+  path(); ctx.strokeStyle = 'rgba(0,0,0,.75)'; ctx.lineWidth = 20; ctx.stroke();
+  path(); ctx.strokeStyle = '#5c6068'; ctx.lineWidth = 15; ctx.stroke();
+  path(); ctx.strokeStyle = '#30333a'; ctx.lineWidth = 11; ctx.stroke();
+  path(); ctx.strokeStyle = 'rgba(240,242,248,.55)'; ctx.lineWidth = 1.5; ctx.setLineDash([7, 6]); ctx.stroke(); ctx.setLineDash([]);
+  // vibreurs dans les virages serrés
+  const ang = i => Math.atan2(P[(i + 1) % N][1] - P[i][1], P[(i + 1) % N][0] - P[i][0]);
+  for (let i = 0; i < N; i++) {
+    let d = ang(i) - ang((i - 1 + N) % N); while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+    if (Math.abs(d) < 0.12) continue;
+    const a = P[i], b = P[(i + 1) % N], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, s2 = d > 0 ? -1 : 1, nx = dy / l * 8 * s2, ny = -dx / l * 8 * s2;
+    ctx.strokeStyle = i % 2 ? '#e8333a' : '#f2f2f2'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(a[0] + nx, a[1] + ny); ctx.lineTo(b[0] + nx, b[1] + ny); ctx.stroke();
+  }
+  // ligne de départ en damier
+  const s0 = T.mini.map(T.px[0], T.pz[0]), s1 = T.mini.map(T.px[4] || T.px[1], T.pz[4] || T.pz[1]);
+  const sx = S / 2 + s0[0] * S * 0.82, sy = S / 2 + s0[1] * S * 0.82, an = Math.atan2(s1[1] - s0[1], s1[0] - s0[0]);
+  ctx.save(); ctx.translate(sx, sy); ctx.rotate(an); for (let r = 0; r < 2; r++) for (let q = -3; q < 3; q++) { ctx.fillStyle = (r + q) % 2 ? '#fff' : '#111'; ctx.fillRect(r * 3 - 3, q * 2.6, 3, 2.6); } ctx.restore();
   MINI = c;
 }
 function drawMinimap() {
   const cv = $('minimap'), ctx = cv.getContext('2d'), S = cv.width, T = G.T; if (!MINI) return;
   ctx.clearRect(0, 0, S, S); ctx.save(); ctx.beginPath(); ctx.arc(S / 2, S / 2, S / 2 - 2, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(MINI, 0, 0);
   const blink = Math.sin(G.time * 12) > 0;
+  const racers = G.cfg.mode === 'race' ? G.cars.filter(c => c.kind === 'ai' || c.kind === 'player').sort((a, b) => (b.progress || 0) - (a.progress || 0)) : null;
+  ctx.font = '800 15px "Chakra Petch",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const c of G.cars) {
     if (c.kind === 'player') continue;
     const x = S / 2 + T.mini.mx(c.x) * S * 0.82, y = S / 2 + T.mini.mz(c.z) * S * 0.82;
-    ctx.fillStyle = c.kind === 'ai' ? '#ff4040' : c.kind === 'cop' ? (c.wreck ? '#555' : blink ? '#3a7bff' : '#ff3030') : 'rgba(170,175,185,.7)';
-    ctx.beginPath(); if (c.kind === 'ai') { ctx.rect(x - 6, y - 6, 12, 12); } else ctx.arc(x, y, c.kind === 'traffic' ? 4 : 7, 0, Math.PI * 2); ctx.fill();
+    if (c.kind === 'ai') {
+      const col = c.col ? (typeof c.col === 'string' ? c.col : 'rgb(' + c.col.map(v => Math.round(clamp(v, 0, 1) * 255)).join(',') + ')') : '#ff4040';
+      ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#0a0d14'; ctx.stroke();
+      if (racers) { const r = racers.indexOf(c) + 1; ctx.fillStyle = '#0a0d14'; ctx.fillText(String(r), x, y + 1); ctx.fillStyle = '#fff'; ctx.fillText(String(r), x - 0.6, y + 0.4); }
+      continue;
+    }
+    ctx.fillStyle = c.kind === 'cop' ? (c.wreck ? '#555' : blink ? '#3a7bff' : '#ff3030') : 'rgba(170,175,185,.7)';
+    ctx.beginPath(); ctx.arc(x, y, c.kind === 'traffic' ? 4 : 8, 0, Math.PI * 2); ctx.fill();
+    if (c.kind === 'cop' && !c.wreck) { ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke(); }
   }
   // tour de référence : pastille blanche sur la mini-carte
   if (G.ghost && G.cfg.mode !== 'chase' && G.state === 'race') {

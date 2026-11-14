@@ -1498,6 +1498,19 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 .trk.on .tfacts i{border-color:rgba(255,209,102,.45)}
 .trk canvas,.ev canvas{image-rendering:auto;border-radius:8px}
 
+/* V214 — profils de joueurs et niveau des étapes */
+.profs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.profs select,.profs input{min-height:38px;border-radius:8px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:#fff;font:600 14px var(--fb);padding:6px 9px}
+.profs input{flex:1;min-width:120px}
+.profs button{min-height:38px}
+.profs .autosave{flex-basis:100%;color:#7fe0a0;font:600 12px var(--fb)}
+.ev .lvl{display:flex;align-items:center;gap:3px;margin-top:2px}
+.ev .lvl em{font:700 11px var(--fb);font-style:normal;color:#cfd6df;margin-inline-end:6px}
+.ev .lvl i{width:14px;height:5px;border-radius:3px;background:rgba(255,255,255,.14)}
+.ev .lvl i.on{background:linear-gradient(90deg,#ffb020,#ff5a1f)}
+.profs button{padding:7px 12px;border-radius:8px;border:1px solid rgba(255,209,102,.5);background:rgba(255,176,32,.12);color:#ffd166;font:700 13px var(--fb)}
+.profs button:active{transform:translateY(1px)}
+
 </style>
 </head>
 <body>
@@ -1511,7 +1524,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V213</span>
+    <span id="build-tag" aria-label="Version">V214</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -5862,6 +5875,10 @@ function dailyCheck(res) {
   } catch (e) { }
   return gain;
 }
+// V214 — profils de joueurs (une sauvegarde par joueur sur l'appareil) et niveau des étapes
+const V214_TXT = {"fr": ["Joueur", "Nouveau joueur", "Renommer", "Sauvegarde automatique · {0}", "Joueur : {0} · progression chargée", "Joueur {0}", "Nom du joueur", "Changer de joueur"], "en": ["Player", "New player", "Rename", "Autosave · {0}", "Player: {0} · progress loaded", "Player {0}", "Player name", "Switch player"], "es": ["Jugador", "Nuevo jugador", "Renombrar", "Guardado automático · {0}", "Jugador: {0} · progreso cargado", "Jugador {0}", "Nombre del jugador", "Cambiar de jugador"], "pt": ["Jogador", "Novo jogador", "Renomear", "Salvamento automático · {0}", "Jogador: {0} · progresso carregado", "Jogador {0}", "Nome do jogador", "Trocar de jogador"], "de": ["Spieler", "Neuer Spieler", "Umbenennen", "Automatisch gespeichert · {0}", "Spieler: {0} · Fortschritt geladen", "Spieler {0}", "Spielername", "Spieler wechseln"], "it": ["Giocatore", "Nuovo giocatore", "Rinomina", "Salvataggio automatico · {0}", "Giocatore: {0} · progressi caricati", "Giocatore {0}", "Nome del giocatore", "Cambia giocatore"], "tr": ["Oyuncu", "Yeni oyuncu", "Yeniden adlandır", "Otomatik kayıt · {0}", "Oyuncu: {0} · ilerleme yüklendi", "Oyuncu {0}", "Oyuncu adı", "Oyuncu değiştir"], "ar": ["اللاعب", "لاعب جديد", "إعادة التسمية", "حفظ تلقائي · {0}", "اللاعب: {0} · تم تحميل التقدّم", "اللاعب {0}", "اسم اللاعب", "تغيير اللاعب"], "tn": ["اللاعب", "لاعب جديد", "بدّل الاسم", "تسجيل أوتوماتيك · {0}", "اللاعب: {0} · التقدّم تحمّل", "اللاعب {0}", "اسم اللاعب", "بدّل اللاعب"]};
+const V214_LV = {"fr": "Niveau {0}/50", "en": "Level {0}/50", "es": "Nivel {0}/50", "pt": "Nível {0}/50", "de": "Stufe {0}/50", "it": "Livello {0}/50", "tr": "Seviye {0}/50", "ar": "المستوى {0}/50", "tn": "المستوى {0}/50"};
+for (const l in V214_TXT) { const v = V214_TXT[l]; Object.assign(LANGS[l], { o_player: v[0], o_pnew: v[1], o_prename: v[2], o_autosave: v[3], prof_loaded: v[4], prof_default: v[5], o_pname: v[6], o_pswitch: v[7], ev_level: V214_LV[l] }); }
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -6035,6 +6052,13 @@ for (let stage = 21; stage <= 50; stage++) {
     weather: k % 6 === 2 || k % 6 === 5 ? 'rain' : undefined
   });
 }
+// V214 — progression régulière des 50 étapes : niveau 1 (facile) à 50 (légende), sans saut brusque
+for (let i = 0; i < CAREER.length; i++) {
+  const e = CAREER[i];
+  e.diff = Math.round(49 * Math.pow(i / 49, 1.7));
+  if (e.mode === 'race') e.opp = Math.max(e.opp || 0, Math.min(7, 3 + Math.floor(i / 2)));
+  if (e.mode === 'chase') e.heat = Math.min(5, 1 + Math.floor(i / 10));
+}
 const DIFFS = [
   { name: 'Facile', v: 0.86, lat: 0.86, rb: 0.6 },
   { name: 'Normal', v: 0.94, lat: 0.95, rb: 1 },
@@ -6093,7 +6117,7 @@ function setupRace(cfg) {
   G.player = p;
   // V210 — tour de référence : meilleur tour enregistré sur ce circuit (temps et position tous les 20 m)
   G.lapRec = { t: [], x: [], z: [] }; G.delta = null; G.ghostI = 0; G.ghost = null;
-  try { const g = JSON.parse(localStorage.getItem('superjoud_ghost_' + T.def.id) || 'null'); if (g && g.lap > 0 && Array.isArray(g.t) && g.t.length > 3) G.ghost = g; } catch (e) { }
+  try { const g = JSON.parse(localStorage.getItem(ghostKey(T.def.id)) || 'null'); if (g && g.lap > 0 && Array.isArray(g.t) && g.t.length > 3) G.ghost = g; } catch (e) { }
   const diff = DIFFS[cfg.diff === undefined ? 1 : cfg.diff];
   G.rb = diff.rb;
   const names = AI_NAMES.slice().sort(() => Math.random() - 0.5);
@@ -6121,14 +6145,29 @@ function setupRace(cfg) {
     for (const [ds, d] of [[-28, -3.5], [-40, 3.5]]) spawnCop(30 + ds, d, 0, 'chase');
   }
   G.cars.unshift(p);
+  const Q = SAVE.settings.quality, TCOL = ['#7a7f86', '#c9c9c9', '#3b4a63', '#6b2a2a', '#2e4d3a', '#e8e4dc', '#1c1c1e', '#8a6d3b', '#a3282c', '#d7d2c4', '#2b5f8a', '#5b5f63'];
+  const trafCol = mn => mn === 'taxi' ? [1, 0.8, 0.08] : mn === 'louage' ? [0.94, 0.94, 0.92] : hexToRgb(TCOL[Math.floor(Math.random() * TCOL.length)]);
   if (cfg.traffic) {
-    const models = ['sedan', 'louage', 'taxi', 'taxi', 'van', 'truck', 'sedan', 'louage'];
-    const n = cfg.mode === 'chase' ? 14 : 10;
+    // V214 — circulation réaliste : berlines, citadines, taxis jaunes, louages, utilitaires, camions, bus, pick-up, 4x4, scooters, motos et voitures anciennes
+    const models = ['sedan', 'taxi', 'louage', 'hatch', 'moto_scoot', 'van', 'suv', 'truck', 'sedan', 'retro80', 'bus', 'taxi', 'pickup', 'moto_trail', 'hatch', 'retro70', 'louage', 'coupe'];
+    const n = (cfg.mode === 'chase' ? 14 : 10) + (Q === 'ultra' ? 4 : Q === 'high' ? 2 : 0);
     for (let k = 0; k < n; k++) {
       const mn = models[k % models.length], lane = [-6, -2, 2, 6][Math.floor(Math.random() * 4)];
-      const col = mn === 'taxi' ? [1, 0.8, 0.08] : mn === 'louage' ? [0.94, 0.94, 0.92] : hexToRgb(['#7a7f86', '#c9c9c9', '#3b4a63', '#6b2a2a', '#2e4d3a', '#e8e4dc', '#1c1c1e', '#8a6d3b'][Math.floor(Math.random() * 8)]);
-      const t = mkCar('traffic', mn, col, { lane, cruise: 13 + Math.random() * 8, mass: mn === 'truck' ? 4 : (mn === 'van' || mn === 'louage') ? 1.5 : 1 });
+      const col = trafCol(mn), bike = mn.startsWith('moto'), heavy = mn === 'truck' || mn === 'bus';
+      const t = mkCar('traffic', mn, col, { lane, cruise: heavy ? 11 + Math.random() * 5 : bike ? 12 + Math.random() * 7 : 13 + Math.random() * 8, mass: heavy ? 4 : (mn === 'van' || mn === 'louage' || mn === 'pickup' || mn === 'suv') ? 1.5 : bike ? 0.45 : 1 });
       placeOnTrack(t, 120 + k * (T.L - 200) / n + Math.random() * 40, lane); t.v = t.cruise; G.cars.push(t);
+    }
+  }
+  // V214 — véhicules garés le long des trottoirs en ville (entre deux lampadaires, hors de la chaussée)
+  if (T.theme === 'city' && Q !== 'low') {
+    const parked = ['sedan', 'hatch', 'taxi', 'van', 'suv', 'retro80', 'coupe', 'pickup', 'moto_scoot', 'retro70', 'louage', 'hatch'];
+    const want = Q === 'ultra' ? 18 : Q === 'high' ? 13 : 7, slots = Math.floor(T.N / 10), stepK = Math.max(1, Math.floor(slots / want));
+    for (let m0 = 3, n = 0; m0 < slots - 3 && n < want; m0 += stepK, n++) {
+      // un côté sur deux ; le véhicule est placé en face d'un lampadaire, jamais contre lui
+      const wantSide = n % 2 ? 1 : -1, m = (m0 % 2 ? -1 : 1) === wantSide ? m0 : m0 + 1, side = m % 2 ? -1 : 1, mn = parked[n % parked.length], c = mkCar('parked', mn, trafCol(mn), { mass: 99 });
+      placeOnTrack(c, m * 10 * T.ds, side * (T.W + (mn.startsWith('moto') ? 2.6 : 1.95)));
+      if (side < 0) c.h += Math.PI;
+      G.cars.push(c);
     }
   }
   // roues construites avant le départ : aucune construction de maillage (saccade) en pleine course
@@ -6511,7 +6550,7 @@ function updateGame(dt) {
       const lt = G.raceT - G.lapStart; G.laps.push(lt); G.lapStart = G.raceT;
       if (G.lapRec.t.length > 3 && (!G.ghost || lt < G.ghost.lap)) {
         G.ghost = { lap: Math.round(lt * 1000) / 1000, t: G.lapRec.t, x: G.lapRec.x, z: G.lapRec.z };
-        try { localStorage.setItem('superjoud_ghost_' + T.def.id, JSON.stringify(G.ghost)); } catch (e) { }
+        try { localStorage.setItem(ghostKey(T.def.id), JSON.stringify(G.ghost)); } catch (e) { }
       }
       G.lapRec = { t: [], x: [], z: [] }; G.ghostI = 0;
       if (lt < G.best) G.best = lt;
@@ -7052,9 +7091,20 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V213';
+const GAME_VERSION = 'V214';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
+// Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
+// chaque nouveau joueur a sa propre sauvegarde (argent, voitures, pilotes, carrière, records, réglages).
+const PROFILES_KEY = 'superjoud_profiles';
+const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let PROF = { active: 'p1', list: [{ id: 'p1', name: '' }] };
+try { const pr = JSON.parse(localStorage.getItem(PROFILES_KEY) || 'null'); if (pr && Array.isArray(pr.list) && pr.list.length && pr.list.some(x => x.id === pr.active)) PROF = pr; } catch (e) { }
+const profKey = (backup, id = PROF.active) => (backup ? SAVE_BACKUP_KEY : SAVE_KEY) + (id === 'p1' ? '' : '_' + id);
+const profName = (p = PROF.list.find(x => x.id === PROF.active)) => (p && p.name) || t('prof_default', PROF.list.indexOf(p) + 1);
+const ghostKey = id => 'superjoud_ghost_' + (PROF.active === 'p1' ? '' : PROF.active + '_') + id;
+function saveProfiles() { try { localStorage.setItem(PROFILES_KEY, JSON.stringify(PROF)); } catch (e) { } }
+let SAVE_LAST = 0;
 // langue du téléphone : tunisien pour ar-TN, sinon la première langue prise en charge, sinon l'anglais
 function detectLang() {
   const all = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
@@ -7068,7 +7118,7 @@ function defaultSave() {
 let SAVE = defaultSave();
 function loadGame() {
   try {
-    const s = localStorage.getItem(SAVE_KEY) || localStorage.getItem(SAVE_BACKUP_KEY); if (!s) return;
+    const s = localStorage.getItem(profKey(false)) || localStorage.getItem(profKey(true)); if (!s) return false;
     const o = JSON.parse(s); SAVE = Object.assign(defaultSave(), o); SAVE.rims = SAVE.rims || {}; SAVE.history = Array.isArray(o.history) ? o.history.slice(0, 100) : [];
     if ((Number(o.careerVersion) || 0) < 2) {
       const oldDone = Array.isArray(o.careerDone) ? o.careerDone : [];
@@ -7081,9 +7131,24 @@ function loadGame() {
     }
     SAVE.careerVersion = 2;
     const st = Object.assign(defaultSettings(), o.settings || {}); if (o.settings && o.settings.vol !== undefined && o.settings.sfx === undefined) st.sfx = o.settings.vol; SAVE.settings = st;
-  } catch (e) { }
+    return true;
+  } catch (e) { return false; }
 }
-function saveGame() { try { const payload = JSON.stringify(SAVE); localStorage.setItem(SAVE_KEY, payload); localStorage.setItem(SAVE_BACKUP_KEY, payload); } catch (e) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SAVE)); } catch (err) { console.warn('Sauvegarde indisponible', err); } } }
+function saveGame() { try { const payload = JSON.stringify(SAVE); localStorage.setItem(profKey(false), payload); localStorage.setItem(profKey(true), payload); SAVE_LAST = Date.now(); } catch (e) { try { localStorage.setItem(profKey(false), JSON.stringify(SAVE)); SAVE_LAST = Date.now(); } catch (err) { console.warn('Sauvegarde indisponible', err); } } }
+// changement de joueur : on enregistre l'actuel, puis on charge le suivant (un nouveau joueur garde la langue et les réglages graphiques de l'appareil)
+function switchProfile(id) {
+  if (id === PROF.active) return;
+  saveGame(); const keep = SAVE.settings;
+  PROF.active = id; saveProfiles();
+  SAVE = defaultSave();
+  if (!loadGame()) { SAVE.settings = Object.assign(defaultSettings(), keep); saveGame(); }
+  LANG = LANGS[SAVE.settings.lang] ? SAVE.settings.lang : LANG; applySettings(); applyI18n(); $('lang-sel').value = LANG; UI.updMoney();
+  toast(t('prof_loaded', profName()));
+}
+// sauvegarde automatique : après chaque action (déjà en place), toutes les 30 s dans les menus, et quand l'appli passe en arrière-plan
+setInterval(() => { if (G.state === 'menu') saveGame(); }, 30000);
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
+addEventListener('pagehide', () => saveGame());
 const fmtT = x => { if (!isFinite(x)) return '--:--.--'; const m = Math.floor(x / 60), s = x - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(2); };
 const money = v => LANG === 'tn' ? Math.round(v).toLocaleString('fr-TN') + ' د.ت' : '$ ' + Math.round(v).toLocaleString(LEN() ? 'en-US' : 'fr-FR');
 const modeName = m => t('m_' + m);
@@ -7225,7 +7290,7 @@ const UI = {
       const isDone = SAVE.careerDone.includes(i), lock = i > SAVE.career, next = i === SAVE.career, tc = tierCars(e.tier)[0].cls;
       const SEP = LANG === 'ar' || LANG === 'tn' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');
       const phase = i % 5 === 0 ? `<h3 class="evphase">${phases[Math.floor(i / 5)]}</h3>` : '';
-      return `${phase}<button class="ev ${isDone ? 'done' : ''} ${lock ? 'lock' : ''} ${next ? 'next' : ''}" data-i="${i}" data-track="${e.track}" ${lock ? 'aria-disabled="true"' : ''}><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="st">${isDone ? t('done') : lock ? t('locked') : t('available')}</span><canvas width="240" height="120" aria-hidden="true"></canvas><b>${tEvName(i)}</b><span class="meta">${meta}</span><small>${tEvDesc(i)}</small><div class="rw"><span>${t('advised')} <b class="cls ${tc} mini">${tc}</b></span><em>${money(isDone ? e.reward * 0.3 : e.reward)}</em></div></button>`;
+      return `${phase}<button class="ev ${isDone ? 'done' : ''} ${lock ? 'lock' : ''} ${next ? 'next' : ''}" data-i="${i}" data-track="${e.track}" ${lock ? 'aria-disabled="true"' : ''}><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="st">${isDone ? t('done') : lock ? t('locked') : t('available')}</span><canvas width="240" height="120" aria-hidden="true"></canvas><b>${tEvName(i)}</b><span class="meta">${meta}</span><small>${tEvDesc(i)}</small><div class="rw"><span>${t('advised')} <b class="cls ${tc} mini">${tc}</b></span><em>${money(isDone ? e.reward * 0.3 : e.reward)}</em></div><span class="lvl" title="${t('ev_level', i + 1)}"><em>${t('ev_level', i + 1)}</em>${[1, 2, 3, 4, 5].map(n => `<i class="${n <= Math.ceil(((e.diff || 0) + 1) / 10) ? 'on' : ''}"></i>`).join('')}</span></button>`;
     }).join('');
     $('c-list').querySelectorAll('button.ev').forEach(b => { const i = +b.dataset.i; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.track], i === SAVE.career); b.onclick = () => { if (i > SAVE.career) return; this.startRace(evCfg(i)); }; });
   },
@@ -7252,6 +7317,9 @@ const UI = {
       (() => { const st = SAVE.stats || {}, km = (st.dist || 0) / 1000 * spdU(), tm = Math.round(st.time || 0), h = Math.floor(tm / 3600), m = Math.floor(tm % 3600 / 60);
         const cell = (l, v) => `<div><b>${v}</b><span>${l}</span></div>`;
         return row(t('st_title'), `<div class="pstats">${cell(t('st_races'), st.races || 0)}${cell(t('st_wins'), st.wins || 0)}${cell(t('st_dist'), (km >= 100 ? Math.round(km) : km.toFixed(1)) + (MPH() ? ' mi' : ' km'))}${cell(t('st_top'), Math.round((st.top || 0) * 3.6 * spdU()) + ' ' + spdL())}${cell(t('st_time'), (h ? h + ' h ' : '') + m + ' min')}</div>`); })(),
+      row(t('o_player'), `<div class="profs"><select id="o-prof" aria-label="${t('o_pswitch')}">${PROF.list.map(p => `<option value="${p.id}" ${p.id === PROF.active ? 'selected' : ''}>${esc(profName(p))}</option>`).join('')}</select>
+        <input id="o-pname" maxlength="16" placeholder="${t('o_pname')}" value="${esc(PROF.list.find(x => x.id === PROF.active).name || '')}"><button id="o-prename">${t('o_prename')}</button>${PROF.list.length < 6 ? `<button id="o-pnew">＋ ${t('o_pnew')}</button>` : ''}
+        <small class="autosave">✓ ${t('o_autosave', SAVE_LAST ? new Date(SAVE_LAST).toLocaleTimeString(LEN() ? 'en-GB' : 'fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—')}</small></div>`),
       row(t('o_save'), `<div><button class="danger" id="o-reset">${t('o_reset')}</button></div>`),
       row(t('o_privacy'), `<div><a class="plink" href="https://super-joud.onrender.com/privacy.html#${LEN() ? 'en' : LANG === 'tn' ? 'ar' : LANG}" target="_blank" rel="noopener">${t('o_privLink')}</a></div>`),
       ADS.on ? row(t('o_ads'), `<div>${ADS.privacy ? `<button id="o-adpriv">${t('o_adsPriv')}</button>` : ''}<p class="note">${t('o_adsInfo')}</p></div>`) : '',
@@ -7264,6 +7332,9 @@ const UI = {
     }));
     $('o-panel').querySelectorAll('input[type=range]').forEach(i => i.oninput = () => { s[i.dataset.k] = +i.value; saveGame(); applySettings(); });
     if ($('o-adpriv')) $('o-adpriv').onclick = () => { try { ADS.P.showPrivacyOptionsForm().catch(() => { }); } catch (e) { } };
+    $('o-prof').onchange = e => { switchProfile(e.target.value); this.renderOptions(); };
+    $('o-prename').onclick = () => { const v = $('o-pname').value.trim().slice(0, 16); const p = PROF.list.find(x => x.id === PROF.active); p.name = v; saveProfiles(); this.renderOptions(); };
+    if ($('o-pnew')) $('o-pnew').onclick = () => { let n = 2; while (PROF.list.some(x => x.id === 'p' + n)) n++; const id = 'p' + n; PROF.list.push({ id, name: '' }); switchProfile(id); this.renderOptions(); setTimeout(() => { const el = $('o-pname'); if (el) el.focus(); }, 50); };
     $('o-reset').onclick = () => this.confirm(t('resetConfirm'), () => { const st = SAVE.settings; SAVE = defaultSave(); SAVE.settings = st; saveGame(); this.show('main'); });
   },
   renderHelp() {
@@ -7514,7 +7585,7 @@ function drawMinimap() {
   const racers = G.cfg.mode === 'race' ? G.cars.filter(c => c.kind === 'ai' || c.kind === 'player').sort((a, b) => (b.progress || 0) - (a.progress || 0)) : null;
   ctx.font = '800 15px "Chakra Petch",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const c of G.cars) {
-    if (c.kind === 'player') continue;
+    if (c.kind === 'player' || c.kind === 'parked') continue;
     const x = S / 2 + T.mini.mx(c.x) * S * 0.82, y = S / 2 + T.mini.mz(c.z) * S * 0.82;
     if (c.kind === 'ai') {
       const col = c.col ? (typeof c.col === 'string' ? c.col : 'rgb(' + c.col.map(v => Math.round(clamp(v, 0, 1) * 255)).join(',') + ')') : '#ff4040';

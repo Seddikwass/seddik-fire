@@ -1,5 +1,14 @@
 # Seddik Fire
 
+## Version 2.7 — caméra derrière le joueur
+
+- Nouveau réglage « Caméra : derrière le joueur » (Réglages, bouton Caméra : cinématique → derrière le joueur → standard).
+- La vue se rapproche et tourne pour que le soldat regarde toujours vers le haut de l'écran, avec plus de champ devant lui.
+- Les commandes suivent la caméra : pousser vers le haut = avancer ; à gauche/droite = tourner. Pendant la visée ou le tir, la vue se fige pour viser précisément.
+- En véhicule, la caméra se place derrière le véhicule.
+- Barres de vie, prime et indicateurs de dégâts restent lisibles dans la vue tournée.
+- Cache hors ligne : `seddik-fire-v207`.
+
 ## Version 2.6 — suspense, réalisme et finitions
 
 Suspense et motivation

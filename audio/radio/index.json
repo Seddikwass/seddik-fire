@@ -1,0 +1,43 @@
+{
+ "hash": "abd90009c2b538c4",
+ "engine": "Piper",
+ "voices": {
+  "fr": "fr/fr_FR/siwis/medium/fr_FR-siwis-medium",
+  "en": "en/en_GB/northern_english_male/medium/en_GB-northern_english_male-medium",
+  "ar": "ar/ar_JO/kareem/medium/ar_JO-kareem-medium"
+ },
+ "files": [
+  "ar-chase.mp3",
+  "ar-clear.mp3",
+  "ar-edge.mp3",
+  "ar-nitro.mp3",
+  "ar-pack.mp3",
+  "ar-slide.mp3",
+  "ar-tt.mp3",
+  "ar-wrong.mp3",
+  "en-chase.mp3",
+  "en-clear.mp3",
+  "en-edge.mp3",
+  "en-nitro.mp3",
+  "en-pack.mp3",
+  "en-slide.mp3",
+  "en-tt.mp3",
+  "en-wrong.mp3",
+  "fr-chase.mp3",
+  "fr-clear.mp3",
+  "fr-edge.mp3",
+  "fr-nitro.mp3",
+  "fr-pack.mp3",
+  "fr-slide.mp3",
+  "fr-tt.mp3",
+  "fr-wrong.mp3",
+  "tn-chase.mp3",
+  "tn-clear.mp3",
+  "tn-edge.mp3",
+  "tn-nitro.mp3",
+  "tn-pack.mp3",
+  "tn-slide.mp3",
+  "tn-tt.mp3",
+  "tn-wrong.mp3"
+ ]
+}

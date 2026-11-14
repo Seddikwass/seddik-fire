@@ -1,5 +1,9 @@
 # Seddik Fire
 
+## Version 2.13
+- Vue 3D et caméra au dos retirées : retour à la vue de dessus, plus lisible et plus fluide.
+- Caméra cinématique améliorée : suivi amorti sans à-coups, cadrage automatique du joueur et de l'adversaire pendant un échange de tirs, légère ouverture en course, rapprochement à l'arrêt, glissement vers la victime à chaque élimination, souffle de caméra portée très discret (désactivé si « réduire les animations »).
+
 ## Version 2.12
 - Caméra au dos : soldats modélisés en 3D (jambes et bras animés, gilet, sac, casque ou coiffure, arme tenue en position de tir), ombre au sol et anneau du joueur.
 - Objets des cartes en volume : conteneurs, caisses, sacs de sable, voitures, pompes, rochers, silos, fontaines.

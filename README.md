@@ -1,5 +1,19 @@
 # Seddik Fire
 
+## Version 2.8 — vraie vue derrière le joueur et 18 cartes
+
+Caméra « derrière le joueur » (Réglages → Caméra)
+- Vue 3D en perspective : caméra basse placée derrière le soldat, sol qui s'étend jusqu'à l'horizon, ciel et brume au loin (WebGL).
+- Le soldat est en bas de l'écran, au-dessus du HUD ; la vue tourne quand il tourne et se fige pendant la visée.
+- Visée à la souris, flèche de zone, indicateurs de dégâts, textes flottants et nuit (lampe torche, lampadaires) projetés correctement.
+- Si l'appareil n'a pas WebGL, la vue tournée vue du dessus de la version 2.7 prend le relais.
+
+10 nouvelles cartes tunisiennes
+- Grand Tunis, Sousse & Monastir, Sfax & Kerkennah, Bizerte & Ras Jebel, Tabarka & Aïn Draham, Kairouan & Steppes, Tozeur & Nefta, Tataouine & Ksour, Le Kef & Jugurtha, Gafsa & Bassin minier.
+- Chacune reprend le relief d'une carte de base (ville, côte, île du Sud, Cap Bon, forêt, plaines, désert, hautes terres) avec sa propre disposition, ses villes, ses couleurs et sa météo.
+- Ajoutées au Parcours ; traduites en anglais et en arabe.
+- Cache hors ligne : `seddik-fire-v208`.
+
 ## Version 2.7 — caméra derrière le joueur
 
 - Nouveau réglage « Caméra : derrière le joueur » (Réglages, bouton Caméra : cinématique → derrière le joueur → standard).

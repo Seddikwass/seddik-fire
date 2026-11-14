@@ -1038,7 +1038,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.7</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.8</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1102,7 +1102,7 @@ const $=s=>document.querySelector(s);
    Le pont global pointerdown/click précédent annulait le clic natif sur
    certains navigateurs et rendait les boutons inactifs. */
 function tapOn(el,fn){if(!el)return;let pd=0;el.addEventListener('pointerdown',ev=>{if(ev.pointerType==='mouse'&&ev.button!==0)return;if(ev.pointerType!=='mouse')ev.preventDefault();pd=performance.now();try{fn(ev)}catch(e){console.error(e)}});el.addEventListener('click',ev=>{if(el.__sfBridgeClicking||performance.now()-pd<900)return;fn(ev)});el.addEventListener('contextmenu',ev=>ev.preventDefault())}
-const cv=$('#game'),ctx=cv.getContext('2d');
+const cv=$('#game');let ctx=cv.getContext('2d');const CTX0=ctx;
 const mini=$('#mini'),mctx=mini.getContext('2d');
 const bigcv=$('#bigcv'),bctx=bigcv.getContext('2d');
 const TAU=Math.PI*2,WS=3600,CELL=150,COLS=Math.ceil(WS/CELL);
@@ -1486,6 +1486,21 @@ const MAPS={
 /* v127 — deux nouveaux terrains régionaux inspirés de lieux tunisiens réels. */
 MAPS.djerba={n:'Djerba & Zarzis',d:'Île du Sud : Houmt Souk, Midoun, Guellala, Ajim et les plages de Zarzis.',poi:['Houmt Souk','Midoun','Guellala','Ajim','El Kantara','Borj El Kebir','Sidi Jmour','Zarzis'],seed:20261106,base:'#d9c49a',lt:'rgba(250,232,190,.38)',dk:'rgba(153,112,67,.18)',gr:'rgba(114,137,72,.19)',fa:'#a7a36b',fb:'#c2a875',sea:['#45b9bd','#2697ad','#176786'],shore:'#f0dfb8',lake:['#2b8995','#55b5b3'],v:[32,52,110,42,140],wx:'breeze'};
 MAPS.capbon={n:'Cap Bon & Kélibia',d:'Péninsule du Cap Bon : Nabeul, Hammamet, Kélibia, Korba et El Haouaria.',poi:['Nabeul','Hammamet','Kélibia','El Haouaria','Korba','Menzel Temime','Takelsa','Grombalia'],seed:20261107,base:'#b8b982',lt:'rgba(228,231,176,.34)',dk:'rgba(85,104,57,.2)',gr:'rgba(67,111,49,.28)',fa:'#80974b',fb:'#a9a66b',sea:['#43b7c4','#238da9','#155d7d'],shore:'#e9d6aa',lake:['#287f91','#4aa8ae'],v:[12,28,310,54,170],wx:'breeze'};
+/* v2.8 — 10 cartes tunisiennes supplémentaires. Chacune reprend le relief et le générateur d'une carte de base (like),
+   avec sa propre graine, ses villes, ses couleurs et sa météo. */
+{const T=(like,o)=>Object.assign({},MAPS[like],{like,v:(MAPS[like].v||[]).slice()},o);
+ MAPS.tunis=T('ville',{n:'Grand Tunis',d:'La capitale : avenue Bourguiba, médina, Bab Bhar, le Lac et le port de La Goulette.',poi:['Avenue Bourguiba','La Médina','Bab Bhar','Le Lac','La Goulette','Le Bardo','Lafayette','El Menzah'],seed:20261201,base:'#9a9a78',lt:'rgba(222,218,190,.24)',dk:'rgba(80,78,58,.2)',gr:'rgba(96,128,66,.26)',sea:['#3c9aa8','#2a7a92','#1c5470']});
+ MAPS.sousse=T('cote',{n:'Sousse & Monastir',d:'Le Sahel : médina de Sousse, ribat de Monastir, marinas et plages de Skanès.',poi:['Médina de Sousse','Port El Kantaoui','Ribat de Monastir','Skanès','Hammam Sousse','Msaken','Ksar Hellal','Mahdia'],seed:20261202,base:'#d6c697',lt:'rgba(248,236,196,.36)',gr:'rgba(108,148,70,.22)',sea:['#3fbccb','#2196b6','#166a94'],shore:'#f3e5bc',wx:'breeze'});
+ MAPS.sfax=T('djerba',{n:'Sfax & Kerkennah',d:'Oliveraies du Sud-Est, port industriel de Sfax et îles plates de Kerkennah.',poi:['Médina de Sfax','Port de Sfax','Sidi Mansour','Thyna','Sakiet Ezzit','Mahrès','Kerkennah','Agareb'],seed:20261203,base:'#cdb98b',dk:'rgba(140,105,62,.2)',gr:'rgba(110,128,64,.24)',sea:['#4ab3b2','#2b92a4','#1b6880'],v:[26,46,190,40,150],wx:''});
+ MAPS.bizerte=T('capbon',{n:'Bizerte & Ras Jebel',d:'Le Nord : vieux port de Bizerte, lagune de Ghar El Melh, corniche et cap Blanc.',poi:['Vieux Port','La Corniche','Menzel Bourguiba','Ras Jebel','Ghar El Melh','Rafraf','Mateur','Cap Blanc'],seed:20261204,base:'#adb57f',gr:'rgba(66,116,52,.32)',fa:'#7a9448',sea:['#3cabc0','#2084a6','#14597c'],wx:'breeze'});
+ MAPS.tabarka=T('foret',{n:'Tabarka & Aïn Draham',d:'Forêt de chênes-lièges de Kroumirie, fort génois, Aiguilles et barrage.',poi:['Fort génois','Les Aiguilles','Aïn Draham','Col des Ruines','Barrage Béni Mtir','Hammam Bourguiba','Fernana','Mekna'],seed:20261205,base:'#5c763c',gr:'rgba(52,86,34,.4)',sea:['#2f93a2','#207089','#164c66'],wx:'fog'});
+ MAPS.kairouan=T('seddik',{n:'Kairouan & Steppes',d:'Ville sainte et plaines du Centre : Grande Mosquée, bassins des Aghlabides et souks.',poi:['Grande Mosquée','Bassins des Aghlabides','La Médina','Raqqada','Haffouz','Sbikha','Oueslatia','Nasrallah'],seed:20261206,base:'#d8be8a',lt:'rgba(246,226,180,.38)',dk:'rgba(168,122,70,.2)',gr:'rgba(120,128,66,.12)',fa:'#b2a062',fb:'#c4a46c',v:[26,24,90,90,110],wx:''});
+ MAPS.tozeur=T('sahara',{n:'Tozeur & Nefta',d:'Palmeraies du Jérid, chott el-Jérid, oasis de montagne de Chebika et Tamerza.',poi:['Palmeraie de Tozeur','Nefta','Chott el-Jérid','Chebika','Tamerza','Midès','Degache','Ong Jemel'],seed:20261207,base:'#e3c891',lt:'rgba(252,236,190,.4)',gr:'rgba(120,140,70,.12)',v:[30,20,70,90,80],wx:'sand'});
+ MAPS.tataouine=T('sahara',{n:'Tataouine & Ksour',d:'Le Grand Sud : ksour fortifiés, villages berbères perchés et pistes de sable rouge.',poi:['Ksar Ouled Soltane','Chenini','Douiret','Ghomrassen','Ksar Hadada','Béni Khedache','Remada','Médenine'],seed:20261208,base:'#d9a872',lt:'rgba(246,212,160,.36)',dk:'rgba(170,100,52,.26)',fa:'#bf9460',fb:'#cf9d68',wx:'sand'});
+ MAPS.kef=T('hautes',{n:'Le Kef & Jugurtha',d:'Hauts plateaux du Nord-Ouest : kasbah du Kef, Table de Jugurtha et ruines de Dougga.',poi:['Kasbah du Kef','Table de Jugurtha','Dougga','Thibar','Nebeur','Sakiet Sidi Youssef','Tajerouine','Kalaat Senan'],seed:20261209,base:'#b2a979',gr:'rgba(92,128,60,.32)',wx:'fog'});
+ MAPS.gafsa=T('hautes',{n:'Gafsa & Bassin minier',d:'Collines arides, mines de phosphate de Métlaoui et gorges de Selja.',poi:['Gafsa','Métlaoui','Redeyef','Moularès','Oum Larayes','Gorges de Selja','El Guettar','Sened'],seed:20261210,base:'#c9ad80',lt:'rgba(236,214,170,.32)',dk:'rgba(140,100,62,.24)',gr:'rgba(118,120,66,.14)',fa:'#a99a62',fb:'#b99c6a',wx:'sand'});
+}
+for(const k in MAPS){MAPS[k].id=k;MAPS[k].st=MAPS[k].like||k}
 let MAP=MAPS.seddik;
 const STY={
   med:{floor:'#cdb38a',wall:'#f2ece0',edge:'#a8957a',roof:'#ece5d5',roof2:'#d6ccb7',door:'#2c6db3'},
@@ -1502,7 +1517,7 @@ const STY={
   cabin:{floor:'#9c7b52',wall:'#7a5a38',edge:'#4a3420',roof:'#6b4e30',roof2:'#55391f',door:'#3a2418'},
   hut:{floor:'#b99d6b',wall:'#8e6b3d',edge:'#5a4122',roof:'#b48d50',roof2:'#916d36',door:'#2c6db3'}
 };
-function coastX(y){if(MAP&&MAP.id==='djerba')return 3020+170*Math.sin(y/440)+75*Math.sin(y/130+.7)+45*Math.sin(y/67);if(MAP&&MAP.id==='capbon')return 3090+110*Math.sin(y/280)+90*Math.sin(y/155+2)+22*Math.sin(y/49);return 3160+90*Math.sin(y/310)+45*Math.sin(y/97+1.3)+30*Math.sin(y/53)}
+function coastX(y){if(MAP&&MAP.st==='djerba')return 3020+170*Math.sin(y/440)+75*Math.sin(y/130+.7)+45*Math.sin(y/67);if(MAP&&MAP.st==='capbon')return 3090+110*Math.sin(y/280)+90*Math.sin(y/155+2)+22*Math.sin(y/49);return 3160+90*Math.sin(y/310)+45*Math.sin(y/97+1.3)+30*Math.sin(y/53)}
 function isWater(x,y){if(x>PIER.x&&x<PIER.x+PIER.w&&y>PIER.y&&y<PIER.y+PIER.h)return false;return x>coastX(y)||dd2(x,y,LAKE.x,LAKE.y)<LAKE.r*LAKE.r}
 function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=clamp(t,0,1);return Math.hypot(px-ax-dx*t,py-ay-dy*t)}
 function nearRoad(x,y,m){for(const rd of roads)for(let i=0;i<rd.length-1;i++)if(segDist(x,y,rd[i][0],rd[i][1],rd[i+1][0],rd[i+1][1])<m)return true;return false}
@@ -1599,7 +1614,7 @@ function genForest(){
 }
 function genWorld(mid){
   if(!MAPS[mid]){const M=MODES[stats.mode];mid=(M&&M.map)||(MAPS[stats.map]?stats.map:'seddik')}
-  MAP=MAPS[mid];MAP.id=mid;
+  MAP=MAPS[mid];MAP.id=mid;MAP.st=MAP.like||mid;
   for(const a of[walls,solids,trees,bushes,crates,blds,roads,fields,occ])a.length=0;
   for(let i=0;i<POIS.length;i++){POIS[i].n=MAP.poi[i];POIS[i].x=POI0[i].x;POIS[i].y=POI0[i].y}
   PAVED.length=0;for(const o of PAVED0)PAVED.push({...o});Object.assign(LAKE,LAKE0);XTRA={parks:[],pools:[],gas:null};
@@ -1636,7 +1651,7 @@ function genWorld(mid){
   bld(2525,2690,140,110,'hut',[['w',.5]]);
   bld(2060,3135,140,110,'hut',[['n',.5]]);
   // Ferme
-  bld(1600,400,260,180,MAP.id==='cote'?'med':'farm',[['s',.3],['e',.6]]);
+  bld(1600,400,260,180,MAP.st==='cote'?'med':'farm',[['s',.3],['e',.6]]);
   bld(1950,440,170,130,'med',[['s',.5],['w',.5]]);
   addSolid({t:'c',x:1560,y:670,r:40,k:'silo'});addSolid({t:'c',x:1655,y:690,r:34,k:'silo'});
   // Douar
@@ -1655,15 +1670,15 @@ function genWorld(mid){
     if(ok)for(const f of fields)if(x<f.x+f.w&&x+w>f.x&&y<f.y+f.h&&y+h>f.y){ok=false;break}
     if(!ok)continue;bld(x,y,w,h,SR()<.7?'med':'farm',rdoors());lone++}
   /* v130 — les lieux d'intérêt régionaux pointent sur les vrais secteurs du terrain. */
-  if(MAP.id==='djerba'){
+  if(MAP.st==='djerba'){
     const pts=[[1650,1730],[1420,760],[2540,965],[2875,2250],[520,2450],[1600,500],[1320,3160],[2525,2690]];
     POIS.forEach((p,i)=>{p.x=pts[i][0];p.y=pts[i][1]});
-  }else if(MAP.id==='capbon'){
+  }else if(MAP.st==='capbon'){
     const pts=[[1650,1730],[1600,500],[2540,965],[2875,2250],[1950,440],[1320,3160],[520,2450],[2525,2690]];
     POIS.forEach((p,i)=>{p.x=pts[i][0];p.y=pts[i][1]});
   }
   /* v131 — quartiers régionaux : architecture et rues propres à chaque île. */
-  if(MAP.id==='djerba'){
+  if(MAP.st==='djerba'){
     roads.push([[1390,1710],[1580,1810],[1810,1900],[2030,1905]]);
     roads.push([[1410,1880],[1320,2070],[1160,2200]]);
     roads.push([[1770,1900],[1900,2070],[2070,2160]]);
@@ -1676,7 +1691,7 @@ function genWorld(mid){
     bld(2660,2350,176,112,'farm',[['w',.5]],{label:'HOUCH'});
     addSolid({t:'c',x:1715,y:2040,r:18,k:'fount'});
     addSolid({t:'c',x:2150,y:1935,r:24,k:'silo'});
-  }else if(MAP.id==='capbon'){
+  }else if(MAP.st==='capbon'){
     roads.push([[1500,470],[1690,520],[1880,610],[2070,650]]);
     roads.push([[1810,610],[1780,790],[1640,920],[1460,1020]]);
     roads.push([[2500,830],[2690,900],[2850,1010]]);
@@ -1901,7 +1916,7 @@ function tallGrass(c,R,n){c.lineCap='round';for(let i=0;i<n;i++){const x=R()*WS,
     for(let k=0;k<rr*.12;k++){c.fillStyle=['#e9e4d0','#d8c64a','#c9a3d9'][Math.floor(R()*3)];c.beginPath();c.arc(x+(R()-.5)*rr*1.4,y+(R()-.5)*rr*1.4,1.6,0,TAU);c.fill()}}}
 /* v73 — passe de matière du terrain : détails procéduraux précalculés pour toutes les cartes */
 function terrainSurfacePass(c,R){
-  const desert=MAP.id==='sahara',dry=desert||MAP.id==='cote'||MAP.id==='seddik',forest=MAP.id==='foret'||MAP.id==='hautes';
+  const desert=MAP.st==='sahara',dry=desert||MAP.st==='cote'||MAP.st==='seddik',forest=MAP.st==='foret'||MAP.st==='hautes';
   c.save();c.lineCap='round';c.lineJoin='round';
   // Micro-reliefs, touffes basses et pierres intégrées au sol (dessinés une seule fois au build).
   const clusters=desert?420:forest?680:520;
@@ -1937,7 +1952,7 @@ function terrainSurfacePass(c,R){
   c.restore();
 }
 function dapple(c,R,k){try{c.save();c.globalCompositeOperation='soft-light';for(let i=0;i<Math.floor(420*k);i++){const x=R()*WS,y=R()*WS,r=60+R()*240,warm=R()<.5,gr=c.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,warm?'rgba(255,226,150,.5)':'rgba(20,40,70,.5)');gr.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=gr;c.fillRect(x-r,y-r,2*r,2*r)}c.restore()}catch(e){c.restore()}}
-function relief(c){if(MAP.gen==='city')return;const id=MAP.id,N=id==='sahara'?288:200,amp={hautes:1.7,foret:1.05,seddik:.85,cote:.75,sahara:.95}[id]||.85;
+function relief(c){if(MAP.gen==='city')return;const id=MAP.st,N=id==='sahara'?288:200,amp={hautes:1.7,foret:1.05,seddik:.85,cote:.75,sahara:.95}[id]||.85;
   const cv2=mkCv(N,N),g=cv2.getContext('2d'),im=g.createImageData(N,N),d=im.data,H=new Float32Array(N*N),rnd=mulberry32(515),G=[];
   for(const o of[6,13,29]){const a=new Float32Array((o+2)*(o+2));for(let i=0;i<a.length;i++)a[i]=rnd();G.push([o,a])}
   const vn=(u,v,k)=>{const o=G[k][0],a=G[k][1],w=o+2,fx=u*o,fy=v*o,ix=Math.floor(fx),iy=Math.floor(fy),tx=fx-ix,ty=fy-iy,sx=tx*tx*(3-2*tx),sy=ty*ty*(3-2*ty);return(a[iy*w+ix]*(1-sx)+a[iy*w+ix+1]*sx)*(1-sy)+(a[(iy+1)*w+ix]*(1-sx)+a[(iy+1)*w+ix+1]*sx)*sy};
@@ -1958,7 +1973,7 @@ function gcBoot(){try{initGfx()}catch(e){}const M=MODES[stats.mode];const mid=(M
 
 /* v96 — matériaux de sol propres à chaque biome : texture 2D légère, sans impact collision. */
 function environmentMaterialPass(c,Rg){
-  const id=MAP.id,city=MAP.gen==='city'||id==='ville',forest=MAP.gen==='forest'||id==='foret';
+  const id=MAP.st,city=MAP.gen==='city'||id==='ville',forest=MAP.gen==='forest'||id==='foret';
   const desert=MAP.gen==='desert'||id==='sahara',coast=id==='cote'||id==='seddik',islandSouth=id==='djerba',capbon=id==='capbon',high=id==='hautes';
   c.save();c.lineCap='round';c.lineJoin='round';
   if(city){
@@ -2084,7 +2099,7 @@ function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mi
   for(const f of fields){for(let y=f.y,k=0;y<f.y+f.h;y+=22,k++){c.fillStyle=k%2?MAP.fa:MAP.fb;c.fillRect(f.x,y,f.w,Math.min(22,f.y+f.h-y))}c.strokeStyle='rgba(90,70,40,.35)';c.lineWidth=4;c.strokeRect(f.x,f.y,f.w,f.h)}
   for(let i=0;i<15000;i++){c.fillStyle=Rg()<.5?'rgba(120,90,50,.22)':'rgba(255,245,215,.28)';const s=2+Rg()*3;c.fillRect(Rg()*WS,Rg()*WS,s,s)}
   c.lineCap='round';
-  if(MAP.id==='sahara'){c.lineCap='round';for(let i=0;i<1400;i++){const x=Rg()*WS,y=Rg()*WS,l=80+Rg()*200,ph=Rg()*6;c.strokeStyle=Rg()<.5?'rgba(255,240,205,.22)':'rgba(150,100,50,.16)';c.lineWidth=2+Rg()*2;c.beginPath();for(let k=0;k<=10;k++){const xx=x+k*l/10,yy=y+Math.sin(ph+k*.7)*8;k?c.lineTo(xx,yy):c.moveTo(xx,yy)}c.stroke()}}
+  if(MAP.st==='sahara'){c.lineCap='round';for(let i=0;i<1400;i++){const x=Rg()*WS,y=Rg()*WS,l=80+Rg()*200,ph=Rg()*6;c.strokeStyle=Rg()<.5?'rgba(255,240,205,.22)':'rgba(150,100,50,.16)';c.lineWidth=2+Rg()*2;c.beginPath();for(let k=0;k<=10;k++){const xx=x+k*l/10,yy=y+Math.sin(ph+k*.7)*8;k?c.lineTo(xx,yy):c.moveTo(xx,yy)}c.stroke()}}
   for(let i=0;i<1700;i++){const x=Rg()*WS,y=Rg()*WS,l=40+Rg()*130,a=.35+(Rg()-.5)*.35,bx=Math.cos(a),by=Math.sin(a);c.strokeStyle=Rg()<.5?'rgba(255,244,215,.17)':'rgba(140,100,55,.12)';c.lineWidth=2+Rg()*2.5;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+bx*l/2-by*9,y+by*l/2+bx*9,x+bx*l,y+by*l);c.stroke()}
   {const PB=[new Path2D(),new Path2D(),new Path2D()];for(let i=0;i<5200;i++){const x=Rg()*WS,y=Rg()*WS,r0=1.5+Rg()*3,k=Math.floor(Rg()*3),p=PB[k],rt=Rg()*3;p.moveTo(x+Math.cos(rt)*r0,y+Math.sin(rt)*r0);p.ellipse(x,y,r0,r0*.72,rt,0,TAU)}['#a89a86','#8f8576','#c4b8a2'].forEach((col,k)=>{c.fillStyle=col;c.fill(PB[k])})}
   for(const z of(MAP.grz||GRZ0)){for(let i=0;i<300;i++){const a=Rg()*TAU,d=Math.sqrt(Rg())*z[2],x=z[0]+Math.cos(a)*d,y=z[1]+Math.sin(a)*d;c.strokeStyle=Rg()<.5?'rgba(92,118,48,.65)':'rgba(128,150,66,.6)';c.lineWidth=2.2;c.beginPath();for(let k=-1;k<=1;k++){c.moveTo(x,y);c.lineTo(x+k*4.5,y-7-Rg()*5)}c.stroke()}}
@@ -3067,7 +3082,7 @@ let LOWD=false;
 function draw2DSurfaceDetail(x0,y0,x1,y1){
   if(!Q.hi||LOWD)return;
   const step=42,gx0=Math.floor(x0/step)*step,gy0=Math.floor(y0/step)*step;
-  const desert=MAP.gen==='desert'||MAP.id==='sahara',forest=MAP.gen==='forest',city=MAP.gen==='city';
+  const desert=MAP.gen==='desert'||MAP.st==='sahara',forest=MAP.gen==='forest',city=MAP.gen==='city';
   const noise=(x,y,s)=>{let n=(Math.imul((x/s)|0,374761393)+Math.imul((y/s)|0,668265263)+Math.imul(MAP.id.length,1442695041))|0;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295};
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
   for(let gx=gx0;gx<x1;gx+=step)for(let gy=gy0;gy<y1;gy+=step){
@@ -3174,7 +3189,7 @@ function drawSFAtmosphere(){
 /* v151 — micro-détails de terrain : matière, végétation et usure lisibles en vue 2D. */
 function drawWorldMicroDetail(x0,y0,x1,y1){
  if(!Q.hi||LOWD||game.mode==='lobby')return;
- const desert=MAP.id==='sahara',forest=MAP.id==='foret',city=MAP.id==='ville',coast=MAP.id==='cote'||MAP.id==='capbon'||MAP.id==='djerba',high=MAP.id==='hautes';
+ const desert=MAP.st==='sahara',forest=MAP.st==='foret',city=MAP.st==='ville',coast=MAP.st==='cote'||MAP.st==='capbon'||MAP.st==='djerba',high=MAP.st==='hautes';
  const step=desert?76:forest?62:city?58:coast?66:72;
  const hash=(x,y)=>{let n=(Math.imul((x/step|0),374761393)+Math.imul((y/step|0),668265263)+Math.imul(MAP.seed|0,1442695041))|0;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295};
  const sx=Math.floor(Math.max(0,x0)/step)*step,sy=Math.floor(Math.max(0,y0)/step)*step;
@@ -3207,7 +3222,7 @@ function drawRegionalLandmarks(x0,y0,x1,y1){
  const inside=(x,y,r=90)=>x+r>=x0&&x-r<=x1&&y+r>=y0&&y-r<=y1;
  const hash=(a,b)=>{let n=(Math.imul(a|0,374761393)+Math.imul(b|0,668265263)+Math.imul(MAP.seed|0,1442695041))|0;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295};
  /* v2.1 — quartiers de Sidi Bou Saïd et de Tozeur : ce dessin était placé par erreur dans la génération du monde et la faisait planter. */
- if(MAP.id==='cote'&&POIS[3]){
+ if(MAP.st==='cote'&&POIS[3]){
   // Quartier blanc et bleu inspiré de Sidi Bou Saïd : terrasses, portes et volets azur.
   const cx=POIS[3].x,cy=POIS[3].y;
   for(let row=-2;row<=2;row++)for(let col=-2;col<=2;col++){
@@ -3233,7 +3248,7 @@ function drawRegionalLandmarks(x0,y0,x1,y1){
    ctx.fillStyle='#2b83a6';ctx.fillRect(-7,-8,14,3);ctx.fillStyle='#e9e4d7';ctx.beginPath();ctx.arc(0,-16,6,Math.PI,TAU);ctx.fill();
    ctx.fillStyle='#277da0';ctx.fillRect(-2,-22,4,6);ctx.restore();
   }
- }else if(MAP.id==='sahara'&&POIS[0]){
+ }else if(MAP.st==='sahara'&&POIS[0]){
   // Architecture de terre ocre et palmeraie autour de Tozeur, avec cours intérieures.
   const cx=POIS[0].x,cy=POIS[0].y;
   for(let row=-2;row<=2;row++)for(let col=-2;col<=2;col++){
@@ -3260,7 +3275,7 @@ function drawRegionalLandmarks(x0,y0,x1,y1){
    ctx.restore();
   }
  }
- if(MAP.id==='djerba'){
+ if(MAP.st==='djerba'){
   for(let gx=360;gx<WS-180;gx+=210)for(let gy=260;gy<WS-180;gy+=190){
    const h=hash(gx,gy);if(h<.26)continue;const x=gx+(hash(gx+11,gy-7)-.5)*110,y=gy+(hash(gx-13,gy+9)-.5)*90;
    if(!inside(x,y,34)||isWater(x,y)||nearRoad(x,y,28)||bldAt(x,y))continue;
@@ -3274,17 +3289,17 @@ function drawRegionalLandmarks(x0,y0,x1,y1){
   for(let i=0;i<12;i++){const x=540+(i*317)%2580,y=430+(i*487)%2600;if(!inside(x,y,42)||isWater(x,y)||nearRoad(x,y,18)||bldAt(x,y))continue;const w=22+(i%3)*5,h=17+(i%2)*4;
    ctx.save();ctx.translate(x,y);ctx.fillStyle='rgba(38,40,32,.2)';ctx.fillRect(-w/2+5,-h/2+6,w,h);ctx.fillStyle='#e6e1d1';ctx.fillRect(-w/2,-h/2,w,h);ctx.fillStyle='#fffaf0';ctx.fillRect(-w/2+2,-h/2+2,w-4,h-4);ctx.fillStyle='#b5a68b';ctx.beginPath();ctx.ellipse(0,-h/2,w*.29,5,0,Math.PI,TAU);ctx.fill();ctx.fillStyle='#9b7c59';ctx.fillRect(-2,h/2-7,4,7);ctx.fillStyle='#b7c9c9';ctx.fillRect(-w/2+4,-h/2+5,4,4);ctx.restore();
   }
- }else if(MAP.id==='capbon'){
+ }else if(MAP.st==='capbon'){
   for(let row=0;row<14;row++)for(let col=0;col<15;col++){const gx=420+col*176+(row%2)*72,gy=370+row*188,h=hash(gx,gy);if(h<.18)continue;const x=gx+(h-.5)*38,y=gy+(hash(gx+9,gy-3)-.5)*30;
    if(!inside(x,y,26)||isWater(x,y)||nearRoad(x,y,20)||bldAt(x,y))continue;const r=9+h*4;ctx.fillStyle='rgba(30,39,23,.18)';ctx.beginPath();ctx.ellipse(x+5,y+7,r*1.35,r*.8,.15,0,TAU);ctx.fill();ctx.fillStyle=h>.66?'#426b38':'#557b3e';ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.fillStyle='rgba(154,183,95,.52)';ctx.beginPath();ctx.arc(x-3,y-3,r*.62,0,TAU);ctx.fill();for(let f=0;f<3;f++){const a=f*2.1+h*4,fx=x+Math.cos(a)*r*.48,fy=y+Math.sin(a)*r*.42;ctx.fillStyle=f===1?'#e8a83f':'#d7a13b';ctx.beginPath();ctx.arc(fx,fy,1.5,0,TAU);ctx.fill()}ctx.strokeStyle='rgba(75,58,37,.7)';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x,y+r*.35);ctx.lineTo(x+1,y+r+3);ctx.stroke();
   }
   const lx=coastX(690)-115,ly=690;if(inside(lx,ly,70)&&!isWater(lx,ly)){ctx.save();ctx.translate(lx,ly);ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(6,9,25,14,0,0,TAU);ctx.fill();ctx.fillStyle='#d8d4c5';ctx.beginPath();ctx.moveTo(-13,20);ctx.lineTo(-9,-16);ctx.lineTo(9,-16);ctx.lineTo(13,20);ctx.closePath();ctx.fill();ctx.fillStyle='#b94b39';ctx.fillRect(-10,-8,20,5);ctx.fillStyle='#f7e8bf';ctx.fillRect(-8,-20,16,8);ctx.fillStyle='#e8c46b';ctx.beginPath();ctx.arc(0,-16,4,0,TAU);ctx.fill();ctx.restore()}
- }else if(MAP.id==='cote'){
+ }else if(MAP.st==='cote'){
   /* Tunis / Sidi Bou Saïd: maisons blanches, volets bleus et vestiges de Carthage. */
   for(let i=0;i<26;i++){const x=540+(i*239)%2500,y=420+(i*397)%2780;if(!inside(x,y,38)||isWater(x,y)||nearRoad(x,y,26)||bldAt(x,y))continue;const w=20+(i%4)*5,hh=17+(i%3)*5;ctx.save();ctx.translate(x,y);ctx.fillStyle='rgba(28,37,38,.23)';ctx.fillRect(-w/2+5,-hh/2+7,w,hh);ctx.fillStyle='#e6e3d6';ctx.fillRect(-w/2,-hh/2,w,hh);ctx.fillStyle='#f5f0df';ctx.fillRect(-w/2+2,-hh/2+2,w-4,hh-4);ctx.fillStyle='#2d6f9c';ctx.fillRect(-w/2+4,-hh/2+6,5,7);ctx.fillRect(w/2-9,-hh/2+6,5,7);ctx.fillStyle='#4a7190';ctx.fillRect(-3,hh/2-9,6,9);ctx.restore()}
   for(let i=0;i<9;i++){const x=1450+i*42,y=1550+(i%3)*34;if(!inside(x,y,30)||isWater(x,y))continue;ctx.save();ctx.translate(x,y);ctx.fillStyle='rgba(30,25,19,.2)';ctx.fillRect(-7,5,15,8);ctx.fillStyle='#b8a17a';ctx.fillRect(-6,-18,12,24);ctx.fillStyle='#e0cda6';ctx.fillRect(-3,-22,6,27);ctx.strokeStyle='#89734f';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-9,-17);ctx.lineTo(9,-17);ctx.moveTo(-9,-8);ctx.lineTo(9,-8);ctx.stroke();ctx.restore()}
   for(let i=0;i<11;i++){const x=650+(i*283)%2450,y=500+(i*461)%2700;if(!inside(x,y,24)||isWater(x,y)||nearRoad(x,y,16))continue;const r=8+(i%4)*2;ctx.strokeStyle='#795a38';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y+5);ctx.lineTo(x+1,y-r);ctx.stroke();for(let k=0;k<7;k++){const a=k*TAU/7;ctx.strokeStyle=k%2?'#527542':'#6f8b4b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+1,y-r);ctx.quadraticCurveTo(x+Math.cos(a)*r*.7,y-r+Math.sin(a)*r*.35,x+Math.cos(a)*r*1.6,y-r+Math.sin(a)*r);ctx.stroke()}}
- }else if(MAP.id==='sahara'){
+ }else if(MAP.st==='sahara'){
   /* Tozeur / Nefta: briques ocre, ksour et palmeraies. */
   for(let i=0;i<22;i++){const x=430+(i*251)%2600,y=380+(i*433)%2820;if(!inside(x,y,42)||isWater(x,y)||nearRoad(x,y,25)||bldAt(x,y))continue;const w=23+(i%3)*7,hh=18+(i%4)*4;ctx.save();ctx.translate(x,y);ctx.fillStyle='rgba(45,31,18,.25)';ctx.fillRect(-w/2+5,-hh/2+7,w,hh);ctx.fillStyle='#a96f43';ctx.fillRect(-w/2,-hh/2,w,hh);ctx.fillStyle='#c78b58';ctx.fillRect(-w/2+2,-hh/2+2,w-4,hh-4);ctx.strokeStyle='rgba(91,54,31,.55)';ctx.lineWidth=1.2;for(let q=-1;q<=1;q++){ctx.beginPath();ctx.moveTo(-w/2+3,q*5);ctx.lineTo(w/2-3,q*5);ctx.stroke()}ctx.fillStyle='#38291f';ctx.fillRect(-4,hh/2-10,8,10);ctx.fillStyle='#d9b27b';ctx.fillRect(-w/2+4,-hh/2+5,5,5);ctx.fillRect(w/2-9,-hh/2+5,5,5);ctx.restore()}
   for(let i=0;i<18;i++){const x=520+(i*173)%2500,y=450+(i*313)%2700;if(!inside(x,y,32)||isWater(x,y)||nearRoad(x,y,20)||bldAt(x,y))continue;const r=9+(i%4)*2;ctx.fillStyle='rgba(50,38,22,.2)';ctx.beginPath();ctx.ellipse(x+5,y+8,r*1.5,r*.7,0,0,TAU);ctx.fill();ctx.strokeStyle='#765236';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x,y+5);ctx.quadraticCurveTo(x-3,y-r*.4,x+2,y-r*1.8);ctx.stroke();for(let k=0;k<8;k++){const a=k*TAU/8;ctx.strokeStyle=k%2?'#526c36':'#718548';ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(x+2,y-r*1.8);ctx.quadraticCurveTo(x+Math.cos(a)*r,y-r*1.5+Math.sin(a)*r*.5,x+Math.cos(a)*r*1.8,y-r*1.8+Math.sin(a)*r);ctx.stroke()}}
@@ -3295,7 +3310,7 @@ function drawRegionalLandmarks(x0,y0,x1,y1){
 /* v147 — relief pseudo-3D tunisien : courbes de niveau, ombres portées et strates rocheuses. */
 function drawTunisianRelief(x0,y0,x1,y1){
  if(!Q.hi||LOWD)return;
- const id=MAP.id,desert=id==='sahara',coast=id==='cote'||id==='capbon',island=id==='djerba';
+ const id=MAP.st,desert=id==='sahara',coast=id==='cote'||id==='capbon',island=id==='djerba';
  const hills=id==='hautes'||id==='foret'||id==='ville'||desert||coast||island;
  if(!hills)return;
  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
@@ -3365,8 +3380,61 @@ function drawNight(toS,z){const S=LOWD?5:3,w=Math.ceil(VW/S),h=Math.ceil(VH/S);
   ctx.drawImage(NCV,0,0,VW,VH);
   if(!fly){ctx.fillStyle='rgba(40,70,140,.07)';ctx.fillRect(0,0,VW,VH)}}
 let CAMROT=0;
-function scrToW(sx,sy){const X=sx-VW/2,Y=sy-VH/2,c=Math.cos(CAMROT),s=Math.sin(CAMROT);return[cam.x+(c*X+s*Y)/cam.z,cam.y+(-s*X+c*Y)/cam.z]}
-function render(){SFF++;CAMROT=stats.camBehind&&(game.mode==='play'||game.mode==='paused')&&Math.abs(cam.rot||0)>1e-4?cam.rot:0;LOWD=stats.perfC==='low'&&stats.quality==='eco';const CINE=!stats.camClassic&&!reduceMotion,z=cam.z*(CINE?1+(cam.zp||0):1);{const pz=z/baseZoom();PK=.0021*pz;PTY=CAMROT?0:-.27*pz}let ox,oy;if(CINE){const sh=cam.shake*6+cam.shake*cam.shake*14,tt=TIME*38;ox=(Math.sin(tt*1.13+1.7)+Math.sin(tt*.71+.3)*.6)*sh*.55+(cam.kx||0);oy=(Math.sin(tt*.97+4.1)+Math.sin(tt*1.37+2.2)*.6)*sh*.55+(cam.ky||0)}else{const sh=reduceMotion?0:cam.shake*10;ox=(Math.random()-.5)*sh;oy=(Math.random()-.5)*sh}
+/* ===== v2.8 — caméra 3D derrière le joueur =====
+   Le monde est dessiné vu du dessus dans une image hors écran (tournée pour que le soldat regarde vers le haut),
+   puis WebGL la pose sur un sol en perspective vu d'une caméra basse placée derrière le soldat, avec ciel et brume. */
+const P3={ok:null,on:false,gl:null,cv:null,tex:null,pr:null,U:{},off:null,oc:null,OW:0,OH:0,zo:1,Yf:640,Yb:150,Wh:900,H:237,B:300,L:165,tHy:Math.tan(30*Math.PI/180),tHx:1,sp:0,cp:1,ax:0,ay:0,rx:1,ry:0,fx:0,fy:-1};
+function p3Active(){return !!stats.camBehind&&(game.mode==='play'||game.mode==='paused')&&player&&player.alive&&!player.inPlane&&!(player.air>0)&&p3Init()}
+function p3Init(){if(P3.ok!==null)return P3.ok;P3.ok=false;try{
+  const c=document.createElement('canvas');c.id='game3d';c.setAttribute('aria-hidden','true');cv.parentNode.insertBefore(c,cv);
+  const gl=c.getContext('webgl',{alpha:false,antialias:false,preserveDrawingBuffer:false,powerPreference:'high-performance'});if(!gl){c.remove();return false}
+  const sh=(t,src)=>{const o=gl.createShader(t);gl.shaderSource(o,src);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o};
+  const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}'));
+  gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,`precision highp float;uniform sampler2D T;uniform vec2 R,TN,P,FG;uniform vec3 C,SK,HZ,FC;uniform vec4 M;
+void main(){vec2 n=(gl_FragCoord.xy/R)*2.-1.;float a=n.x*TN.x,b=n.y*TN.y;vec3 d=vec3(a,P.y+b*P.x,-P.x+b*P.y);float L=length(d);
+ if(d.z>-.0015){float e=d.z/L,k=smoothstep(0.,.2,e);vec3 s=mix(HZ,SK,k);s+=vec3(1.,.93,.78)*.16*exp(-pow(n.x*.9,2.)*3.)*(1.-smoothstep(0.,.12,e));gl_FragColor=vec4(s,1.);return;}
+ float t=C.x/(-d.z);vec2 g=vec2(d.x*t,-C.y+d.y*t);vec2 uv=vec2(.5+g.x*M.z/M.x,(M.w-g.y)*M.z/M.y);
+ vec3 c=FC;if(uv.x>0.&&uv.x<1.&&uv.y>0.&&uv.y<1.){c=texture2D(T,uv).rgb;float e=min(min(uv.x,1.-uv.x)*8.,1.);c=mix(FC,c,e);}
+ float f=smoothstep(FG.x,FG.y,g.y);float hz=smoothstep(-.05,-.0015,d.z/L)*.6;c=mix(c,FC,max(f,hz));
+ gl_FragColor=vec4(c,1.);}`));
+  gl.linkProgram(pr);if(!gl.getProgramParameter(pr,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(pr));gl.useProgram(pr);
+  const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const la=gl.getAttribLocation(pr,'a');gl.enableVertexAttribArray(la);gl.vertexAttribPointer(la,2,gl.FLOAT,false,0,0);
+  for(const k of ['T','R','TN','P','FG','C','SK','HZ','FC','M'])P3.U[k]=gl.getUniformLocation(pr,k);
+  const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.uniform1i(P3.U.T,0);
+  c.addEventListener('webglcontextlost',e=>{e.preventDefault();P3.ok=false;c.style.display='none'});
+  P3.gl=gl;P3.cv=c;P3.tex=tex;P3.pr=pr;P3.off=document.createElement('canvas');P3.oc=P3.off.getContext('2d');P3.ok=true}catch(e){console.warn('3D',e);P3.ok=false}
+  return P3.ok}
+// géométrie de la caméra : hauteur H, recul B, point visé L devant le soldat
+function p3Setup(){const asp=VW/Math.max(1,VH),hz=Math.atan2(P3.H,P3.B+P3.L);P3.sp=Math.sin(hz);P3.cp=Math.cos(hz);P3.tHx=P3.tHy*asp;
+  const q=Q.hi?1:.8;P3.Yf=Q.hi?700:560;
+  // sol visible au bas de l'écran (derrière le soldat) et largeur visible au loin
+  const lo=Math.atan(P3.tHy),gb=P3.H/Math.tan(hz+lo)-P3.B;P3.Yb=Math.max(60,-gb+40);
+  const fw=P3.Yf+P3.B;P3.Wh=Math.min(fw*P3.tHx*1.04,1900);
+  P3.zo=Math.min(q,1700/(2*P3.Wh),1050/(P3.Yf+P3.Yb));P3.OW=Math.ceil(2*P3.Wh*P3.zo);P3.OH=Math.ceil((P3.Yf+P3.Yb)*P3.zo);
+  if(P3.off.width!==P3.OW||P3.off.height!==P3.OH){P3.off.width=P3.OW;P3.off.height=P3.OH}
+  const h=-Math.PI/2-CAMROT;P3.fx=Math.cos(h);P3.fy=Math.sin(h);P3.rx=Math.cos(CAMROT);P3.ry=-Math.sin(CAMROT);P3.ax=player.x;P3.ay=player.y}
+function p3ToS(x,y,zh){const dx=x-P3.ax,dy=y-P3.ay,X=dx*P3.rx+dy*P3.ry,Y=dx*P3.fx+dy*P3.fy,Z=(zh||0)-P3.H,fc=(Y+P3.B)*P3.cp-Z*P3.sp,uc=(Y+P3.B)*P3.sp+Z*P3.cp;
+  if(fc<8)return[-9999,-9999];return[VW/2*(1+X/fc/P3.tHx),VH/2*(1-uc/fc/P3.tHy)]}
+function p3ScrToW(sx,sy){const a=(sx/(VW/2)-1)*P3.tHx,b=(1-sy/(VH/2))*P3.tHy,dx=a,dy=P3.cp+b*P3.sp,dz=-P3.sp+b*P3.cp;const t=dz<-.02?P3.H/(-dz):2400/Math.max(.2,Math.hypot(dx,dy));
+  const gx=dx*t,gy=-P3.B+dy*t;return[P3.ax+P3.rx*gx+P3.fx*gy,P3.ay+P3.ry*gx+P3.fy*gy]}
+function p3Colors(){const st=MAP.st||MAP.id,n=stats.tod==='night';if(n)return{sk:[.03,.05,.12],hz:[.10,.13,.22]};
+  if(st==='sahara')return{sk:[.42,.62,.86],hz:[.93,.84,.68]};if(st==='foret')return{sk:[.40,.58,.78],hz:[.72,.80,.76]};if(st==='hautes')return{sk:[.50,.62,.76],hz:[.80,.82,.82]};
+  if(MAP.gen==='city')return{sk:[.38,.58,.84],hz:[.80,.84,.86]};return{sk:[.30,.58,.90],hz:[.84,.91,.95]}}
+function p3Draw(){const gl=P3.gl,c=P3.cv,d=Math.min(DPR,2),W=Math.round(VW*d),H=Math.round(VH*d);
+  if(c.width!==W||c.height!==H){c.width=W;c.height=H}c.style.display='block';gl.viewport(0,0,W,H);
+  gl.bindTexture(gl.TEXTURE_2D,P3.tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,P3.off);
+  const k=p3Colors(),U=P3.U;gl.uniform2f(U.R,W,H);gl.uniform2f(U.TN,P3.tHx,P3.tHy);gl.uniform2f(U.P,P3.sp,P3.cp);gl.uniform3f(U.C,P3.H,P3.B,0);
+  gl.uniform4f(U.M,P3.OW,P3.OH,P3.zo,P3.Yf);gl.uniform2f(U.FG,P3.Yf*.62,P3.Yf*.96);gl.uniform3f(U.SK,k.sk[0],k.sk[1],k.sk[2]);gl.uniform3f(U.HZ,k.hz[0],k.hz[1],k.hz[2]);gl.uniform3f(U.FC,k.hz[0],k.hz[1],k.hz[2]);
+  gl.drawArrays(gl.TRIANGLES,0,3)}
+function p3Off(){if(P3.cv&&P3.cv.style.display!=='none')P3.cv.style.display='none'}
+// angle à l'écran d'une direction du monde (vue tournée ou en perspective)
+function scrAng(a,ps){if(P3.on){const q=p3ToS(player.x+Math.cos(a)*60,player.y+Math.sin(a)*60);return Math.atan2(q[1]-ps[1],q[0]-ps[0])}return a+CAMROT}
+function scrToW(sx,sy){if(P3.on)return p3ScrToW(sx,sy);const X=sx-VW/2,Y=sy-VH/2,c=Math.cos(CAMROT),s=Math.sin(CAMROT);return[cam.x+(c*X+s*Y)/cam.z,cam.y+(-s*X+c*Y)/cam.z]}
+function render(){SFF++;CAMROT=stats.camBehind&&(game.mode==='play'||game.mode==='paused')&&Math.abs(cam.rot||0)>1e-4?cam.rot:0;P3.on=p3Active();let P3S=null;if(P3.on){p3Setup();P3S=[VW,VH,DPR,cam.x,cam.y,cam.z];const Yc=(P3.Yf-P3.Yb)/2;cam.x=player.x+P3.fx*Yc;cam.y=player.y+P3.fy*Yc;cam.z=P3.zo;VW=P3.OW;VH=P3.OH;DPR=1;ctx=P3.oc}else p3Off();LOWD=stats.perfC==='low'&&stats.quality==='eco';const CINE=!stats.camClassic&&!reduceMotion,z=cam.z*(CINE?1+(cam.zp||0):1);{const pz=z/baseZoom();PK=.0021*pz;PTY=CAMROT?0:-.27*pz}let ox,oy;if(CINE){const sh=cam.shake*6+cam.shake*cam.shake*14,tt=TIME*38;ox=(Math.sin(tt*1.13+1.7)+Math.sin(tt*.71+.3)*.6)*sh*.55+(cam.kx||0);oy=(Math.sin(tt*.97+4.1)+Math.sin(tt*1.37+2.2)*.6)*sh*.55+(cam.ky||0)}else{const sh=reduceMotion?0:cam.shake*10;ox=(Math.random()-.5)*sh;oy=(Math.random()-.5)*sh}
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#0e5f86';ctx.fillRect(0,0,VW,VH);
   const vd=CAMROT?Math.hypot(VW,VH)/z:0,vw=CAMROT?vd:VW/z,vh=CAMROT?vd:VH/z,x0=cam.x-vw/2,y0=cam.y-vh/2,x1=x0+vw,y1=y0+vh;V.x0=x0;V.y0=y0;V.x1=x1;V.y1=y1;
   if(CAMROT){ctx.setTransform(DPR,0,0,DPR,DPR*(VW/2+ox),DPR*(VH/2+oy));ctx.rotate(CAMROT);ctx.scale(z,z);ctx.translate(-cam.x,-cam.y)}
@@ -3435,8 +3503,10 @@ function render(){SFF++;CAMROT=stats.camBehind&&(game.mode==='play'||game.mode==
   if(zone&&game.mode!=='lobby'){drawStorm(x0,y0,vw,vh,z);
     if(zone.st==='wait'&&zone.nr>0){ctx.beginPath();ctx.arc(zone.nx,zone.ny,zone.nr,0,TAU);ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=2.6/z;ctx.setLineDash([18/z,12/z]);ctx.stroke();ctx.setLineDash([])}}
   // screen space
+  if(P3S&&stats.tod==='night'){ctx.setTransform(1,0,0,1,0,0);const c0=Math.cos(CAMROT),s0=Math.sin(CAMROT);drawNight((x,y)=>{const dx=(x-cam.x)*z,dy=(y-cam.y)*z;return[dx*c0-dy*s0+VW/2,dx*s0+dy*c0+VH/2]},z)}
+  if(P3S){VW=P3S[0];VH=P3S[1];DPR=P3S[2];cam.x=P3S[3];cam.y=P3S[4];cam.z=P3S[5];ctx=CTX0;p3Draw();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,VW,VH)}
   ctx.setTransform(DPR,0,0,DPR,0,0);
-  const RC=Math.cos(CAMROT),RS=Math.sin(CAMROT),toS=(x,y)=>{const dx=(x-cam.x)*z,dy=(y-cam.y)*z;return[dx*RC-dy*RS+VW/2,dx*RS+dy*RC+VH/2]};
+  const RC=Math.cos(CAMROT),RS=Math.sin(CAMROT),toS=P3S?(x,y)=>p3ToS(x,y):(x,y)=>{const dx=(x-cam.x)*z,dy=(y-cam.y)*z;return[dx*RC-dy*RS+VW/2,dx*RS+dy*RC+VH/2]};
   if(LOWD){boomFlash()}else{if(!vigG){vigG=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.42,VW/2,VH/2,Math.hypot(VW,VH)*.62);vigG.addColorStop(0,'rgba(24,14,6,0)');vigG.addColorStop(1,'rgba(24,14,6,.26)')}ctx.fillStyle=vigG;ctx.fillRect(0,0,VW,VH);if(Q.hi){if(!sunG||sunG._w!==VW){sunG=ctx.createLinearGradient(0,0,VW,VH);sunG.addColorStop(0,'rgba(255,214,150,.10)');sunG.addColorStop(.5,'rgba(255,214,150,0)');sunG.addColorStop(1,'rgba(40,60,90,.07)');sunG._w=VW}ctx.fillStyle=sunG;ctx.fillRect(0,0,VW,VH)}boomFlash()}
   const bz=baseZoom();
   if(game.mode==='lobby'&&z<bz*.66){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='19px "Saira Stencil One", Impact, sans-serif';for(const p of POIS){const s=toS(p.x,p.y);if(s[0]<-100||s[0]>VW+100||s[1]<-40||s[1]>VH+40)continue;ctx.lineWidth=4;ctx.strokeStyle='rgba(28,23,18,.75)';ctx.strokeText(p.n.toUpperCase(),s[0],s[1]);ctx.fillStyle='#f3e9d4';ctx.fillText(p.n.toUpperCase(),s[0],s[1])}}
@@ -3450,21 +3520,21 @@ function render(){SFF++;CAMROT=stats.camBehind&&(game.mode==='play'||game.mode==
   if(!player)return;
   const ps=toS(player.x,player.y);
   // aim guide
-  if(player.alive&&sticks.aim.id!==null&&sticks.aim.mag>.2){ctx.strokeStyle=sticks.aim.mag>FIRE_AT?'rgba(255,107,34,.7)':'rgba(243,233,212,.45)';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(ps[0]+Math.cos(player.angle)*24,ps[1]+Math.sin(player.angle)*24);ctx.lineTo(ps[0]+Math.cos(player.angle)*150,ps[1]+Math.sin(player.angle)*150);ctx.stroke();ctx.setLineDash([]);
-    const cw=curW(player);if(cw&&WEAP[cw.type].cls==='sn'){const D=Math.min(Math.min(VW,VH)*.42,320),rx=ps[0]+Math.cos(player.angle)*D,ry=ps[1]+Math.sin(player.angle)*D,R=30;ctx.save();ctx.strokeStyle='rgba(10,10,10,.55)';ctx.lineWidth=5;ctx.beginPath();ctx.arc(rx,ry,R,0,TAU);ctx.stroke();ctx.strokeStyle=sticks.aim.mag>FIRE_AT?'rgba(255,77,58,.95)':'rgba(240,240,230,.9)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(rx,ry,R,0,TAU);ctx.moveTo(rx-R-6,ry);ctx.lineTo(rx-6,ry);ctx.moveTo(rx+6,ry);ctx.lineTo(rx+R+6,ry);ctx.moveTo(rx,ry-R-6);ctx.lineTo(rx,ry-6);ctx.moveTo(rx,ry+6);ctx.lineTo(rx,ry+R+6);ctx.stroke();ctx.fillStyle='#ff4d3a';ctx.beginPath();ctx.arc(rx,ry,2.2,0,TAU);ctx.fill();ctx.restore()}}
+  if(player.alive&&sticks.aim.id!==null&&sticks.aim.mag>.2){ctx.strokeStyle=sticks.aim.mag>FIRE_AT?'rgba(255,107,34,.7)':'rgba(243,233,212,.45)';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();{const sa=scrAng(player.angle,ps);ctx.moveTo(ps[0]+Math.cos(sa)*24,ps[1]+Math.sin(sa)*24);ctx.lineTo(ps[0]+Math.cos(sa)*150,ps[1]+Math.sin(sa)*150)}ctx.stroke();ctx.setLineDash([]);
+    const cw=curW(player);if(cw&&WEAP[cw.type].cls==='sn'){const D=Math.min(Math.min(VW,VH)*.42,320),rx=ps[0]+Math.cos(scrAng(player.angle,ps))*D,ry=ps[1]+Math.sin(scrAng(player.angle,ps))*D,R=30;ctx.save();ctx.strokeStyle='rgba(10,10,10,.55)';ctx.lineWidth=5;ctx.beginPath();ctx.arc(rx,ry,R,0,TAU);ctx.stroke();ctx.strokeStyle=sticks.aim.mag>FIRE_AT?'rgba(255,77,58,.95)':'rgba(240,240,230,.9)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(rx,ry,R,0,TAU);ctx.moveTo(rx-R-6,ry);ctx.lineTo(rx-6,ry);ctx.moveTo(rx+6,ry);ctx.lineTo(rx+R+6,ry);ctx.moveTo(rx,ry-R-6);ctx.lineTo(rx,ry-6);ctx.moveTo(rx,ry+6);ctx.lineTo(rx,ry+R+6);ctx.stroke();ctx.fillStyle='#ff4d3a';ctx.beginPath();ctx.arc(rx,ry,2.2,0,TAU);ctx.fill();ctx.restore()}}
   if(USEK>=0&&player.alive){ctx.save();ctx.lineCap='round';ctx.lineWidth=5;ctx.strokeStyle='rgba(10,12,16,.55)';ctx.beginPath();ctx.arc(ps[0],ps[1],30,0,TAU);ctx.stroke();ctx.lineWidth=3.2;ctx.strokeStyle=player.reloadT>0?'#ffc54d':'#5fd38d';ctx.beginPath();ctx.arc(ps[0],ps[1],30,-Math.PI/2,-Math.PI/2+TAU*clamp(USEK,0,1));ctx.stroke();ctx.restore()}
   // zone arrow
-  if(player.alive&&!player.inPlane&&player.air<=0&&dd2(player.x,player.y,zone.cx,zone.cy)>zone.r*zone.r){const a=Math.atan2(zone.cy-player.y,zone.cx-player.x),R=46;const ax=ps[0]+Math.cos(a)*R,ay=ps[1]+Math.sin(a)*R;ctx.save();ctx.translate(ax,ay);ctx.rotate(a);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-6,-8);ctx.lineTo(-2,0);ctx.lineTo(-6,8);ctx.closePath();ctx.fill();ctx.restore();
+  if(player.alive&&!player.inPlane&&player.air<=0&&dd2(player.x,player.y,zone.cx,zone.cy)>zone.r*zone.r){const a=scrAng(Math.atan2(zone.cy-player.y,zone.cx-player.x),ps),R=46;const ax=ps[0]+Math.cos(a)*R,ay=ps[1]+Math.sin(a)*R;ctx.save();ctx.translate(ax,ay);ctx.rotate(a);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-6,-8);ctx.lineTo(-2,0);ctx.lineTo(-6,8);ctx.closePath();ctx.fill();ctx.restore();
     }
   for(const h of hitMarks){const q=toS(h.x,h.y),g=h.k?1+(.4-h.t)*2.5:1+(.16-h.t)*3;ctx.lineCap='round';ctx.strokeStyle='rgba(20,12,4,.55)';ctx.lineWidth=h.k?5:4;ctx.beginPath();for(const m of[[1,1],[1,-1],[-1,1],[-1,-1]]){ctx.moveTo(q[0]+m[0]*5*g,q[1]+m[1]*5*g);ctx.lineTo(q[0]+m[0]*12*g,q[1]+m[1]*12*g)}ctx.stroke();ctx.strokeStyle=h.k?'#ff4d3a':'#fff';ctx.lineWidth=h.k?3:2.2;ctx.stroke();if(h.k){ctx.globalAlpha=clamp(h.t/.4,0,1);ctx.strokeStyle='#ff6b22';ctx.lineWidth=2;ctx.beginPath();ctx.arc(q[0],q[1],22+(.4-h.t)*60,0,TAU);ctx.stroke();ctx.globalAlpha=1}}
-  if(player.alive)for(const d of dmgDirs){const al=Math.min(.9,d.t);ctx.lineCap='butt';ctx.strokeStyle='rgba(229,72,43,'+al*.35+')';ctx.lineWidth=14;ctx.beginPath();ctx.arc(ps[0],ps[1],70,d.a+CAMROT-.42,d.a+CAMROT+.42);ctx.stroke();ctx.strokeStyle='rgba(255,120,80,'+al+')';ctx.lineWidth=5;ctx.beginPath();ctx.arc(ps[0],ps[1],70,d.a-.3,d.a+.3);ctx.stroke()}
+  if(player.alive)for(const d of dmgDirs){const al=Math.min(.9,d.t);ctx.lineCap='butt';ctx.strokeStyle='rgba(229,72,43,'+al*.35+')';ctx.lineWidth=14;ctx.beginPath();ctx.arc(ps[0],ps[1],70,scrAng(d.a,ps)-.42,scrAng(d.a,ps)+.42);ctx.stroke();ctx.strokeStyle='rgba(255,120,80,'+al+')';ctx.lineWidth=5;ctx.beginPath();ctx.arc(ps[0],ps[1],70,d.a-.3,d.a+.3);ctx.stroke()}
   if(player&&player.alive&&player.lock&&player.lock.alive){const q=toS(player.lock.x,player.lock.y),R=26*z+8;ctx.strokeStyle='#ff4d3a';ctx.lineWidth=2.5;ctx.beginPath();for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){ctx.moveTo(q[0]+sx*R,q[1]+sy*(R-9));ctx.lineTo(q[0]+sx*R,q[1]+sy*R);ctx.lineTo(q[0]+sx*(R-9),q[1]+sy*R)}ctx.stroke()}
   if(MAP.wx&&game.mode!=='lobby'&&!LOWD)drawWeather();
   if(flashT>0){ctx.fillStyle='rgba(255,255,250,'+Math.min(1,flashT/1.1).toFixed(3)+')';ctx.fillRect(0,0,VW,VH)}
   // v45 étalonnage : vignettage doux + lumière chaude en haut à gauche, ombres froides
   const SFN=stats.tod==='night'&&game.mode!=='lobby';
   SUNK=game.mode==='play'?(SFN?1:clamp((matchT-45)/330,0,1)):0;
-  if(SFN)drawNight(toS,z);
+  if(SFN){if(!P3S)drawNight(toS,z)}
   else if(SUNK>0&&LOWD){ctx.fillStyle='rgba(255,128,48,'+(SUNK*.12).toFixed(3)+')';ctx.fillRect(0,0,VW,VH)}
   else if(SUNK>0){const k=SUNK;ctx.fillStyle='rgba(255,128,48,'+(k*.13).toFixed(3)+')';ctx.fillRect(0,0,VW,VH);const sg=ctx.createLinearGradient(0,0,0,VH);sg.addColorStop(0,'rgba(255,170,90,'+(k*.1).toFixed(3)+')');sg.addColorStop(1,'rgba(40,20,70,'+(k*.16).toFixed(3)+')');ctx.fillStyle=sg;ctx.fillRect(0,0,VW,VH)}
   if(Q.hi&&game.mode==='play'){if(!vigW||vigW._w!==VW||vigW._h!==VH){vigW=ctx.createLinearGradient(0,0,VW,VH);vigW.addColorStop(0,'rgba(255,214,150,.08)');vigW.addColorStop(.5,'rgba(255,214,150,0)');vigW.addColorStop(1,'rgba(40,70,120,.09)');vigW._w=VW;vigW._h=VH}ctx.fillStyle=vigW;ctx.fillRect(0,0,VW,VH)}
@@ -4309,7 +4379,7 @@ function drawEnt(e){drawEnt0(e);if(CAMROT&&e!==player&&e.alive)ctx.restore()}
 function drawEnt0(e){
   if(e._lx===undefined){e._lx=e.x;e._ly=e.y}
   const md=Math.hypot(e.x-e._lx,e.y-e._ly);e._lx=e.x;e._ly=e.y;if(md<40)e.walkPh=(e.walkPh||0)+md*.085;
-  e._ws=(e._ws||0)+((md>.2&&e.moveMag>.08?1:0)-(e._ws||0))*.22;if(Q.hi&&md>.2&&!e.veh){e._sd=(e._sd||0)+md;if(e._sd>17){e._sd=0;e._sf=-(e._sf||1);const w=isWater(e.x,e.y);if(w){RIPS.push({x:e.x,y:e.y,t:TIME});if(RIPS.length>60)RIPS.shift()}else if(MAP.id==='sahara'||e.x>coastX(e.y)-150){const a=e.angle;STEPS.push({x:e.x-Math.sin(a)*4*e._sf,y:e.y+Math.cos(a)*4*e._sf,a,t:TIME});if(STEPS.length>160)STEPS.shift()}}}{const da=angDiff(e._pa==null?e.angle:e._pa,e.angle);e._pa=e.angle;e._turn=(e._turn||0)*.86+clamp(da,-.35,.35)*2.4}
+  e._ws=(e._ws||0)+((md>.2&&e.moveMag>.08?1:0)-(e._ws||0))*.22;if(Q.hi&&md>.2&&!e.veh){e._sd=(e._sd||0)+md;if(e._sd>17){e._sd=0;e._sf=-(e._sf||1);const w=isWater(e.x,e.y);if(w){RIPS.push({x:e.x,y:e.y,t:TIME});if(RIPS.length>60)RIPS.shift()}else if(MAP.st==='sahara'||e.x>coastX(e.y)-150){const a=e.angle;STEPS.push({x:e.x-Math.sin(a)*4*e._sf,y:e.y+Math.cos(a)*4*e._sf,a,t:TIME});if(STEPS.length>160)STEPS.shift()}}}{const da=angDiff(e._pa==null?e.angle:e._pa,e.angle);e._pa=e.angle;e._turn=(e._turn||0)*.86+clamp(da,-.35,.35)*2.4}
   const PS=clamp(+stats.pSize||1.25,.8,1.8),R=e.r*SV*VSC*PS;
   ctx.fillStyle='rgba(28,16,4,.13)';ctx.beginPath();ctx.ellipse(e.x+6+SUNK*9,e.y+8+SUNK*6,R*(1.18+SUNK*.35),R*1.02,.5,0,TAU);ctx.fill();ctx.fillStyle='rgba(28,16,4,.22)';ctx.beginPath();ctx.ellipse(e.x+3,e.y+4.5,R*.98,R*.86,.5,0,TAU);ctx.fill();
   if(e!==player&&e.alive&&e.team&&player&&e.team===player.team){ctx.lineWidth=3;ctx.strokeStyle='rgba(90,200,255,.95)';ctx.beginPath();ctx.arc(e.x,e.y,R+4,0,TAU);ctx.stroke()}
@@ -4805,7 +4875,7 @@ function buildCust(){
   mk('#czBoots','boots',BOOTS,BOOT_LV,(c,i)=>'<span class="sw" style="--c:'+(c||'#1d1914')+'"></span>');
   mk('#czBag','bag',BAGC,BAG_LV,(c,i)=>c?'<span class="sw" style="--c:'+c+'"></span>':'<span>Aucune</span>')}
 /* ===== modes, missions, succès (lot 3) ===== */
-const STAGES=(()=>{const mp=['seddik','ville','foret','cote','hautes','sahara','djerba','capbon'],nm=['Échauffement','Rue de la Médina','Bord de mer','Colline de Kairouan','Dunes de Douz','Plateau du Kef','Port de Bizerte','Oasis de Tozeur','Forêt de Tabarka','Vent de Gabès','Marché de Sousse','Crête de Kasserine','Sables de Nefta','Falaise de Carthage','Vallée de Béja','Désert de Tataouine','Ruelles de Hammamet','Mont de Siliana','Chott de Kébili','Phare de Monastir','Steppe de Sbeitla','Cap Bon','Montagne de Jendouba','Mer de Mahdia','Nuit de Matmata','Route de Sfax','Îles Kerkennah','Lac de Bizerte','Djerba la Douce','Ksar Ghilane','Jebel Chambi','Port El Kantaoui','Remparts de Sousse','Grand Erg Oriental','Thuburbo Majus','Dougga','Bulla Regia','Amphithéâtre d’El Jem','Source de Zaghouan','Fort de Kélibia','Côte de Korbous','Forêt d’Aïn Draham','Gafsa la Rouge','Médenine','Plage de Zarzis','Canyon de Tamerza','Oasis de Chebika','Gorges de Midès','Dernier rempart','Finale des champions'];
+const STAGES=(()=>{const mp=['seddik','ville','foret','cote','hautes','sahara','djerba','capbon','sousse','tozeur','kef','tunis','tabarka','tataouine','sfax','kairouan','bizerte','gafsa'],nm=['Échauffement','Rue de la Médina','Bord de mer','Colline de Kairouan','Dunes de Douz','Plateau du Kef','Port de Bizerte','Oasis de Tozeur','Forêt de Tabarka','Vent de Gabès','Marché de Sousse','Crête de Kasserine','Sables de Nefta','Falaise de Carthage','Vallée de Béja','Désert de Tataouine','Ruelles de Hammamet','Mont de Siliana','Chott de Kébili','Phare de Monastir','Steppe de Sbeitla','Cap Bon','Montagne de Jendouba','Mer de Mahdia','Nuit de Matmata','Route de Sfax','Îles Kerkennah','Lac de Bizerte','Djerba la Douce','Ksar Ghilane','Jebel Chambi','Port El Kantaoui','Remparts de Sousse','Grand Erg Oriental','Thuburbo Majus','Dougga','Bulla Regia','Amphithéâtre d’El Jem','Source de Zaghouan','Fort de Kélibia','Côte de Korbous','Forêt d’Aïn Draham','Gafsa la Rouge','Médenine','Plage de Zarzis','Canyon de Tamerza','Oasis de Chebika','Gorges de Midès','Dernier rempart','Finale des champions'];
   return nm.map((n,i)=>({n,map:mp[i%mp.length],np:Math.min(30,12+Math.round(i*.38)),sk:Math.min(1.25,.62+i*.013),zt:Math.max(.55,1.14-i*.0115),rank:i+1,difficulty:i<10?'Recrue':i<20?'Soldat':i<30?'Vétéran':i<40?'Élite':'Légende',threat:Math.round(10+i*1.8)}))})();
 const CUPRW={5:'bottes violettes',10:'lunettes dorées et sac violet',15:'bottes turquoise',20:'la couronne',25:'le sac argenté',30:'la peinture de guerre',35:'les bottes argent',40:'le sac noir',45:'le sac flamme',50:'la couronne de feu et TOUT le contenu débloqué'};
 function cupAdv(){const i=stats.stage|0;stats.cupBest=Math.max(stats.cupBest|0,i+1);const rw=CUPRW[i+1]?' · récompense : '+CUPRW[i+1]:'';if(i>=STAGES.length-1){stats.stage=0;stats.champ=(stats.champ|0)+1;saveStats();try{buildCust()}catch(e){}return 'Champion des '+STAGES.length+' étapes ! Tout est débloqué'+rw}stats.stage=i+1;saveStats();return 'Étape réussie · étape '+(i+2)+' débloquée : '+STAGES[i+1].n+rw}
@@ -4829,7 +4899,7 @@ function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();const 
   document.querySelectorAll('#modes .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.m===id)))}
 function buildModes(){const box=$('#modes');box.innerHTML=Object.keys(MODES).map(k=>'<button class="chip" role="radio" data-m="'+k+'" aria-checked="false">'+MODES[k].n+'</button>').join('');
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));setMode(stats.mode);buildMaps()}
-function buildMaps(){const box=$('#maps');const glyph={seddik:'🏝️',cote:'🌊',sahara:'🏜️',ville:'🌆',foret:'🌲',hautes:'⛰️',djerba:'🐚',capbon:'🌅'};box.innerHTML=Object.keys(MAPS).map(k=>{const m=MAPS[k];return '<button class="map-card map-'+k+'" role="radio" data-k="'+k+'" aria-checked="false"><span class="map-art" aria-hidden="true"><i>'+ (glyph[k]||'🗺️') +'</i><em>ZONE DE COMBAT</em></span><span class="map-copy"><b>'+m.n+'</b><small>'+m.poi.slice(0,3).join(' · ')+'</small></span><span class="map-check" aria-hidden="true">✓</span></button>'}).join('');
+function buildMaps(){const box=$('#maps');const glyph={seddik:'🏝️',cote:'🌊',sahara:'🏜️',ville:'🌆',foret:'🌲',hautes:'⛰️',djerba:'🐚',capbon:'🌅',tunis:'🕌',sousse:'⛵',sfax:'🫒',bizerte:'⚓',tabarka:'🌳',kairouan:'🕋',tozeur:'🌴',tataouine:'🏰',kef:'🏔️',gafsa:'⛏️'};box.innerHTML=Object.keys(MAPS).map(k=>{const m=MAPS[k];return '<button class="map-card map-'+k+'" role="radio" data-k="'+k+'" aria-checked="false"><span class="map-art" aria-hidden="true"><i>'+ (glyph[k]||'🗺️') +'</i><em>ZONE DE COMBAT</em></span><span class="map-copy"><b>'+m.n+'</b><small>'+m.poi.slice(0,3).join(' · ')+'</small></span><span class="map-check" aria-hidden="true">✓</span></button>'}).join('');
   box.querySelectorAll('.map-card').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
 function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mode];return MAPS[(M&&M.map)||stats.map]}
 function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .map-card').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
@@ -4883,6 +4953,7 @@ requestAnimationFrame(()=>{const gp=gcBoot();setTimeout(()=>{try{preStart()}catc
    sans toucher à la logique : en français il ne fait strictement rien. */
 const I18N={
 en:{
+"Grand Tunis":"Greater Tunis","Sousse & Monastir":"Sousse & Monastir","Sfax & Kerkennah":"Sfax & Kerkennah","Bizerte & Ras Jebel":"Bizerte & Ras Jebel","Tabarka & Aïn Draham":"Tabarka & Ain Draham","Kairouan & Steppes":"Kairouan & Steppes","Tozeur & Nefta":"Tozeur & Nefta","Tataouine & Ksour":"Tataouine & Ksour","Le Kef & Jugurtha":"Le Kef & Jugurtha","Gafsa & Bassin minier":"Gafsa & Mining Basin","La capitale : avenue Bourguiba, médina, Bab Bhar, le Lac et le port de La Goulette.":"The capital: Avenue Bourguiba, the medina, Bab Bhar, the Lake and La Goulette harbour.","Le Sahel : médina de Sousse, ribat de Monastir, marinas et plages de Skanès.":"The Sahel: Sousse medina, Monastir ribat, marinas and the beaches of Skanes.","Oliveraies du Sud-Est, port industriel de Sfax et îles plates de Kerkennah.":"South-east olive groves, the industrial port of Sfax and the flat Kerkennah islands.","Le Nord : vieux port de Bizerte, lagune de Ghar El Melh, corniche et cap Blanc.":"The North: Bizerte old port, Ghar El Melh lagoon, the corniche and Cap Blanc.","Forêt de chênes-lièges de Kroumirie, fort génois, Aiguilles et barrage.":"Kroumirie cork-oak forest, the Genoese fort, the Needles and the dam.","Ville sainte et plaines du Centre : Grande Mosquée, bassins des Aghlabides et souks.":"Holy city and central plains: the Great Mosque, Aghlabid basins and souks.","Palmeraies du Jérid, chott el-Jérid, oasis de montagne de Chebika et Tamerza.":"Jerid palm groves, Chott el-Jerid, the mountain oases of Chebika and Tamerza.","Le Grand Sud : ksour fortifiés, villages berbères perchés et pistes de sable rouge.":"The deep South: fortified ksour, hilltop Berber villages and red sand tracks.","Hauts plateaux du Nord-Ouest : kasbah du Kef, Table de Jugurtha et ruines de Dougga.":"North-west highlands: the Kef kasbah, Jugurtha's Table and the ruins of Dougga.","Collines arides, mines de phosphate de Métlaoui et gorges de Selja.":"Arid hills, the Metlaoui phosphate mines and the Selja gorges.",
 'PRIME':'BOUNTY','Prime encaissée':'Bounty claimed','Top 10':'Top 10','Top 5':'Top 5','Top 3':'Top 3','Duel final':'Final duel','Plus que 10 survivants':'Only 10 survivors left','Plus que 5 survivants':'Only 5 survivors left','Le podium se joue maintenant':'The podium is decided now','Un seul sortira vivant':'Only one walks out alive','Connexion quotidienne':'Daily login',
 'Carrière':'Career','Statistiques':'Statistics','Victoires':'Wins','Taux de victoire':'Win rate','Ratio élim. / défaite':'Kills per loss','Précision':'Accuracy','Tirs à la tête':'Headshots','Plus longue élimination':'Longest kill','Temps de jeu':'Play time','Distance':'Distance','Bronze':'Bronze','Argent':'Silver','Or':'Gold','Platine':'Platinum','Diamant':'Diamond','Promotion':'Promoted','Relégation':'Relegated',
 'Caméra':'Camera','cinématique':'cinematic','standard':'standard','derrière le joueur':'behind the player',
@@ -4975,6 +5046,7 @@ en:{
 'Se débloque au niveau':'Unlocks at level','Vous jouez avec votre dernier personnage débloqué.':'You are playing with your last unlocked character.'
 },
 ar:{
+"Grand Tunis":"تونس الكبرى","Sousse & Monastir":"سوسة والمنستير","Sfax & Kerkennah":"صفاقس وقرقنة","Bizerte & Ras Jebel":"بنزرت ورأس الجبل","Tabarka & Aïn Draham":"طبرقة وعين دراهم","Kairouan & Steppes":"القيروان والسباسب","Tozeur & Nefta":"توزر ونفطة","Tataouine & Ksour":"تطاوين والقصور","Le Kef & Jugurtha":"الكاف ومائدة يوغرطة","Gafsa & Bassin minier":"قفصة والحوض المنجمي","La capitale : avenue Bourguiba, médina, Bab Bhar, le Lac et le port de La Goulette.":"العاصمة: شارع بورقيبة، المدينة العتيقة، باب بحر، البحيرة وميناء حلق الوادي.","Le Sahel : médina de Sousse, ribat de Monastir, marinas et plages de Skanès.":"الساحل: مدينة سوسة، رباط المنستير، المراسي وشواطئ سقانص.","Oliveraies du Sud-Est, port industriel de Sfax et îles plates de Kerkennah.":"زياتين الجنوب الشرقي، ميناء صفاقس وجزر قرقنة.","Le Nord : vieux port de Bizerte, lagune de Ghar El Melh, corniche et cap Blanc.":"الشمال: الميناء القديم ببنزرت، بحيرة غار الملح، الكورنيش والرأس الأبيض.","Forêt de chênes-lièges de Kroumirie, fort génois, Aiguilles et barrage.":"غابة الفلين بخمير، البرج الجنوي، الإبر والسد.","Ville sainte et plaines du Centre : Grande Mosquée, bassins des Aghlabides et souks.":"المدينة المقدسة وسهول الوسط: الجامع الكبير، فسقية الأغالبة والأسواق.","Palmeraies du Jérid, chott el-Jérid, oasis de montagne de Chebika et Tamerza.":"واحات الجريد، شط الجريد، وواحات الشبيكة وتمغزة الجبلية.","Le Grand Sud : ksour fortifiés, villages berbères perchés et pistes de sable rouge.":"الجنوب الكبير: القصور، القرى البربرية المعلّقة ومسالك الرمل الأحمر.","Hauts plateaux du Nord-Ouest : kasbah du Kef, Table de Jugurtha et ruines de Dougga.":"مرتفعات الشمال الغربي: قصبة الكاف، مائدة يوغرطة وآثار دقة.","Collines arides, mines de phosphate de Métlaoui et gorges de Selja.":"تلال جافة، مناجم الفسفاط بالمتلوي ومضائق السلجة.",
 'PRIME':'مكافأة','Prime encaissée':'خذيت المكافأة','Duel final':'المواجهة الأخيرة','Plus que 10 survivants':'بقاو 10 برك','Plus que 5 survivants':'بقاو 5 برك','Le podium se joue maintenant':'المراتب الأولى تتحسم توا','Un seul sortira vivant':'واحد برك يخرج حي','Connexion quotidienne':'الدخول اليومي',
 'Carrière':'المسيرة','Statistiques':'الإحصائيات','Victoires':'الانتصارات','Taux de victoire':'نسبة الفوز','Ratio élim. / défaite':'إقصاءات لكل خسارة','Précision':'الدقة','Tirs à la tête':'ضربات في الراس','Plus longue élimination':'أبعد إقصاء','Temps de jeu':'وقت اللعب','Distance':'المسافة','Bronze':'برونز','Argent':'فضة','Or':'ذهب','Platine':'بلاتين','Diamant':'ألماس','Promotion':'ترقية','Relégation':'نزول',
 'Caméra':'الكاميرا','cinématique':'سينمائية','standard':'عادية','derrière le joueur':'ورا اللاعب',
@@ -5357,6 +5429,21 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 #sfBanner small{display:block;margin-top:6px;font:700 clamp(11px,1.6vw,14px)/1.2 system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#f3e9d4}
 #sfBanner.gold b{color:#ffd25e}#sfBanner.red b{color:#ff5a46}
 #sfBanner small:empty{display:none}
+
+/* v2.8 — caméra 3D */
+#game3d{position:fixed;inset:0;width:100%;height:100%;display:none;z-index:0;pointer-events:none;filter:saturate(1.14) contrast(1.08) brightness(1.025)}
+
+/* v2.8 — cartes supplémentaires */
+#lobby #maps .map-tunis .map-art{background:linear-gradient(120deg,rgba(5,12,22,.05),rgba(5,12,22,.55)),linear-gradient(135deg,#d9d1b8,#4b6278)}
+#lobby #maps .map-sousse .map-art{background:linear-gradient(120deg,rgba(10,20,25,.05),rgba(5,12,18,.5)),linear-gradient(135deg,#f0d9a6,#1f86a8)}
+#lobby #maps .map-sfax .map-art{background:linear-gradient(120deg,rgba(10,20,25,.05),rgba(5,12,18,.5)),linear-gradient(135deg,#a9b06a,#2a7d8c)}
+#lobby #maps .map-bizerte .map-art{background:linear-gradient(120deg,rgba(10,20,25,.05),rgba(5,12,18,.5)),linear-gradient(135deg,#7fbf9a,#155f80)}
+#lobby #maps .map-tabarka .map-art{background:linear-gradient(120deg,rgba(5,18,5,.05),rgba(5,18,5,.55)),linear-gradient(135deg,#5f8a4a,#1e4a52)}
+#lobby #maps .map-kairouan .map-art{background:linear-gradient(120deg,rgba(35,20,8,.05),rgba(35,20,8,.5)),linear-gradient(135deg,#ecd3a0,#7d6a45)}
+#lobby #maps .map-tozeur .map-art{background:linear-gradient(120deg,rgba(35,20,8,.05),rgba(35,20,8,.5)),linear-gradient(135deg,#e9c27a,#4f7a3c)}
+#lobby #maps .map-tataouine .map-art{background:linear-gradient(120deg,rgba(35,20,8,.05),rgba(35,20,8,.5)),linear-gradient(135deg,#e2a160,#7a3f22)}
+#lobby #maps .map-kef .map-art{background:linear-gradient(120deg,rgba(15,18,10,.05),rgba(15,18,10,.55)),linear-gradient(135deg,#b9b58f,#4a5a46)}
+#lobby #maps .map-gafsa .map-art{background:linear-gradient(120deg,rgba(35,20,8,.05),rgba(35,20,8,.5)),linear-gradient(135deg,#d1b085,#6b5a49)}
 </style>
 </body>
 </html>

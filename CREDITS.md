@@ -18,3 +18,9 @@
 - **Icônes** : SVG dessinés à la main dans le code.
 
 Aucun logo, interface ou carte n'est repris d'un jeu existant. Seule exception : les noms d'adversaires cités ci-dessus, issus des films « Death Race ».
+
+## Voix de l'équipe radio
+Consignes enregistrées avec Piper (synthèse vocale libre, licence MIT), au moment de la compilation (`tools/radio_voice.py`) :
+- Français : voix « siwis » (fr_FR-siwis-medium), jeu de données SIWIS, licence CC BY 4.0.
+- Anglais : voix « northern_english_male » (en_GB-northern_english_male-medium), licence CC BY-SA 4.0.
+- Arabe et tunisien : voix « kareem » (ar_JO-kareem-medium) ; la fiche du modèle ne précise pas de licence (renvoi au dépôt github.com/AliMokhammad/arabicttstrain) — à vérifier avant une publication commerciale.

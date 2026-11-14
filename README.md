@@ -14,4 +14,4 @@ branche `android-out`.
 2. Si `buildGround`, `genWorld`, `decoCity` ou `gradeCanvas` ont changé, les textures de `www/ground/` ne correspondent plus (leur nom contient une empreinte de ce code) : il faut les régénérer, sinon le jeu les recalcule au lancement et elles pèsent pour rien dans l'appli.
 3. Augmenter `versionCode` dans `ads.json` à chaque envoi sur Google Play.
 
-Version actuelle : 2.8.0 (versionCode 71), 18 cartes, textures `h8tm4k`.
+Version actuelle : 2.9.0 (versionCode 72), 18 cartes, textures `h8tm4k`.

@@ -17,6 +17,21 @@ cat > package.json <<P
 {"name":"seddik-fire","private":true,"version":"1.0.0"}
 P
 npm i --no-audit --no-fund @capacitor/core@^$PEER @capacitor/cli@^$PEER @capacitor/android@^$PEER @capacitor-community/admob@$ADMOB_VER
+# Synthèse vocale native pour la radio d'équipe (version compatible avec Capacitor $PEER, facultative)
+TTS_VER=$( (npm view "@capacitor-community/text-to-speech@*" peerDependencies --json 2>/dev/null || echo '{}') | PEER=$PEER python3 -c "
+import json,os,re,sys
+try: d=json.load(sys.stdin)
+except Exception: d={}
+P=os.environ['PEER'];best=None
+items=d.items() if isinstance(d,dict) and not ('@capacitor/core' in d) else []
+def key(v): return [int(x) for x in re.findall(r'\d+',v)[:3]]
+for v,peer in items:
+  if '-' in v or not isinstance(peer,dict): continue
+  c=peer.get('@capacitor/core','')
+  m=re.findall(r'\d+',c)
+  if m and m[0]==P and (best is None or key(v)>key(best)): best=v
+print(best or '')" )
+if [ -n "$TTS_VER" ]; then npm i --no-audit --no-fund @capacitor-community/text-to-speech@$TTS_VER && echo "tts=$TTS_VER" | tee -a out/versions.txt || echo "tts=echec" | tee -a out/versions.txt; else echo "tts=aucune" | tee -a out/versions.txt; fi
 npx cap --version | tee -a out/versions.txt
 npx cap add android
 python3 patch.py

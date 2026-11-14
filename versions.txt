@@ -1,0 +1,6 @@
+admob=8.3.0 capacitor-major=8
+8.6.2
+    minSdkVersion = 24
+    compileSdkVersion = 36
+    targetSdkVersion = 36
+BUILD_OK

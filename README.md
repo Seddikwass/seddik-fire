@@ -1,5 +1,15 @@
 # Seddik Fire
 
+## Version 2.11 — vraie 3D pour la caméra au dos du joueur
+
+- Bâtiments en volume : murs extrudés à hauteur réaliste, toits, fenêtres, ombrage par face.
+- Arbres debout (feuillus, pins, palmiers) et buissons, toujours de face, avec brume au loin.
+- Ce qui se trouve entre la caméra et le soldat devient ajouré pour ne jamais le cacher.
+- Soldat placé plus haut à l'écran (au-dessus du panneau des armes) ; caméra un peu plus basse et plus proche.
+- Les ennemis derrière un mur ne sont plus visibles à travers.
+- Fluidité : le sol vient de la texture de la carte envoyée une seule fois à la carte graphique (net, avec mipmaps), seule une petite couche dynamique est redessinée à chaque image ; résolution 3D et filtres CSS allégés.
+- Cache hors ligne : `seddik-fire-v211`.
+
 ## Version 2.10 — 15 personnages jouables
 
 - Les noms sont ceux des personnages à choisir dans le menu (et non plus des adversaires) : Seddik, Dali, Nouh, Joseph, Haroun, Mazen, Yassine, Aziz, Nour, Emna, Yasmine, Skander, Molka, Rayhane, Arafet.

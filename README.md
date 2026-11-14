@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Version 2.14
+- Fluidité sur téléphone : suppression des effets plein écran coûteux sur mobile (filtre couleur CSS du terrain, flou derrière le HUD, passe de lumière en mode « screen », nuages).
+- Visibilité : caméra plus proche sur téléphone (surtout en portrait), arbres estompés autour du joueur, repère orange avec flèche de direction visible à travers le feuillage, coéquipiers cerclés de bleu.
+- HUD compact en portrait : bouton Recharger rond, armes et soins plus petits, consignes plus discrètes.
+
 ## Version 2.13
 - Vue 3D et caméra au dos retirées : retour à la vue de dessus, plus lisible et plus fluide.
 - Caméra cinématique améliorée : suivi amorti sans à-coups, cadrage automatique du joueur et de l'adversaire pendant un échange de tirs, légère ouverture en course, rapprochement à l'arrêt, glissement vers la victime à chaque élimination, souffle de caméra portée très discret (désactivé si « réduire les animations »).

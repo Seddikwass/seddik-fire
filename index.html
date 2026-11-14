@@ -61,7 +61,8 @@ body{font-family:var(--f-ui);font-size:15px;padding-left:max(16px,env(safe-area-
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
 button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--flare);outline-offset:2px}
 #game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0}
-#game{z-index:0;filter:saturate(1.16) contrast(1.12) brightness(1.03)}
+#game{z-index:0}
+body:not(.mob) #game{filter:saturate(1.1) contrast(1.06)}
 /* Ambiance 2D : vignettage cinématique discret, sans couvrir le HUD. */
 body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 46%,transparent 48%,rgba(7,10,13,.16) 78%,rgba(4,6,8,.38) 100%),linear-gradient(180deg,rgba(255,176,91,.035),transparent 38%,rgba(15,28,39,.045))}
 .kbd{display:none;font-family:var(--f-ui);font-size:10px;font-weight:700;letter-spacing:.04em;border:1px solid currentColor;border-radius:2px;padding:0 4px;margin-left:6px;opacity:.7;vertical-align:middle;line-height:14px}
@@ -722,7 +723,7 @@ button:active,.btn:active{transform:translateY(1px) scale(.985)}
  text-shadow:0 1px 3px rgba(0,0,0,.85);
 }
 .hud .counts,.hud .count,.hud .feed,.hud .toast{
- backdrop-filter:blur(8px);
+ background-color:rgba(10,13,18,.72);
 }
 #game{touch-action:none}
 canvas{image-rendering:auto}
@@ -765,7 +766,7 @@ canvas{image-rendering:auto}
 #lobby .ghost,#lobby .arrow,#lobby .sa{transition:background .18s,border-color .18s,transform .18s,box-shadow .18s}
 #lobby .ghost:hover,#lobby .sa:hover{border-color:rgba(255,164,91,.62);background:rgba(255,143,58,.1)}
 #lobby .sa[aria-checked="true"]{box-shadow:inset 0 -3px 0 var(--ember),0 0 16px rgba(255,112,44,.12)}
-.hud .count,.hud .zone,.hud .hint,.hud .usebar,.hud .act,.hud .iconbtn{backdrop-filter:blur(8px) saturate(1.18);-webkit-backdrop-filter:blur(8px) saturate(1.18);box-shadow:0 5px 18px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.08)}
+.hud .count,.hud .zone,.hud .hint,.hud .usebar,.hud .act,.hud .iconbtn{box-shadow:0 5px 18px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.08)}
 .hud .act{border-color:rgba(255,218,177,.2);background:linear-gradient(145deg,rgba(46,39,31,.9),rgba(15,18,20,.94))}
 .hud .act:active,.hud .iconbtn:active{filter:brightness(1.24);transform:translateY(1px)}
 .fire{filter:drop-shadow(0 5px 10px rgba(0,0,0,.34));}
@@ -1038,7 +1039,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.13</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.14</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -2553,7 +2554,7 @@ function mkStick(){return{id:null,ox:0,oy:0,x:0,y:0,dx:0,dy:0,mag:0,t0:0}}
 const sticks={move:mkStick(),aim:mkStick()};
 let STICK_R=58;const FIRE_AT=.62;
 let fireHeld=false;
-let isDesk=false,tapFire=false;
+let isDesk=false,tapFire=false;const MOBF=!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);document.body.classList.toggle('mob',MOBF);
 function setDesk(v){if(isDesk===v)return;isDesk=v;document.body.classList.toggle('desk',v)}
 cv.addEventListener('contextmenu',ev=>ev.preventDefault());
 cv.addEventListener('pointerdown',ev=>{initAudio();
@@ -2992,7 +2993,7 @@ function gpHUD(p){const ground=p.alive&&!p.inPlane&&p.air<=0;
 tapOn(GH.veh,humanVeh);tapOn(GH.nade,()=>humanNade(false));tapOn(GH.sw,nadeSwap);
 
 /* ===== main update ===== */
-function baseZoom(){return clamp(Math.sqrt(VW*VH)/1310,.31,.85)*clamp(+stats.camZoom||1,.75,1.25)}
+function baseZoom(){const m=Math.min(VW,VH),ph=m<560?(1+(560-m)/560*.55)*(VH>VW*1.2?1.15:1):1;return clamp(Math.sqrt(VW*VH)/1310*ph,.31,.85)*clamp(+stats.camZoom||1,.75,1.25)}
 function update(dt){matchT+=dt;
   if(!plane.done){plane.trav+=plane.sp*dt;plane.x=plane.sx+plane.dx*plane.trav;plane.y=plane.sy+plane.dy*plane.trav;
     for(const e of ents)if(e.inPlane&&e.bot&&plane.trav>=e.jumpS)jump(e);
@@ -3196,7 +3197,7 @@ function draw2DSurfaceDetail(x0,y0,x1,y1){
 /* v124 — cinematic atmosphere pass, adaptive and GPU-light. */
 let SF_GRAIN=null,SF_GRAIN_PATTERN=null;
 function drawSFAtmosphere(){
-  if(!Q.hi||LOWD||game.mode==='lobby')return;
+  if(MOBF||!Q.hi||LOWD||game.mode==='lobby')return;
   ctx.save();
   const k=clamp(.34+SUNK*.66,.34,1);
   ctx.globalCompositeOperation='screen';
@@ -3669,12 +3670,13 @@ function render(){SFF++;CAMROT=stats.camBehind&&(game.mode==='play'||game.mode==
   // foliage
   const px=player&&player.alive?player.x:-9999,py=player?player.y:-9999;
   if(!P3S)for(const b of bushes){if(!vis(b.x,b.y))continue;ctx.globalAlpha=dd2(px,py,b.x,b.y)<b.r*b.r?.45:.95;if(Q.hi){const sp=treeSpr('olive',Math.floor(b.c*6)),R=b.r*1.1;ctx.fillStyle='rgba(12,18,6,.16)';ctx.beginPath();ctx.ellipse(b.x+b.r*.3,b.y+b.r*.35,b.r,b.r*.8,.5,0,TAU);ctx.fill();{const wv=Math.sin(TIME*1.4+b.x*.017+b.y*.011);ctx.save();ctx.translate(b.x,b.y);ctx.rotate(wv*.05);ctx.drawImage(sp,-R,-R,R*2,R*2);ctx.restore()}continue}ctx.fillStyle=b.c<.5?'#5a8a2f':'#669838';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fill();ctx.fillStyle='#86b247';ctx.beginPath();ctx.arc(b.x-b.r*.3,b.y-b.r*.25,b.r*.5,0,TAU);ctx.arc(b.x+b.r*.35,b.y+b.r*.1,b.r*.42,0,TAU);ctx.fill()}
-  if(!P3S)for(const t of trees){if(!vis(t.x,t.y,t.r+30))continue;const o=treeOff(t),under=dd2(px,py,t.x+o[0],t.y+o[1])<t.r*t.r;ctx.globalAlpha=under?.4:.96;drawTree(t)}ctx.globalAlpha=1;
+  if(!P3S)for(const t of trees){if(!vis(t.x,t.y,t.r+30))continue;const o=treeOff(t),d=Math.sqrt(dd2(px,py,t.x+o[0],t.y+o[1])),R0=t.r*.7,R1=t.r+95;ctx.globalAlpha=d<R1?.3+.66*clamp((d-R0)/(R1-R0),0,1):.96;drawTree(t)}ctx.globalAlpha=1;
+  if(!P3S)drawPlayerMark();
   // roofs
   if(!P3S){const VB=[];for(const b of blds)if(b.al>.01&&vis(b.x+b.w/2,b.y+b.h/2,Math.max(b.w,b.h)+60))VB.push(b);VB.sort((a,b2)=>(a.fh||FH)-(b2.fh||FH));
    for(const b of VB){const h=b.fh||FH,sc=1+PK*h,ty=PTY*h;ctx.save();ctx.globalAlpha=b.al*.16;ctx.fillStyle='#20180f';ctx.fillRect(b.x+9,b.y+12,b.w+2,b.h+2);ctx.globalAlpha=b.al*.08;ctx.fillRect(b.x+14,b.y+17,b.w+1,b.h+1);ctx.restore();ctx.globalAlpha=b.al;drawWalls(b,sc,ty);ctx.save();ctx.translate(cam.x*(1-sc),cam.y*(1-sc)+ty);ctx.scale(sc,sc);drawRoof(b);drawRoofDetail(b);ctx.restore()}ctx.globalAlpha=1;
    if(!P3S)for(const e of ents){if(!e.alive||e.inPlane||e.air>0||e.veh||!vis(e.x,e.y))continue;for(const b of VB){if(b.al<.5)continue;const h=b.fh||FH,sc=1+PK*h,rx=cam.x+(b.x-cam.x)*sc,ry=cam.y+(b.y-cam.y)*sc+PTY*h;if(e.x>rx-e.r&&e.x<rx+b.w*sc+e.r&&e.y>ry-e.r&&e.y<ry+b.h*sc+e.r&&!(e.x>b.x&&e.x<b.x+b.w&&e.y>b.y&&e.y<b.y+b.h)){drawEnt(e);break}}}}
-  if(!LOWD&&(game.mode!=='lobby'||Q.hi))drawClouds(x0,y0,x1,y1);
+  if(!LOWD&&!MOBF&&(game.mode!=='lobby'||Q.hi))drawClouds(x0,y0,x1,y1);
   if(SUNK>.4&&LAMPS.length&&!LOWD){if(!GLOW){GLOW=mkCv(128,128);const g=GLOW.getContext('2d'),gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,214,140,.85)');gr.addColorStop(.35,'rgba(255,190,110,.3)');gr.addColorStop(1,'rgba(255,170,90,0)');g.fillStyle=gr;g.fillRect(0,0,128,128)}
     ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,(SUNK-.4)*1.8);for(const l of LAMPS)if(vis(l.x,l.y,90))ctx.drawImage(GLOW,l.x-70,l.y-70,140,140);ctx.restore()}
   // airborne
@@ -3766,6 +3768,13 @@ function drawSolid(c){switch(c.k){
   case 'log':{ctx.fillStyle='rgba(0,0,0,.22)';rrect(ctx,c.x+4,c.y+5,c.w,c.h,c.h/2);ctx.fill();ctx.fillStyle='#6b4a2a';rrect(ctx,c.x,c.y,c.w,c.h,c.h/2);ctx.fill();ctx.strokeStyle='rgba(30,18,8,.5)';ctx.lineWidth=1.5;ctx.beginPath();for(let i=10;i<c.w-10;i+=13){ctx.moveTo(c.x+i,c.y+3);ctx.lineTo(c.x+i+6,c.y+c.h-3)}ctx.stroke();ctx.fillStyle='rgba(255,230,180,.15)';ctx.fillRect(c.x+6,c.y+3,c.w-14,2);ctx.fillStyle='#c9a46a';ctx.beginPath();ctx.ellipse(c.x+c.w-c.h*.32,c.y+c.h/2,c.h*.3,c.h/2-1,0,0,TAU);ctx.fill();ctx.strokeStyle='#8a6a3a';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(c.x+c.w-c.h*.32,c.y+c.h/2,c.h*.16,c.h*.28,0,0,TAU);ctx.stroke();break}
   case 'camp':{ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.arc(c.x+3,c.y+4,c.r,0,TAU);ctx.fill();for(let i=0;i<10;i++){const a=i/10*TAU;ctx.fillStyle=i%2?'#8c8476':'#a69b8a';ctx.beginPath();ctx.arc(c.x+Math.cos(a)*c.r*.85,c.y+Math.sin(a)*c.r*.85,5,0,TAU);ctx.fill()}ctx.fillStyle='#2a1a10';ctx.beginPath();ctx.arc(c.x,c.y,c.r*.6,0,TAU);ctx.fill();const f=.8+.2*Math.sin(TIME*9);ctx.fillStyle='rgba(255,140,40,'+(.75*f)+')';ctx.beginPath();ctx.arc(c.x,c.y,c.r*.38*f,0,TAU);ctx.fill();ctx.fillStyle='rgba(255,230,120,.85)';ctx.beginPath();ctx.arc(c.x,c.y,c.r*.16,0,TAU);ctx.fill();break}
   case 'silo':{ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.arc(c.x+6,c.y+8,c.r,0,TAU);ctx.fill();ctx.fillStyle='#c9c4b6';ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,TAU);ctx.fill();ctx.strokeStyle='#8f8a7c';ctx.lineWidth=2;for(let r=c.r-8;r>4;r-=9){ctx.beginPath();ctx.arc(c.x,c.y,r,0,TAU);ctx.stroke()}break}}}
+// repère du joueur, dessiné au-dessus du feuillage pour ne jamais le perdre de vue
+function drawPlayerMark(){if(!player||game.mode==='lobby')return;const list=[player];if(player.team)for(const e of ents)if(e!==player&&e.team===player.team)list.push(e);
+  for(const e of list){if(!e||!e.alive||e.inPlane||e.air>0||e.veh||!vis(e.x,e.y))continue;const me=e===player,col=me?'255,170,60':'90,200,255',p=me?.5+.5*Math.sin(TIME*4):0,r=e.r+11+p*2;
+    ctx.save();ctx.lineWidth=me?3:2.4;ctx.strokeStyle='rgba(0,0,0,.45)';ctx.beginPath();ctx.arc(e.x,e.y,r+1.5,0,TAU);ctx.stroke();
+    ctx.strokeStyle='rgba('+col+','+(me?.92:.8)+')';ctx.beginPath();ctx.arc(e.x,e.y,r,0,TAU);ctx.stroke();
+    if(me){const a=e.angle,R=r+9;ctx.fillStyle='rgba(255,170,60,.95)';ctx.beginPath();ctx.moveTo(e.x+Math.cos(a)*(R+8),e.y+Math.sin(a)*(R+8));ctx.lineTo(e.x+Math.cos(a+.32)*R,e.y+Math.sin(a+.32)*R);ctx.lineTo(e.x+Math.cos(a-.32)*R,e.y+Math.sin(a-.32)*R);ctx.closePath();ctx.fill()}
+    ctx.restore()}}
 function treeOff(t){if(!Q.hi)return[0,0];const th=t.k==='palm'?40:t.k==='pine'?32:22;return[(t.x-cam.x)*PK*th,(t.y-cam.y)*PK*th+PTY*th]}
 function drawTree(t){{const o=treeOff(t);TOX=o[0];TOY=o[1];if(TOX*TOX+TOY*TOY>9){ctx.lineCap='round';ctx.strokeStyle=t.k==='palm'?'#7a5c38':'#3e2c1c';ctx.lineWidth=Math.max(3,t.r*(t.k==='palm'?.1:.13));ctx.beginPath();ctx.moveTo(t.x,t.y);ctx.lineTo(t.x+TOX*.92,t.y+TOY*.92);ctx.stroke()}}
   drawTree1(t);if(Q.hi){const rr=t.r,ox=t.x+TOX,oy=t.y+TOY;ctx.save();ctx.globalAlpha=.16;ctx.fillStyle='#f6e9c6';ctx.beginPath();ctx.ellipse(ox-rr*.28,oy-rr*.3,rr*.34,rr*.17,-.55,0,TAU);ctx.fill();ctx.globalAlpha=.12;ctx.fillStyle='#15220f';ctx.beginPath();ctx.ellipse(ox+rr*.3,oy+rr*.28,rr*.42,rr*.2,.55,0,TAU);ctx.fill();ctx.restore()}TOX=TOY=0}
@@ -5597,6 +5606,14 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 #sfCine i:last-child{bottom:0;transform:translateY(101%)}
 #sfCine.on i{transform:none}
 @media (prefers-reduced-motion:reduce){#sfCine i{transition:none}}
+/* v2.14 — HUD compact sur téléphone en portrait : plus de terrain visible */
+@media (orientation:portrait) and (max-width:560px){
+ body.mob #hud #btnReload{width:54px;height:54px;padding:0;font-size:0;border-radius:50%;justify-content:center}
+ body.mob #hud #btnReload::before{margin:0;width:23px;height:23px}body.mob #hud #btnReload .kbd{display:none}
+ body.mob #hud .bc{transform:translateX(-50%) scale(.86);transform-origin:50% 100%}
+ body.mob #hud .hint{font-size:12.5px;padding:6px 10px;max-width:70vw;opacity:.92}
+ body.mob #hud .zone{transform:scale(.88);transform-origin:100% 0}
+}
 
 /* v2.5 — ligues, rapport de partie, carrière */
 .endrep{margin:0;font-size:12px;letter-spacing:.04em;color:var(--mute,#aab);text-align:center;line-height:1.5}

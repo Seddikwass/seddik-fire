@@ -1,5 +1,15 @@
 # Seddik Fire
 
+## Version 2.9 — caméra au dos du joueur, Gabès, Seddik le plus fort
+
+- Caméra « au dos du joueur » (remplace « derrière le joueur ») : caméra basse et proche, collée au dos du soldat, qui se replace toujours derrière lui sur téléphone. Le soldat est grand, net et au centre-bas de l'écran.
+- Soldats debout en vue 3D : chaque soldat est dessiné face à la caméra, à la bonne taille selon la distance, avec une ombre au sol et un anneau sous le joueur. Les ennemis cachés dans un bâtiment ou dans la nuit restent cachés.
+- Image plus nette : sol plus net en 3D, moins de grain et d'ombres de nuages, contraste un peu plus fort ; halo lumineux sous le joueur en vue du dessus.
+- Carte Kairouan retirée, remplacée par « Gabès & Matmata » (oasis de Chenini, port, souk de Jara, Matmata).
+- Noms des adversaires : Dali, Nouh, Joseph, Haroun, Mazen, Yassine, Aziz, Nour, Emna, Yasmine, Skander, Molka, Rayhane, Arafet.
+- Seddik est présent dans chaque partie (sauf Entraînement) : c'est le plus fort (meilleure visée, gilet et casque niveau 2, fusil d'assaut), marqué d'une prime dès le début.
+- Cache hors ligne : `seddik-fire-v209`.
+
 ## Version 2.8 — vraie vue derrière le joueur et 18 cartes
 
 Caméra « derrière le joueur » (Réglages → Caméra)
@@ -9,7 +19,7 @@ Caméra « derrière le joueur » (Réglages → Caméra)
 - Si l'appareil n'a pas WebGL, la vue tournée vue du dessus de la version 2.7 prend le relais.
 
 10 nouvelles cartes tunisiennes
-- Grand Tunis, Sousse & Monastir, Sfax & Kerkennah, Bizerte & Ras Jebel, Tabarka & Aïn Draham, Kairouan & Steppes, Tozeur & Nefta, Tataouine & Ksour, Le Kef & Jugurtha, Gafsa & Bassin minier.
+- Grand Tunis, Sousse & Monastir, Sfax & Kerkennah, Bizerte & Ras Jebel, Tabarka & Aïn Draham, Tozeur & Nefta, Tataouine & Ksour, Le Kef & Jugurtha, Gafsa & Bassin minier.
 - Chacune reprend le relief d'une carte de base (ville, côte, île du Sud, Cap Bon, forêt, plaines, désert, hautes terres) avec sa propre disposition, ses villes, ses couleurs et sa météo.
 - Ajoutées au Parcours ; traduites en anglais et en arabe.
 - Cache hors ligne : `seddik-fire-v208`.

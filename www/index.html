@@ -1038,7 +1038,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.12</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.13</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -2404,7 +2404,7 @@ function kill(t,src,wn){
   if(src===player&&t!==player){showKB(t.name);hitMarks.push({x:t.x,y:t.y,t:.4,k:true});blip(660,.09,.06,'triangle');setTimeout(()=>blip(990,.12,.06,'triangle'),90)}
   if(src===player&&t!==player&&t===BOUNTY&&BOUNTY){player.bountyN=(player.bountyN|0)+1;BOUNTY=null;sfBanner('Prime encaissée','+250 XP',2.4,'gold')}
   if(t===BOUNTY)BOUNTY=null;
-  if(src===player&&t!==player){cam.zp=.05;player.longK=Math.max(player.longK||0,Math.hypot(t.x-player.x,t.y-player.y))}
+  if(src===player&&t!==player){cam.zp=.05;cam.kc={x:t.x,y:t.y,t:matchT};player.longK=Math.max(player.longK||0,Math.hypot(t.x-player.x,t.y-player.y))}
   if(t===player){BOUNTY=null;endAt=matchT+(stats.camClassic?1.8:2.6);cam.shake=.5;cam.dT=0}
   else if(oneTeam()&&player.alive)endAt=matchT+1.4;
   return w;
@@ -3045,6 +3045,21 @@ function updateCam(dt){const bz=baseZoom(),CINE=!stats.camClassic;let tx,ty,zt,f
     else if(player.alive&&sp>20){const cap=CINE&&player.veh?Math.min(300,Math.min(VW,VH)*.36/zt):150,m=Math.min(cap,sp*(CINE&&player.veh?.62:.45))/sp;lx=vx*m;ly=vy*m}
     cam.lx=(cam.lx||0)+(lx-(cam.lx||0))*Math.min(1,dt*3);cam.ly=(cam.ly||0)+(ly-(cam.ly||0))*Math.min(1,dt*3);tx+=cam.lx;ty+=cam.ly;
     if(player.alive){let nd=1e9;for(const e of ents){if(e===player||!e.alive||e.inPlane||e.air>0||(player.team&&e.team===player.team))continue;const d=Math.hypot(e.x-player.x,e.y-player.y);if(d<nd)nd=d}const half=Math.min(VW,VH)*.46/zt;if(nd>half&&nd<half*1.7)zt=Math.max(bz*.72,Math.min(zt,Math.min(VW,VH)*.46/nd))}
+    if(CINE&&player.alive&&!player.veh){
+      // cadrage de combat : la caméra intègre l'adversaire qui vous tire dessus (ou que vous visez) pour garder les deux à l'écran
+      let foe=null,fd=1e9;const R=Math.max(VW,VH)*.62/bz;for(const e of ents){if(e===player||!e.alive||e.inPlane||e.air>0||(player.team&&e.team===player.team))continue;const d=Math.hypot(e.x-player.x,e.y-player.y);if(d>R||d>=fd)continue;
+        if((e.firedT>0||player.firedT>0||e.hpShowT>0)&&los(player.x,player.y,e.x,e.y)){foe=e;fd=d}}
+      cam.cb=(cam.cb||0)+((foe?1:0)-(cam.cb||0))*Math.min(1,dt*(foe?2.2:.9));
+      if(foe){cam.fx=foe.x;cam.fy=foe.y}
+      if(cam.cb>.01&&cam.fx!==undefined){const w=.32*cam.cb,mx=(cam.fx-player.x)*w,my=(cam.fy-player.y)*w;tx+=mx-cam.lx*cam.cb*.6;ty+=my-cam.ly*cam.cb*.6;
+        const need=Math.max(Math.abs(cam.fx-tx)/(VW*.42),Math.abs(cam.fy-ty)/(VH*.4));if(need>0)zt=Math.min(zt,Math.max(bz*.74,zt+(1/need-zt)*cam.cb))}
+      // course : légère ouverture ; immobile : la caméra se rapproche doucement
+      if(cam.sp>180)zt*=1-clamp((cam.sp-180)/260,0,1)*.06;
+      cam.idle=cam.sp<15&&!cam.cb?(cam.idle||0)+dt:0;if(cam.idle>2.5)zt*=1+Math.min(.07,(cam.idle-2.5)*.025);
+      // élimination : la vue glisse un instant vers la victime
+      if(cam.kc&&matchT>=cam.kc.t&&matchT-cam.kc.t<.9){const u=(matchT-cam.kc.t)/.9,e=Math.sin(u*Math.PI);tx+=(cam.kc.x-player.x)*.22*e;ty+=(cam.kc.y-player.y)*.22*e;zt*=1+.07*e;fk=Math.max(fk,6)}
+      // caméra portée : un souffle très discret
+      if(!reduceMotion){const a=Math.min(1,.4+cam.sp/300);tx+=(Math.sin(TIME*.61)*5+Math.sin(TIME*1.37)*2)*a/zt;ty+=(Math.cos(TIME*.47)*4+Math.sin(TIME*1.11)*2)*a/zt}}
     if(CINE&&player.alive){
       // vitesse : la vue s'élargit en véhicule ; intérieur : elle se resserre ; victoire : gros plan sur le vainqueur
       if(player.veh)zt*=1-clamp((cam.sp-160)/420,0,1)*.2;
@@ -3055,14 +3070,17 @@ function updateCam(dt){const bz=baseZoom(),CINE=!stats.camClassic;let tx,ty,zt,f
     if(VH>VW*1.15&&player.alive)ty+=70/zt}
   cam.px=player.x;cam.py=player.y}
   {// v2.7 — caméra derrière le joueur : la vue tourne pour que le soldat regarde vers le haut de l'écran
-   const BH=!!stats.camBehind&&game.mode==='play'&&!player.inPlane&&!(player.air>0);let rt=0;if(!BH)cam.bhOn=0;
+   const BH=false&&game.mode==='play'&&!player.inPlane&&!(player.air>0);let rt=0;if(!BH)cam.bhOn=0;
    if(BH){const cur=-Math.PI/2-(cam.rot||0);rt=cam.rot||0;const busy=(sticks.aim.id!==null&&sticks.aim.mag>.2)||mouse.down||fireHeld;let h=null;
      if(player.veh&&isFinite(player.veh.a))h=player.veh.a;else if(player.alive&&!busy&&!isDesk)h=player.angle;else if(player.alive&&!busy&&(cam.sp||0)>40){const vd=Math.atan2(cam.vy||0,cam.vx||0);if(Math.abs(angDiff(cur,vd))<1.75)h=vd}
      if(!cam.bhOn&&player.alive){cam.rot=-Math.PI/2-player.angle;rt=cam.rot}cam.bhOn=1
      if(h!==null)rt=-Math.PI/2-h;
      if(player.alive){zt*=player.veh?1.05:1.32;const hh=-Math.PI/2-(cam.rot||0),off=Math.min(VW,VH)*(player.veh?.16:.2)/zt;tx+=Math.cos(hh)*off;ty+=Math.sin(hh)*off}}
    const r0=cam.rot||0,r1=r0+angDiff(r0,rt)*(1-Math.exp(-dt*(BH?(player.veh?3.2:2.4):4)));cam.rot=Math.atan2(Math.sin(r1),Math.cos(r1))}
-  const k=1-Math.exp(-dt*fk);cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;cam.z+=(zt-cam.z)*(1-Math.exp(-dt*2.5));cam.shake=Math.max(0,cam.shake-dt*2);
+  if(CINE&&game.mode==='play'&&!player.inPlane&&dt>0&&dt<.25){const st=1.7/fk,w=2/st,x=w*dt,ex=1/(1+x+.48*x*x+.235*x*x*x);
+    for(const [p,v,t] of [['x','svx',tx],['y','svy',ty]]){const c=cam[p]-t,tmp=((cam[v]||0)+w*c)*dt;cam[v]=((cam[v]||0)-w*tmp)*ex;cam[p]=t+(c+tmp)*ex}
+    cam.z+=(zt-cam.z)*(1-Math.exp(-dt*(cam.cb>.5?1.6:2.2)))}
+  else{const k=1-Math.exp(-dt*fk);cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;cam.svx=cam.svy=0;cam.z+=(zt-cam.z)*(1-Math.exp(-dt*2.5))}cam.shake=Math.max(0,cam.shake-dt*2);
   {const dead=CINE&&!player.alive&&game.mode==='play';if(dead!==!!cam.bars){cam.bars=dead;const el=$('#sfCine');if(el){if(dead){const k=player.killer;el.lastChild.textContent=k&&k!==player?'Éliminé par '+k.name:'Éliminé'}el.classList.toggle('on',dead)}}}
   const kd=Math.exp(-dt*13);cam.kx=(cam.kx||0)*kd;cam.ky=(cam.ky||0)*kd;cam.zp=(cam.zp||0)*Math.exp(-dt*7)}
 function drawWeather(){const wx=MAP.wx;
@@ -3405,7 +3423,7 @@ let CAMROT=0;
    - Les bâtiments sont de vrais volumes (murs extrudés + toit) et les arbres sont debout, en 3D, avec brume au loin.
    - Ce qui se trouve entre la caméra et le soldat devient ajouré pour ne jamais le cacher. */
 const P3={ok:null,on:false,gl:null,cv:null,U:{},Ub:{},Ut:{},off:null,oc:null,OW:0,OH:0,zo:.5,Yf:640,Yb:150,Wh:900,H:117,B:220,L:34,tHy:Math.tan(30*Math.PI/180),tHx:1,sp:0,cp:1,ax:0,ay:0,rx:1,ry:0,fx:0,fy:-1,gsrc:null,gtex:null,dtex:null,atl:null,key:'',bBuf:null,bN:0,tBuf:null,tN:0,pg:null,pb:null,pt:null,vb:null};
-function p3Active(){return !!stats.camBehind&&(game.mode==='play'||game.mode==='paused')&&player&&player.alive&&!player.inPlane&&!(player.air>0)&&p3Init()}
+function p3Active(){return false&&(game.mode==='play'||game.mode==='paused')&&player&&player.alive&&!player.inPlane&&!(player.air>0)&&p3Init()}
 const P3PROJ=`uniform vec2 A,RV,FV,TN;uniform vec4 CM;varying float vY;
 vec4 proj(vec3 w){vec2 d=w.xy-A;float X=dot(d,RV),Y=dot(d,FV),Z=w.z-CM.x;float fc=(Y+CM.y)*CM.w-Z*CM.z,uc=(Y+CM.y)*CM.z+Z*CM.w;vY=Y;
  const float n=4.,f=5000.;return vec4(X/TN.x,uc/TN.y,fc*(f+n)/(f-n)-2.*f*n/(f-n),fc);}`;
@@ -5421,11 +5439,11 @@ $('#shareBtn').addEventListener('click',()=>{const b=$('#shareBtn'),url='https:/
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt+' '+url).then(done,()=>{});return}}catch(e){}});
 /* ===== v2.3 — options modernes : heure du combat, tir auto, chiffres, sang, compteur d'images ===== */
 function optLabels(){const on=v=>v?'oui':'non';
-  $('#camBtn').textContent='Caméra : '+(stats.camBehind?'au dos du joueur':stats.camClassic?'standard':'cinématique');$('#afBtn').textContent='Tir auto : '+on(stats.autoFire);$('#numBtn').textContent='Chiffres de dégâts : '+on(!stats.noNums);
+  $('#camBtn').textContent='Caméra : '+(stats.camClassic?'standard':'cinématique');$('#afBtn').textContent='Tir auto : '+on(stats.autoFire);$('#numBtn').textContent='Chiffres de dégâts : '+on(!stats.noNums);
   $('#bloodBtn').textContent='Sang : '+on(!stats.noBlood);$('#fpsBtn').textContent='Compteur i/s : '+on(stats.fps);
   const n=stats.tod==='night';document.querySelectorAll('#tod .chip').forEach(b=>b.setAttribute('aria-checked',String((b.dataset.t==='night')===n)));
   $('#todD').textContent=n?'Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'Du matin au coucher du soleil.'}
-$('#camBtn').addEventListener('click',()=>{if(stats.camBehind){stats.camBehind=false;stats.camClassic=true}else if(stats.camClassic){stats.camClassic=false}else stats.camBehind=true;saveStats();optLabels()});
+stats.camBehind=false;$('#camBtn').addEventListener('click',()=>{stats.camBehind=false;stats.camClassic=!stats.camClassic;saveStats();optLabels()});
 for(const [id,k] of [['#afBtn','autoFire'],['#numBtn','noNums'],['#bloodBtn','noBlood'],['#fpsBtn','fps']])$(id).addEventListener('click',()=>{stats[k]=!stats[k];saveStats();optLabels()});
 document.querySelectorAll('#tod .chip').forEach(b=>b.addEventListener('click',()=>{stats.tod=b.dataset.t==='night'?'night':'day';saveStats();optLabels()}));
 /* ===== v2.5 — ligues, rapport de partie et carrière ===== */

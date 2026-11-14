@@ -1,13 +1,20 @@
 # Seddik Fire
 
+## Version 2.10 — 15 personnages jouables
+
+- Les noms sont ceux des personnages à choisir dans le menu (et non plus des adversaires) : Seddik, Dali, Nouh, Joseph, Haroun, Mazen, Yassine, Aziz, Nour, Emna, Yasmine, Skander, Molka, Rayhane, Arafet.
+- Seddik est en tête de la liste, marqué « Le plus fort » (casque d'élite doré, tenue noire) ; sa tenue n'est pas portée par les adversaires.
+- Six nouvelles tenues : Seddik, Nour, Emna, Yasmine, Molka, Rayhane.
+- Sans pseudo, le nom du personnage choisi est utilisé en partie.
+- Adversaires : retour à la liste de noms d'origine ; plus d'adversaire « Seddik ».
+- Cache hors ligne : `seddik-fire-v210`.
+
 ## Version 2.9 — caméra au dos du joueur, Gabès, Seddik le plus fort
 
 - Caméra « au dos du joueur » (remplace « derrière le joueur ») : caméra basse et proche, collée au dos du soldat, qui se replace toujours derrière lui sur téléphone. Le soldat est grand, net et au centre-bas de l'écran.
 - Soldats debout en vue 3D : chaque soldat est dessiné face à la caméra, à la bonne taille selon la distance, avec une ombre au sol et un anneau sous le joueur. Les ennemis cachés dans un bâtiment ou dans la nuit restent cachés.
 - Image plus nette : sol plus net en 3D, moins de grain et d'ombres de nuages, contraste un peu plus fort ; halo lumineux sous le joueur en vue du dessus.
 - Carte Kairouan retirée, remplacée par « Gabès & Matmata » (oasis de Chenini, port, souk de Jara, Matmata).
-- Noms des adversaires : Dali, Nouh, Joseph, Haroun, Mazen, Yassine, Aziz, Nour, Emna, Yasmine, Skander, Molka, Rayhane, Arafet.
-- Seddik est présent dans chaque partie (sauf Entraînement) : c'est le plus fort (meilleure visée, gilet et casque niveau 2, fusil d'assaut), marqué d'une prime dès le début.
 - Cache hors ligne : `seddik-fire-v209`.
 
 ## Version 2.8 — vraie vue derrière le joueur et 18 cartes

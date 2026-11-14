@@ -940,7 +940,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
         <button id="skinNext" class="arrow" aria-label="Soldat suivant">›</button>
       </div>
       <div class="pc-name"><span class="lbl">Votre personnage · <span id="skinIdx">2 / 7</span></span><b id="skinName">Forêt</b><span id="skinDesc"></span></div>
-      <section id="sf-portrait-roster" aria-label="Choisir un combattant"><div class="sf-roster-head"><b>CHOISIR UN COMBATTANT</b><span>9 portraits · sélection directe</span></div><div class="sf-roster-grid" id="sfRosterGrid"></div></section>
+      <section id="sf-portrait-roster" aria-label="Choisir un combattant"><div class="sf-roster-head"><b>CHOISIR UN COMBATTANT</b><span>15 combattants · sélection directe</span></div><div class="sf-roster-grid" id="sfRosterGrid"></div></section>
     </div>
     <div class="side">
       <div class="card">
@@ -1038,7 +1038,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.9</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.10</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1321,6 +1321,21 @@ SOLDIERS.push(
 {id:'mafia_syndicate',n:'Syndicat — Exécuteur',d:'Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.',lv:1,criminal:1,jacket:'#25272d',shirt:'#44464c',tie:'#111216',chain:'#77736a',base:'#a8795e',pants:'#202228',pack:'#181a20',hg:'h2',hc:'#22252b',glove:'#15171b',arm:'#24262c',legs:'#202228',cam:['#202228','#30333a','#15171c'],blobs:0}
 );
 
+/* v2.10 — personnages jouables nommés : Seddik (le plus fort) et 14 combattants.
+   Les identifiants des 9 tenues existantes sont conservés pour les sauvegardes. */
+{const RN={unit_tunis_assault:['Dali','Unité Atlas — Assaut'],unit_desert_guard:['Nouh','Patrouille du Sahara'],unit_night_ops:['Joseph','Section Spectre'],police_intervention:['Haroun','Police — Intervention'],police_swat:['Mazen','Police — Groupe tactique'],police_patrol:['Yassine','Police — Patrouille'],mafia_don:['Aziz','La Famille — Don'],mafia_enforcer:['Skander','La Famille — Homme de main'],mafia_syndicate:['Arafet','Syndicat — Exécuteur']};
+ for(const sk of SOLDIERS){const r=RN[sk.id];if(r){sk.role=r[1];sk.n=r[0]}}
+ const C=(from,o)=>Object.assign({},SOLDIERS.find(x=>x.id===from),o);
+ SOLDIERS.unshift({id:'seddik',n:'Seddik',role:'C’est le plus fort',best:1,d:'Le chef du commando : treillis noir, gilet lourd, casque d’élite doré et gants tactiques.',lv:1,base:'#b88a66',cam:['#17181b','#2b2c30','#0e0f11'],pants:'#17181b',pack:'#141518',hg:'h3',hc:'#b8912f',glove:'#121315',pat:'pix',blobs:30,ink:'#1d1e22',top:'#1f2024',arm:'#26272b'});
+ SOLDIERS.push(
+  C('unit_tunis_assault',{id:'p_nour',n:'Nour',role:'Tireuse d’élite',d:'Tenue coyote, gilet léger, cheveux tressés et radio d’épaule.',cam:['#7d6a4c','#a38d66','#5a4b36'],pants:'#6b5a40',pack:'#5a4b36',hg:'braids',hc:'#1d140e',top:'#8a7552',arm:'#7d6a4c'}),
+  C('unit_desert_guard',{id:'p_emna',n:'Emna',role:'Éclaireuse du Sud',d:'Camouflage sable clair, chignon, foulard et protections.',cam:['#c8b48c','#e2d3ad','#9c8762'],pants:'#a8946c',pack:'#8c7856',hg:'bun',hc:'#2a1a12',top:'#cbb68e',arm:'#bba57d'}),
+  C('police_patrol',{id:'p_yasmine',n:'Yasmine',role:'Garde nationale',d:'Uniforme vert olive, chignon, ceinturon et radio.',cam:['#3d4a2e','#5c6a44','#2a3420'],pants:'#3a4630',pack:'#323d28',hg:'bun',hc:'#22160f',top:'#4a5838',arm:'#44513a'}),
+  C('unit_night_ops',{id:'p_molka',n:'Molka',role:'Unité urbaine',d:'Gris béton, tresses, gilet porte-plaques et gants noirs.',cam:['#6c7278','#9aa0a6','#4a4f55'],pants:'#555b61',pack:'#3e4349',hg:'braids',hc:'#120d0a',top:'#70767c',arm:'#62686e'}),
+  C('mafia_don',{id:'p_rayhane',n:'Rayhane',role:'La Famille — Conseillère',d:'Costume ivoire, chemise noire, chignon et chaîne dorée.',jacket:'#e8e2d4',shirt:'#1c1c1e',tie:'#9c7a3a',chain:'#c9a45a',pants:'#e2dccd',pack:'#d8d1c0',hg:'bun',hc:'#2a1a12',arm:'#ddd6c6',legs:'#e2dccd',cam:['#e2dccd','#cfc8b8','#bdb6a6']})
+ );
+ for(const sk of SOLDIERS)if(sk.role&&sk.d&&!sk.d.startsWith(sk.role))sk.d=sk.role+' · '+sk.d}
+
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
 const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35'];
 const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a','#8e44ad','#dcdcdc','#1b1b1d','#ff6b22'],BAG_LV=[1,2,3,5,7,'S10','S25','S40','S45'];
@@ -1328,7 +1343,7 @@ const lvOK=n=>typeof n==='string'?(stats.cupBest|0)>=+n.slice(1):(stats.level||1
 const lvTxt=n=>typeof n==='string'?'Parcours étape '+n.slice(1):'Niv. '+n;
 const WARRIORS=()=>SOLDIERS.filter(s=>s.sp);
 /* v132 — l'IA utilise des silhouettes de soldats modernes, pas les skins fantaisie. */
-function botSkin(){const field=SOLDIERS.filter(sk=>!sk.ftr&&!sk.sp&&!sk.jc);return pick(field.length?field:SOLDIERS)}
+function botSkin(){const field=SOLDIERS.filter(sk=>!sk.ftr&&!sk.sp&&!sk.jc&&!sk.best);return pick(field.length?field:SOLDIERS)}
 function soldierById(id){return SOLDIERS.find(x=>x.id===id)||SOLDIERS[1]}
 const AMMO={'9mm':{n:'9 mm',stack:30,cap:180},'45':{n:'.45',stack:21,cap:105},'556':{n:'5,56 mm',stack:30,cap:180},'762':{n:'7,62 mm',stack:30,cap:150},'12g':{n:'Cal. 12',stack:10,cap:40},'mag':{n:'.300',stack:5,cap:20}};
 const MEDS={bandage:{n:'Bandage',t:2.6,max:10},medkit:{n:'Trousse de soins',t:6,max:3},drink:{n:'Boisson énergisante',t:3,max:5}};
@@ -1337,7 +1352,6 @@ const TIER_COL=['#fff','#e6dfcc','#79c1ff','#ffb347','#ff5d73'];
 const VEST_BODY=['','#b8ad92','#6c7a52','#2f3337'],HELM_WEAR=['','#8a8f68','#55634a','#353b36'];
 const VEST_COL=['','#d7cfb8','#7fa3c4','#b39be6'],HELM_COL=['','#a9ae80','#7f9fb6','#b39be6'];
 const SKINS=['#c8946a','#a8754f','#d9a77b','#8d5d3b','#b98258'];
-const SF_NAMES=['Dali','Nouh','Joseph','Haroun','Mazen','Yassine','Aziz','Nour','Emna','Yasmine','Skander','Molka','Rayhane','Arafet'];
 const BOT_NAMES=["Hamma","Lassaad","Slim","Wajdi","Nizar","Sami","Aymen","Houssem","Karim","Yassine","Rami","Fares","Mehdi","Oussema","Ghassen","Bilel","Anis","Zied","Firas","Malek","Skander","Amine","Tarek","Chokri","Mounir","Hedi","Walid","Nabil","Raouf","Kais","Hatem","Moez","Sofiene","Achref","Mourad","Saber","Fethi","Bassem","Maher","Noureddine","Adel","Lotfi","Riadh","Mokhtar","Nidhal","Seif","Montassar","Marwen","Alaa","Younes","Garde-01","Garde-02","Éclaireur-7","Unité Delta","Patrouille Sud","Commando 21","Fusilier 04","Sergent 12"];
 const LOOT_N=[['w:m9',3.5],['w:m1911',3],['w:pm',3],['w:uzi',4],['w:mp5',4],['w:m870',4],['w:spas',2.5],['w:ak',3.2],['w:m4',3.2],['w:m16',2],['w:sks',1.4],['w:kar',1],['w:m24',.6],['w:mirage',.5],['a',26],['m:bandage',13],['m:medkit',3.5],['m:drink',6],['v:1',5],['v:2',2.5],['v:3',.6],['h:1',5],['h:2',2.5],['h:3',.6],['g:frag',4],['g:smoke',2.5],['g:molotov',2.5],['g:flash',2],['k:knife',3],['k:machete',1.5],['k:spear',1.2],['k:axe',1],['k:hammer',.4],['b:1',2.2]];
 const LOOT_M=[['w:mp5',4],['w:ak',7],['w:m4',7],['w:m16',5],['w:sks',4],['w:kar',3],['w:m24',2.5],['w:mirage',2],['w:spas',3],['w:m1911',1],['a',24],['m:bandage',8],['m:medkit',6],['m:drink',6],['v:2',6],['v:3',3],['h:2',6],['h:3',3],['g:frag',6],['g:smoke',3],['g:molotov',3],['g:flash',3],['k:knife',2],['k:machete',2],['k:spear',2],['k:axe',2],['k:hammer',1],['b:1',3]];
@@ -2252,17 +2266,13 @@ function startMatch(){
   bullets=[];parts=[];floats=[];feed=[];cache.wout=undefined;renderFeed();
   drops=[];dplane=null;dropAt=0;corpses=[];hitMarks=[];dmgDirs=[];kbT=0;$('#kb').hidden=true;
   spawnLoot();
-  ents=[];player=newEnt(stats.name||'Joueur',false);ents.push(player);BOUNTY=null;SUSP.alive=-1;SUSP.boss=0;
-  // v2.9 — les adversaires portent les noms choisis ; Seddik est toujours là et c'est le plus fort
-  const names=shuffle(SF_NAMES.slice()),used=new Set([player.name]),boss=MDcur.easy?null:newEnt('Seddik',true);if(boss)used.add('Seddik');
-  for(let i=0;ents.length<MDcur.np-(boss?1:0);i++){let n=names[i%names.length];if(i>=names.length||used.has(n)){for(let k=0;k<12&&used.has(n);k++)n=names[i%names.length]+pick(['_tn','07','216','_ks','99','.x','_92','_10','_TN'])}used.add(n);ents.push(newEnt(n,true))}if(boss)ents.push(boss);
+  ents=[];player=newEnt(stats.name||((SOLDIERS[skinI]||{}).n)||'Joueur',false);ents.push(player);BOUNTY=null;SUSP.alive=-1;SUSP.boss=0;
+  const names=shuffle(BOT_NAMES.slice());for(let i=0;i<MDcur.np-1;i++)ents.push(newEnt(decorate(names[i%names.length]),true));
   if(MDcur.team)ents.forEach((e,i)=>{e.team=Math.floor(i/MDcur.team)+1});
   if(MDcur.easy)for(const e of ents)if(e.bot)e.skill*=.45;
   if(MDcur.sk)for(const e of ents)if(e.bot)e.skill*=MDcur.sk;
   {const dm=[.7,1,1.3][stats.diff===0||stats.diff===2?stats.diff:1];if(dm!==1)for(const e of ents)if(e.bot)e.skill*=dm}
-  const BOSS=ents.find(e=>e.bot&&e.name==='Seddik');if(BOSS){BOSS.skill=Math.max(BOSS.skill,1.05*[.8,1,1.1][stats.diff===0||stats.diff===2?stats.diff:1]);BOSS.boss=true}
   for(const e of ents){if(MDcur.bare){e.cur=-1;continue}const t=e.bot?pick(SIDEARMS):stats.sidearm,W=WEAP[t];e.slots[0]={type:t,mag:W.mag};e.cur=0;e.ammo[W.am]=e.bot?W.mag:W.mag*2}
-  if(BOSS&&!MDcur.bare){const W=WEAP.ak;BOSS.slots[1]={type:'ak',mag:W.mag};BOSS.cur=1;BOSS.ammo[W.am]=W.mag*3;BOSS.vest=100;BOSS.vestLvl=2;BOSS.helmet=2}
   for(const e of ents)if(e.sk&&e.sk.sp&&!e.mel)e.mel='gladius';
   for(const B of blds)B._dn=0;
   setupPlane();
@@ -4973,6 +4983,7 @@ requestAnimationFrame(()=>{const gp=gcBoot();setTimeout(()=>{try{preStart()}catc
    sans toucher à la logique : en français il ne fait strictement rien. */
 const I18N={
 en:{
+"LE PLUS FORT":"THE STRONGEST","C’est le plus fort":"The strongest","15 combattants · sélection directe":"15 fighters · tap to select","Tireuse d’élite":"Sharpshooter","Éclaireuse du Sud":"Southern scout","Garde nationale":"National guard","Unité urbaine":"Urban unit","La Famille — Conseillère":"The Family — Counsel","Le chef du commando : treillis noir, gilet lourd, casque d’élite doré et gants tactiques.":"The commando leader: black fatigues, heavy vest, gold elite helmet and tactical gloves.","Tenue coyote, gilet léger, cheveux tressés et radio d’épaule.":"Coyote outfit, light vest, braided hair and shoulder radio.","Camouflage sable clair, chignon, foulard et protections.":"Light sand camouflage, hair bun, scarf and pads.","Uniforme vert olive, chignon, ceinturon et radio.":"Olive green uniform, hair bun, duty belt and radio.","Gris béton, tresses, gilet porte-plaques et gants noirs.":"Concrete grey, braids, plate carrier and black gloves.","Costume ivoire, chemise noire, chignon et chaîne dorée.":"Ivory suit, black shirt, hair bun and gold chain.",
 "Gabès & Matmata":"Gabes & Matmata","Seule oasis maritime de Méditerranée : palmeraie de Chenini, port de Gabès, souk de Jara et maisons troglodytes de Matmata.":"The only seaside oasis of the Mediterranean: Chenini palm grove, Gabes harbour, Jara souk and the cave houses of Matmata.","Palmeraie de Chenini":"Chenini Palm Grove",
 'Seddik est sur l’île':'Seddik is on the island','C’est le plus fort · prime +250 XP':'He is the strongest · bounty +250 XP',
 "Grand Tunis":"Greater Tunis","Sousse & Monastir":"Sousse & Monastir","Sfax & Kerkennah":"Sfax & Kerkennah","Bizerte & Ras Jebel":"Bizerte & Ras Jebel","Tabarka & Aïn Draham":"Tabarka & Ain Draham","Tozeur & Nefta":"Tozeur & Nefta","Tataouine & Ksour":"Tataouine & Ksour","Le Kef & Jugurtha":"Le Kef & Jugurtha","Gafsa & Bassin minier":"Gafsa & Mining Basin","La capitale : avenue Bourguiba, médina, Bab Bhar, le Lac et le port de La Goulette.":"The capital: Avenue Bourguiba, the medina, Bab Bhar, the Lake and La Goulette harbour.","Le Sahel : médina de Sousse, ribat de Monastir, marinas et plages de Skanès.":"The Sahel: Sousse medina, Monastir ribat, marinas and the beaches of Skanes.","Oliveraies du Sud-Est, port industriel de Sfax et îles plates de Kerkennah.":"South-east olive groves, the industrial port of Sfax and the flat Kerkennah islands.","Le Nord : vieux port de Bizerte, lagune de Ghar El Melh, corniche et cap Blanc.":"The North: Bizerte old port, Ghar El Melh lagoon, the corniche and Cap Blanc.","Forêt de chênes-lièges de Kroumirie, fort génois, Aiguilles et barrage.":"Kroumirie cork-oak forest, the Genoese fort, the Needles and the dam.","Palmeraies du Jérid, chott el-Jérid, oasis de montagne de Chebika et Tamerza.":"Jerid palm groves, Chott el-Jerid, the mountain oases of Chebika and Tamerza.","Le Grand Sud : ksour fortifiés, villages berbères perchés et pistes de sable rouge.":"The deep South: fortified ksour, hilltop Berber villages and red sand tracks.","Hauts plateaux du Nord-Ouest : kasbah du Kef, Table de Jugurtha et ruines de Dougga.":"North-west highlands: the Kef kasbah, Jugurtha's Table and the ruins of Dougga.","Collines arides, mines de phosphate de Métlaoui et gorges de Selja.":"Arid hills, the Metlaoui phosphate mines and the Selja gorges.",
@@ -4983,7 +4994,7 @@ en:{
 'Difficulté':'Difficulty','Facile':'Easy','Normale':'Normal','Difficile':'Hard','Partager':'Share','Copié !':'Copied!','Unité Atlas — Assaut':'Atlas Unit — Assault','Patrouille du Sahara':'Sahara Patrol','Section Spectre':'Spectre Squad','Police — Intervention':'Police — Riot Unit','Police — Groupe tactique':'Police — Tactical Team','Police — Patrouille':'Police — Patrol','La Famille — Don':'The Family — Don','La Famille — Homme de main':'The Family — Enforcer','Syndicat — Exécuteur':'Syndicate — Hitman','Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.':'Multicam assault soldier: ballistic helmet, goggles, heavy vest, radio and fatigues.','Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.':'Desert scout: sand helmet, goggles, scarf, pads and ochre camouflage.','Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.':'Night operator: visor helmet, balaclava, graphite-black gear and reinforced plates.','Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.':'Riot officer: midnight-blue uniform, riot helmet, visor, vest and neutral patches.','Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.':'Urban tactical unit: black helmet, goggles, mask, pads and charcoal uniform.','Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.':'Field officer: service cap, deep-blue uniform, duty belt and radio.','Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.':'Fictional crime boss: tailored black suit, ivory shirt, burgundy tie and gold chain.','Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.':'Heavy enforcer: dark brown leather jacket, dark shirt, black trousers and street look.','Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.':'Fictional urban hitman: graphite coat, high collar, black shirt and dark gloves.',
 'Votre pseudo':'Your name','Niv.':'Lv.','Niveau':'Level','Armurerie':'Armory','Son : activé':'Sound: on','Son : coupé':'Sound: off',
 'Choisissez votre soldat, votre arme de départ, sautez de l\'avion et tenez face à la tempête de feu.':'Pick your soldier and starting weapon, jump from the plane and outlast the firestorm.',
-'Votre personnage':'Your character','Votre personnage ·':'Your character ·','CHOISIR UN COMBATTANT':'CHOOSE A FIGHTER','9 portraits · sélection directe':'9 portraits · tap to select','COMBATTANT':'FIGHTER','GLADIATEUR':'GLADIATOR',
+'Votre personnage':'Your character','Votre personnage ·':'Your character ·','CHOISIR UN COMBATTANT':'CHOOSE A FIGHTER','COMBATTANT':'FIGHTER','GLADIATEUR':'GLADIATOR',
 'Carte':'Map','ZONE DE COMBAT':'COMBAT ZONE','Mode de jeu':'Game mode','Arme de départ · faites défiler':'Starting weapon · scroll','Personnalisation':'Customization',
 'Accessoire':'Accessory','Chaussures':'Boots','Housse de sac':'Backpack cover',
 'Les maillots et accessoires se débloquent en montant de niveau. Housse de sac : soldats uniquement.':'Jerseys and accessories unlock as you level up. Backpack cover: soldiers only.',
@@ -5068,6 +5079,7 @@ en:{
 'Se débloque au niveau':'Unlocks at level','Vous jouez avec votre dernier personnage débloqué.':'You are playing with your last unlocked character.'
 },
 ar:{
+"LE PLUS FORT":"الأقوى","C’est le plus fort":"هو الأقوى","15 combattants · sélection directe":"15 مقاتل · اختيار مباشر","Tireuse d’élite":"قنّاصة","Éclaireuse du Sud":"كشّافة الجنوب","Garde nationale":"الحرس الوطني","Unité urbaine":"وحدة حضرية","La Famille — Conseillère":"العايلة — المستشارة","Le chef du commando : treillis noir, gilet lourd, casque d’élite doré et gants tactiques.":"قائد الكوماندوس: زي أسود، درع ثقيل، خوذة نخبة ذهبية وقفازات.","Tenue coyote, gilet léger, cheveux tressés et radio d’épaule.":"لباس بني، درع خفيف، شعر مضفور وراديو.","Camouflage sable clair, chignon, foulard et protections.":"تمويه رملي، شعر ملموم، شاش وواقيات.","Uniforme vert olive, chignon, ceinturon et radio.":"زي أخضر زيتوني، شعر ملموم، حزام وراديو.","Gris béton, tresses, gilet porte-plaques et gants noirs.":"رمادي، ضفائر، درع وقفازات سوداء.","Costume ivoire, chemise noire, chignon et chaîne dorée.":"كسوة عاجية، قميص أسود، شعر ملموم وسلسلة ذهبية.",
 "Gabès & Matmata":"قابس ومطماطة","Seule oasis maritime de Méditerranée : palmeraie de Chenini, port de Gabès, souk de Jara et maisons troglodytes de Matmata.":"الواحة البحرية الوحيدة في المتوسط: واحة شنني، ميناء قابس، سوق جارة وديار مطماطة تحت الأرض.","Palmeraie de Chenini":"واحة شنني",
 'Seddik est sur l’île':'صدّيق في الجزيرة','C’est le plus fort · prime +250 XP':'هو الأقوى · مكافأة +250 خبرة',
 "Grand Tunis":"تونس الكبرى","Sousse & Monastir":"سوسة والمنستير","Sfax & Kerkennah":"صفاقس وقرقنة","Bizerte & Ras Jebel":"بنزرت ورأس الجبل","Tabarka & Aïn Draham":"طبرقة وعين دراهم","Tozeur & Nefta":"توزر ونفطة","Tataouine & Ksour":"تطاوين والقصور","Le Kef & Jugurtha":"الكاف ومائدة يوغرطة","Gafsa & Bassin minier":"قفصة والحوض المنجمي","La capitale : avenue Bourguiba, médina, Bab Bhar, le Lac et le port de La Goulette.":"العاصمة: شارع بورقيبة، المدينة العتيقة، باب بحر، البحيرة وميناء حلق الوادي.","Le Sahel : médina de Sousse, ribat de Monastir, marinas et plages de Skanès.":"الساحل: مدينة سوسة، رباط المنستير، المراسي وشواطئ سقانص.","Oliveraies du Sud-Est, port industriel de Sfax et îles plates de Kerkennah.":"زياتين الجنوب الشرقي، ميناء صفاقس وجزر قرقنة.","Le Nord : vieux port de Bizerte, lagune de Ghar El Melh, corniche et cap Blanc.":"الشمال: الميناء القديم ببنزرت، بحيرة غار الملح، الكورنيش والرأس الأبيض.","Forêt de chênes-lièges de Kroumirie, fort génois, Aiguilles et barrage.":"غابة الفلين بخمير، البرج الجنوي، الإبر والسد.","Palmeraies du Jérid, chott el-Jérid, oasis de montagne de Chebika et Tamerza.":"واحات الجريد، شط الجريد، وواحات الشبيكة وتمغزة الجبلية.","Le Grand Sud : ksour fortifiés, villages berbères perchés et pistes de sable rouge.":"الجنوب الكبير: القصور، القرى البربرية المعلّقة ومسالك الرمل الأحمر.","Hauts plateaux du Nord-Ouest : kasbah du Kef, Table de Jugurtha et ruines de Dougga.":"مرتفعات الشمال الغربي: قصبة الكاف، مائدة يوغرطة وآثار دقة.","Collines arides, mines de phosphate de Métlaoui et gorges de Selja.":"تلال جافة، مناجم الفسفاط بالمتلوي ومضائق السلجة.",
@@ -5078,7 +5090,7 @@ ar:{
 'Difficulté':'الصعوبة','Facile':'ساهلة','Normale':'عادية','Difficile':'صعيبة','Partager':'شارك','Copié !':'تنسخ!','Unité Atlas — Assaut':'وحدة الأطلس — هجوم','Patrouille du Sahara':'دورية الصحراء','Section Spectre':'فرقة الشبح','Police — Intervention':'الشرطة — التدخل','Police — Groupe tactique':'الشرطة — الفرقة التكتيكية','Police — Patrouille':'الشرطة — الدورية','La Famille — Don':'العايلة — الزعيم','La Famille — Homme de main':'العايلة — رجل اليد','Syndicat — Exécuteur':'النقابة — المنفّذ','Soldat d’assaut multicam : casque balistique, lunettes de protection, gilet lourd, radio et treillis.':'جندي هجوم: خوذة باليستية، نظارات حماية، درع ثقيل وراديو.','Éclaireur désertique : casque sable, lunettes, foulard, protections et tenue de camouflage ocre.':'كشّاف الصحراء: خوذة رملية، نظارات، شاش ولباس تمويه.','Opérateur nocturne : casque à visière, cagoule, équipement noir graphite et plaques renforcées.':'مقاتل الليل: خوذة بواقي، قناع وعتاد أسود مدعّم.','Agent d’intervention : uniforme bleu nuit, casque anti-émeute, visière, gilet et écussons neutres.':'عون تدخل: زي أزرق داكن، خوذة مكافحة الشغب ودرع.','Unité tactique urbaine : casque noir, lunettes, masque, protections et uniforme anthracite.':'وحدة تكتيكية: خوذة سوداء، نظارات، قناع وزي رمادي داكن.','Policier de terrain : casquette de service, uniforme bleu profond, ceinturon et radio.':'شرطي ميدان: كاسكات، زي أزرق، حزام وراديو.','Chef de faction criminelle fictive : costume noir taillé, chemise ivoire, cravate bordeaux et chaîne dorée.':'زعيم عصابة خيالي: كسوة سوداء، قميص عاجي، كرافات وسلسلة ذهبية.','Homme de main massif : veste cuir brun foncé, chemise sombre, pantalon noir et allure de rue.':'رجل يد ضخم: فيستة جلد بنّي، قميص داكن وسروال أسود.','Exécuteur urbain fictif : manteau graphite, col haut, chemise noire et gants sombres.':'منفّذ خيالي: معطف رمادي، ياقة عالية، قميص أسود وقفازات.',
 'Votre pseudo':'اسمك','Niv.':'مستوى','Niveau':'المستوى','Armurerie':'مخزن الأسلحة','Son : activé':'الصوت: يخدم','Son : coupé':'الصوت: مسكّر',
 'Choisissez votre soldat, votre arme de départ, sautez de l\'avion et tenez face à la tempête de feu.':'اختار مقاتلك وسلاحك، اهبط من الطيارة وواجه عاصفة النار.',
-'Votre personnage':'شخصيتك','Votre personnage ·':'شخصيتك ·','CHOISIR UN COMBATTANT':'اختار المقاتل','9 portraits · sélection directe':'9 صور · اختيار مباشر','COMBATTANT':'مقاتل','GLADIATEUR':'مصارع',
+'Votre personnage':'شخصيتك','Votre personnage ·':'شخصيتك ·','CHOISIR UN COMBATTANT':'اختار المقاتل','COMBATTANT':'مقاتل','GLADIATEUR':'مصارع',
 'Carte':'الخريطة','ZONE DE COMBAT':'منطقة القتال','Mode de jeu':'نمط اللعب','Arme de départ · faites défiler':'السلاح الأول · مرّر للاختيار','Personnalisation':'التخصيص',
 'Accessoire':'الإكسسوارات','Chaussures':'الصباط','Housse de sac':'غطاء الحقيبة',
 'Les maillots et accessoires se débloquent en montant de niveau. Housse de sac : soldats uniquement.':'تتحلّ الملابس والإكسسوارات كي تطلع في المستوى. غطاء الحقيبة للمقاتلين فقط.',
@@ -5246,14 +5258,14 @@ function detectLang(){if(LANGS.includes(stats.lang))return stats.lang;const n=(n
 $('#langBtn').addEventListener('click',()=>{setLang(LANGS[(LANGS.indexOf(LANG)+1)%LANGS.length],true)});
 
 /* ===== v2.0 — grille de portraits : vrais personnages du jeu, sélection directe ===== */
-const ROSTER_IDS=['raider','lion','vipere','ours','roc','vent','ombre','hannibal','mirmillon','spartiate'];
+const ROSTER_IDS=['seddik'];
 function rosterMark(){document.querySelectorAll('#sfRosterGrid .sf-portrait').forEach(el=>el.setAttribute('aria-pressed',String(Number(el.dataset.index)===skinI)))}
 function paintRoster(){const root=$('#sfRosterGrid');if(!root)return;
   const chosen=[];for(const id of ROSTER_IDS){const i=SOLDIERS.findIndex(x=>x.id===id);if(i>=0&&!chosen.includes(i)&&chosen.length<9)chosen.push(i)}
-  for(let i=0;chosen.length<9&&i<SOLDIERS.length;i++)if(!chosen.includes(i))chosen.push(i);
+  for(let i=0;i<SOLDIERS.length;i++)if(!chosen.includes(i))chosen.push(i);
   root.innerHTML='';
   for(const i of chosen){const sk=SOLDIERS[i],btn=document.createElement('button');btn.type='button';btn.className='sf-portrait';btn.dataset.index=String(i);
-    const c2=document.createElement('canvas');c2.width=180;c2.height=190;const label=document.createElement('b');label.textContent=sk.n;const tag=document.createElement('small');tag.textContent=sk.sp?'GLADIATEUR':'COMBATTANT';
+    const c2=document.createElement('canvas');c2.width=180;c2.height=190;const label=document.createElement('b');label.textContent=sk.n;const tag=document.createElement('small');tag.textContent=sk.best?'LE PLUS FORT':'COMBATTANT';if(sk.best)btn.classList.add('best');
     btn.append(c2,label,tag);
     try{drawShowcase(c2.getContext('2d'),180,{sk,skin:'#c8946a',slot:{type:stats.sidearm,mag:1},vest:0,cust:stats.cust})}catch(e){}
     btn.addEventListener('click',()=>{setSkin(i);try{drawPreview()}catch(e){}});root.appendChild(btn)}
@@ -5338,7 +5350,6 @@ function sfSuspense(){if(game.mode!=='play'){if(game.mode!=='paused'){SUSP.alive
     if(p.alive&&alive<was&&!p.team){const M={10:['Top 10','Plus que 10 survivants'],5:['Top 5','Plus que 5 survivants'],3:['Top 3','Le podium se joue maintenant'],2:['Duel final','Un seul sortira vivant']},th=[2,3,5,10].find(n=>was>n&&alive<=n),m=th&&alive>1?M[th]:null;
       if(m){sfBanner(m[0],m[1],2.6,alive<=2?'red':'');sting(alive>2);if(alive<=2)cam.shake=Math.min(.6,cam.shake+.25)}}}
   if(zone.st==='wait'&&p.alive){const s=Math.ceil(zone.t);if(s!==SUSP.zs){SUSP.zs=s;if(s>=1&&s<=5)blip(s===1?1046:880,.07,.09,'square')}}
-  if(!SUSP.boss&&matchT>3&&p.alive){SUSP.boss=1;const B=ents.find(e=>e.boss&&e.alive);if(B){BOUNTY=B;sfBanner('Seddik est sur l’île','C’est le plus fort · prime +250 XP',3,'gold')}}
   if(matchT-SUSP.bT>1.5){SUSP.bT=matchT;let best=null;for(const e of ents)if(e.bot&&e.alive&&!e.inPlane&&(e.kills|0)>=3&&(!p.team||e.team!==p.team)&&(!best||e.kills>best.kills))best=e;
     if(best&&best!==BOUNTY&&(!BOUNTY||!BOUNTY.alive||(!BOUNTY.boss&&best.kills>BOUNTY.kills+1))){BOUNTY=best;if(p.alive)sfBanner('Prime sur '+best.name,best.kills+' éliminations · +250 XP',2.6,'gold')}}}
 {const d=document.createElement('div');d.id='sfBanner';d.innerHTML='<b></b><small></small>';document.body.appendChild(d)}
@@ -5469,6 +5480,10 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 #lobby #maps .map-tataouine .map-art{background:linear-gradient(120deg,rgba(35,20,8,.05),rgba(35,20,8,.5)),linear-gradient(135deg,#e2a160,#7a3f22)}
 #lobby #maps .map-kef .map-art{background:linear-gradient(120deg,rgba(15,18,10,.05),rgba(15,18,10,.55)),linear-gradient(135deg,#b9b58f,#4a5a46)}
 #lobby #maps .map-gafsa .map-art{background:linear-gradient(120deg,rgba(35,20,8,.05),rgba(35,20,8,.5)),linear-gradient(135deg,#d1b085,#6b5a49)}
+
+/* v2.10 — Seddik, le plus fort */
+#sfRosterGrid .sf-portrait.best{border-color:rgba(255,201,74,.85)!important;box-shadow:0 0 0 1px rgba(255,201,74,.4),0 6px 18px rgba(255,170,40,.25)}
+#sfRosterGrid .sf-portrait.best small{color:#ffd25e}
 </style>
 </body>
 </html>

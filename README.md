@@ -1,5 +1,11 @@
 # Seddik Fire
 
+## Version 2.21
+- Armes : les cartes d'armes sont sur le côté gauche pendant la partie (colonne à mi-hauteur en portrait et sur ordinateur, en bas à gauche en paysage).
+- Bâtiments : toits mis en cache avec usure réaliste (taches, coulures, bords assombris, grain).
+- Joueurs : ombre douce projetée par la silhouette du soldat et son arme.
+- Bouton « Monter » : le texte ne déborde plus de l'écran en portrait.
+
 ## Version 2.20
 - Cartes : ombre de contact douce au pied des bâtiments, murs, conteneurs, véhicules garés et rochers ; variations de couleur à grande échelle sur le terrain.
 - Joueurs : soldats dessinés plus nets (suréchantillonnage 1,6× sur ordinateur, 1,3× sur téléphone).

@@ -1,5 +1,9 @@
 # Seddik Fire
 
+## Version 2.19
+- Centre de l'écran dégagé pendant la bataille : bandeaux (top 10, duel final, prime…), radio du QG et éliminations s'affichent en petites lignes dans la liste de messages en haut à gauche (repère doré pour les alertes, vert pour la radio).
+- Plus de mots flottants au-dessus des ennemis ; chiffres de dégâts désactivés par défaut (réactivables dans Réglages).
+
 ## Version 2.18
 - Festival des vainqueurs : feux d'artifice, confettis, bandeau « Victoire » avec trophée, fanfare de trompettes, tambour et clameur de la foule ; version spéciale pour le champion des 50 étapes.
 - Arbres : tous les arbres dessinés une fois avec volume (côté éclairé, ombre propre) et feuillage détaillé, puis réutilisés.

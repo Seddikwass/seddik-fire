@@ -1599,6 +1599,33 @@ body.sub #btn-install,.native #btn-install{display:none!important}
   #hud:has(#h-wrong:not(.hidden)) #h-msgs,#hud:has(#h-tt:not(.hidden)) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 190px)!important}
 }
 
+/* V219 — fiche professionnelle du circuit */
+.trk{position:relative}
+.trk .tinfo{position:absolute;top:8px;inset-inline-end:8px;z-index:2;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(8,11,17,.82);border:1.5px solid rgba(255,255,255,.7);color:#fff;font:800 italic 14px Georgia,serif;cursor:pointer}
+.trk .tinfo:hover{background:var(--acc);color:#111}
+#trk-sheet{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.82);backdrop-filter:blur(4px);padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+#trk-sheet.hidden{display:none}
+.ts-box{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(220px,1fr);grid-template-areas:"head head" "map side";gap:10px;width:min(1180px,100%);max-height:100%;overflow:auto;background:#0b111b;border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;box-shadow:0 20px 60px #000}
+.ts-head{grid-area:head;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ts-head small{font:800 11px var(--fh);letter-spacing:.2em;color:var(--acc2)}
+.ts-head h2{margin:2px 0 0;font:400 clamp(20px,3.4vw,30px) var(--fh);color:#fff}
+.ts-head p{margin:2px 0 0;color:#aab3c2;font:600 13px var(--fb)}
+.ts-x{width:38px;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;font-size:16px;flex:none}
+.ts-map{grid-area:map;min-width:0}
+.ts-map canvas{width:100%;height:auto;aspect-ratio:960/560;border-radius:10px;display:block}
+.ts-side{grid-area:side;display:flex;flex-direction:column;gap:9px;min-width:0}
+.ts-side .tfacts i{font-size:13px;padding:4px 10px}
+.ts-rec{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.3)}
+.ts-rec span{color:#cfd6df;font:600 12px var(--fb)}.ts-rec b{font:400 18px var(--fh);color:var(--acc2)}
+.ts-leg{display:flex;flex-wrap:wrap;gap:6px 12px;font:700 12px var(--fb);color:#dfe5ee}
+.ts-leg span{display:flex;align-items:center;gap:5px}.ts-leg i{width:16px;height:5px;border-radius:3px;display:inline-block}
+.ts-leg i.pit{background:repeating-linear-gradient(90deg,#fff 0 3px,#8d9097 3px 6px)}
+.ts-pl{color:#aab3c2;font:700 11px var(--fb);letter-spacing:.06em;text-transform:uppercase}
+.ts-prof{width:100%;height:auto;aspect-ratio:600/120;border-radius:8px;display:block}
+.ts-go{margin-top:auto}
+@media (max-width:760px),(max-height:540px){.ts-box{grid-template-columns:minmax(0,1.5fr) minmax(190px,1fr);padding:9px;gap:8px}.ts-head p{display:none}}
+@media (orientation:portrait) and (max-width:760px){.ts-box{grid-template-columns:1fr;grid-template-areas:"head" "map" "side"}}
+
 </style>
 </head>
 <body>
@@ -1612,7 +1639,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V218</span>
+    <span id="build-tag" aria-label="Version">V219</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1729,6 +1756,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 
 <div id="pause" class="overlay"><div class="box"><h2 data-i18n="pause">PAUSE</h2><button id="p-resume" class="cta" data-i18n="resume">REPRENDRE</button><button id="p-restart" data-i18n="restart">Recommencer</button><button id="p-quit" data-i18n="quitRace">Quitter la course</button></div></div>
 <div id="results" class="overlay"><div class="box wide" id="res-body"></div></div>
+<div id="trk-sheet" class="hidden" role="dialog"></div>
 <div id="fest" class="hidden" role="dialog" aria-live="polite"><canvas id="fest-cv"></canvas><div class="fest-card" id="fest-card"></div></div>
 <div id="confirm" class="overlay"><div class="box"><p id="cf-text"></p><div class="row"><button id="cf-no" data-i18n="cancel">Annuler</button><button id="cf-yes" class="cta" data-i18n="confirm">CONFIRMER</button></div></div></div>
 <div id="rotate" class="overlay"><div class="rotic"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 40a24 24 0 0 0 20 16M52 24A24 24 0 0 0 36 8" fill="none" stroke="#ff7a18" stroke-width="3"/></svg></div><p data-i18n="rotate">Tourne ton téléphone en mode paysage pour mieux jouer.</p><button id="rot-ok" data-i18n="rotateOk">Continuer quand même</button></div>
@@ -6074,6 +6102,10 @@ function festival(res, done) {
   ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, W, H);
   FEST.raf = requestAnimationFrame(frame);
 }
+// V219 — fiche professionnelle de chaque circuit
+const V219_TXT = {"fr": ["Fiche du circuit", "Départ / Arrivée", "Voie des stands", "Profil d'altitude", "Secteurs", "Courir sur ce circuit", "Fermer", "Record", "Détails"], "en": ["Track guide", "Start / Finish", "Pit lane", "Elevation profile", "Sectors", "Race this track", "Close", "Record", "Details"], "es": ["Ficha del circuito", "Salida / Meta", "Calle de boxes", "Perfil de altitud", "Sectores", "Correr en este circuito", "Cerrar", "Récord", "Detalles"], "pt": ["Ficha do circuito", "Largada / Chegada", "Pit lane", "Perfil de altitude", "Setores", "Correr nesta pista", "Fechar", "Recorde", "Detalhes"], "de": ["Streckeninfo", "Start / Ziel", "Boxengasse", "Höhenprofil", "Sektoren", "Hier fahren", "Schließen", "Rekord", "Details"], "it": ["Scheda del circuito", "Partenza / Arrivo", "Corsia box", "Profilo altimetrico", "Settori", "Corri su questo circuito", "Chiudi", "Record", "Dettagli"], "tr": ["Pist bilgisi", "Başlangıç / Bitiş", "Pit yolu", "Yükseklik profili", "Sektörler", "Bu pistte yarış", "Kapat", "Rekor", "Ayrıntılar"], "ar": ["بطاقة الحلبة", "الانطلاق / الوصول", "ممرّ الصيانة", "مقطع الارتفاع", "القطاعات", "تسابق في هذه الحلبة", "إغلاق", "الرقم القياسي", "التفاصيل"], "tn": ["بطاقة الحلبة", "الانطلاق / الوصول", "ممرّ الصيانة", "العلو على طول الحلبة", "القطاعات", "اجري في الحلبة هاذي", "سكّر", "الرقم القياسي", "التفاصيل"]};
+for (const l in V219_TXT) { const v = V219_TXT[l]; Object.assign(LANGS[l], { ts_title: v[0], ts_sf: v[1], ts_pit: v[2], ts_prof: v[3], ts_sect: v[4], ts_race: v[5], ts_close: v[6], ts_rec: v[7], ts_info: v[8] }); }
+const SECT_COL = ['#ff3b46', '#2f8cff', '#ffcf1f'];
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -7287,7 +7319,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V218';
+const GAME_VERSION = 'V219';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -7466,8 +7498,8 @@ const UI = {
     $('q-track-filters').innerHTML=trackFilters.map(([key,label])=>`<button type="button" data-filter="${key}" class="${(q.trackFilter||'all')===key?'on':''}">${label}</button>`).join('');
     $('q-track-filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{q.trackFilter=b.dataset.filter;this.renderQuick();});
     const visibleTracks=TRACKS.map((d,i)=>({d,i})).filter(x=>(q.trackFilter||'all')==='all'||x.d.theme===(q.trackFilter||'all'));
-    $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small>${trackFacts(d)}<small>${t('record', SAVE.best[d.id] ? fmtT(SAVE.best[d.id]) : '—')}</small></button>`).join('');
-    $('q-tracks').querySelectorAll('button').forEach(b => { b.onclick = () => { q.track = +b.dataset.i; this.renderQuick(); }; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.i], q.track === +b.dataset.i); });
+    $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><span class="tinfo" role="button" aria-label="${t('ts_info')}">i</span><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small>${trackFacts(d)}<small>${t('record', SAVE.best[d.id] ? fmtT(SAVE.best[d.id]) : '—')}</small></button>`).join('');
+    $('q-tracks').querySelectorAll('button').forEach(b => { b.onclick = () => { q.track = +b.dataset.i; this.renderQuick(); }; b.querySelector('.tinfo').onclick = e => { e.stopPropagation(); const ti = +b.dataset.i; openTrackSheet(ti, () => { q.track = ti; this.renderQuick(); }); }; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.i], q.track === +b.dataset.i); });
     $('q-laps').classList.toggle('hidden', q.mode === 'chase'); $('q-opp').classList.toggle('hidden', q.mode !== 'race'); $('q-diff').classList.toggle('hidden', q.mode !== 'race');
     $('q-laps').querySelector('span').textContent = q.laps; $('q-opp').querySelector('span').textContent = q.opp;
     $('q-diff').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === q.diff));
@@ -7708,7 +7740,7 @@ function vnoise(seed) {
 }
 function aerialTerrain(def, Wc, Hc, M, pts) {
   const key = def.id + '_' + Wc + 'x' + Hc; if (TRK_AERIAL[key]) return TRK_AERIAL[key];
-  const R = 2, w = Wc * R, h = Hc * R, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const R = Wc >= 400 ? 1 : 2, w = Wc * R, h = Hc * R, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
   const ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), D = img.data;
   let seed = 0; for (const c of def.id) seed = (seed * 31 + c.charCodeAt(0)) >>> 0; seed %= 10007;
   const N = vnoise(seed), N2 = vnoise(seed + 77), th = def.theme;
@@ -7718,7 +7750,7 @@ function aerialTerrain(def, Wc, Hc, M, pts) {
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let m = 1e9; for (let k = 0; k < P.length; k += 2) { const dx = P[k] - x, dy = P[k + 1] - y, d2 = dx * dx + dy * dy; if (d2 < m) m = d2; } dist[y * w + x] = Math.sqrt(m) / R; }
   const mix = (a, b, t) => a + (b - a) * t, cl = v => v < 0 ? 0 : v > 255 ? 255 : v;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const u = x / R, v = y / R, d = dist[y * w + x], n1 = N(u / 22, v / 22, 5), n2 = N2(u / 6, v / 6, 3), hx = N(u / 22 + 0.04, v / 22, 5) - n1, hy = N(u / 22, v / 22 + 0.04, 5) - n1;
+    const SF = Wc >= 400 ? 2 : 1, u = x / R / SF, v = y / R / SF, d = dist[y * w + x] / SF, n1 = N(u / 22, v / 22, 5), n2 = N2(u / 6, v / 6, 3), hx = N(u / 22 + 0.04, v / 22, 5) - n1, hy = N(u / 22, v / 22 + 0.04, 5) - n1;
     const lit = 1 + (-hx * 9 - hy * 6);   // ombrage du relief, soleil au nord-ouest
     let r, g, b;
     if (th === 'desert') {
@@ -7726,7 +7758,7 @@ function aerialTerrain(def, Wc, Hc, M, pts) {
       r = 214 * sh + n2 * 18; g = 164 * sh + n2 * 14; b = 104 * sh + n2 * 8;
       if (n1 > 0.62) { r -= 18; g -= 16; b -= 10; }
     } else if (th === 'coast' || th === 'port') {
-      const shore = (v + (n1 - 0.5) * 34) / Hc;
+      const shore = (v * SF + (n1 - 0.5) * 34 * SF) / Hc;
       const sea = d > 16 && shore > 0.64, beach = d > 11 && shore > 0.58 && !sea;
       if (sea) { const depth = Math.min(1, (shore - 0.64) * 3.2 + n2 * 0.25); r = mix(56, 12, depth); g = mix(190, 82, depth); b = mix(196, 132, depth); const wave = Math.sin(u * 0.9 + v * 0.4 + n2 * 6) > 0.92 ? 22 : 0; r += wave; g += wave; b += wave; }
       else if (beach) { r = 232 - n2 * 18; g = 214 - n2 * 18; b = 168 - n2 * 14; }
@@ -7769,46 +7801,112 @@ function aerialTerrain(def, Wc, Hc, M, pts) {
   }
   return TRK_AERIAL[key] = cv;
 }
-function drawTrackPreview(cv, def, on) {
+function drawTrackPreview(cv, def, on, pro) {
   if (!cv.dataset.w) { cv.dataset.w = cv.width; cv.dataset.h = cv.height; }
   const k = Math.min(2.5, Math.max(1.5, window.devicePixelRatio || 1)), Wc = +cv.dataset.w, Hc = +cv.dataset.h;
   if (cv.width !== Math.round(Wc * k)) { cv.width = Math.round(Wc * k); cv.height = Math.round(Hc * k); }
   const ctx = cv.getContext('2d'), g = trackGeom(def), pts = g.pts, N = pts.length;
   ctx.setTransform(k, 0, 0, k, 0, 0); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
   let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const [x, z] of pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
-  const pad = 20, sc = Math.min((Wc - pad * 2) / (x1 - x0), (Hc - pad * 2) / (z1 - z0)), ox = (Wc - (x1 - x0) * sc) / 2, oz = (Hc - (z1 - z0) * sc) / 2;
+  const pad = pro ? 54 : 20, sc = Math.min((Wc - pad * 2) / (x1 - x0), (Hc - pad * 2) / (z1 - z0)), ox = (Wc - (x1 - x0) * sc) / 2, oz = (Hc - (z1 - z0) * sc) / 2;
   const M = (x, z) => [ox + (x - x0) * sc, Hc - (oz + (z - z0) * sc)];
+  const Z = pro ? 1.9 : 1;   // la grande carte élargit la route et les repères
   ctx.drawImage(aerialTerrain(def, Wc, Hc, M, pts), 0, 0, Wc, Hc);
   const path = () => { ctx.beginPath(); pts.forEach((p, i) => { const q = M(p[0], p[1]); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.closePath(); };
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  path(); ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 9.5; ctx.save(); ctx.translate(0.8, 1); ctx.stroke(); ctx.restore();   // ombre de la chaussée
-  path(); ctx.strokeStyle = '#e9ebee'; ctx.lineWidth = 7.6; ctx.stroke();                                                                     // lignes de rive
-  path(); ctx.strokeStyle = '#3b3e44'; ctx.lineWidth = 6.6; ctx.stroke();                                                                     // bitume
+  path(); ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 9.5 * Z; ctx.save(); ctx.translate(0.8, 1); ctx.stroke(); ctx.restore();   // ombre de la chaussée
+  path(); ctx.strokeStyle = '#e9ebee'; ctx.lineWidth = 7.6 * Z; ctx.stroke();                                                                     // lignes de rive
+  path(); ctx.strokeStyle = '#3b3e44'; ctx.lineWidth = 6.6 * Z; ctx.stroke();                                                                     // bitume
   if (!TRK_AERIAL.asph) { const a = document.createElement('canvas'); a.width = a.height = 48; const c2 = a.getContext('2d'), id2 = c2.createImageData(48, 48); for (let q = 0; q < id2.data.length; q += 4) { const v = 40 + Math.random() * 60; id2.data[q] = id2.data[q + 1] = id2.data[q + 2] = v; id2.data[q + 3] = 70; } c2.putImageData(id2, 0, 0); TRK_AERIAL.asph = a; }
-  path(); ctx.strokeStyle = ctx.createPattern(TRK_AERIAL.asph, 'repeat'); ctx.lineWidth = 6.6; ctx.stroke();                                    // grain du bitume
+  path(); ctx.strokeStyle = ctx.createPattern(TRK_AERIAL.asph, 'repeat'); ctx.lineWidth = 6.6 * Z; ctx.stroke();                                    // grain du bitume
   path(); ctx.strokeStyle = on ? PALETTE.accent : 'rgba(255,255,255,.8)'; ctx.lineWidth = on ? 0.9 : 0.55; ctx.setLineDash([3.5, 3.5]); ctx.stroke(); ctx.setLineDash([]);
   for (let i = 0; i < N; i++) {                                                                                                              // vibreurs
     const c = g.curv[i]; if (Math.abs(c) < 0.42) continue;
     const a = M(pts[i][0], pts[i][1]), b = M(pts[(i + 1) % N][0], pts[(i + 1) % N][1]), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, s2 = c > 0 ? 1 : -1;
-    const nx = dy / l * 4.4 * s2, ny = -dx / l * 4.4 * s2;
-    ctx.strokeStyle = (i % 2) ? '#d9262f' : '#f4f4f4'; ctx.lineWidth = 1.7; ctx.lineCap = 'butt'; ctx.beginPath(); ctx.moveTo(a[0] + nx, a[1] + ny); ctx.lineTo(b[0] + nx, b[1] + ny); ctx.stroke(); ctx.lineCap = 'round';
+    const nx = dy / l * 4.4 * Z * s2, ny = -dx / l * 4.4 * Z * s2;
+    ctx.strokeStyle = (i % 2) ? '#d9262f' : '#f4f4f4'; ctx.lineWidth = 1.7 * Z; ctx.lineCap = 'butt'; ctx.beginPath(); ctx.moveTo(a[0] + nx, a[1] + ny); ctx.lineTo(b[0] + nx, b[1] + ny); ctx.stroke(); ctx.lineCap = 'round';
   }
   { const a = M(pts[0][0], pts[0][1]), b = M(pts[2][0], pts[2][1]), ang = Math.atan2(b[1] - a[1], b[0] - a[0]);              // départ en damier + flèche
     ctx.save(); ctx.translate(a[0], a[1]); ctx.rotate(ang);
-    for (let r = 0; r < 2; r++) for (let c = -2; c < 2; c++) { ctx.fillStyle = (r + c) % 2 ? '#fff' : '#111'; ctx.fillRect(r * 1.5 - 1.5, c * 1.6, 1.5, 1.6); }
+    ctx.scale(Z, Z); for (let r = 0; r < 2; r++) for (let c = -2; c < 2; c++) { ctx.fillStyle = (r + c) % 2 ? '#fff' : '#111'; ctx.fillRect(r * 1.5 - 1.5, c * 1.6, 1.5, 1.6); }
     ctx.translate(13, 0); ctx.fillStyle = on ? PALETTE.accent : '#fff'; ctx.beginPath(); ctx.moveTo(4.5, 0); ctx.lineTo(-2.2, -3.6); ctx.lineTo(-0.8, 0); ctx.lineTo(-2.2, 3.6); ctx.closePath(); ctx.fill();
     ctx.restore(); }
-  ctx.font = '700 7px "Chakra Petch",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 ' + (7 * Z) + 'px "Chakra Petch",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   g.turns.forEach((ti, n) => {
     const a = M(pts[ti][0], pts[ti][1]), b = M(pts[(ti + 1) % N][0], pts[(ti + 1) % N][1]), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, s2 = g.curv[ti] > 0 ? -1 : 1;
-    const x = a[0] + dy / l * 11 * s2, y = a[1] - dx / l * 11 * s2;
-    ctx.beginPath(); ctx.arc(x, y, 5.2, 0, Math.PI * 2); ctx.fillStyle = 'rgba(8,11,17,.78)'; ctx.fill(); ctx.lineWidth = 0.8; ctx.strokeStyle = on ? PALETTE.accent : 'rgba(255,255,255,.6)'; ctx.stroke();
+    const x = a[0] + dy / l * 11 * Z * s2, y = a[1] - dx / l * 11 * Z * s2;
+    ctx.beginPath(); ctx.arc(x, y, 5.2 * Z, 0, Math.PI * 2); ctx.fillStyle = 'rgba(8,11,17,.78)'; ctx.fill(); ctx.lineWidth = 0.8; ctx.strokeStyle = on ? PALETTE.accent : 'rgba(255,255,255,.6)'; ctx.stroke();
     ctx.fillStyle = '#fff'; ctx.fillText(String(n + 1), x, y + 0.4);
   });
+  if (pro) {
+    // secteurs : trois tiers de la longueur, en couleur sur l'axe de la route, avec leur repère
+    const cum = [0]; for (let i = 1; i <= N; i++) { const a = pts[i - 1], b = pts[i % N]; cum.push(cum[i - 1] + Math.hypot(b[0] - a[0], b[1] - a[1])); }
+    const L = cum[N]; let si = 0;
+    for (let sct = 0; sct < 3; sct++) {
+      ctx.beginPath(); let started = false;
+      for (let i = 0; i <= N; i++) { if (cum[i] < L * sct / 3 || cum[i] > L * (sct + 1) / 3 + 1) continue; const q = M(pts[i % N][0], pts[i % N][1]); started ? ctx.lineTo(q[0], q[1]) : (ctx.moveTo(q[0], q[1]), started = true); }
+      ctx.strokeStyle = SECT_COL[sct]; ctx.lineWidth = 2.6; ctx.globalAlpha = 0.95; ctx.stroke(); ctx.globalAlpha = 1;
+      if (sct) { while (si < N && cum[si] < L * sct / 3) si++;
+        const a = M(pts[si % N][0], pts[si % N][1]), b = M(pts[(si + 1) % N][0], pts[(si + 1) % N][1]), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = dy / l, ny = -dx / l;
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(a[0] - nx * 9, a[1] - ny * 9); ctx.lineTo(a[0] + nx * 9, a[1] + ny * 9); ctx.stroke();
+        const lx = a[0] + nx * 22, ly = a[1] + ny * 22; ctx.fillStyle = SECT_COL[sct]; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lx - 13, ly - 8, 26, 16, 4) : ctx.rect(lx - 13, ly - 8, 26, 16); ctx.fill();
+        ctx.fillStyle = sct === 2 ? '#111' : '#fff'; ctx.font = '800 10px "Chakra Petch",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('S' + (sct + 1), lx, ly + 0.5); }
+    }
+    // voie des stands : parallèle à la ligne droite de départ, côté intérieur
+    { const n0 = Math.max(4, Math.floor(N * 0.06)), side = g.curv.slice(0, n0 * 3).reduce((a, b) => a + b, 0) > 0 ? -1 : 1, lane = [];
+      for (let i = N - n0; i <= N + n0; i++) { const a = M(pts[i % N][0], pts[i % N][1]), b = M(pts[(i + 1) % N][0], pts[(i + 1) % N][1]), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, off = (i === N - n0 || i === N + n0) ? 7 : 14; lane.push([a[0] + dy / l * off * side, a[1] - dx / l * off * side]); }
+      ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 6; ctx.beginPath(); lane.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
+      ctx.strokeStyle = '#8d9097'; ctx.lineWidth = 4.4; ctx.stroke(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.8; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
+      const m = lane[Math.floor(lane.length / 2)]; ctx.fillStyle = 'rgba(8,11,17,.85)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(m[0] - 14 + side * 22, m[1] - 8, 28, 16, 4) : ctx.rect(m[0] - 14 + side * 22, m[1] - 8, 28, 16); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = '800 9px "Chakra Petch",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('PIT', m[0] + side * 22, m[1] + 0.5); }
+    // étiquette départ / arrivée
+    { const a = M(pts[0][0], pts[0][1]); ctx.font = '800 10px "Chakra Petch",sans-serif'; const txt = t('ts_sf').toUpperCase(), tw = ctx.measureText(txt).width + 14, lx = Math.min(Wc - tw / 2 - 6, Math.max(tw / 2 + 6, a[0])), ly = a[1] > Hc / 2 ? a[1] - 30 : a[1] + 30;
+      ctx.fillStyle = 'rgba(8,11,17,.85)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lx - tw / 2, ly - 9, tw, 18, 5) : ctx.rect(lx - tw / 2, ly - 9, tw, 18); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(lx, ly + (ly < a[1] ? 9 : -9)); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(txt, lx, ly + 0.5); }
+    // boussole
+    { const cx = Wc - 30, cy = 30; ctx.fillStyle = 'rgba(8,11,17,.75)'; ctx.beginPath(); ctx.arc(cx, cy, 18, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#ff3b46'; ctx.beginPath(); ctx.moveTo(cx, cy - 13); ctx.lineTo(cx - 5, cy + 1); ctx.lineTo(cx + 5, cy + 1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#e6e9ef'; ctx.beginPath(); ctx.moveTo(cx, cy + 13); ctx.lineTo(cx - 5, cy + 1); ctx.lineTo(cx + 5, cy + 1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = '800 10px "Chakra Petch",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('N', cx - 26, cy); }
+    // échelle
+    { const cand = [50, 100, 200, 250, 500, 1000]; let mtr = cand[0]; for (const c of cand) if (c * sc <= 110) mtr = c; const px = mtr * sc, x = 16, y = Hc - 18;
+      ctx.fillStyle = 'rgba(8,11,17,.75)'; ctx.fillRect(x - 6, y - 16, px + 12, 24);
+      for (let k = 0; k < 4; k++) { ctx.fillStyle = k % 2 ? '#111' : '#fff'; ctx.fillRect(x + px * k / 4, y, px / 4, 4); }
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.8; ctx.strokeRect(x, y, px, 4); ctx.fillStyle = '#fff'; ctx.font = '700 9px "Chakra Petch",sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillText(mtr >= 1000 ? (mtr / 1000) + ' km' : mtr + ' m', x, y - 4); }
+  }
   // lumière de fin de journée et vignettage, comme une photo aérienne
   const lg = ctx.createLinearGradient(0, 0, Wc, Hc); lg.addColorStop(0, 'rgba(255,236,200,.10)'); lg.addColorStop(1, 'rgba(10,20,40,.18)'); ctx.fillStyle = lg; ctx.fillRect(0, 0, Wc, Hc);
-  const vg = ctx.createRadialGradient(Wc / 2, Hc / 2, Hc * 0.35, Wc / 2, Hc / 2, Wc * 0.72); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.38)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, Wc, Hc);
+  const vg = ctx.createRadialGradient(Wc / 2, Hc / 2, Hc * 0.35, Wc / 2, Hc / 2, Wc * 0.72); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, pro ? 'rgba(0,0,0,.22)' : 'rgba(0,0,0,.38)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, Wc, Hc);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+function drawElevation(cv, def) {
+  const k = Math.min(2, window.devicePixelRatio || 1), W = 600, H = 120; cv.width = W * k; cv.height = H * k;
+  const ctx = cv.getContext('2d'); ctx.setTransform(k, 0, 0, k, 0, 0);
+  const g = trackGeom(def), pts = g.pts, N = pts.length, cum = [0]; for (let i = 1; i <= N; i++) { const a = pts[i - 1], b = pts[i % N]; cum.push(cum[i - 1] + Math.hypot(b[0] - a[0], b[1] - a[1])); }
+  const L = cum[N]; let y0 = 1e9, y1 = -1e9; for (const p of pts) { y0 = Math.min(y0, p[2]); y1 = Math.max(y1, p[2]); } if (y1 - y0 < 4) { y0 -= 2; y1 += 2; }
+  const X = d => 34 + d / L * (W - 44), Y = h => H - 20 - (h - y0) / (y1 - y0) * (H - 40);
+  ctx.fillStyle = 'rgba(8,11,17,.6)'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 1; for (let k2 = 0; k2 <= 4; k2++) { const y = 20 + k2 * (H - 40) / 4; ctx.beginPath(); ctx.moveTo(34, y); ctx.lineTo(W - 10, y); ctx.stroke(); }
+  for (let sct = 0; sct < 3; sct++) { const gr = ctx.createLinearGradient(0, 20, 0, H - 20); gr.addColorStop(0, SECT_COL[sct] + 'cc'); gr.addColorStop(1, SECT_COL[sct] + '10');
+    ctx.beginPath(); ctx.moveTo(X(L * sct / 3), H - 20); for (let i = 0; i <= N; i++) { if (cum[i] < L * sct / 3 - 1 || cum[i] > L * (sct + 1) / 3 + 1) continue; ctx.lineTo(X(cum[i]), Y(pts[i % N][2])); } ctx.lineTo(X(L * (sct + 1) / 3), H - 20); ctx.closePath(); ctx.fillStyle = gr; ctx.fill(); }
+  ctx.beginPath(); for (let i = 0; i <= N; i++) { const x = X(cum[i]), y = Y(pts[i % N][2]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.fillStyle = '#cfd6df'; ctx.font = '700 10px "Chakra Petch",sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(Math.round(y1) + ' m', 30, 20); ctx.fillText(Math.round(y0) + ' m', 30, H - 20);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ['S1', 'S2', 'S3'].forEach((s2, i) => { ctx.fillStyle = SECT_COL[i]; ctx.fillText(s2, X(L * (i + 0.5) / 3), H - 5); });
+  ctx.fillStyle = '#cfd6df'; ctx.textAlign = 'right'; ctx.fillText((L / 1000 * spdU()).toFixed(1) + (MPH() ? ' mi' : ' km'), W - 10, H - 5);
+}
+function openTrackSheet(i, onRace) {
+  const d = TRACKS[i], g = trackGeom(d), el = $('trk-sheet');
+  el.innerHTML = `<div class="ts-box"><div class="ts-head"><div><small>${t('ts_title')}</small><h2>${esc(d.name)}</h2><p>${esc(tTrk(d))}</p></div><button class="ts-x" aria-label="${t('ts_close')}">✕</button></div>
+<div class="ts-map"><canvas width="960" height="560"></canvas></div>
+<div class="ts-side">${trackFacts(d)}<div class="ts-rec"><span>${t('ts_rec')}</span><b>${SAVE.best[d.id] ? fmtT(SAVE.best[d.id]) : '—'}</b></div>
+<div class="ts-leg"><span><i style="background:${SECT_COL[0]}"></i>S1</span><span><i style="background:${SECT_COL[1]}"></i>S2</span><span><i style="background:${SECT_COL[2]}"></i>S3</span><span><i class="pit"></i>${t('ts_pit')}</span></div>
+<small class="ts-pl">${t('ts_prof')}</small><canvas class="ts-prof"></canvas>
+${onRace ? `<button class="cta ts-go">${t('ts_race')} ›</button>` : ''}</div></div>`;
+  el.classList.remove('hidden');
+  const close = () => { el.classList.add('hidden'); el.innerHTML = ''; };
+  el.querySelector('.ts-x').onclick = close; el.onclick = e => { if (e.target === el) close(); };
+  if (onRace) el.querySelector('.ts-go').onclick = () => { close(); onRace(); };
+  requestAnimationFrame(() => { drawTrackPreview(el.querySelector('.ts-map canvas'), d, true, true); drawElevation(el.querySelector('.ts-prof'), d); });
 }
 let MINI = null;
 function makeMinimap(T) {

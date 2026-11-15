@@ -1047,7 +1047,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.21</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.22</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -3007,7 +3007,7 @@ function gpHUD(p){const ground=p.alive&&!p.inPlane&&p.air<=0;
 tapOn(GH.veh,humanVeh);tapOn(GH.nade,()=>humanNade(false));tapOn(GH.sw,nadeSwap);
 
 /* ===== main update ===== */
-function baseZoom(){const m=Math.min(VW,VH),ph=m<560?(1+(560-m)/560*.55)*(VH>VW*1.2?1.15:1):1;return clamp(Math.sqrt(VW*VH)/1310*ph,.31,.85)*clamp(+stats.camZoom||1,.75,1.25)}
+function baseZoom(){const m=Math.min(VW,VH),ph=m<560?(1+(560-m)/560*.5)*(VH>VW*1.2?1.03:1):1;return clamp(Math.sqrt(VW*VH)/1310*ph,.31,.85)*clamp(+stats.camZoom||1,.75,1.25)}
 function update(dt){matchT+=dt;
   if(!plane.done){plane.trav+=plane.sp*dt;plane.x=plane.sx+plane.dx*plane.trav;plane.y=plane.sy+plane.dy*plane.trav;
     for(const e of ents)if(e.inPlane&&e.bot&&plane.trav>=e.jumpS)jump(e);
@@ -3198,6 +3198,17 @@ function drawStreetFurniture(x0,y0,x1,y1){const c=ctx,R=(a,b,k)=>{let n=(Math.im
       c.restore()}}}
 
 /* v2.20 — variations de couleur à grande échelle (le terrain ne se répète plus) */
+/* v2.22 — étalonnage des couleurs par type de carte (une seule couche précalculée, pour téléphone) */
+let GRADE=null;
+function drawGrade(){if(LOWD)return;const st=MAP.st,desert=MAP.gen==='desert'||st==='sahara',forest=MAP.gen==='forest'||st==='foret',city=MAP.gen==='city'||st==='ville',night=stats.tod==='night',sk=Math.round(SUNK*4);
+  const key=VW+'x'+VH+'|'+st+'|'+MAP.gen+'|'+night+'|'+sk;
+  if(!GRADE||GRADE.k!==key){const w=Math.max(64,Math.round(VW/3)),h=Math.max(64,Math.round(VH/3)),c=GRADE&&GRADE.c||document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.clearRect(0,0,w,h);
+    const top=desert?'255,196,120':forest?'150,200,140':city?'170,190,210':'160,210,235',bot=desert?'90,45,10':forest?'10,30,15':city?'15,22,35':'10,35,50',a=night?.5:1;
+    let gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'rgba('+top+','+(.10*a).toFixed(3)+')');gr.addColorStop(.35,'rgba('+top+',0)');gr.addColorStop(.7,'rgba('+bot+',0)');gr.addColorStop(1,'rgba('+bot+','+(.16*a).toFixed(3)+')');g.fillStyle=gr;g.fillRect(0,0,w,h);
+    if(SUNK>.15&&!night){gr=g.createLinearGradient(0,0,w,h);gr.addColorStop(0,'rgba(255,150,70,'+(.1*SUNK).toFixed(3)+')');gr.addColorStop(.6,'rgba(255,150,70,0)');g.fillStyle=gr;g.fillRect(0,0,w,h)}
+    gr=g.createRadialGradient(w/2,h/2,Math.min(w,h)*.42,w/2,h/2,Math.hypot(w,h)*.62);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,0,.3)');g.fillStyle=gr;g.fillRect(0,0,w,h);
+    GRADE={c,k:key}}
+  ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(GRADE.c,0,0,ctx.canvas.width,ctx.canvas.height);ctx.setTransform(DPR,0,0,DPR,0,0)}
 function drawGroundMacro(X,Y,S){const c=ctx,G=260,desert=MAP.gen==='desert'||MAP.st==='sahara',city=MAP.gen==='city'||MAP.st==='ville';
   for(let gx=Math.floor((X-300)/G)*G;gx<X+S+300;gx+=G)for(let gy=Math.floor((Y-300)/G)*G;gy<Y+S+300;gy+=G){const h=(Math.imul(gx|0,73856093)^Math.imul(gy|0,19349663)^Math.imul(MAP.id.length,83492791))>>>0,u=(h%1000)/1000,v=((h>>>10)%1000)/1000;
     const x=gx+u*G,y=gy+v*G,r=150+((h>>>4)%170);if(isWater(x,y))continue;const lt=((h>>>20)&1)===1,a=city?.035:.06;
@@ -3838,6 +3849,7 @@ function render(){SFF++;CAMROT=stats.camBehind&&(game.mode==='play'||game.mode==
   if(zone&&game.mode!=='lobby'){drawStorm(x0,y0,vw,vh,z);
     if(zone.st==='wait'&&zone.nr>0){ctx.beginPath();ctx.arc(zone.nx,zone.ny,zone.nr,0,TAU);ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=2.6/z;ctx.setLineDash([18/z,12/z]);ctx.stroke();ctx.setLineDash([])}}
   // screen space
+  if(MOBF&&game.mode!=='lobby'&&!P3S)drawGrade();
   if(P3S&&stats.tod==='night'){ctx.setTransform(1,0,0,1,0,0);const c0=Math.cos(CAMROT),s0=Math.sin(CAMROT);drawNight((x,y)=>{const dx=(x-cam.x)*z,dy=(y-cam.y)*z;return[dx*c0-dy*s0+VW/2,dx*s0+dy*c0+VH/2]},z)}
   if(P3S){VW=P3S[0];VH=P3S[1];DPR=P3S[2];cam.x=P3S[3];cam.y=P3S[4];cam.z=P3S[5];ctx=CTX0;p3Draw();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,VW,VH);p3Ents()}
   ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -4995,7 +5007,7 @@ function toast(msg,secs){if(game.mode==='play'||game.mode==='paused'){sysFeed(ms
 function showHint(msg,secs){H.hint.hidden=true;hintT=0;sysFeed(msg||'',secs||6,'tip')}
 function pushFeed(a,b,w,me){feed.unshift({a,b,w,me,t:6});feed.sort((x,y)=>(y.cls==='zw')-(x.cls==='zw'));if(feed.length>5)feed.length=5;renderFeed()}
 function feedIcon(w){for(const k in WEAP)if(WEAP[k].n===w&&PURL[k])return'<img alt="'+esc(w)+'" src="'+PURL[k]+'">';return w?'<span class="w">'+esc(w)+'</span>':'<span class="w">Feu</span>'}
-function renderFeed(){H.feed.innerHTML=feed.map((f,i)=>f.sys?'<div class="sys '+f.cls+'">'+esc(f.txt)+'</div>':'<div class="'+(f.me?'me':'')+(i===0&&f.t>5.7?' new':'')+'"><b>'+esc(f.a)+'</b>'+feedIcon(f.w)+'<span class="v">'+esc(f.b)+'</span></div>').join('')}
+function renderFeed(){H.feed.innerHTML=feed.slice(0,4).map((f,i)=>f.sys?'<div class="sys '+f.cls+'">'+esc(f.txt)+'</div>':'<div class="'+(f.me?'me':'')+(i===0&&f.t>5.7?' new':'')+'"><b>'+esc(f.a)+'</b>'+feedIcon(f.w)+'<span class="v">'+esc(f.b)+'</span></div>').join('')}
 
 /* ===== buttons ===== */
 tapOn(H.slots[0],()=>humanSlot(0));tapOn(H.slots[1],()=>humanSlot(1));
@@ -5998,8 +6010,13 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 /* v2.21 — cartes d'armes sur le côté gauche pendant la partie */
 #hud .slots.side{position:absolute;left:calc(env(safe-area-inset-left,0px) + 14px);top:46%;transform:translateY(-50%);width:min(190px,24vw);display:flex;flex-direction:column;gap:7px;z-index:3}
 #hud .slots.side .slot{width:100%}
-@media (orientation:portrait) and (max-width:560px){#hud .slots.side{left:6px;top:52%;width:min(150px,33vw);gap:6px}#hud .slots.side .slot{padding:4px 8px 5px}}
-@media (max-height:520px){#hud .slots.side{top:auto;bottom:calc(var(--ib) + 12px);transform:none;left:calc(env(safe-area-inset-left,0px) + 10px);width:min(170px,21vw);gap:5px}}
+@media (orientation:portrait) and (max-width:560px){#hud .slots.side{left:6px;top:calc(var(--it) + 214px);transform:none;width:min(118px,28vw);gap:5px}#hud .slots.side .slot{padding:3px 6px 4px}
+ #hud .slots.side .slot .nm{font-size:10px}#hud .slots.side .slot .nm small.cal{display:none}#hud .slots.side .slot .am{font-size:15px}#hud .slots.side .slot svg,#hud .slots.side .slot img{max-height:14px}
+ body.mob #hud .feed{font-size:11.5px}body.mob #hud .tl{max-width:min(56vw,250px)}
+ body.mob #hud .bc{transform:translateX(-50%) scale(.76)!important}}
+@media (max-height:520px){#hud .slots.side{top:calc(var(--it) + 168px);bottom:auto;transform:none;left:calc(env(safe-area-inset-left,0px) + 10px);width:min(140px,17vw);gap:4px}#hud .slots.side .slot .nm small.cal{display:none}#hud .slots.side .slot .am{font-size:15px}
+ body.mob #hud .feed{font-size:11px}body.mob #hud .tl{max-width:min(28vw,240px)}body.mob #hud .bc{transform:translateX(-50%) scale(.8);transform-origin:50% 100%}
+ body.mob #hud .act.veh,body.mob #hud .act.pick{max-width:24vw;min-width:0;justify-content:flex-start;font-size:12px;padding:0 10px}body.mob #hud .act.veh span:first-child{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}body.mob #hud .act.veh .kbd,body.mob #hud .act.pick .kbd{display:none}}
 /* v2.14 — HUD compact sur téléphone en portrait : plus de terrain visible */
 @media (orientation:portrait) and (max-width:560px){
  body.mob #hud #btnReload{width:54px;height:54px;padding:0;font-size:0;border-radius:50%;justify-content:center}

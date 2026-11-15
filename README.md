@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Version 2.22
+- Plus d'espace pour jouer : cartes d'armes compactes rangées sous les messages (zone du pouce gauche libre), messages limités à 4 lignes et plus petits, soins et barre de vie réduits, bouton « Monter » compact aussi en paysage.
+- Caméra un peu plus large sur téléphone pour voir davantage autour du joueur.
+- Étalonnage des couleurs par type de carte sur téléphone (désert chaud, forêt verte, ville neutre, côte bleutée, coucher de soleil, vignettage), en une seule couche précalculée.
+
 ## Version 2.21
 - Armes : les cartes d'armes sont sur le côté gauche pendant la partie (colonne à mi-hauteur en portrait et sur ordinateur, en bas à gauche en paysage).
 - Bâtiments : toits mis en cache avec usure réaliste (taches, coulures, bords assombris, grain).

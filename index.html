@@ -1511,6 +1511,41 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 .profs button{padding:7px 12px;border-radius:8px;border:1px solid rgba(255,209,102,.5);background:rgba(255,176,32,.12);color:#ffd166;font:700 13px var(--fb)}
 .profs button:active{transform:translateY(1px)}
 
+/* V215 — fête des vainqueurs */
+#fest{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;background:#05070c}
+#fest.show{opacity:1}
+#fest.hidden{display:none}
+#fest-cv{position:absolute;inset:0}
+.fest-card{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:14px 18px;max-height:100dvh;overflow:auto;animation:festIn .7s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes festIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.fest-card .ft{font:800 12px var(--fh);letter-spacing:.24em;color:#ffd166;text-shadow:0 0 12px #ff9f1c}
+.fest-card h2{margin:0;font:400 clamp(30px,7vw,58px) var(--fh);font-style:italic;color:#fff;text-shadow:0 4px 0 #b3202b,0 0 28px rgba(255,209,102,.8);letter-spacing:.02em}
+.fest-card .fsub{margin:0;color:#dfe5ee;font:600 14px var(--fb)}
+.fest-card .trophy{filter:drop-shadow(0 0 22px rgba(255,200,58,.75));animation:troph 2.4s ease-in-out infinite}
+@keyframes troph{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-top:4px}
+.pod{display:flex;flex-direction:column;align-items:center;width:clamp(92px,18vw,140px)}
+.pod.empty{visibility:hidden}
+.pod .pav svg{border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.pod.me .pav svg{outline:3px solid #ffd166;outline-offset:2px}
+.pod b{margin-top:4px;color:#fff;font:700 14px var(--fb);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod small{color:#aab3c2;font:600 11px var(--fb);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .blk{width:100%;margin-top:5px;border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:4px;font:400 26px var(--fh);color:#0b0f16}
+.pod.p1 .blk{height:58px;background:linear-gradient(180deg,#ffe08a,#c98b12)}
+.pod.p2 .blk{height:40px;background:linear-gradient(180deg,#f2f4f8,#9aa3b1)}
+.pod.p3 .blk{height:28px;background:linear-gradient(180deg,#f0b27a,#9a5a26)}
+.fgain{font:400 clamp(22px,4.5vw,34px) var(--fh);color:#7fe0a0;text-shadow:0 0 14px rgba(127,224,160,.6)}
+.fest-card .cta{margin-top:4px;min-width:200px}
+@media (orientation:landscape) and (max-height:540px){
+  .fest-card{display:grid;grid-template-columns:auto auto;grid-template-areas:"ft ft" "tr h2" "tr sub" "pod pod" "gain go";column-gap:16px;row-gap:2px;align-items:center}
+  .fest-card .ft{grid-area:ft}.fest-card .trophy{grid-area:tr}.fest-card h2{grid-area:h2;font-size:clamp(26px,9vh,44px)}.fest-card .fsub{grid-area:sub}.podium{grid-area:pod}.fgain{grid-area:gain}.fest-card .cta{grid-area:go}
+  .fest-card .trophy svg{width:62px;height:72px}
+  .pod .blk{transform-origin:bottom}.pod.p1 .blk{height:40px}.pod.p2 .blk{height:28px}.pod.p3 .blk{height:20px}
+}
+.podium,.fgain{direction:ltr}
+@media (orientation:landscape) and (max-height:540px){.fest-card .fgain,.fest-card .cta{margin-top:12px}.pod .pav svg{width:52px;height:52px}.pod.p1 .pav svg{width:64px;height:64px}.fest-card{row-gap:0}}
+.fest-card .cta{margin-top:14px!important}.fest-card .podium{margin-bottom:6px}
+
 </style>
 </head>
 <body>
@@ -1524,7 +1559,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V214</span>
+    <span id="build-tag" aria-label="Version">V215</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1641,6 +1676,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 
 <div id="pause" class="overlay"><div class="box"><h2 data-i18n="pause">PAUSE</h2><button id="p-resume" class="cta" data-i18n="resume">REPRENDRE</button><button id="p-restart" data-i18n="restart">Recommencer</button><button id="p-quit" data-i18n="quitRace">Quitter la course</button></div></div>
 <div id="results" class="overlay"><div class="box wide" id="res-body"></div></div>
+<div id="fest" class="hidden" role="dialog" aria-live="polite"><canvas id="fest-cv"></canvas><div class="fest-card" id="fest-card"></div></div>
 <div id="confirm" class="overlay"><div class="box"><p id="cf-text"></p><div class="row"><button id="cf-no" data-i18n="cancel">Annuler</button><button id="cf-yes" class="cta" data-i18n="confirm">CONFIRMER</button></div></div></div>
 <div id="rotate" class="overlay"><div class="rotic"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 40a24 24 0 0 0 20 16M52 24A24 24 0 0 0 36 8" fill="none" stroke="#ff7a18" stroke-width="3"/></svg></div><p data-i18n="rotate">Tourne ton téléphone en mode paysage pour mieux jouer.</p><button id="rot-ok" data-i18n="rotateOk">Continuer quand même</button></div>
 
@@ -5879,6 +5915,85 @@ function dailyCheck(res) {
 const V214_TXT = {"fr": ["Joueur", "Nouveau joueur", "Renommer", "Sauvegarde automatique · {0}", "Joueur : {0} · progression chargée", "Joueur {0}", "Nom du joueur", "Changer de joueur"], "en": ["Player", "New player", "Rename", "Autosave · {0}", "Player: {0} · progress loaded", "Player {0}", "Player name", "Switch player"], "es": ["Jugador", "Nuevo jugador", "Renombrar", "Guardado automático · {0}", "Jugador: {0} · progreso cargado", "Jugador {0}", "Nombre del jugador", "Cambiar de jugador"], "pt": ["Jogador", "Novo jogador", "Renomear", "Salvamento automático · {0}", "Jogador: {0} · progresso carregado", "Jogador {0}", "Nome do jogador", "Trocar de jogador"], "de": ["Spieler", "Neuer Spieler", "Umbenennen", "Automatisch gespeichert · {0}", "Spieler: {0} · Fortschritt geladen", "Spieler {0}", "Spielername", "Spieler wechseln"], "it": ["Giocatore", "Nuovo giocatore", "Rinomina", "Salvataggio automatico · {0}", "Giocatore: {0} · progressi caricati", "Giocatore {0}", "Nome del giocatore", "Cambia giocatore"], "tr": ["Oyuncu", "Yeni oyuncu", "Yeniden adlandır", "Otomatik kayıt · {0}", "Oyuncu: {0} · ilerleme yüklendi", "Oyuncu {0}", "Oyuncu adı", "Oyuncu değiştir"], "ar": ["اللاعب", "لاعب جديد", "إعادة التسمية", "حفظ تلقائي · {0}", "اللاعب: {0} · تم تحميل التقدّم", "اللاعب {0}", "اسم اللاعب", "تغيير اللاعب"], "tn": ["اللاعب", "لاعب جديد", "بدّل الاسم", "تسجيل أوتوماتيك · {0}", "اللاعب: {0} · التقدّم تحمّل", "اللاعب {0}", "اسم اللاعب", "بدّل اللاعب"]};
 const V214_LV = {"fr": "Niveau {0}/50", "en": "Level {0}/50", "es": "Nivel {0}/50", "pt": "Nível {0}/50", "de": "Stufe {0}/50", "it": "Livello {0}/50", "tr": "Seviye {0}/50", "ar": "المستوى {0}/50", "tn": "المستوى {0}/50"};
 for (const l in V214_TXT) { const v = V214_TXT[l]; Object.assign(LANGS[l], { o_player: v[0], o_pnew: v[1], o_prename: v[2], o_autosave: v[3], prof_loaded: v[4], prof_default: v[5], o_pname: v[6], o_pswitch: v[7], ev_level: V214_LV[l] }); }
+// V215 — fête des vainqueurs : feux d'artifice, confettis, trophée, podium et fanfare
+const V215_TXT = {"fr": ["FÊTE DES VAINQUEURS", "Continuer", "CHAMPION DU TOURNOI !"], "en": ["WINNERS' CELEBRATION", "Continue", "TOURNAMENT CHAMPION!"], "es": ["FIESTA DE LOS GANADORES", "Continuar", "¡CAMPEÓN DEL TORNEO!"], "pt": ["FESTA DOS VENCEDORES", "Continuar", "CAMPEÃO DO TORNEIO!"], "de": ["SIEGERFEIER", "Weiter", "TURNIERSIEGER!"], "it": ["FESTA DEI VINCITORI", "Continua", "CAMPIONE DEL TORNEO!"], "tr": ["KAZANANLARIN ŞENLİĞİ", "Devam", "TURNUVA ŞAMPİYONU!"], "ar": ["احتفال الفائزين", "متابعة", "بطل البطولة!"], "tn": ["فيستة الربّاحة", "كمّل", "بطل البطولة!"]};
+for (const l in V215_TXT) { const v = V215_TXT[l]; Object.assign(LANGS[l], { fest_title: v[0], fest_go: v[1], fest_champ: v[2] }); }
+const FEST = { on: false, raf: 0, parts: [], conf: [], t: 0, done: null, timer: 0 };
+function trophySVG(size) {
+  return `<svg viewBox="0 0 120 140" width="${size}" height="${size * 140 / 120}" aria-hidden="true"><defs>
+<linearGradient id="tg1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a5a0e"/><stop offset=".35" stop-color="#ffe08a"/><stop offset=".55" stop-color="#ffc83a"/><stop offset="1" stop-color="#9a6410"/></linearGradient>
+<linearGradient id="tg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a1a"/><stop offset="1" stop-color="#140d07"/></linearGradient></defs>
+<path d="M30 14 H90 V44 C90 66 76 80 60 80 C44 80 30 66 30 44 Z" fill="url(#tg1)"/>
+<path d="M30 22 C14 22 10 32 12 42 C14 54 26 60 34 60" fill="none" stroke="url(#tg1)" stroke-width="6"/><path d="M90 22 C106 22 110 32 108 42 C106 54 94 60 86 60" fill="none" stroke="url(#tg1)" stroke-width="6"/>
+<path d="M38 18 C38 40 42 58 52 70" stroke="#fff6cf" stroke-width="3" fill="none" opacity=".7" stroke-linecap="round"/>
+<rect x="54" y="80" width="12" height="16" fill="url(#tg1)"/><path d="M40 96 H80 L84 108 H36 Z" fill="url(#tg1)"/>
+<rect x="30" y="108" width="60" height="24" rx="3" fill="url(#tg2)"/><rect x="38" y="114" width="44" height="12" rx="2" fill="url(#tg1)" opacity=".85"/>
+<path d="M60 30 L64.5 39 L74 40.4 L67 47 L68.8 56.5 L60 52 L51.2 56.5 L53 47 L46 40.4 L55.5 39 Z" fill="#fff4c2" opacity=".9"/></svg>`;
+}
+function festival(res, done) {
+  const el = $('fest'), cv = $('fest-cv'), card = $('fest-card');
+  FEST.done = done; FEST.on = true; FEST.t = 0; FEST.parts.length = 0; FEST.conf.length = 0;
+  const champ = res.event === CAREER.length - 1;
+  const title = champ ? t('fest_champ') : res.mode === 'chase' ? t('r_escaped') : res.mode === 'tt' ? t('r_ok') : t('victory');
+  const me = DRIVERS.find(d => d.id === SAVE.driver) || DRIVERS[0];
+  const top = res.top || [{ me: true, name: me.name, drv: me, car: (CARS.find(c => c.id === SAVE.car) || {}).name || '' }];
+  const step = (r, k) => r ? `<div class="pod p${k + 1} ${r.me ? 'me' : ''}"><div class="pav">${driverSVG(r.drv, k ? 58 : 76)}</div><b>${esc(r.name)}</b><small>${esc(r.car || '')}</small><div class="blk"><span>${k + 1}</span></div></div>` : '<div class="pod empty"></div>';
+  const order = top.length >= 3 ? [top[1], top[0], top[2]] : [null, top[0], null], ks = top.length >= 3 ? [1, 0, 2] : [1, 0, 2];
+  card.innerHTML = `<small class="ft">${t('fest_title')}</small><div class="trophy">${trophySVG(86)}</div><h2>${title}</h2>
+<p class="fsub">${esc(TRACKS[res.track] ? TRACKS[res.track].name : '')}</p>
+<div class="podium">${order.map((r, i) => step(r, ks[i])).join('')}</div>
+<div class="fgain">+ <span id="fest-gain">${money(0)}</span></div>
+<button class="cta" id="fest-go">${t('fest_go')} ›</button>`;
+  el.classList.remove('hidden'); requestAnimationFrame(() => el.classList.add('show'));
+  const end = () => { if (!FEST.on) return; FEST.on = false; clearTimeout(FEST.timer); cancelAnimationFrame(FEST.raf); el.classList.remove('show'); setTimeout(() => el.classList.add('hidden'), 260); const d = FEST.done; FEST.done = null; if (d) d(); };
+  $('fest-go').onclick = e => { e.stopPropagation(); end(); };
+  el.onclick = () => { if (FEST.t > 1.2) end(); };
+  FEST.timer = setTimeout(end, 9000);
+  // gain qui défile
+  const total = res.total || 0, g0 = performance.now();
+  const tick = () => { if (!FEST.on) return; const k = Math.min(1, (performance.now() - g0) / 1600), v = Math.round(total * (1 - Math.pow(1 - k, 3)) / 10) * 10; const ge = $('fest-gain'); if (ge) ge.textContent = money(v); if (k < 1) requestAnimationFrame(tick); };
+  setTimeout(tick, 500);
+  // fanfare (accords simples) et clameur du public
+  try {
+    AU.crowdPulse(1.4); setTimeout(() => AU.crowdPulse(1.1), 1600); setTimeout(() => AU.crowdPulse(0.9), 3600);
+    [[523, 0], [659, 140], [784, 280], [1047, 430], [784, 640], [1047, 760], [1319, 900]].forEach(([f, d]) => setTimeout(() => { AU.shot(f, 0.22, 'triangle', 0.1); AU.shot(f / 2, 0.22, 'square', 0.035); }, d));
+    if (SAVE.settings.vibe && navigator.vibrate) navigator.vibrate([60, 60, 120]);
+  } catch (e) { }
+  // feux d'artifice et confettis
+  const dpr = Math.min(1.5, window.devicePixelRatio || 1), W = innerWidth, H = innerHeight;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const pal = ['#e70013', '#ffffff', '#ffd166', '#ff9f1c', me.suit || '#2ec4b6', '#7bdff2', '#ff5d8f'];
+  for (let i = 0; i < 140; i++) FEST.conf.push({ x: Math.random() * W, y: -Math.random() * H, vx: (Math.random() - 0.5) * 40, vy: 60 + Math.random() * 90, r: Math.random() * 6, vr: (Math.random() - 0.5) * 8, w: 5 + Math.random() * 6, h: 8 + Math.random() * 8, c: pal[i % pal.length] });
+  let nextRocket = 0, last = performance.now();
+  const burst = (x, y) => {
+    const c1 = pal[Math.floor(Math.random() * pal.length)], c2 = pal[Math.floor(Math.random() * pal.length)], n = 54;
+    for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2, sp = 90 + Math.random() * 150; FEST.parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1.3 + Math.random() * 0.7, age: 0, c: i % 2 ? c1 : c2, spark: true }); }
+    try { AU.shot(70 + Math.random() * 40, 0.18, 'square', 0.06); } catch (e) { }
+  };
+  const frame = now => {
+    if (!FEST.on) return;
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; FEST.t += dt;
+    if (FEST.t > nextRocket && FEST.t < 7.5) { nextRocket = FEST.t + 0.35 + Math.random() * 0.5; FEST.parts.push({ x: W * (0.12 + Math.random() * 0.76), y: H + 10, vx: (Math.random() - 0.5) * 60, vy: -(H * 0.9 + Math.random() * H * 0.45), life: 0.75 + Math.random() * 0.3, age: 0, c: '#fff4c2', rocket: true }); }
+    ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = 'rgba(5,7,12,0.24)'; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = FEST.parts.length - 1; i >= 0; i--) {
+      const q = FEST.parts[i]; q.age += dt;
+      if (q.rocket) { q.vy += 520 * dt; q.x += q.vx * dt; q.y += q.vy * dt; if (q.age >= q.life || q.vy > -40) { FEST.parts.splice(i, 1); burst(q.x, q.y); continue; } ctx.fillStyle = q.c; ctx.fillRect(q.x - 1.5, q.y - 1.5, 3, 7); continue; }
+      q.vx *= 1 - 1.6 * dt; q.vy = q.vy * (1 - 1.6 * dt) + 120 * dt; q.x += q.vx * dt; q.y += q.vy * dt;
+      const k = 1 - q.age / q.life; if (k <= 0) { FEST.parts.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.min(1, k * 1.4); ctx.fillStyle = q.c; ctx.beginPath(); ctx.arc(q.x, q.y, 2.2 * k + 0.6, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    for (const f of FEST.conf) {
+      f.x += f.vx * dt + Math.sin(FEST.t * 3 + f.r) * 20 * dt; f.y += f.vy * dt; f.r += f.vr * dt; if (f.y > H + 20) { f.y = -20; f.x = Math.random() * W; }
+      ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.r); ctx.scale(1, Math.abs(Math.cos(f.r * 1.7)) * 0.8 + 0.2); ctx.fillStyle = f.c; ctx.fillRect(-f.w / 2, -f.h / 2, f.w, f.h); ctx.restore();
+    }
+    FEST.raf = requestAnimationFrame(frame);
+  };
+  ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, W, H);
+  FEST.raf = requestAnimationFrame(frame);
+}
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -6621,6 +6736,7 @@ function endRace() {
     racers.sort((a, b) => (a.finished ? a.finishT : a.estT) - (b.finished ? b.finishT : b.estT));
     racers.forEach((c, i) => res.rows.push({ pos: i + 1, name: c.name, car: c.kind === 'player' ? c.car.name : c.carName, time: c.finished ? c.finishT : c.estT, me: c === p, est: !c.finished }));
     res.pos = racers.indexOf(p) + 1;
+    res.top = racers.slice(0, 3).map(c => ({ me: c === p, name: c.kind === 'player' ? (DRIVERS.find(d => d.id === SAVE.driver) || DRIVERS[0]).name : c.name, drv: c.kind === 'player' ? (DRIVERS.find(d => d.id === SAVE.driver) || DRIVERS[0]) : DRIVERS[Math.abs(c.drv | 0) % DRIVERS.length], car: c.kind === 'player' ? c.car.name : c.carName }));
     res.reward = Math.round(([3000, 1800, 1000][res.pos - 1] || 400) * (1 + 0.15 * cfg.laps) * tierMul / 10) * 10;
     res.success = res.pos === 1;
   } else if (cfg.mode === 'tt') {
@@ -6649,7 +6765,7 @@ function endRace() {
   SAVE.history.unshift({ at: Date.now(), mode: cfg.mode, track: trackDef ? trackDef.id : cfg.track, trackName: trackDef ? trackDef.name : '', car: SAVE.car, earned: res.total, balance: SAVE.money, success: !!res.success, position: res.pos || null, duration: Number(G.raceT || (res.chase && res.chase.t) || res.time || 0), style: res.style });
   SAVE.history = SAVE.history.slice(0, 100);
   saveGame();
-  UI.results(res);
+  if (res.success) festival(res, () => UI.results(res)); else UI.results(res);
 }
 
 /* ---------------- effets visuels ---------------- */
@@ -7091,7 +7207,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V214';
+const GAME_VERSION = 'V215';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),

@@ -1557,6 +1557,48 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 #hud #h-tt{margin-top:46px!important;font-size:12px!important;padding:2px 10px!important;border-radius:999px}
 #hud.cd-on #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 100px)!important}
 
+/* V217 — textes de course sur les côtés, jamais au milieu de l'écran.
+   Colonne de gauche : compte à rebours, « mauvais sens » et objectif à droite du bloc position ; messages sous la mini-carte. */
+#hud #h-count,#hud #h-wrong,#hud #h-tt{left:max(12px,env(safe-area-inset-left))!important;right:auto!important;transform:none!important;width:auto!important;text-align:left!important;margin:0!important}
+#hud #h-count{top:calc(max(8px,env(safe-area-inset-top)) + 128px)!important;font-size:34px!important}
+#hud #h-wrong,#hud #h-tt{top:calc(max(8px,env(safe-area-inset-top)) + 132px)!important}
+#hud #h-tt{position:absolute!important;font-size:12px!important;padding:3px 10px!important;border-radius:999px;background:rgba(5,10,18,.62)}
+#hud #h-msgs,#hud.cd-on #h-msgs,#hud:has(#h-wrong:not(.hidden)) #h-msgs,#hud:has(#h-tt:not(.hidden)) #h-msgs{left:max(12px,env(safe-area-inset-left))!important;right:auto!important;transform:none!important;width:auto!important;align-items:flex-start!important;top:calc(max(8px,env(safe-area-inset-top)) + 170px)!important}
+#hud #h-msgs .pmsg{max-width:min(240px,34vw)!important}
+@media (orientation:landscape) and (max-height:540px){
+  /* téléphone : à droite du bloc position (compte à rebours, mauvais sens, objectif) et sous la mini-carte (messages) */
+  #hud #h-count,#hud #h-wrong,#hud #h-tt{left:calc(max(10px,env(safe-area-inset-left)) + 124px)!important;top:calc(max(8px,env(safe-area-inset-top)) + 4px)!important}
+  #hud #h-count{font-size:30px!important}
+  #hud #h-msgs,#hud.cd-on #h-msgs,#hud:has(#h-wrong:not(.hidden)) #h-msgs,#hud:has(#h-tt:not(.hidden)) #h-msgs{left:max(10px,env(safe-area-inset-left))!important;top:calc(max(8px,env(safe-area-inset-top)) + 98px + clamp(70px,23vh,104px))!important}
+  #hud:has(#h-posbox.hidden) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 66px + clamp(70px,23vh,104px))!important}
+  #hud #h-msgs .pmsg{max-width:min(210px,30vw)!important;font-size:12px!important}
+  #hud #h-msgs .pmsg:nth-last-child(n+2){display:none}
+  /* poursuite : jauges sous la mini-carte, messages à droite du bloc position */
+  body.touch #hud .hud-bl{left:max(10px,env(safe-area-inset-left))!important;top:calc(max(8px,env(safe-area-inset-top)) + 66px + clamp(70px,23vh,104px))!important;transform:scale(.62)!important;transform-origin:top left!important}
+  #hud:has(#h-chase:not(.hidden)) #h-msgs{left:calc(max(10px,env(safe-area-inset-left)) + 124px)!important;top:calc(max(8px,env(safe-area-inset-top)) + 40px)!important}
+  /* mode gaucher : la mini-carte est à droite, les messages restent à gauche sous la pastille radio */
+  body.lefty #hud #h-msgs,body.lefty #hud.cd-on #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 132px)!important}
+}
+@media (orientation:landscape) and (max-height:540px){
+  /* « mauvais sens » et objectif : première ligne sous la mini-carte ; les messages descendent d'une ligne */
+  #hud #h-wrong,#hud #h-tt{left:max(10px,env(safe-area-inset-left))!important;top:calc(max(8px,env(safe-area-inset-top)) + 98px + clamp(70px,23vh,104px))!important;font-size:12px!important;max-width:min(210px,30vw);overflow:hidden;text-overflow:ellipsis}
+  #hud:has(#h-posbox.hidden) #h-wrong,#hud:has(#h-posbox.hidden) #h-tt{top:calc(max(8px,env(safe-area-inset-top)) + 66px + clamp(70px,23vh,104px))!important}
+  #hud:has(#h-wrong:not(.hidden)) #h-msgs,#hud:has(#h-tt:not(.hidden)) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 128px + clamp(70px,23vh,104px))!important}
+  #hud:has(#h-posbox.hidden):has(#h-wrong:not(.hidden)) #h-msgs,#hud:has(#h-posbox.hidden):has(#h-tt:not(.hidden)) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 96px + clamp(70px,23vh,104px))!important}
+  /* poursuite : messages à droite du bloc chrono, sans toucher les boutons du haut */
+  #hud:has(#h-chase:not(.hidden)) #h-msgs{left:calc(max(10px,env(safe-area-inset-left)) + 134px)!important;top:calc(max(8px,env(safe-area-inset-top)) + 4px)!important}
+  #hud:has(#h-chase:not(.hidden)) #h-msgs .pmsg{max-width:calc(50vw - 200px)!important}
+  #hud:has(#h-chase:not(.hidden)) #h-wrong{top:calc(max(8px,env(safe-area-inset-top)) + 64px)!important;left:calc(max(10px,env(safe-area-inset-left)) + 100px)!important}
+}
+@media (orientation:landscape) and (max-height:540px){#hud.cd-on:has(#h-chase:not(.hidden)) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 46px)!important}}
+@media (min-height:541px),(orientation:portrait){
+  /* ordinateur, tablette, portrait : compte à rebours à droite du bloc position, le reste dessous, aligné à gauche */
+  #hud #h-count{left:calc(max(12px,env(safe-area-inset-left)) + 168px)!important;top:calc(max(8px,env(safe-area-inset-top)) + 18px)!important}
+  #hud #h-wrong,#hud #h-tt{top:calc(max(8px,env(safe-area-inset-top)) + 160px)!important}
+  #hud #h-msgs,#hud.cd-on #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 160px)!important}
+  #hud:has(#h-wrong:not(.hidden)) #h-msgs,#hud:has(#h-tt:not(.hidden)) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 190px)!important}
+}
+
 </style>
 </head>
 <body>
@@ -1570,7 +1612,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V216</span>
+    <span id="build-tag" aria-label="Version">V217</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -7218,7 +7260,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V216';
+const GAME_VERSION = 'V217';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),

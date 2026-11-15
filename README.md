@@ -1,5 +1,11 @@
 # Seddik Fire
 
+## Version 2.18
+- Festival des vainqueurs : feux d'artifice, confettis, bandeau « Victoire » avec trophée, fanfare de trompettes, tambour et clameur de la foule ; version spéciale pour le champion des 50 étapes.
+- Arbres : tous les arbres dessinés une fois avec volume (côté éclairé, ombre propre) et feuillage détaillé, puis réutilisés.
+- Véhicules : volume éclairé par le soleil et contour qui les détache du terrain.
+- Mer : vagues qui se forment et se brisent au large.
+
 ## Version 2.17
 - Parcours : grille des 50 étapes pour rejouer n'importe quelle étape débloquée ; difficulté croissante (adversaires plus nombreux et plus précis, gilets dès l'étape 9, casques dès la 15, armes principales dès la 19, plus de points de vie dès la 35).
 - Profils : plusieurs joueurs sur le même appareil, chacun avec sa propre progression ; sauvegarde automatique toutes les 15 s en partie et dès que l'application passe en arrière-plan.

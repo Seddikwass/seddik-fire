@@ -1546,6 +1546,17 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 @media (orientation:landscape) and (max-height:540px){.fest-card .fgain,.fest-card .cta{margin-top:12px}.pod .pav svg{width:52px;height:52px}.pod.p1 .pav svg{width:64px;height:64px}.fest-card{row-gap:0}}
 .fest-card .cta{margin-top:14px!important}.fest-card .podium{margin-bottom:6px}
 
+/* V216 — aucun texte au milieu de l'écran pendant la course : messages, compte à rebours et « mauvais sens »
+   passent en petites étiquettes sur une bande en haut de l'écran, sous les boutons, au-dessus de l'horizon. */
+#hud #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 56px)!important;bottom:auto!important;gap:4px!important;pointer-events:none}
+#hud #h-msgs .pmsg{font-size:13px!important;line-height:1.2!important;padding:3px 11px!important;border-radius:999px!important;font-style:normal!important;letter-spacing:.03em!important;text-shadow:none!important;background:rgba(5,10,18,.62)!important;border:1px solid rgba(255,255,255,.18)!important;max-width:min(320px,60vw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hud #h-msgs .pmsg:nth-last-child(n+3){display:none}
+#hud:has(#h-wrong:not(.hidden)) #h-msgs,#hud:has(#h-tt:not(.hidden)) #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 86px)!important}
+#hud #h-wrong{top:calc(max(8px,env(safe-area-inset-top)) + 54px)!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;font-size:13px!important;font-style:normal!important;letter-spacing:.05em;padding:3px 12px;border-radius:999px;background:rgba(179,32,43,.9);color:#fff!important;text-shadow:none!important;white-space:nowrap}
+#hud #h-count{top:calc(max(8px,env(safe-area-inset-top)) + 50px)!important;font-size:38px!important;line-height:1!important;text-shadow:0 2px 8px #000!important}
+#hud #h-tt{margin-top:46px!important;font-size:12px!important;padding:2px 10px!important;border-radius:999px}
+#hud.cd-on #h-msgs{top:calc(max(8px,env(safe-area-inset-top)) + 100px)!important}
+
 </style>
 </head>
 <body>
@@ -1559,7 +1570,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V215</span>
+    <span id="build-tag" aria-label="Version">V216</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -3580,7 +3591,7 @@ function radioCall(automatic = false) {
   if(automatic){
     // appel automatique : on n'affiche que le message (classe radio-auto), sans ouvrir tout le panneau sur les commandes
     const panel=$('radio-team');
-    if(panel.classList.contains('radio-collapsed')||panel.classList.contains('radio-auto')){
+    if(G.state!=='race'&&G.state!=='countdown'&&(panel.classList.contains('radio-collapsed')||panel.classList.contains('radio-auto'))){
       panel.classList.remove('radio-collapsed');panel.classList.add('radio-auto');
       clearTimeout(radioAutoFold);radioAutoFold=setTimeout(()=>{if(panel.classList.contains('radio-auto')){panel.classList.remove('radio-auto');panel.classList.add('radio-collapsed');$('radio-toggle').textContent='＋';$('radio-toggle').setAttribute('aria-expanded','false');}},7000);
     }
@@ -7207,7 +7218,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V215';
+const GAME_VERSION = 'V216';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -7530,7 +7541,7 @@ const UI = {
     const box = $('h-msgs'); box.appendChild(d); while (box.children.length > 3) box.removeChild(box.firstChild);
     setTimeout(() => d.remove(), 1850);
   },
-  countdown(x) { const el = $('h-count'); el.textContent = x; el.className = ''; void el.offsetWidth; el.className = 'go'; },
+  countdown(x) { const el = $('h-count'); el.textContent = x; el.className = ''; void el.offsetWidth; el.className = 'go'; $('hud').classList.add('cd-on'); clearTimeout(this._cdT); this._cdT = setTimeout(() => $('hud').classList.remove('cd-on'), 1000); },
   set(id, v) { if (this.hudCache[id] !== v) { this.hudCache[id] = v; $(id).textContent = v; } },
   bar(id, v) { const k = Math.round(v * 200) / 200; if (this.hudCache[id] !== k) { this.hudCache[id] = k; $(id).style.transform = 'scaleX(' + k + ')'; } },
   hud(dt) {

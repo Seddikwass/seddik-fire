@@ -50,6 +50,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* v58 : aucun texte au milieu de l'écran */
 .feed .sys{background:linear-gradient(90deg,rgba(13,17,24,.86) 70%,rgba(13,17,24,.25));color:#f3e9d4;font-weight:600;font-size:12.5px;white-space:normal;max-width:min(44vw,300px);line-height:1.25;padding:4px 12px 4px 9px;box-shadow:inset 3px 0 0 #ffc54d}
 .feed .sys.tip{box-shadow:inset 3px 0 0 #4cc3ff}
+.feed .sys.radio{box-shadow:inset 3px 0 0 #6fdc7e;color:#e6f7e8}.feed .sys.alert{box-shadow:inset 3px 0 0 #ffc061;color:#ffe9c2;font-weight:800;letter-spacing:.03em}
 .feed .sys.zw{background:linear-gradient(90deg,rgba(200,48,34,.92) 70%,rgba(200,48,34,.3));color:#fff;text-transform:uppercase;letter-spacing:.06em;font-size:11.5px;box-shadow:none}
 @media (orientation:portrait){.feed .sys{max-width:58vw}}
 #hud .toast,#hud .hint,#hud .kb{display:none!important}
@@ -1046,7 +1047,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.18</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.19</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1372,6 +1373,7 @@ function saveProf(){try{localStorage.setItem(PRK,JSON.stringify(PROFS))}catch(e)
 const LSK=PROFS.cur==='p1'?'seddikfire.v1':'seddikfire.v1.'+PROFS.cur;
 const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,pSize:1.25,camZoom:1,mode:'classic',map:'seddik',stage:0,cupBest:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'raider',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
+if(!stats.v219){stats.v219=1;stats.noNums=true}/* v2.19 : pas de texte au centre de l'écran par défaut */
 if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';if(!stats.photoSk){stats.photoSk=1;stats.skin='spartiate'}if(!stats.hanSk){stats.hanSk=1;stats.skin='hannibal'}if(!stats.ombSk){stats.ombSk=1;stats.skin='ombre'}
 if((stats.factionShowcaseV|0)<2){stats.skin='unit_tunis_assault';stats.factionShowcaseV=2;try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}if(!SOLDIERS.some(x=>x.id===stats.skin)){stats.skin='unit_tunis_assault';try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
 function saveStats(){try{stats.savedAt=Date.now();localStorage.setItem(LSK,JSON.stringify(stats));const p=PROFS.list.find(x=>x.id===PROFS.cur);if(p&&p.n!==(stats.name||'')){p.n=stats.name||'';saveProf()}}catch(e){}}
@@ -2304,7 +2306,7 @@ function startMatch(){
 
 /* ===== combat ===== */
 function puff(x,y,n,col,sp,life,size,g){if(!Q.hi)n=Math.ceil(n*Q.fx);for(let i=0;i<n;i++){if(parts.length>520)parts.shift();const a=Math.random()*TAU,v=rand(.2,1)*sp;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:life*rand(.6,1),m:life,s:size*rand(.6,1.2),c:col,g:g||0})}}
-function addFloat(x,y,t,c){if(stats.noNums&&/^[-+]?\d/.test(String(t)))return;floats.push({x,y,t:String(t),c,l:.9})}
+function addFloat(x,y,t,c){if(!/^[-+]?\d/.test(String(t))||stats.noNums)return;floats.push({x,y,t:String(t),c,l:.9})}
 function sndVol(x,y){if(!player)return 0;const d=Math.hypot(x-cam.x,y-cam.y);return clamp(1-d/1500,0,1)}
 function switchTo(e,i){if(i===e.cur)return;if(i>=0&&!e.slots[i])return;e.cur=i;e.reloadT=0;e.fireCd=Math.max(e.fireCd,.3)}
 function startReload(e){const w=curW(e);if(!w||e.reloadT>0)return;const Wp=WEAP[w.type];if(w.mag>=Wp.mag)return;if(e.ammo[Wp.am]<=0){if(e===player)noAmmo(Wp);return}e.reloadT=e.reloadTot=Wp.rl;e.using=null;sfxReload(e,0)}
@@ -4960,8 +4962,8 @@ function updateHUD(){const p=player;sfSuspense();
   if(hintT>0){hintT-=1/60;if(hintT<=0)H.hint.hidden=true}
   if(kbT>0){kbT-=1/60;if(kbT<=0)$('#kb').hidden=true}}
 let toastT=0,hintT=0,USEK=-1;
-function showKB(name){const el=$('#kb');$('#kbName').textContent=name+' · '+player.kills+(player.kills>1?' éliminations':' élimination');el.hidden=false;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');kbT=1.8}
-function sysFeed(msg,secs,cls){for(let i=feed.length-1;i>=0;i--)if(feed[i].sys&&(feed[i].txt===msg||(cls&&feed[i].cls===cls)))feed.splice(i,1);if(msg){feed.unshift({sys:1,txt:msg,cls:cls||'',t:secs||2.6});let n=0;for(let i=0;i<feed.length;i++)if(feed[i].sys&&feed[i].cls!=='zw'&&++n>2){feed.splice(i,1);i--}if(feed.length>5)feed.length=5}feed.sort((a,b)=>(b.cls==='zw')-(a.cls==='zw'));renderFeed()}
+function showKB(name){if(game.mode==='play')return;const el=$('#kb');$('#kbName').textContent=name+' · '+player.kills+(player.kills>1?' éliminations':' élimination');el.hidden=false;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');kbT=1.8}
+function sysFeed(msg,secs,cls){for(let i=feed.length-1;i>=0;i--)if(feed[i].sys&&(feed[i].txt===msg||(cls&&feed[i].cls===cls)))feed.splice(i,1);if(msg){feed.unshift({sys:1,txt:msg,cls:cls||'',t:secs||2.6});let n=0;for(let i=0;i<feed.length;i++)if(feed[i].sys&&feed[i].cls!=='zw'&&++n>3){feed.splice(i,1);i--}if(feed.length>5)feed.length=5}feed.sort((a,b)=>(b.cls==='zw')-(a.cls==='zw'));renderFeed()}
 function toast(msg,secs){if(game.mode==='play'||game.mode==='paused'){sysFeed(msg,(secs||2)+.8);return}H.toast.textContent=msg;H.toast.classList.add('show');toastT=(secs||2)*60/60}
 function showHint(msg,secs){H.hint.hidden=true;hintT=0;sysFeed(msg||'',secs||6,'tip')}
 function pushFeed(a,b,w,me){feed.unshift({a,b,w,me,t:6});feed.sort((x,y)=>(y.cls==='zw')-(x.cls==='zw'));if(feed.length>5)feed.length=5;renderFeed()}
@@ -5258,7 +5260,7 @@ function radioSay(k,vars,cd,prio){const mode=stats.radio||'voice';if(mode==='off
   if(vars.d!=null)s=s.replace('{d}',T.dirs[vars.d]);if(vars.m!=null)s=s.replace('{m}',vars.m);if(vars.n!=null)s=s.replace('{n}',vars.n);
   RAD.cd[k]=now+(cd||20);RAD.last=now;
   if(!RAD.el){RAD.el=document.createElement('div');RAD.el.id='sfRadio';RAD.el.setAttribute('role','status');RAD.el.setAttribute('aria-live','polite');document.body.appendChild(RAD.el)}
-  if(k!=='win'){RAD.el.innerHTML='<b>📻 '+escH(T.who)+'</b><span>'+escH(s)+'</span>';RAD.el.classList.add('on')}else RAD.el.classList.remove('on');RAD.hT=Math.max(3.2,s.length*.065);
+  RAD.el.classList.remove('on');if(k!=='win'&&game.mode==='play')sysFeed('📻 '+T.who+' : '+s,Math.max(3.4,s.length*.07),'radio');RAD.hT=Math.max(3.2,s.length*.065);
   radioClick();if(mode==='voice')radioSpeak(s);return true}
 function radioClick(){if(!AC||!stats.sound)return;try{const t=AC.currentTime,o=sOut(.22*(stats.sfxV??1),0);nz(o,t,.12,'bandpass',1800,2,.5);tone(o,t+.02,.06,'square',1250,1250,.12)}catch(e){}}
 function radioSpeak(s){const vol=clamp((stats.sfxV??1)*1.1,0,1),lang=RADIO_VOICE[LANG]||'en-US';
@@ -5847,7 +5849,7 @@ function drawLowHp(){const p=player;if(!p||!p.alive||game.mode!=='play'||p.hp>=3
   const g=ctx.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.32,VW/2,VH/2,Math.max(VW,VH)*.72);g.addColorStop(0,'rgba(170,16,10,0)');g.addColorStop(1,'rgba(170,16,10,'+Math.min(.62,a).toFixed(3)+')');
   ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH)}
 // Bandeau d'annonce
-function sfBanner(t,sub,secs,kind){const el=$('#sfBanner');if(!el)return;el.firstChild.textContent=t;el.lastChild.textContent=sub||'';el.className='on '+(kind||'');clearTimeout(el._t);el._t=setTimeout(()=>{el.className=''},(secs||2.2)*1000)}
+function sfBanner(t,sub,secs,kind){if(game.mode==='play'||game.mode==='paused'){sysFeed(trS(t)+(sub?' · '+trS(sub):''),(secs||2.2)+1.5,'alert');return}const el=$('#sfBanner');if(!el)return;el.firstChild.textContent=t;el.lastChild.textContent=sub||'';el.className='on '+(kind||'');clearTimeout(el._t);el._t=setTimeout(()=>{el.className=''},(secs||2.2)*1000)}
 function sting(up){if(!AC||!stats.sound||!vOK(1))return;try{const t=AC.currentTime,o=sOut(.32,0);const f=up?[392,523,784]:[220,277,330];f.forEach((x,i)=>tone(o,t+i*.09,.5-i*.08,'triangle',x,x,.5));tone(o,t,.9,'sine',up?98:65,up?98:55,.6)}catch(e){}}
 function sfSuspense(){if(game.mode!=='play'){if(game.mode!=='paused'){SUSP.alive=-1;SUSP.boss=0;BOUNTY=null}return}const p=player;
   if(SUSP.alive<0)SUSP.alive=alive;

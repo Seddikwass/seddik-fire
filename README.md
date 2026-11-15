@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Version 2.20
+- Cartes : ombre de contact douce au pied des bâtiments, murs, conteneurs, véhicules garés et rochers ; variations de couleur à grande échelle sur le terrain.
+- Joueurs : soldats dessinés plus nets (suréchantillonnage 1,6× sur ordinateur, 1,3× sur téléphone).
+- Visibilité : boutons d'action (Monter, Ramasser) plus compacts et collés au bord droit sur téléphone en portrait.
+
 ## Version 2.19
 - Centre de l'écran dégagé pendant la bataille : bandeaux (top 10, duel final, prime…), radio du QG et éliminations s'affichent en petites lignes dans la liste de messages en haut à gauche (repère doré pour les alertes, vert pour la radio).
 - Plus de mots flottants au-dessus des ennemis ; chiffres de dégâts désactivés par défaut (réactivables dans Réglages).

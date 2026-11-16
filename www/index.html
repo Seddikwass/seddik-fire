@@ -877,7 +877,10 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
   </div>
   <div class="tr">
     <div class="minirow">
+      <div class="ibcol">
       <button id="btnPause" class="iconbtn" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
+      <button id="btnZoom" class="iconbtn" aria-label="Zoom caméra"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6.8" cy="6.8" r="4.6"/><path d="M10.3 10.3L14 14M4.8 6.8h4M6.8 4.8v4"/></svg></button>
+      </div>
       <canvas id="mini" tabindex="0" aria-label="Mini-carte, touchez pour l'agrandir"></canvas>
     </div>
     <div id="hZone" class="zone"><small id="hZoneS">Zone 1/7 dans</small><b id="hZoneT">1:20</b></div>
@@ -1047,7 +1050,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.22</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.23</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1373,7 +1376,8 @@ function saveProf(){try{localStorage.setItem(PRK,JSON.stringify(PROFS))}catch(e)
 const LSK=PROFS.cur==='p1'?'seddikfire.v1':'seddikfire.v1.'+PROFS.cur;
 const stats={games:0,wins:0,best:0,kills:0,name:'',sound:true,musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,tutoDone:false,pSize:1.25,camZoom:1,mode:'classic',map:'seddik',stage:0,cupBest:0,ach:{},dm:null,cust:{acc:0,boots:0,bag:0},skin:'raider',sidearm:'m9',xp:0,level:1,lastXp:0,prevLevel:1,lvlFrom:0,lvlTo:200};
 try{const s=JSON.parse(localStorage.getItem(LSK)||'null');if(s&&typeof s==='object')Object.assign(stats,s)}catch(e){}
-if(!stats.v219){stats.v219=1;stats.noNums=true}/* v2.19 : pas de texte au centre de l'écran par défaut */
+if(!stats.v219){stats.v219=1;stats.noNums=true}
+if(!stats.v223){stats.v223=1;if(Math.abs((+stats.pSize||1.25)-1.25)<.01)stats.pSize=1.4}/* v2.19 : pas de texte au centre de l'écran par défaut */
 if(!STARTW.includes(stats.sidearm))stats.sidearm='m9';if(!SOLDIERS.some(x=>x.id===stats.skin))stats.skin='foret';if(!stats.photoSk){stats.photoSk=1;stats.skin='spartiate'}if(!stats.hanSk){stats.hanSk=1;stats.skin='hannibal'}if(!stats.ombSk){stats.ombSk=1;stats.skin='ombre'}
 if((stats.factionShowcaseV|0)<2){stats.skin='unit_tunis_assault';stats.factionShowcaseV=2;try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}if(!SOLDIERS.some(x=>x.id===stats.skin)){stats.skin='unit_tunis_assault';try{localStorage.setItem(LSK,JSON.stringify(stats))}catch(e){}}if(!stats.cust||typeof stats.cust!=='object')stats.cust={acc:0,boots:0,bag:0};
 function saveStats(){try{stats.savedAt=Date.now();localStorage.setItem(LSK,JSON.stringify(stats));const p=PROFS.list.find(x=>x.id===PROFS.cur);if(p&&p.n!==(stats.name||'')){p.n=stats.name||'';saveProf()}}catch(e){}}
@@ -3132,7 +3136,7 @@ let LOWD=false;
    ~10 000 appels de dessin en moins par image */
 const DC={m:new Map(),key:'',S:512};
 function drawDetailCached(x0,y0,x1,y1,z){const k=MAP.id+'|'+Q.lv+'|'+LOWD+'|'+walls.length+'|'+blds.length;if(k!==DC.key){DC.m.clear();DC.key=k}
-  const S=DC.S,sc=Math.min(1,Math.ceil(z*DPR*4)/4),cx0=Math.floor(Math.max(0,x0)/S),cy0=Math.floor(Math.max(0,y0)/S),cx1=Math.floor(Math.min(WS-1,x1)/S),cy1=Math.floor(Math.min(WS-1,y1)/S);let budget=game.mode==='play'&&!MOBF?2:1;
+  const S=DC.S,sc=Math.min(MOBF?1:1.25,Math.ceil(z*DPR*1.3*4)/4),cx0=Math.floor(Math.max(0,x0)/S),cy0=Math.floor(Math.max(0,y0)/S),cx1=Math.floor(Math.min(WS-1,x1)/S),cy1=Math.floor(Math.min(WS-1,y1)/S);let budget=game.mode==='play'&&!MOBF?2:1;
   for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){const id=cx+','+cy;let t=DC.m.get(id);
     if(t&&t.sc<sc&&budget>0)t=null;
     if(!t){if(budget<=0)continue;budget--;const c=document.createElement('canvas'),px=Math.ceil(S*sc);c.width=c.height=px;const g=c.getContext('2d'),save=ctx,X=cx*S,Y=cy*S;
@@ -3225,12 +3229,13 @@ function drawGroundDecor(x0,y0,x1,y1){
   const R=(x,y,k)=>{let n=(Math.imul(x|0,374761393)+Math.imul(y|0,668265263)+Math.imul(k+MAP.id.length*7,1442695041))|0;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295};
   const c=ctx,step=34,gx0=Math.floor(x0/step)*step,gy0=Math.floor(y0/step)*step,hasSea=typeof coastX==='function';
   const greens=['#4d6a2b','#5f7d33','#71903c','#88a24a','#a3b85a'],leaves=['#7a5a2a','#9b6b2c','#5f6b2a','#b08a3a','#6e4a24','#8c7a3a'],flowers=['#f4e27a','#fbfbf4','#c9a0e8','#e86a5a','#f2a54a'];
-  const tuft=(x,y,s,col)=>{c.strokeStyle=col;c.lineWidth=1.15;c.beginPath();const n=5+((s*13)|0)%3;for(let i=0;i<n;i++){const a=-Math.PI/2+(i/(n-1)-.5)*1.5,L=s*(5+((i*7)%4));c.moveTo(x+(i-n/2)*.7,y);c.quadraticCurveTo(x+Math.cos(a)*L*.4,y+Math.sin(a)*L*.55,x+Math.cos(a)*L,y+Math.sin(a)*L)}c.stroke()};
-  const pebbles=(x,y,r0,base)=>{const n=2+((r0*10)|0)%3;for(let i=0;i<n;i++){const px=x+(R(x,y,40+i)-.5)*16,py=y+(R(x,y,50+i)-.5)*12,rr=1.6+R(x,y,60+i)*2.6;
+  const tuft=(x,y,s,col)=>{s*=1.2;c.strokeStyle=col;c.lineWidth=1.4;c.beginPath();const n=5+((s*13)|0)%3;for(let i=0;i<n;i++){const a=-Math.PI/2+(i/(n-1)-.5)*1.5,L=s*(5+((i*7)%4));c.moveTo(x+(i-n/2)*.7,y);c.quadraticCurveTo(x+Math.cos(a)*L*.4,y+Math.sin(a)*L*.55,x+Math.cos(a)*L,y+Math.sin(a)*L)}c.stroke()};
+  const pebbles=(x,y,r0,base)=>{const n=2+((r0*10)|0)%3;for(let i=0;i<n;i++){const px=x+(R(x,y,40+i)-.5)*16,py=y+(R(x,y,50+i)-.5)*12,rr=2+R(x,y,60+i)*3.2;
       c.fillStyle='rgba(0,0,0,.18)';c.beginPath();c.ellipse(px+.8,py+.9,rr,rr*.72,0,0,TAU);c.fill();c.fillStyle=shade(base,.85+R(x,y,70+i)*.35);c.beginPath();c.ellipse(px,py,rr,rr*.72,R(x,y,80+i)*3,0,TAU);c.fill();
       c.fillStyle='rgba(255,255,255,.28)';c.beginPath();c.ellipse(px-rr*.3,py-rr*.28,rr*.38,rr*.24,0,0,TAU);c.fill()}};
   const blob=(x,y,r,col)=>{const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,TAU);c.fill()};
   c.save();c.lineCap='round';c.lineJoin='round';
+  const DS=1.22;
   for(let gx=gx0;gx<x1;gx+=step)for(let gy=gy0;gy<y1;gy+=step){
     const x=gx+R(gx,gy,1)*step,y=gy+R(gx,gy,2)*step;if(x<40||y<40||x>WS-40||y>WS-40)continue;if(isWater(x,y)||bldAt(x,y))continue;
     const p=R(gx,gy,3),q=R(gx,gy,4),road=nearRoad(x,y,city?44:18);if(city&&!road&&nearRoad(x,y,66))continue;
@@ -3829,7 +3834,8 @@ function render(){SFF++;CAMROT=stats.camBehind&&(game.mode==='play'||game.mode==
   // foliage
   const px=player&&player.alive?player.x:-9999,py=player?player.y:-9999;
   if(!P3S)for(const b of bushes){if(!vis(b.x,b.y))continue;ctx.globalAlpha=dd2(px,py,b.x,b.y)<b.r*b.r?.45:.95;if(Q.hi){const sp=treeSpr('olive',Math.floor(b.c*6)),R=b.r*1.1;ctx.fillStyle='rgba(12,18,6,.16)';ctx.beginPath();ctx.ellipse(b.x+b.r*.3,b.y+b.r*.35,b.r,b.r*.8,.5,0,TAU);ctx.fill();{const wv=Math.sin(TIME*1.4+b.x*.017+b.y*.011);ctx.save();ctx.translate(b.x,b.y);ctx.rotate(wv*.05);ctx.drawImage(sp,-R,-R,R*2,R*2);ctx.restore()}continue}ctx.fillStyle=b.c<.5?'#5a8a2f':'#669838';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fill();ctx.fillStyle='#86b247';ctx.beginPath();ctx.arc(b.x-b.r*.3,b.y-b.r*.25,b.r*.5,0,TAU);ctx.arc(b.x+b.r*.35,b.y+b.r*.1,b.r*.42,0,TAU);ctx.fill()}
-  if(!P3S)for(const t of trees){if(!vis(t.x,t.y,t.r+30))continue;const o=treeOff(t),d=Math.sqrt(dd2(px,py,t.x+o[0],t.y+o[1])),R0=t.r*.7,R1=t.r+95;ctx.globalAlpha=d<R1?.3+.66*clamp((d-R0)/(R1-R0),0,1):.96;drawTree(t)}ctx.globalAlpha=1;
+  if(!P3S)for(const t of trees){if(!vis(t.x,t.y,t.r+30))continue;const o=treeOff(t),cx=t.x+o[0],cy=t.y+o[1],d=Math.sqrt(dd2(px,py,cx,cy)),R0=t.r*.7,R1=t.r+95;let al=d<R1?.3+.66*clamp((d-R0)/(R1-R0),0,1):.96;
+    if(al>.5)for(const e of ents){if(e===player||!e.alive||e.inPlane||e.air>0||e.veh)continue;if(Math.abs(e.x-cx)<t.r&&Math.abs(e.y-cy)<t.r&&dd2(e.x,e.y,cx,cy)<t.r*t.r){al=.5;break}}ctx.globalAlpha=al;drawTree(t)}ctx.globalAlpha=1;
   if(!P3S)drawPlayerMark();
   // roofs
   if(!P3S){const VB=[];for(const b of blds)if(b.al>.01&&vis(b.x+b.w/2,b.y+b.h/2,Math.max(b.w,b.h)+60))VB.push(b);VB.sort((a,b2)=>(a.fh||FH)-(b2.fh||FH));
@@ -4750,7 +4756,7 @@ function drawBodyCached(e){const sk=e.sk||SOLDIERS[1],w=curW(e),Wp=w&&WEAP[w.typ
   const m=ctx.getTransform(),px=Math.min(5,Math.ceil(Math.hypot(m.a,m.b)*(MOBF?1.3:1.6)*4)/4);if(px<.2)return false;
   const ws=(e._ws||0)>.45?1:0,ph=ws?((Math.round(((e.walkPh||0)%TAU+TAU)%TAU/TAU*8)%8)):0,ab=Math.round(((e.angle||0)%TAU+TAU)%TAU/TAU*8)%8;
   const kb=Wp&&e.fireCd>0?Math.min(3,Math.floor(clamp((Wp.rate-e.fireCd)/Math.max(.01,Wp.rate),0,.999)*4)):-1,rt=e.reloadTot||1,rb=e.reloadT>0?Math.min(7,Math.floor(clamp(1-e.reloadT/rt,0,.999)*8)):-1,pb=e.punchT>0?(e.punchSide?2:1):0;
-  const k=sk.id+'|'+(e.cust?JSON.stringify(e.cust):'')+'|'+(w?w.type:'')+'|'+(e.helmet||0)+'|'+(e.vestLvl||0)+'|'+(e.vest>0?1:0)+'|'+(e.shield>0?1:0)+'|'+(e.mel||'')+'|'+(e.skin||'')+'|'+ws+ph+'|'+ab+'|'+kb+'|'+rb+'|'+pb+'|'+px;
+  const k=sk.id+'|'+(e.cust?JSON.stringify(e.cust):'')+'|'+(w?w.type:'')+'|'+(e.helmet||0)+'|'+(e.vestLvl||0)+'|'+(e.vest>0?1:0)+'|'+(e.shield>0?1:0)+'|'+(e.mel||'')+'|'+(e.skin||'')+'|'+ws+ph+'|'+ab+'|'+kb+'|'+rb+'|'+pb+'|'+px+'|'+(e===player?0:player&&player.team&&e.team===player.team?2:1);
   let c=BC.get(k);
   if(!c){const X0=-40,X1=95,Y0=-46,Y1=46,W=Math.ceil((X1-X0)*px),H=Math.ceil((Y1-Y0)*px);c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.setTransform(px,0,0,px,-X0*px,-Y0*px);
     const f=Object.create(e);f.walkPh=ph*TAU/8;f._ws=ws;f.fireCd=kb>=0?Wp.rate*(1-(kb+.5)/4):0;f.reloadT=rb>=0?rt*(1-(rb+.5)/8):0;f.reloadTot=rt;f.punchT=pb?1:0;f.punchSide=pb===2;f._turn=0;f.x=0;f.y=0;f.angle=ab*TAU/8;f.alive=true;
@@ -4761,7 +4767,7 @@ function drawBodyCached(e){const sk=e.sk||SOLDIERS[1],w=curW(e),Wp=w&&WEAP[w.typ
     // contour doux pour détacher le soldat du terrain
     const o=document.createElement('canvas');o.width=W;o.height=H;const og=o.getContext('2d'),d=Math.max(1,px*.85);
     for(const [dx,dy] of [[d,0],[-d,0],[0,d],[0,-d],[d*.7,d*.7],[-d*.7,d*.7],[d*.7,-d*.7],[-d*.7,-d*.7]])og.drawImage(c,dx,dy);
-    og.globalCompositeOperation='source-in';og.fillStyle='rgba(6,9,6,.5)';og.fillRect(0,0,W,H);og.globalCompositeOperation='source-over';og.drawImage(c,0,0);
+    og.globalCompositeOperation='source-in';og.fillStyle=e===player?'rgba(40,20,0,.6)':player&&player.team&&e.team===player.team?'rgba(20,90,170,.75)':'rgba(140,16,14,.62)';og.fillRect(0,0,W,H);og.globalCompositeOperation='source-over';og.drawImage(c,0,0);
     {const s2=document.createElement('canvas');s2.width=W;s2.height=H;const sg=s2.getContext('2d'),A=-f.angle,wx=4,wy=5,lx=(wx*Math.cos(A)-wy*Math.sin(A))*px,ly=(wx*Math.sin(A)+wy*Math.cos(A))*px;sg.shadowColor='rgba(0,0,0,.34)';sg.shadowBlur=4*px;sg.shadowOffsetX=lx+W*2;sg.shadowOffsetY=ly;sg.drawImage(c,-W*2,0);sg.drawImage(o,0,0);c=s2}
     c._x=X0;c._y=Y0;c._w=X1-X0;c._h=Y1-Y0;BC.set(k,c);if(BC.size>420)BC.delete(BC.keys().next().value)}
   else{BC.delete(k);BC.set(k,c)}
@@ -5019,6 +5025,12 @@ tapOn(H.jump,()=>{if(player&&player.inPlane)jump(player)});
 tapOn(mini,toggleMap);mini.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' ')toggleMap()});
 tapOn($('#bigmap'),toggleMap);
 tapOn($('#btnPause'),()=>setPause(true));
+/* v2.23 — zoom rapide : proche / normal / large (et molette ou touches + / - sur ordinateur) */
+const ZL=[[1.2,'proche'],[1,'normale'],[.8,'large']];
+function setCamZoom(z,say){stats.camZoom=clamp(z,.75,1.25);saveStats();try{syncOpts()}catch(e){}if(say){const n=ZL.reduce((a,b)=>Math.abs(b[0]-stats.camZoom)<Math.abs(a[0]-stats.camZoom)?b:a)[1];sysFeed(trS('Caméra')+' : '+trS(n),1.6,'tip')}}
+tapOn($('#btnZoom'),()=>{const cur=+stats.camZoom||1;let i=ZL.findIndex(z=>Math.abs(z[0]-cur)<.04);i=(i+1)%ZL.length;setCamZoom(ZL[i][0],true)});
+addEventListener('wheel',e=>{if(game.mode!=='play'||e.ctrlKey)return;setCamZoom((+stats.camZoom||1)*(e.deltaY>0?.95:1.05),false)},{passive:true});
+addEventListener('keydown',e=>{if(game.mode!=='play'||e.target&&/INPUT|TEXTAREA/.test(e.target.tagName))return;if(e.key==='+'||e.key==='=')setCamZoom((+stats.camZoom||1)*1.08,true);else if(e.key==='-'||e.key==='_')setCamZoom((+stats.camZoom||1)/1.08,true)});
 const FIREB=$('#btnFire');
 FIREB.addEventListener('pointerdown',ev=>{ev.preventDefault();initAudio();fireHeld=true;FIREB.classList.add('on');try{FIREB.setPointerCapture(ev.pointerId)}catch(e){}});
 for(const t of['pointerup','pointercancel','lostpointercapture'])FIREB.addEventListener(t,()=>{fireHeld=false;FIREB.classList.remove('on')});
@@ -5228,7 +5240,7 @@ function frame(now){if((FR30||stats.fr30)&&game.mode==='play'){FRC^=1;if(FRC){re
   requestAnimationFrame(frame)}
 /* ===== réglages & tutoriel (lot 1) ===== */
 const OPTS=[['musV','#oMus',v=>Math.round(v*100)+'%'],['sfxV','#oSfx',v=>Math.round(v*100)+'%'],['sens','#oSens',v=>v.toFixed(1)+'×'],['bsz','#oBsz',v=>v.toFixed(2)+'×'],['bop','#oBop',v=>Math.round(v*100)+'%'],['boy','#oBoy',v=>v+' px'],['pSize','#oPsize',v=>Math.round(v*100)+'%'],['camZoom','#oCam',v=>v.toFixed(2)+'×']];
-const OPT_DEF={musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,pSize:1.25,camZoom:1};
+const OPT_DEF={musV:1,sfxV:1,sens:1,bsz:1,bop:1,boy:0,pSize:1.4,camZoom:1};
 function applyCtl(){const b=document.body.style;stats.sens=clamp(+stats.sens||1,.6,1.6);stats.pSize=clamp(+stats.pSize||1.25,.8,1.8);stats.camZoom=clamp(+stats.camZoom||1,.75,1.25);STICK_R=58/stats.sens;b.setProperty('--bs',clamp(+stats.bsz||1,.8,1.15));b.setProperty('--bo',clamp(+stats.bop||1,.4,1));b.setProperty('--by',clamp(+stats.boy||0,-90,40)+'px')}
 function syncOpts(){for(const[k,id,f]of OPTS){const el=$(id);el.value=stats[k];$(id+'V').textContent=f(+stats[k])}}
 for(const[k,id,f]of OPTS){const el=$(id);el.addEventListener('input',()=>{stats[k]=+el.value;$(id+'V').textContent=f(+el.value);applyCtl();saveStats()});
@@ -5766,6 +5778,7 @@ I18N.tr={"en vie": "hayatta", "élim.": "leş", "Éliminé": "Elendin", "Tempêt
 I18N.ru={"en vie": "в живых", "élim.": "убийств", "Éliminé": "Устранён", "Tempête de feu · rejoignez la zone": "Огненная буря · вернитесь в зону", "Rechargement": "Перезарядка", "Sauter": "Прыжок", "Ramasser": "Подобрать", "Monter": "Сесть", "Grenade": "Граната", "Recharger": "Перезарядить", "Gilet": "Бронежилет", "Casque": "Шлем", "PV": "ОЗ", "Niv.": "Ур.", "Pseudo": "Ник", "Armurerie": "Арсенал", "Son : activé": "Звук: вкл.", "Son : désactivé": "Звук: выкл.", "Votre personnage ·": "Ваш персонаж ·", "CHOISIR UN COMBATTANT": "ВЫБЕРИТЕ БОЙЦА", "LE PLUS FORT": "САМЫЙ СИЛЬНЫЙ", "COMBATTANT": "БОЕЦ", "Carte": "Карта", "ZONE DE COMBAT": "ЗОНА БОЯ", "Mode de jeu": "Режим игры", "Classique": "Классика", "Rapide": "Быстрый", "Équipe": "Команда", "Survie": "Выживание", "Parcours": "Кампания", "Entraînement": "Тренировка", "Heure du combat": "Время боя", "Jour": "День", "Nuit": "Ночь", "Du matin au coucher du soleil.": "С утра до заката.", "Arme de départ · faites défiler": "Стартовое оружие · листайте", "Personnalisation": "Настройка облика", "Accessoire": "Аксессуар", "Aucun": "Нет", "Aucune": "Нет", "Chaussures": "Обувь", "Housse de sac": "Чехол рюкзака", "Comment jouer": "Как играть", "Réglages": "Настройки", "Missions": "Задания", "Jouer": "Играть", "Fermer": "Закрыть", "Pause": "Пауза", "Reprendre": "Продолжить", "Quitter la partie": "Выйти из боя", "Son": "Звук", "Musique": "Музыка", "Effets": "Эффекты", "Commandes tactiles": "Сенсорное управление", "Sensibilité": "Чувствительность", "Taille": "Размер", "Opacité": "Прозрачность", "Hauteur": "Высота", "Taille joueurs": "Размер бойцов", "Zoom caméra": "Зум камеры", "Réinitialiser": "Сбросить", "Revoir le tutoriel": "Пройти обучение снова", "Terminé": "Готово", "Missions du jour": "Задания дня", "Succès": "Достижения", "Carrière": "Карьера", "Statistiques": "Статистика", "Partie terminée": "Бой окончен", "Éliminations": "Устранения", "Éliminé par": "Вас устранил", "Niveau": "Уровень", "Rejouer": "Ещё раз", "Menu": "Меню", "Partager": "Поделиться", "Touchez pour fermer": "Нажмите, чтобы закрыть", "Tirer": "Огонь", "Bandage": "Бинт", "Trousse de soins": "Аптечка", "Boisson énergisante": "Энергетик", "Arme 1": "Оружие 1", "Arme 2": "Оружие 2", "Votre pseudo": "Ваш ник", "Expérience": "Опыт", "Choisir un combattant": "Выберите бойца", "Arme de départ": "Стартовое оружие", "Votre soldat": "Ваш боец", "Parties": "Боёв", "Top 1": "Топ-1", "Record élim.": "Рекорд убийств", "Élim. totales": "Всего убийств", "Victoires": "Победы", "Précision": "Точность", "Tirs à la tête": "В голову", "Temps de jeu": "Время в игре", "Difficulté": "Сложность", "Facile": "Легко", "Normale": "Нормально", "Difficile": "Сложно", "Caméra": "Камера", "cinématique": "кинематографичная", "standard": "стандартная", "oui": "да", "non": "нет", "Tir auto": "Автоогонь", "Sang": "Кровь", "Compteur i/s": "Счётчик FPS", "Chiffres de dégâts": "Цифры урона", "Dégâts": "Урон", "Cadence": "Темп", "Portée": "Дальность", "Chargeur": "Магазин", "Commun": "Обычное", "Peu commun": "Необычное", "Rare": "Редкое", "Largage": "Сброс груза", "Pistolet": "Пистолет", "Pistolet-mitrailleur": "Пистолет-пулемёт", "Fusil à pompe": "Дробовик", "Fusil d'assaut": "Штурмовая винтовка", "Fusil de précision": "Марксманская винтовка", "Fusil de sniper": "Снайперская винтовка", "Règles": "Правила", "Sur téléphone": "На телефоне", "Au clavier": "На клавиатуре", "Dernier debout": "Последний выживший", "Ligue Bronze": "Бронзовая лига", "Qualité": "Качество", "Haute": "Высокое", "Moyenne": "Среднее", "Basse": "Низкое", "Vibration": "Вибрация", "activée": "вкл.", "désactivée": "выкл.", "Top 10": "Топ-10", "Top 5": "Топ-5", "Top 3": "Топ-3", "Duel final": "Финальная дуэль", "PRIME": "НАГРАДА", "Prime encaissée": "Награда получена", "Profils": "Профили", "Nouveau profil": "Новый профиль", "Créer": "Создать", "Supprimer ce profil": "Удалить профиль", "Profil actif": "Активный профиль", "Sauvegarde automatique : chaque profil garde sa progression sur cet appareil.": "Автосохранение: каждый профиль хранит свой прогресс на этом устройстве.", "Radio d’équipe": "Рация отряда", "voix": "голос", "texte": "текст", "Une équipe au QG vous conseille pendant la bataille, à la voix ou par écrit.": "Команда в штабе подсказывает вам в бою — голосом или текстом.", "Étapes du parcours": "Этапы кампании", "Touchez une étape débloquée pour la jouer.": "Нажмите на открытый этап, чтобы сыграть.", "Recrue": "Новобранец", "Soldat": "Солдат", "Vétéran": "Ветеран", "Élite": "Элита", "Légende": "Легенда", "Langue": "Язык"};
 
 Object.assign(I18N.en,{"VICTOIRE": "VICTORY", "Fête au village pour le dernier survivant !": "A village party for the last survivor!", "Champion des 50 étapes !": "Champion of all 50 stages!"});Object.assign(I18N.ar,{"VICTOIRE": "انتصار", "Fête au village pour le dernier survivant !": "عرس في البلاد لآخر واحد صامد!", "Champion des 50 étapes !": "بطل الـ50 مرحلة!"});Object.assign(I18N.es,{"VICTOIRE": "VICTORIA", "Fête au village pour le dernier survivant !": "¡Fiesta en el pueblo para el último superviviente!", "Champion des 50 étapes !": "¡Campeón de las 50 etapas!"});Object.assign(I18N.de,{"VICTOIRE": "SIEG", "Fête au village pour le dernier survivant !": "Dorffest für den letzten Überlebenden!", "Champion des 50 étapes !": "Champion aller 50 Etappen!"});Object.assign(I18N.it,{"VICTOIRE": "VITTORIA", "Fête au village pour le dernier survivant !": "Festa in paese per l’ultimo sopravvissuto!", "Champion des 50 étapes !": "Campione delle 50 tappe!"});Object.assign(I18N.pt,{"VICTOIRE": "VITÓRIA", "Fête au village pour le dernier survivant !": "Festa na vila para o último sobrevivente!", "Champion des 50 étapes !": "Campeão das 50 etapas!"});Object.assign(I18N.tr,{"VICTOIRE": "ZAFER", "Fête au village pour le dernier survivant !": "Son hayatta kalan için köyde şenlik!", "Champion des 50 étapes !": "50 aşamanın şampiyonu!"});Object.assign(I18N.ru,{"VICTOIRE": "ПОБЕДА", "Fête au village pour le dernier survivant !": "Праздник в честь последнего выжившего!", "Champion des 50 étapes !": "Чемпион всех 50 этапов!"});
+Object.assign(I18N.en,{"proche": "close", "normale": "normal", "large": "wide", "Zoom caméra": "Camera zoom"});Object.assign(I18N.ar,{"proche": "قريبة", "normale": "عادية", "large": "واسعة", "Zoom caméra": "تكبير الكاميرا"});Object.assign(I18N.es,{"proche": "cercana", "normale": "normal", "large": "amplia", "Zoom caméra": "Zoom de cámara"});Object.assign(I18N.de,{"proche": "nah", "normale": "normal", "large": "weit", "Zoom caméra": "Kamerazoom"});Object.assign(I18N.it,{"proche": "vicina", "normale": "normale", "large": "ampia", "Zoom caméra": "Zoom fotocamera"});Object.assign(I18N.pt,{"proche": "próxima", "normale": "normal", "large": "ampla", "Zoom caméra": "Zoom da câmera"});Object.assign(I18N.tr,{"proche": "yakın", "normale": "normal", "large": "geniş", "Zoom caméra": "Kamera yakınlaştırma"});Object.assign(I18N.ru,{"proche": "близко", "normale": "обычно", "large": "широко", "Zoom caméra": "Зум камеры"});
 function trOne(k){const d=I18N[LANG];if(!d)return null;if(Object.prototype.hasOwnProperty.call(d,k))return d[k];
   for(const r of I18N_RX){if(r[0].test(k)){const v=r[1][LANG];if(v!==undefined)return k.replace(r[0],v)}}
   const low=k.charAt(0).toUpperCase()+k.slice(1);if(low!==k&&Object.prototype.hasOwnProperty.call(d,low)){const v=d[low];return v.charAt(0).toLowerCase()+v.slice(1)}
@@ -5990,6 +6003,7 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 /* v2.17 — radio d'équipe, grille des étapes, choix de langue */
 #sfRadio{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translate(-50%,-14px);max-width:min(560px,86vw);z-index:40;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;
  display:flex;gap:8px;align-items:flex-start;padding:8px 13px 9px;border-radius:12px;background:linear-gradient(180deg,rgba(18,30,22,.92),rgba(10,18,14,.92));border:1px solid rgba(120,220,140,.45);box-shadow:0 6px 18px rgba(0,0,0,.4);color:#e9f5ea;font:600 13.5px/1.35 system-ui,sans-serif}
+.minirow .ibcol{display:flex;flex-direction:column;gap:6px;align-self:flex-start}
 #sfFest{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 #end .endbox{position:relative;z-index:1}
 #sfFestBan{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translate(-50%,-30px) scale(.8);opacity:0;z-index:2;pointer-events:none;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;

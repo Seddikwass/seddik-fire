@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Version 2.24
+- Trois nouvelles caméras (bouton caméra sous Pause, touche C, ou Réglages) :
+  - Au dos : la vue tourne pour que le soldat regarde toujours vers le haut de l'écran, avec plus d'espace devant lui ; commandes adaptées à la rotation.
+  - Drone : vue haute et large, dérive douce, repère du joueur agrandi, équerres de visée dans les coins.
+  - Proche : vue rapprochée (+32 %) et suivi plus vif.
+- Les caméras cinématique et standard restent disponibles.
+
 ## Version 2.23
 - Joueurs plus visibles : soldats plus grands par défaut, contour rouge pour les ennemis et bleu pour les coéquipiers, arbres estompés au-dessus de tout soldat (pas seulement le joueur).
 - Cartes : tuiles de détails plus nettes (y compris sur téléphone), touffes d'herbe et cailloux plus grands et plus contrastés.

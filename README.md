@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Version 2.23
+- Joueurs plus visibles : soldats plus grands par défaut, contour rouge pour les ennemis et bleu pour les coéquipiers, arbres estompés au-dessus de tout soldat (pas seulement le joueur).
+- Cartes : tuiles de détails plus nettes (y compris sur téléphone), touffes d'herbe et cailloux plus grands et plus contrastés.
+- Caméra : bouton de zoom rapide sous Pause (proche / normale / large), molette de la souris et touches + / - sur ordinateur.
+
 ## Version 2.22
 - Plus d'espace pour jouer : cartes d'armes compactes rangées sous les messages (zone du pouce gauche libre), messages limités à 4 lignes et plus petits, soins et barre de vie réduits, bouton « Monter » compact aussi en paysage.
 - Caméra un peu plus large sur téléphone pour voir davantage autour du joueur.

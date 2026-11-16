@@ -1647,7 +1647,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V222</span>
+    <span id="build-tag" aria-label="Version">V223</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -6948,6 +6948,17 @@ function updateCamera(dt, inp) {
   p.camH = p.camH === undefined ? p.h : p.camH + wrapPi(p.h - p.camH) * Math.min(1, dt * (p.sliding ? 3.2 : 5));
   const Fx = Math.sin(p.h), Fz = Math.cos(p.h), ch = p.camH, Fcx = Math.sin(ch), Fcz = Math.cos(ch);
   const eye = cam.eye, tgt = cam.target;
+  if (mode === 0 && G.state !== 'countdown') {
+    // caméra proche FIXE : collée derrière la voiture (même distance, même hauteur), sans ressort, sans anticipation ni secousse
+    const szL = p.model.L - 4.6, szH = Math.max(0, p.model.H - 1.5);
+    const dist = 6.6 + szL * (szL > 0 ? 0.95 : 0.4), hg = 2.3 + szH * 0.75 + Math.min(0, szL) * 0.12;
+    eye[0] = p.x - Fx * dist; eye[1] = p.y + hg; eye[2] = p.z - Fz * dist;
+    tgt[0] = p.x + Fx * 3; tgt[1] = p.y + 1.05; tgt[2] = p.z + Fz * 3;
+    p.camH = p.h; cam.vel = null;
+    const f = cam.fwd; f[0] = tgt[0] - eye[0]; f[1] = tgt[1] - eye[1]; f[2] = tgt[2] - eye[2]; const l = Math.hypot(f[0], f[1], f[2]) || 1; f[0] /= l; f[1] /= l; f[2] /= l;
+    cam.fov = 62;
+    return;
+  }
   if (mode === 2 || mode === 3) {
     const M = carMatrix(p);
     if (mode === 2) { localToWorld(M, 0, p.model.H * 0.82, 0.2, eye); localToWorld(M, 0, p.model.H * 0.72, 25, tgt); }
@@ -7357,7 +7368,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V222';
+const GAME_VERSION = 'V223';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),

@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Version 2.25
+- Mouvements : marche précise quand le joystick est poussé à moitié, course au-delà ; sprint automatique joystick à fond (+14 %, poussière, vibration légère, Maj sur ordinateur), interrompu par le tir, la visée, le rechargement et les soins.
+- En visant : pas chassé un peu plus lent, recul plus lent (déplacement plus réaliste).
+- Course verrouillée : glissez le pouce gauche loin du joystick (vibration), relâchez, le soldat continue de courir ; touchez à gauche pour arrêter. Indicateur orange en bas à gauche.
+
 ## Version 2.24
 - Trois nouvelles caméras (bouton caméra sous Pause, touche C, ou Réglages) :
   - Au dos : la vue tourne pour que le soldat regarde toujours vers le haut de l'écran, avec plus d'espace devant lui ; commandes adaptées à la rotation.

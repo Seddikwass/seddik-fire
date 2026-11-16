@@ -50,6 +50,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* v58 : aucun texte au milieu de l'écran */
 .feed .sys{background:linear-gradient(90deg,rgba(13,17,24,.86) 70%,rgba(13,17,24,.25));color:#f3e9d4;font-weight:600;font-size:12.5px;white-space:normal;max-width:min(44vw,300px);line-height:1.25;padding:4px 12px 4px 9px;box-shadow:inset 3px 0 0 #ffc54d}
 .feed .sys.tip{box-shadow:inset 3px 0 0 #4cc3ff}
+.feed .sys.run{box-shadow:inset 3px 0 0 #ffc061}
 .feed .sys.radio{box-shadow:inset 3px 0 0 #6fdc7e;color:#e6f7e8}.feed .sys.alert{box-shadow:inset 3px 0 0 #ffc061;color:#ffe9c2;font-weight:800;letter-spacing:.03em}
 .feed .sys.zw{background:linear-gradient(90deg,rgba(200,48,34,.92) 70%,rgba(200,48,34,.3));color:#fff;text-transform:uppercase;letter-spacing:.06em;font-size:11.5px;box-shadow:none}
 @media (orientation:portrait){.feed .sys{max-width:58vw}}
@@ -1050,7 +1051,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.24</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.25</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -2291,7 +2292,7 @@ function startMatch(){
   if(MDcur.sk)for(const e of ents)if(e.bot)e.skill*=MDcur.sk;
   {const dm=[.7,1,1.3][stats.diff===0||stats.diff===2?stats.diff:1];if(dm!==1)for(const e of ents)if(e.bot)e.skill*=dm}
   for(const e of ents){if(MDcur.bare){e.cur=-1;continue}const t=e.bot?pick(SIDEARMS):stats.sidearm,W=WEAP[t];e.slots[0]={type:t,mag:W.mag};e.cur=0;e.ammo[W.am]=e.bot?W.mag:W.mag*2}
-  cupGear();radioReset();
+  cupGear();radioReset();AUTORUN=null;
   for(const e of ents)if(e.sk&&e.sk.sp&&!e.mel)e.mel='gladius';
   for(const B of blds)B._dn=0;
   setupPlane();
@@ -2469,7 +2470,13 @@ function useMed(e,type){if(e.veh||e.using||e.meds[type]<=0||e.air>0||e.inPlane)r
 function tryHeal(e){if(e.using)return;if(e.hp<45&&e.meds.medkit)useMed(e,'medkit');else if(e.hp<75&&e.meds.bandage)useMed(e,'bandage');else if(e.hp<70&&e.meds.medkit)useMed(e,'medkit');else if(e.meds.drink&&e.boost<40&&e.hp<100)useMed(e,'drink')}
 
 /* ===== movement ===== */
-function moveEntity(e,mx,my,dt){if(!isFinite(mx)||!isFinite(my)){mx=0;my=0}if(!isFinite(e.x)||!isFinite(e.y)){e.x=e.px??WS/2;e.y=e.py??WS/2}const m=Math.min(1,Math.hypot(mx,my));e.moveMag=m;let sp=212;if(e.using)sp*=.5;if(e.boost>50)sp*=1.07;if(isWater(e.x,e.y))sp*=.55;if(e.reloadT>0)sp*=.92;const idle=m<.05,kk=1-Math.exp(-dt*(idle?15:11)),tvx=idle?0:mx*sp,tvy=idle?0:my*sp;e.vx=(e.vx||0)+(tvx-(e.vx||0))*kk;e.vy=(e.vy||0)+(tvy-(e.vy||0))*kk;if(idle&&Math.abs(e.vx)+Math.abs(e.vy)<5){e.vx=e.vy=0;return}e.x+=e.vx*dt;e.y+=e.vy*dt;collide(e);gpStep(e,dt);if(Q.hi&&m>.6&&Math.random()<dt*5&&vis(e.x,e.y)&&!isWater(e.x,e.y)&&!bldAt(e.x,e.y))puff(e.x-e.vx*.05,e.y-e.vy*.05,1,'rgba(196,170,126,.55)',22,.55,5)}
+function moveEntity(e,mx,my,dt){if(!isFinite(mx)||!isFinite(my)){mx=0;my=0}if(!isFinite(e.x)||!isFinite(e.y)){e.x=e.px??WS/2;e.y=e.py??WS/2}let m=Math.min(1,Math.hypot(mx,my));let sp=212;
+  if(e===player&&m>0){const raw=m,mm=raw<.55?raw*.8:.44+(raw-.55)/.45*.56;if(raw>0){mx*=mm/raw;my*=mm/raw;m=mm}
+    const can=!e.using&&!(e.reloadT>0)&&!e._aiming&&!e._firing;if((raw>.93||keys.ShiftLeft||keys.ShiftRight)&&can)e.sprT=(e.sprT||0)+dt;else e.sprT=0;
+    if(e.sprT>.45||(can&&(keys.ShiftLeft||keys.ShiftRight)&&raw>.5)){sp*=1.14;if(!e._spr){e._spr=1;if(stats.vib!==false&&navigator.vibrate&&!isDesk)try{navigator.vibrate(8)}catch(_){}}}else e._spr=0;
+    if(e._aiming&&raw>.2){const dot=(mx*Math.cos(e.angle)+my*Math.sin(e.angle))/Math.max(.001,m);sp*=dot<-.3?.84:dot<.3?.93:1}}
+  else if(e===player){e.sprT=0;e._spr=0}
+  e.moveMag=m;if(e.using)sp*=.5;if(e.boost>50)sp*=1.07;if(isWater(e.x,e.y))sp*=.55;if(e.reloadT>0)sp*=.92;const idle=m<.05,kk=1-Math.exp(-dt*(idle?15:11)),tvx=idle?0:mx*sp,tvy=idle?0:my*sp;e.vx=(e.vx||0)+(tvx-(e.vx||0))*kk;e.vy=(e.vy||0)+(tvy-(e.vy||0))*kk;if(idle&&Math.abs(e.vx)+Math.abs(e.vy)<5){e.vx=e.vy=0;return}e.x+=e.vx*dt;e.y+=e.vy*dt;collide(e);gpStep(e,dt);if((Q.hi||e._spr)&&m>.6&&Math.random()<dt*(e._spr?12:5)&&vis(e.x,e.y)&&!isWater(e.x,e.y)&&!bldAt(e.x,e.y))puff(e.x-e.vx*.05,e.y-e.vy*.05,1,'rgba(196,170,126,.55)',22,.55,5)}
 function separate(){for(let i=0;i<ents.length;i++){const a=ents[i];if(!a.alive||a.inPlane||a.air>0||a.veh)continue;for(let j=i+1;j<ents.length;j++){const b=ents[j];if(!b.alive||b.inPlane||b.air>0||b.veh)continue;const dx=b.x-a.x,dy=b.y-a.y,q=dx*dx+dy*dy,R=a.r+b.r;if(q<R*R&&q>.01){const d=Math.sqrt(q),p=(R-d)/2;a.x-=dx/d*p;a.y-=dy/d*p;b.x+=dx/d*p;b.y+=dy/d*p}}}}
 function jump(e){if(!e.inPlane)return;e.inPlane=false;e.air=1;e.x=plane.x+rand(-24,24);e.y=plane.y+rand(-24,24);if(e===player){blip(300,.12,.05,'sawtooth');toast('Dirigez votre parachute',1.8)}}
 function updateAir(e,dt,mx,my){e.air-=dt/7.5;if(e.bot){const dx=e.lx-e.x,dy=e.ly-e.y,d=Math.hypot(dx,dy);if(d>20){mx=dx/d;my=dy/d}else mx=my=0}
@@ -2571,7 +2578,7 @@ const keys={};const mouse={down:false,active:false,sx:0,sy:0};
 function mkStick(){return{id:null,ox:0,oy:0,x:0,y:0,dx:0,dy:0,mag:0,t0:0}}
 const sticks={move:mkStick(),aim:mkStick()};
 let STICK_R=58;const FIRE_AT=.62;
-let fireHeld=false;
+let fireHeld=false,AUTORUN=null;
 let isDesk=false,tapFire=false;const MOBF=!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);document.body.classList.toggle('mob',MOBF);
 function setDesk(v){if(isDesk===v)return;isDesk=v;document.body.classList.toggle('desk',v)}
 cv.addEventListener('contextmenu',ev=>ev.preventDefault());
@@ -2580,12 +2587,13 @@ cv.addEventListener('pointerdown',ev=>{initAudio();
   ev.preventDefault();setDesk(false);if(game.mode!=='play')return;
   if(ev.isPrimary)resetSticks();
   let s=ev.clientX<VW/2?sticks.move:sticks.aim;if(s.id!==null){const o=s===sticks.move?sticks.aim:sticks.move;if(o.id===null&&Math.abs(ev.clientX-VW/2)<VW*.18)s=o;else return}
-  s.id=ev.pointerId;s.ox=s.x=ev.clientX;s.oy=s.y=ev.clientY;s.dx=s.dy=s.mag=0;s.t0=performance.now();
+  s.id=ev.pointerId;s.ox=s.x=s.sx=ev.clientX;s.oy=s.y=s.sy=ev.clientY;s.dx=s.dy=s.mag=0;s.t0=performance.now();s.arm=false;if(s===sticks.move&&AUTORUN){AUTORUN=null;sysFeed('',0,'run')}
   try{cv.setPointerCapture(ev.pointerId)}catch(e){}});
 cv.addEventListener('pointermove',ev=>{if(ev.pointerType==='mouse'){mouse.sx=ev.clientX;mouse.sy=ev.clientY;mouse.active=true;return}
   for(const k in sticks){const s=sticks[k];if(s.id!==ev.pointerId)continue;let dx=ev.clientX-s.ox,dy=ev.clientY-s.oy;const d=Math.hypot(dx,dy);if(d>STICK_R){s.ox=ev.clientX-dx/d*STICK_R;s.oy=ev.clientY-dy/d*STICK_R;dx=dx/d*STICK_R;dy=dy/d*STICK_R}
-    s.x=ev.clientX;s.y=ev.clientY;const raw=Math.min(1,Math.hypot(dx,dy)/STICK_R),dead=.065;s.mag=raw<=dead?0:(raw-dead)/(1-dead);const q=Math.hypot(dx,dy)||1;s.dx=dx/q*s.mag;s.dy=dy/q*s.mag}});
-function releasePtr(ev){if(ev.pointerType==='mouse'){if(ev.button===0)mouse.down=false;return}for(const k in sticks){const s=sticks[k];if(s.id===ev.pointerId){if(k==='aim'&&GP.arm&&game.mode==='play')gpAimRelease(s);else if(k==='aim'&&performance.now()-s.t0<200&&s.mag<.3)tapFire=true;s.id=null;s.mag=0;s.dx=s.dy=0}}}
+    s.x=ev.clientX;s.y=ev.clientY;const raw=Math.min(1,Math.hypot(dx,dy)/STICK_R),dead=.065;s.mag=raw<=dead?0:(raw-dead)/(1-dead);const q=Math.hypot(dx,dy)||1;s.dx=dx/q*s.mag;s.dy=dy/q*s.mag;
+    if(k==='move'){const far=Math.hypot(ev.clientX-s.sx,ev.clientY-s.sy)>STICK_R*3.3&&s.mag>.9;if(far&&!s.arm){s.arm=true;if(stats.vib!==false&&navigator.vibrate)try{navigator.vibrate(14)}catch(_){}}else if(!far&&s.arm&&Math.hypot(ev.clientX-s.sx,ev.clientY-s.sy)<STICK_R*2.7)s.arm=false}}});
+function releasePtr(ev){if(ev.pointerType==='mouse'){if(ev.button===0)mouse.down=false;return}for(const k in sticks){const s=sticks[k];if(s.id===ev.pointerId){if(k==='aim'&&GP.arm&&game.mode==='play')gpAimRelease(s);else if(k==='aim'&&performance.now()-s.t0<200&&s.mag<.3)tapFire=true;if(k==='move'&&s.arm&&game.mode==='play'&&player&&player.alive&&!player.veh){const q=Math.hypot(s.dx,s.dy)||1;AUTORUN={dx:s.dx/q,dy:s.dy/q};sysFeed('🔒 '+trS('Course verrouillée · touchez à gauche pour arrêter'),2.6,'run')}s.arm=false;s.id=null;s.mag=0;s.dx=s.dy=0}}}
 cv.addEventListener('pointerup',releasePtr);cv.addEventListener('pointercancel',releasePtr);cv.addEventListener('lostpointercapture',releasePtr);
 function resetSticks(){for(const k in sticks){const s=sticks[k];s.id=null;s.mag=0;s.dx=s.dy=0}}
 addEventListener('blur',()=>{resetSticks();fireHeld=false;FIREB&&FIREB.classList.remove('on')});
@@ -2611,10 +2619,11 @@ function updatePlayer(dt){const p=player;if(!p.alive)return;
   if(p.inPlane){p.x=plane.x;p.y=plane.y;return}
   let mx=0,my=0;
   if(sticks.move.id!==null){mx=sticks.move.dx;my=sticks.move.dy}
+  else if(AUTORUN&&!p.veh){mx=AUTORUN.dx;my=AUTORUN.dy}
   else{if(keys.KeyW||keys.ArrowUp)my-=1;if(keys.KeyS||keys.ArrowDown)my+=1;if(keys.KeyA||keys.ArrowLeft)mx-=1;if(keys.KeyD||keys.ArrowRight)mx+=1;const m=Math.hypot(mx,my);if(m){mx/=m;my/=m}}
   if(CAMROT&&(mx||my)){const c=Math.cos(CAMROT),s=Math.sin(CAMROT),rx=mx*c+my*s,ry=-mx*s+my*c;mx=rx;my=ry}
   if(p.air>0){updateAir(p,dt,mx,my);return}
-  if(p.veh){gpDrive(p,mx,my,dt);tapFire=false;return}if(gpPlayerAim(p)){moveEntity(p,mx,my,dt);return}
+  if(p.veh){AUTORUN=null;gpDrive(p,mx,my,dt);tapFire=false;return}if(gpPlayerAim(p)){moveEntity(p,mx,my,dt);return}
   let firing=false;
   if(fireHeld&&sticks.aim.id===null&&!(mouse.active&&isDesk)){const t=autoTarget(p);p.lock=t;const ta=t?Math.atan2(t.y-p.y,t.x-p.x):(mx||my?Math.atan2(my,mx):p.angle);p.angle+=angDiff(p.angle,ta)*Math.min(1,dt*18);firing=!t||Math.abs(angDiff(p.angle,ta))<.3}
   else if(sticks.aim.id!==null&&sticks.aim.mag>.2){p.lock=null;p.angle=aimAssist(Math.atan2(sticks.aim.dy,sticks.aim.dx)-CAMROT);firing=sticks.aim.mag>FIRE_AT}
@@ -2624,6 +2633,7 @@ function updatePlayer(dt){const p=player;if(!p.alive)return;
   if(stats.autoFire&&!isDesk&&!fireHeld&&!p.using&&p.reloadT<=0&&curW(p)){const t=autoTarget(p);if(t){afT=t;const ta=Math.atan2(t.y-p.y,t.x-p.x);if(sticks.aim.id===null||sticks.aim.mag<=.2)p.angle+=angDiff(p.angle,ta)*Math.min(1,dt*14);if(Math.abs(angDiff(p.angle,ta))<.16)firing=true}}
   if(fireHeld&&sticks.aim.id!==null)firing=true;
   if(!fireHeld)p.lock=afT;
+  p._aiming=(sticks.aim.id!==null&&sticks.aim.mag>.2)||(mouse.active&&isDesk&&mouse.down)||fireHeld;p._firing=firing||tapFire;
   moveEntity(p,mx,my,dt);
   if(firing||tapFire)tryFire(p);tapFire=false}
 function autoTarget(p){const w=curW(p),R=Math.min(w?WEAP[w.type].rg*.85:60,760);let best=null,bd=R*R;for(const o of ents){if(o===p||!o.alive||o.inPlane||o.air>0||(p.team&&o.team===p.team))continue;const q=dd2(p.x,p.y,o.x,o.y);if(q<bd&&los(p.x,p.y,o.x,o.y)&&!(smokes.length&&smokeBlocks(p.x,p.y,o.x,o.y))){bd=q;best=o}}return best}
@@ -3903,7 +3913,11 @@ function render(){SFF++;CAMROT=stats.camMode==='dos'&&(game.mode==='play'||game.
   // sticks
   for(const k in sticks){const s=sticks[k];if(s.id===null)continue;ctx.lineWidth=2;ctx.strokeStyle='rgba(243,233,212,.4)';ctx.fillStyle='rgba(243,233,212,.08)';ctx.beginPath();ctx.arc(s.ox,s.oy,STICK_R,0,TAU);ctx.fill();ctx.stroke();
     if(k==='aim'){ctx.setLineDash([4,5]);ctx.beginPath();ctx.arc(s.ox,s.oy,STICK_R*FIRE_AT,0,TAU);ctx.stroke();ctx.setLineDash([])}
-    ctx.fillStyle=k==='aim'&&s.mag>FIRE_AT?'rgba(255,107,34,.75)':'rgba(243,233,212,.45)';ctx.beginPath();ctx.arc(s.ox+s.dx*STICK_R,s.oy+s.dy*STICK_R,22,0,TAU);ctx.fill()}}
+    ctx.fillStyle=k==='aim'&&s.mag>FIRE_AT?'rgba(255,107,34,.75)':k==='move'&&player&&player._spr?'rgba(255,196,97,.7)':'rgba(243,233,212,.45)';ctx.beginPath();ctx.arc(s.ox+s.dx*STICK_R,s.oy+s.dy*STICK_R,22,0,TAU);ctx.fill();
+    if(k==='move'&&s.id!==null){const L=Math.hypot(s.sx-s.ox,s.sy-s.oy);if(L>STICK_R*.5||s.arm){const a=Math.atan2(s.oy-s.sy,s.ox-s.sx),R2=STICK_R*3.3,lx=s.sx+Math.cos(a)*R2,ly=s.sy+Math.sin(a)*R2;ctx.globalAlpha=s.arm?1:clamp((L-STICK_R*.5)/(STICK_R*1.6),0,.7);
+      ctx.fillStyle=s.arm?'rgba(255,196,97,.9)':'rgba(243,233,212,.35)';ctx.beginPath();ctx.arc(lx,ly,16,0,TAU);ctx.fill();ctx.strokeStyle='rgba(20,16,10,.85)';ctx.lineWidth=2;ctx.strokeRect(lx-5,ly-1,10,8);ctx.beginPath();ctx.arc(lx,ly-2,4,Math.PI,0);ctx.stroke();ctx.globalAlpha=1}}}
+  if(AUTORUN&&game.mode==='play'&&player&&player.alive&&sticks.move.id===null&&!isDesk){const x=Math.max(70,VW*.13),y=VH*.74,a=Math.atan2(AUTORUN.dy,AUTORUN.dx)+CAMROT*0;ctx.fillStyle='rgba(255,196,97,.22)';ctx.strokeStyle='rgba(255,196,97,.85)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,24,0,TAU);ctx.fill();ctx.stroke();
+    const sx=AUTORUN.dx,sy=AUTORUN.dy;ctx.fillStyle='rgba(255,220,150,.95)';ctx.beginPath();ctx.moveTo(x+sx*15,y+sy*15);ctx.lineTo(x-sy*8-sx*6,y+sx*8-sy*6);ctx.lineTo(x+sy*8-sx*6,y-sx*8-sy*6);ctx.closePath();ctx.fill()}}
 
 function drawItem(it){const bob=reduceMotion?0:Math.sin(TIME*3+it.ph)*1.5;ctx.save();ctx.translate(it.x,it.y+bob);
   const tier=it.k==='w'?WEAP[it.type].tier:it.k==='v'||it.k==='h'?it.lvl:0;
@@ -5788,6 +5802,7 @@ I18N.ru={"en vie": "в живых", "élim.": "убийств", "Éliminé": "У
 Object.assign(I18N.en,{"VICTOIRE": "VICTORY", "Fête au village pour le dernier survivant !": "A village party for the last survivor!", "Champion des 50 étapes !": "Champion of all 50 stages!"});Object.assign(I18N.ar,{"VICTOIRE": "انتصار", "Fête au village pour le dernier survivant !": "عرس في البلاد لآخر واحد صامد!", "Champion des 50 étapes !": "بطل الـ50 مرحلة!"});Object.assign(I18N.es,{"VICTOIRE": "VICTORIA", "Fête au village pour le dernier survivant !": "¡Fiesta en el pueblo para el último superviviente!", "Champion des 50 étapes !": "¡Campeón de las 50 etapas!"});Object.assign(I18N.de,{"VICTOIRE": "SIEG", "Fête au village pour le dernier survivant !": "Dorffest für den letzten Überlebenden!", "Champion des 50 étapes !": "Champion aller 50 Etappen!"});Object.assign(I18N.it,{"VICTOIRE": "VITTORIA", "Fête au village pour le dernier survivant !": "Festa in paese per l’ultimo sopravvissuto!", "Champion des 50 étapes !": "Campione delle 50 tappe!"});Object.assign(I18N.pt,{"VICTOIRE": "VITÓRIA", "Fête au village pour le dernier survivant !": "Festa na vila para o último sobrevivente!", "Champion des 50 étapes !": "Campeão das 50 etapas!"});Object.assign(I18N.tr,{"VICTOIRE": "ZAFER", "Fête au village pour le dernier survivant !": "Son hayatta kalan için köyde şenlik!", "Champion des 50 étapes !": "50 aşamanın şampiyonu!"});Object.assign(I18N.ru,{"VICTOIRE": "ПОБЕДА", "Fête au village pour le dernier survivant !": "Праздник в честь последнего выжившего!", "Champion des 50 étapes !": "Чемпион всех 50 этапов!"});
 Object.assign(I18N.en,{"proche": "close", "normale": "normal", "large": "wide", "Zoom caméra": "Camera zoom"});Object.assign(I18N.ar,{"proche": "قريبة", "normale": "عادية", "large": "واسعة", "Zoom caméra": "تكبير الكاميرا"});Object.assign(I18N.es,{"proche": "cercana", "normale": "normal", "large": "amplia", "Zoom caméra": "Zoom de cámara"});Object.assign(I18N.de,{"proche": "nah", "normale": "normal", "large": "weit", "Zoom caméra": "Kamerazoom"});Object.assign(I18N.it,{"proche": "vicina", "normale": "normale", "large": "ampia", "Zoom caméra": "Zoom fotocamera"});Object.assign(I18N.pt,{"proche": "próxima", "normale": "normal", "large": "ampla", "Zoom caméra": "Zoom da câmera"});Object.assign(I18N.tr,{"proche": "yakın", "normale": "normal", "large": "geniş", "Zoom caméra": "Kamera yakınlaştırma"});Object.assign(I18N.ru,{"proche": "близко", "normale": "обычно", "large": "широко", "Zoom caméra": "Зум камеры"});
 Object.assign(I18N.en,{"au dos": "behind", "drone": "drone", "Changer de caméra": "Switch camera", "cinématique": "cinematic", "standard": "standard"});Object.assign(I18N.ar,{"au dos": "من الخلف", "drone": "درون", "Changer de caméra": "بدّل الكاميرا", "cinématique": "سينمائية", "standard": "عادية"});Object.assign(I18N.es,{"au dos": "por detrás", "drone": "dron", "Changer de caméra": "Cambiar cámara", "cinématique": "cinematográfica", "standard": "estándar"});Object.assign(I18N.de,{"au dos": "hinter dem Spieler", "drone": "Drohne", "Changer de caméra": "Kamera wechseln", "cinématique": "filmisch", "standard": "Standard"});Object.assign(I18N.it,{"au dos": "alle spalle", "drone": "drone", "Changer de caméra": "Cambia visuale", "cinématique": "cinematografica", "standard": "standard"});Object.assign(I18N.pt,{"au dos": "por trás", "drone": "drone", "Changer de caméra": "Trocar câmera", "cinématique": "cinematográfica", "standard": "padrão"});Object.assign(I18N.tr,{"au dos": "arkadan", "drone": "drone", "Changer de caméra": "Kamerayı değiştir", "cinématique": "sinematik", "standard": "standart"});Object.assign(I18N.ru,{"au dos": "из-за спины", "drone": "дрон", "Changer de caméra": "Сменить камеру", "cinématique": "кинематографичная", "standard": "стандартная"});
+Object.assign(I18N.en,{"Course verrouillée · touchez à gauche pour arrêter": "Auto-run locked · tap left to stop"});Object.assign(I18N.ar,{"Course verrouillée · touchez à gauche pour arrêter": "الجري مقفول · المس على اليسار باش توقف"});Object.assign(I18N.es,{"Course verrouillée · touchez à gauche pour arrêter": "Carrera bloqueada · toca a la izquierda para parar"});Object.assign(I18N.de,{"Course verrouillée · touchez à gauche pour arrêter": "Auto-Lauf aktiv · links tippen zum Stoppen"});Object.assign(I18N.it,{"Course verrouillée · touchez à gauche pour arrêter": "Corsa bloccata · tocca a sinistra per fermarti"});Object.assign(I18N.pt,{"Course verrouillée · touchez à gauche pour arrêter": "Corrida travada · toque à esquerda para parar"});Object.assign(I18N.tr,{"Course verrouillée · touchez à gauche pour arrêter": "Otomatik koşu kilitli · durmak için sola dokun"});Object.assign(I18N.ru,{"Course verrouillée · touchez à gauche pour arrêter": "Автобег включён · коснитесь слева, чтобы остановиться"});
 function trOne(k){const d=I18N[LANG];if(!d)return null;if(Object.prototype.hasOwnProperty.call(d,k))return d[k];
   for(const r of I18N_RX){if(r[0].test(k)){const v=r[1][LANG];if(v!==undefined)return k.replace(r[0],v)}}
   const low=k.charAt(0).toUpperCase()+k.slice(1);if(low!==k&&Object.prototype.hasOwnProperty.call(d,low)){const v=d[low];return v.charAt(0).toLowerCase()+v.slice(1)}

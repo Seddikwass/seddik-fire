@@ -414,9 +414,9 @@ export function matchTeam(st, id, kitAway = false) {
   if (c) {
     if (id !== st.userClub) { if (!validLineup(st, id)) autoLineup(st, id); } else if (!validLineup(st, id)) repairLineup(st, id);
     const t = c.tactics; const form = FORMATION_POS[t.formation];
-    const mk = p => ({ id: p.id, name: p.name, num: p.num, pos: p.pos, attrs: p.attrs, fitness: p.fitness });
+    const mk = p => ({ id: p.id, name: p.name, num: p.num, pos: p.pos, attrs: p.attrs, fitness: p.fitness, instr: t.instr?.[p.id] || '' });
     const kitCols = kitAway ? c.away : c.colors;
-    return { id, name: c.name, short: c.short, colors: kitCols, kit: { shirt: kitCols[0], trim: kitCols[1], shorts: kitAway ? kitCols[0] : '#f2f2f2' }, formation: t.formation, mentality: t.mentality, pressing: t.pressing, width: t.width, line: t.line, stadium: c.stadium, players: t.lineup.map(i => mk(st.players[i])), bench: t.bench.map(i => st.players[i]).filter(Boolean).map(mk), formPos: form };
+    return { id, name: c.name, short: c.short, colors: kitCols, kit: { shirt: kitCols[0], trim: kitCols[1], shorts: kitAway ? kitCols[0] : '#f2f2f2' }, formation: t.formation, mentality: t.mentality, pressing: t.pressing, width: t.width, line: t.line, takers: t.takers || {}, stadium: c.stadium, players: t.lineup.map(i => mk(st.players[i])), bench: t.bench.map(i => st.players[i]).filter(Boolean).map(mk), formPos: form };
   }
   const caf = CAF_CLUBS.find(x => x.id === id), sq = cafSquad(st, id);
   const cols = kitAway ? [caf.colors[1], caf.colors[0]] : caf.colors;

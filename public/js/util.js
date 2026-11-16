@@ -12,13 +12,14 @@ export const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 export const lerp = (a, b, t) => a + (b - a) * t;
 export const fmtMoney = n => {
   const s = Math.round(n).toLocaleString('fr-FR').replace(/ | /g, ' ');
-  return s + ' DT';
+  return '\u2066' + s + ' DT\u2069'; // isolat bidi : lisible en arabe (RTL)
 };
 export const fmtShort = n => {
   const a = Math.abs(n), sg = n < 0 ? '-' : '';
-  if (a >= 1e6) return sg + (a / 1e6).toFixed(a >= 1e7 ? 1 : 2).replace('.', ',') + ' M DT';
-  if (a >= 1e3) return sg + Math.round(a / 1e3) + ' k DT';
-  return sg + Math.round(a) + ' DT';
+  const w = x => '\u2066' + x + '\u2069';
+  if (a >= 1e6) return w(sg + (a / 1e6).toFixed(a >= 1e7 ? 1 : 2).replace('.', ',') + ' M DT');
+  if (a >= 1e3) return w(sg + Math.round(a / 1e3) + ' k DT');
+  return w(sg + Math.round(a) + ' DT');
 };
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const uid = (p = 'id') => p + '_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);

@@ -48,7 +48,7 @@ jarsigner -verify football-tunisia-2026-unsigned.aab
 | 6 | Bouton retour | pause / retour / sortie |
 | 7 | Mode avion → avancer la carrière → réseau | jeu hors ligne, synchronisation ensuite |
 | 8 | Publicité récompensée (accueil carrière) | pub de test AdMob, +20 000 DT |
-| 9 | Huawei P20 (EMUI, sans services Google) | jeu OK ; publicités AdMob indisponibles (message), voix selon moteur TTS installé |
+| 9 | Huawei P20 (EMUI 9/10, Android 8.1-10, services Google présents) | jeu OK, notch géré (mode plein écran), voix via le moteur TTS installé |
 | 10 | Petits/grands écrans, tablette | interface adaptée (options de taille des boutons) |
 
 Différences WebView / navigateur gérées : synthèse vocale (plugin natif), audio débloqué au premier toucher, stockage local persistant de l'application, orientation forcée, reprise après veille (`appStateChange`), service worker désactivé dans l'application.

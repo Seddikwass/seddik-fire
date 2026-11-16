@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const PORT = 3199, DATA = '/tmp/ft26-test-db.json', BASE = `http://127.0.0.1:${PORT}`;
 fs.rmSync(DATA, { force: true });
-const env = { ...process.env, PORT: String(PORT), DATA_FILE: DATA, ADMIN_TOKEN: 'admintest-123456', SESSION_SECRET: 'test-secret', DATABASE_URL: '' };
+const env = { ...process.env, PORT: String(PORT), DATA_FILE: DATA, ADMIN_TOKEN: 'admintest-123456', SESSION_SECRET: 'test-secret', DATABASE_URL: process.env.TEST_DATABASE_URL || '' };
 const start = () => new Promise(ok => { const p = spawn('node', ['server.js'], { env, stdio: ['ignore', 'pipe', 'inherit'] }); p.stdout.on('data', d => { if (String(d).includes('écoute')) ok(p); }); });
 const j = async (p, o = {}) => { const r = await fetch(BASE + p, { ...o, headers: { 'Content-Type': 'application/json', ...(o.headers || {}) }, body: o.body ? JSON.stringify(o.body) : undefined }); return { s: r.status, d: await r.json().catch(() => null) }; };
 let srv = await start();
@@ -34,6 +34,9 @@ r = await j('/api/admin/stats', { headers: { 'X-Admin-Token': 'admintest-123456'
 r = await j('/api/admin/data', { method: 'PUT', headers: { 'X-Admin-Token': 'admintest-123456' }, body: { clubs: [{ id: 'x', name: 'X', div: 1, colors: ['#000', '#fff'] }] } }); assert.equal(r.s, 200);
 r = await j('/api/data'); assert.equal(r.d.clubs[0].id, 'x');
 r = await j('/api/admin/backup', { headers: { 'X-Admin-Token': 'admintest-123456' } }); assert.equal(r.d.users.length, 1); assert.ok(!JSON.stringify(r.d).includes('motdepasse-solide'), 'mot de passe jamais en clair');
+const dump = r.d;
+r = await j('/api/admin/restore', { method: 'POST', headers: { 'X-Admin-Token': 'admintest-123456' }, body: dump }); assert.equal(r.s, 200, 'restauration'); console.log('export + restauration OK');
+r = await j('/api/auth/login', { method: 'POST', body: { username: 'wassim', password: 'motdepasse-solide' } }); assert.equal(r.s, 200, 'connexion après restauration');
 r = await j('/api/admin/data', { method: 'PUT', headers: { 'X-Admin-Token': 'admintest-123456' }, body: {} });
 srv.kill('SIGTERM');
 console.log('OK — tous les tests API passent');

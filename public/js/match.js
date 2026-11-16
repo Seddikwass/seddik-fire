@@ -73,13 +73,13 @@ export class Match {
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, anim: Math.random() * 6,
       stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, yellow: 0, sentOff: false, injured: false,
-      skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
+      instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
       side, name: t.name, short: t.short, kit: t.kit || { shirt: t.colors[0], trim: t.colors[1], shorts: t.colors[1] },
       gkKit: t.gkKit || { shirt: '#2fb84a', trim: '#111', shorts: '#111' },
       ps, bench: (t.bench || []).map(b => ({ ...b })), mentality: t.mentality || 0, pressing: t.pressing ?? 1, formation: t.formation,
-      width: t.width ?? 1, line: t.line ?? 0,
+      width: t.width ?? 1, line: t.line ?? 0, takers: t.takers || {},
       dir: side === 0 ? 1 : -1, stadium: t.stadium,
     };
   }
@@ -127,7 +127,7 @@ export class Match {
     }
     const line = bx < -28 ? 0 : bx < -12 ? 1 : 2;
     const push = (inPoss ? [20, 24, 27] : [7, 6, 4])[line] + T.mentality * 3 + (line === 0 ? T.line * 4 : T.line * 2);
-    let nx = bx + push + bnx * (inPoss ? 0.38 : 0.42);
+    let nx = bx + push + bnx * (inPoss ? 0.38 : 0.42) + (p.instr === 'def' ? -6 : p.instr === 'att' && inPoss ? 6 : 0);
     let ny = by * (inPoss ? 1.08 : 0.72) * (0.85 + T.width * 0.15) + bny * (inPoss ? 0.18 : 0.32);
     if (!inPoss) nx = Math.min(nx, bnx + 6 + (line === 2 ? 14 : 0));
     // appel en profondeur des attaquants
@@ -156,6 +156,9 @@ export class Match {
     if (type === 'goalkick') taker = T.ps[0];
     else taker = T.ps.filter(p => !p.sentOff && !p.isGK).sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
     if (type === 'penalty') taker = T.ps.filter(p => !p.sentOff && !p.isGK).sort((a, b) => b.a.sho - a.a.sho)[0];
+    const pref = { penalty: T.takers.penalty, corner: T.takers.corner, freekick: T.takers.freekick }[type];
+    const designated = pref && T.ps.find(p => p.id === pref && !p.sentOff);
+    if (designated && (type === 'penalty' || Math.hypot(designated.x - x, designated.y - y) < 40)) taker = designated;
     const b = this.ball; b.x = x; b.y = y; b.z = 0; b.vx = b.vy = b.vz = 0; b.owner = null;
     this.restart = { type, team, taker, x, y };
     this.state = 'restart'; this.stateT = type === 'penalty' ? 2.2 : type === 'throw' ? 0.9 : 1.3;
@@ -307,6 +310,9 @@ export class Match {
         if (p === this.selected && this.userSide === T.side) continue; // contrôlé par l'utilisateur
         if (p === own) { this.aiCarrier(p, dt); continue; }
         if (p.isGK) { this.aiKeeper(p, dt); continue; }
+        // receveur désigné : va au-devant du ballon
+        const pi = this.passInfo;
+        if (!own && pi && pi.to === p && pi.t < 3) { const tgt = this.receivePoint(p, pi); this.moveTo(p, tgt.x, tgt.y, dt, 1, false, true); continue; }
         // balle libre : le plus proche va la chercher
         if (!own) {
           const t = this.ballLanding();
@@ -320,17 +326,24 @@ export class Match {
           if (pressers[0] === p) this.tryTackle(p, false);
           continue;
         }
-        if (inPoss && p.base[0] > -14 && p.run <= 0 && this.r() < dt * 0.15) p.run = 2.5;
+        if (inPoss && (p.base[0] > -14 || p.instr === 'run') && p.run <= 0 && this.r() < dt * (p.instr === 'run' ? 0.45 : 0.15)) p.run = 2.5;
         let [tx, ty] = this.formationPos(p, inPoss);
         if (!inPoss) { // marquage
           const opp = this.teams[1 - T.side].ps;
           let mk = null, md = 9;
           for (const o of opp) { if (o.sentOff || o.isGK) continue; const d = Math.hypot(o.x - tx, o.y - ty); if (d < md) { md = d; mk = o; } }
-          if (mk && p.base[0] < -12) { const gx = -HL * T.dir; tx = lerp(mk.x, gx, 0.12); ty = lerp(mk.y, 0, 0.12); }
+          if (mk && (p.base[0] < -12 || p.instr === 'mark')) { const gx = -HL * T.dir, k = p.instr === 'mark' ? 0.05 : 0.12; tx = lerp(mk.x, gx, k); ty = lerp(mk.y, 0, k); }
         }
         this.moveTo(p, tx, ty, dt, 1, false, Math.hypot(tx - p.x, ty - p.y) > 12);
       }
     }
+  }
+  // point de réception : projection du joueur sur la trajectoire du ballon
+  receivePoint(p, pi) {
+    const b = this.ball, vx = b.vx, vy = b.vy, v2 = vx * vx + vy * vy;
+    if (v2 < 4) return { x: b.x, y: b.y };
+    const t = clamp(((p.x - b.x) * vx + (p.y - b.y) * vy) / v2, 0.05, 2);
+    return { x: b.x + vx * t, y: b.y + vy * t };
   }
   closestTo(T, x, y) {
     let best = null, bd = 1e9;
@@ -420,19 +433,19 @@ export class Match {
     let tx = t.x, ty = t.y;
     const dist0 = Math.hypot(tx - p.x, ty - p.y);
     const lob = lofted || dist0 > 32;
-    let speed = clamp(dist0 * (lob ? 0.75 : 1.05) + 6, 9, lob ? 24 : 27);
+    let speed = clamp(dist0 * (lob ? 0.55 : 0.75) + 7, 9, lob ? 20 : 22);
     const tf = dist0 / speed;
     tx += t.vx * tf * 0.9; ty += t.vy * tf * 0.9;
     if (through) tx += d * (4 + dist0 * 0.08);
     const assist = p.team === this.userSide && this.settings.assist ? 0.5 : 1;
-    const err = (1 - p.a.pas / 100) * 0.16 * assist + (p.team !== this.userSide ? 0.02 : 0);
+    const err = (1 - p.a.pas / 100) * 0.11 * assist + (p.team !== this.userSide ? 0.02 : 0);
     let ang = Math.atan2(ty - p.y, tx - p.x) + (this.r() - 0.5) * 2 * err;
     const dist = Math.hypot(tx - p.x, ty - p.y);
-    speed = clamp(dist * (lob ? 0.75 : 1.05) + 6, 9, lob ? 24 : 28);
+    speed = clamp(dist * (lob ? 0.55 : 0.75) + 7, 9, lob ? 20 : 22);
     const vz = lob ? clamp(dist * 0.32, 4, 11) : 0.6;
     this.kickBall(p, Math.cos(ang) * speed, Math.sin(ang) * speed, vz, 0.4);
     this.stats.passes[p.team]++;
-    this.passInfo = { from: p, to: t, team: p.team, t: 0 };
+    this.passInfo = { from: p, to: t, team: p.team, t: 0, tx: p.x + Math.cos(ang) * dist, ty: p.y + Math.sin(ang) * dist };
     if (p.team === this.userSide && this.userSide != null) this.select(t);
   }
   cross(p) {
@@ -535,6 +548,7 @@ export class Match {
       } else if (mag > 0.15) { const s = this.speedOf(p, inp.sprint) * Math.min(1, mag); this.applyVel(p, inp.jx / mag * s, inp.jy / mag * s, dt); if (inp.sprint) p.stamina = Math.max(0.3, p.stamina - dt * 0.012); }
       else if (this.settings.assist) { // assistance : se replace automatiquement
         const own = b.owner; const poss = own ? own.team === p.team : false;
+        if (!own && this.passInfo && this.passInfo.to === p) { const tg = this.receivePoint(p, this.passInfo); this.moveTo(p, tg.x, tg.y, dt, 1, false, true); return; }
         if (!own) { const t = this.ballLanding(); if (this.closestTo(T, t.x, t.y) === p) { this.moveTo(p, t.x, t.y, dt, 1, false, true); return; } }
         const [tx, ty] = this.formationPos(p, poss); this.moveTo(p, tx, ty, dt, 0.9);
       } else this.applyVel(p, 0, 0, dt);
@@ -632,13 +646,14 @@ export class Match {
       if (p.sentOff || p.cd > 0) continue;
       const d = Math.hypot(p.x - b.x, p.y - b.y);
       const reachZ = p.isGK && Math.abs(b.x - (-HL * T.dir)) < 17 && Math.abs(b.y) < 21 ? 2.6 : 1.0;
-      if (d < 1.0 && b.z < reachZ && d < bd) { bd = d; best = p; }
+      const rad = this.passInfo && this.passInfo.to === p ? 1.7 : 1.1;
+      if (d < rad && b.z < reachZ && d < bd) { bd = d; best = p; }
       // tête
       if (!p.isGK && d < 1.1 && b.z >= 1.1 && b.z < 2.4 && p.cd <= 0) this.header(p);
     }
     if (best) {
       const rel = Math.hypot(b.vx - best.vx, b.vy - best.vy);
-      const ctl = 14 + best.a.dri / 10 + (best.isGK ? 10 : 0);
+      const ctl = 17 + best.a.dri / 8 + (best.isGK ? 10 : 0) + (this.passInfo && this.passInfo.to === best ? 4 : 0);
       if (rel > ctl && this.r() < 0.6) { b.vx *= 0.35; b.vy *= 0.35; b.vz = Math.abs(b.vz) * 0.3 + 1; best.cd = 0.25; b.last = best; b.lastTeam = best.team; return; }
       const prevTeam = b.lastTeam, pi = this.passInfo;
       b.owner = best; b.last = best; b.inFlightShot = null; best.touches++;

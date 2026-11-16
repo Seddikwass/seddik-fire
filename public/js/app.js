@@ -115,12 +115,12 @@ VIEWS.hub = () => {
    <section class="card next">${nextF ? `<h3>${t('Prochain match')}</h3><small>${C.slotLabel(st, ni)}${ni > st.slot ? ' (après ' + (ni - st.slot) + ' étape(s))' : ''}</small>
      <div class="fixture">${crest(nextF.h, 46)}<div><b>${esc(C.clubName(st, nextF.h))}</b><span>vs</span><b>${esc(C.clubName(st, nextF.a))}</b>${C.isDerby(nextF.h, nextF.a) ? '<em class="tag hot">Affiche à forte rivalité</em>' : ''}</div>${crest(nextF.a, 46)}</div>` : '<h3>Aucun match à venir</h3>'}
      <div class="row">${nf ? `<button class="btn primary big" data-a="nav" data-v="prematch">⚽ ${t('Jouer')} / ${t('Simuler')}</button>` : `<button class="btn primary big" data-a="advance">⏭ ${st.slots[st.slot]?.type === 'END' ? 'Terminer la saison' : t('Avancer')}</button>`}</div></section>
-   <section class="card"><h3>${uc.div === 1 ? t('Ligue 1') : 'Ligue 2'}</h3><div class="big">${pos}<sup>e</sup></div><small>${row ? `${row.pts} pts · ${row.w}V ${row.d}N ${row.l}D · ${row.gf}-${row.ga}` : ''}</small>
+   <section class="card"><h3>${uc.div === 1 ? t('Ligue 1') : 'Ligue 2'}</h3><div class="big">${row && row.p ? `${pos}<sup>e</sup>` : '—'}</div><small dir="ltr">${row ? `${row.pts} pts · ${row.w}V ${row.d}N ${row.l}D · ${row.gf}-${row.ga}` : ''}</small>
      <p>${t('Objectif')} : <b>${t(C.OBJECTIVES[st.objective])}</b></p><button class="btn small" data-a="nav" data-v="tables">${t('Classements')} →</button></section>
-   <section class="card"><h3>Club</h3>
+   <section class="card"><h3>${t('Club')}</h3>
      <div class="kv"><span>${t('Trésorerie')}</span><b class="${uc.budget < 0 ? 'neg' : ''}">${fmtMoney(uc.budget)}</b><span>${t('Masse salariale')}</span><b>${fmtMoney(C.squad(st, st.userClub).reduce((a, p) => a + p.wage, 0))}/mois</b>
-     <span>${t('Confiance')} (président)</span><b>${bar(st.president.trust)}</b><span>${t('Satisfaction')} supporters</span><b>${bar(uc.fans.sat)}</b><span>Cohésion</span><b>${bar(uc.cohesion)}</b><span>Mercato</span><b>${st.window ? 'ouvert (' + st.window + ')' : 'fermé'}</b></div></section>
-   <section class="card"><h3>À traiter</h3><ul class="todo">
+     <span>${t('Confiance')} (président)</span><b>${bar(st.president.trust)}</b><span>${t('Satisfaction')} supporters</span><b>${bar(uc.fans.sat)}</b><span>${t('Cohésion')}</span><b>${bar(uc.cohesion)}</b><span>${t('Mercato')}</span><b>${st.window ? 'ouvert (' + st.window + ')' : 'fermé'}</b></div></section>
+   <section class="card"><h3>${t('À traiter')}</h3><ul class="todo">
      ${st.sponsorOffers ? '<li data-a="nav" data-v="president">📝 Choisir un sponsor principal</li>' : ''}
      ${st.election && !st.election.done ? '<li data-a="nav" data-v="president">🗳 Élection en cours !</li>' : ''}
      ${neg ? `<li data-a="nav" data-v="transfers" data-tab="neg">💱 ${neg} dossier(s) de transfert</li>` : ''}
@@ -215,7 +215,7 @@ VIEWS.tactics = () => {
   const sel = args.sel ?? null;
   const opts = (k, arr) => arr.map(([v, l]) => `<option value="${v}" ${String(tac[k]) === String(v) ? 'selected' : ''}>${l}</option>`).join('');
   return `<div class="ph"><h2>${t('Tactique')}</h2></div><div class="tac">
-   <div class="pitch2d">${form.map(([x, y], i) => { const p = pl[i]; return `<button class="dot ${sel === i ? 'sel' : ''} ${p && !C.available(p) ? 'bad' : ''}" style="left:${(y + 34) / 68 * 100}%;bottom:${(x + 52) / 52 * 92 + 2}%" data-a="tacSlot" data-i="${i}"><b>${p ? p.num : '?'}</b><small>${pos[i]} · ${p ? esc(p.last) : '—'}</small><i class="${p ? ovrCls(C.ovrOf(p, pos[i])) : ''}">${p ? C.ovrOf(p, pos[i]) : ''}</i></button>`; }).join('')}</div>
+   <div class="pitch2d">${form.map(([x, y], i) => { const p = pl[i]; const row = { GK: 0, DD: 1, DC: 1, DG: 1, MDC: 2, MC: 3, MD: 3, MG: 3, MOC: 4, AD: 5, AG: 5, BU: 5 }[pos[i]]; return `<button class="dot ${sel === i ? 'sel' : ''} ${p && !C.available(p) ? 'bad' : ''}" style="left:${clamp((y + 34) / 68 * 100, 9, 91)}%;bottom:${3 + row * 16.5}%" data-a="tacSlot" data-i="${i}"><b>${p ? p.num : '?'}</b><small>${pos[i]} · ${p ? esc(p.last) : '—'}</small><i class="${p ? ovrCls(C.ovrOf(p, pos[i])) : ''}">${p ? C.ovrOf(p, pos[i]) : ''}</i></button>`; }).join('')}</div>
    <div class="tacside">
     <p class="hint">${sel != null ? `Choisissez le joueur pour le poste <b>${pos[sel]}</b> :` : 'Touchez un poste sur le terrain pour changer le joueur.'}</p>
     ${sel != null ? `<div class="pick">${C.squad(st, st.userClub).filter(p => C.available(p)).sort((a, b) => C.ovrOf(b, pos[sel]) - C.ovrOf(a, pos[sel])).map(p => `<button data-a="tacPick" data-id="${p.id}" data-i="${sel}">${p.num}. ${esc(p.name)} <i>${p.pos}</i> <b class="${ovrCls(C.ovrOf(p, pos[sel]))}">${C.ovrOf(p, pos[sel])}</b>${tac.lineup.includes(p.id) ? ' ✓' : ''}</button>`).join('')}</div>` : ''}

@@ -26,7 +26,7 @@ const AR = {
   'Buteurs': 'الهدافون', 'Joueurs fictifs': 'لاعبون خياليون', 'Regarder une pub (récompense)': 'شاهد إعلانا (مكافأة)',
   'Démissionner': 'الاستقالة', 'Programme électoral': 'البرنامج الانتخابي', 'Candidats': 'المترشحون', 'Résultats': 'النتائج',
   'Offres reçues': 'العروض الواردة', 'Marché des transferts': 'سوق الانتقالات', 'Mes offres': 'عروضي', 'Historique': 'السجل',
-  'Contrats': 'العقود', 'Jeunes': 'الشبان', 'Réserve': 'الاحتياطي', 'Diagnostic': 'التشخيص', 'Traitement': 'العلاج',
+  'Contrats': 'العقود', 'À traiter': 'مهام عاجلة', 'Club': 'النادي', 'Cohésion': 'الانسجام', 'Mercato': 'الميركاتو', 'Jeunes': 'الشبان', 'Réserve': 'الاحتياطي', 'Diagnostic': 'التشخيص', 'Traitement': 'العلاج',
 };
 const EN = {
   'Accueil': 'Home', 'Carrière': 'Career', 'Effectif': 'Squad', 'Tactique': 'Tactics', 'Transferts': 'Transfers', 'Finances': 'Finances',

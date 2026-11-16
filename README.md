@@ -1,5 +1,14 @@
 # Seddik Fire
 
+## Version 2.26
+- Cartes 100 % tunisiennes :
+  - Nouvelles maisons blanchies à la chaux autour des lieux habités : toit-terrasse, petite coupole, volets et portes bleus, linge, pots de fleurs, château d'eau, bougainvillier.
+  - Une mosquée par carte (deux en ville) : grande coupole, petites coupoles, créneaux et minaret carré au toit de tuiles vertes.
+  - Cafés au bord des routes avec auvent rayé bleu et blanc.
+  - En ville et ailleurs, une partie des toits existants repeints à la tunisienne ; en ville, le plus grand bâtiment près de la médina prend l'allure d'une mosquée (intérieur et butin inchangés).
+  - Végétation : palmiers le long de la côte, oliveraies en rangées, haies de figuiers de Barbarie le long des pistes, bougainvilliers fleuris, orangers.
+- Les nouveaux bâtiments n'ont pas de porte (obstacles et abris) ; le sol pré-calculé des cartes Android reste valable.
+
 ## Version 2.25
 - Mouvements : marche précise quand le joystick est poussé à moitié, course au-delà ; sprint automatique joystick à fond (+14 %, poussière, vibration légère, Maj sur ordinateur), interrompu par le tir, la visée, le rechargement et les soins.
 - En visant : pas chassé un peu plus lent, recul plus lent (déplacement plus réaliste).

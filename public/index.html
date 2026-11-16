@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<title>Football Tunisia 2026</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f1a">
+<meta name="description" content="Jeu de football tunisien : matchs en 2.5D, Ligue 1, Coupe de Tunisie, compétitions CAF et gestion complète de club.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="splash"><div><div class="sb">⚽</div><b>FOOTBALL TUNISIA 2026</b><small>Chargement…</small></div></div>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<noscript>Ce jeu nécessite JavaScript.</noscript>
+<script>
+  // Message clair si le navigateur est trop ancien (modules ES non supportés)
+  window.__ftBootTimer = setTimeout(function(){ var a=document.getElementById('app'); if(a && !a.innerHTML){ a.innerHTML='<p style="padding:20px;color:#fff">Le jeu n\'a pas pu démarrer. Mettez à jour votre navigateur ou Android System WebView, puis rechargez.</p>'; } }, 8000);
+</script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

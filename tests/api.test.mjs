@@ -1,0 +1,39 @@
+// Test de l'API (stockage fichier) : démarrage, inscription, connexion, sauvegarde, conflit, redémarrage, admin
+import { spawn } from 'node:child_process';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const PORT = 3199, DATA = '/tmp/ft26-test-db.json', BASE = `http://127.0.0.1:${PORT}`;
+fs.rmSync(DATA, { force: true });
+const env = { ...process.env, PORT: String(PORT), DATA_FILE: DATA, ADMIN_TOKEN: 'admintest-123456', SESSION_SECRET: 'test-secret', DATABASE_URL: '' };
+const start = () => new Promise(ok => { const p = spawn('node', ['server.js'], { env, stdio: ['ignore', 'pipe', 'inherit'] }); p.stdout.on('data', d => { if (String(d).includes('écoute')) ok(p); }); });
+const j = async (p, o = {}) => { const r = await fetch(BASE + p, { ...o, headers: { 'Content-Type': 'application/json', ...(o.headers || {}) }, body: o.body ? JSON.stringify(o.body) : undefined }); return { s: r.status, d: await r.json().catch(() => null) }; };
+let srv = await start();
+let r = await j('/api/health'); assert.equal(r.s, 200); console.log('health', r.d);
+r = await j('/', {}).catch(() => null);
+const html = await (await fetch(BASE + '/')).text(); assert.ok(html.includes('Football Tunisia 2026'));
+r = await j('/api/auth/register', { method: 'POST', body: { username: 'wassim', password: 'court' } }); assert.equal(r.s, 400);
+r = await j('/api/auth/register', { method: 'POST', body: { username: 'wassim', password: 'motdepasse-solide' } }); assert.equal(r.s, 201); const tok = r.d.token;
+r = await j('/api/auth/register', { method: 'POST', body: { username: 'wassim', password: 'motdepasse-solide' } }); assert.equal(r.s, 409, 'doublon refusé');
+r = await j('/api/auth/login', { method: 'POST', body: { username: 'wassim', password: 'faux-mot-de-passe' } }); assert.equal(r.s, 401);
+r = await j('/api/auth/login', { method: 'POST', body: { username: 'wassim', password: 'motdepasse-solide' } }); assert.equal(r.s, 200);
+const A = { Authorization: 'Bearer ' + tok };
+r = await j('/api/save', { headers: A }); assert.equal(r.d.data, null);
+r = await j('/api/save', { method: 'PUT', headers: A, body: { data: { foo: 1 } } }); assert.equal(r.s, 400, 'sauvegarde invalide refusée');
+const save = { clubs: { ca: {} }, players: {}, season: 2026, updatedAt: Date.now() };
+r = await j('/api/save', { method: 'PUT', headers: A, body: { data: save, baseRevision: null } }); assert.equal(r.s, 200); assert.equal(r.d.revision, 1);
+r = await j('/api/save', { method: 'PUT', headers: A, body: { data: { ...save, season: 2027, updatedAt: Date.now() + 1000 }, baseRevision: 1 } }); assert.equal(r.d.revision, 2);
+r = await j('/api/save', { method: 'PUT', headers: A, body: { data: { ...save, updatedAt: Date.now() - 99999 }, baseRevision: 1 } }); assert.equal(r.s, 409, 'conflit détecté'); console.log('conflit OK', r.d.error);
+r = await j('/api/save', { headers: { Authorization: 'Bearer faux.jeton' } }); assert.equal(r.s, 401);
+// redémarrage du serveur : la sauvegarde survit
+srv.kill('SIGTERM'); await new Promise(o => srv.on('exit', o)); srv = await start();
+r = await j('/api/save', { headers: A }); assert.equal(r.d.data.season, 2027); assert.equal(r.d.revision, 2); console.log('sauvegarde après redémarrage OK (révision', r.d.revision + ')');
+r = await j('/api/save/history', { headers: A }); assert.equal(r.d.history.length, 2);
+// admin
+r = await j('/api/admin/stats', { headers: { 'X-Admin-Token': 'mauvais' } }); assert.equal(r.s, 403);
+r = await j('/api/admin/stats', { headers: { 'X-Admin-Token': 'admintest-123456' } }); assert.equal(r.d.users, 1);
+r = await j('/api/admin/data', { method: 'PUT', headers: { 'X-Admin-Token': 'admintest-123456' }, body: { clubs: [{ id: 'x', name: 'X', div: 1, colors: ['#000', '#fff'] }] } }); assert.equal(r.s, 200);
+r = await j('/api/data'); assert.equal(r.d.clubs[0].id, 'x');
+r = await j('/api/admin/backup', { headers: { 'X-Admin-Token': 'admintest-123456' } }); assert.equal(r.d.users.length, 1); assert.ok(!JSON.stringify(r.d).includes('motdepasse-solide'), 'mot de passe jamais en clair');
+r = await j('/api/admin/data', { method: 'PUT', headers: { 'X-Admin-Token': 'admintest-123456' }, body: {} });
+srv.kill('SIGTERM');
+console.log('OK — tous les tests API passent');

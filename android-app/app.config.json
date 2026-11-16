@@ -1,0 +1,4 @@
+{
+  "_note": "URL publique de l'API (service Render). L'application Android fonctionne hors ligne ; l'API sert aux comptes et à la synchronisation.",
+  "apiBase": "https://football-tunisia-2026.onrender.com"
+}

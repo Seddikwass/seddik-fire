@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Administration — Football Tunisia 2026</title>
+<style>
+body{font:14px system-ui,Arial;background:#0b0f1a;color:#eef2ff;margin:0;padding:16px}h1{margin:0 0 10px}.card{background:#161e33;border:1px solid #26304d;border-radius:10px;padding:12px;margin-bottom:12px}
+input,select,textarea{background:#0e1424;color:#fff;border:1px solid #2c3858;border-radius:6px;padding:6px}button{background:#e70013;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}button.g{background:#2a365a}
+table{border-collapse:collapse;width:100%;font-size:12.5px}td,th{border-bottom:1px solid #26304d;padding:3px}td input{width:100%;box-sizing:border-box}td input[type=color]{padding:0;height:26px}.hint{color:#9aa6c7}#msg{margin-left:10px}
+</style></head><body>
+<h1>⚙ Panneau d'administration</h1>
+<p class="hint">Corrigez les données (clubs, stades, couleurs, réputation, division) sans modifier le code. Les modifications s'appliquent aux <b>nouvelles carrières</b>. Accès protégé par le jeton <code>ADMIN_TOKEN</code> défini sur Render (jamais dans le code).</p>
+<div class="card">Jeton admin : <input id="tok" type="password" size="40"> <button onclick="loadAll()">Se connecter</button><span id="msg"></span></div>
+<div class="card" id="stats"></div>
+<div class="card"><h3>Clubs</h3><div style="overflow:auto"><table id="tbl"></table></div>
+<p><button onclick="addRow()" class="g">+ Ajouter un club</button> <button onclick="saveData()">💾 Enregistrer les données</button> <button class="g" onclick="resetDefault()">Revenir aux données par défaut</button></p></div>
+<div class="card"><h3>Sauvegardes & restauration</h3><p class="hint">Exporte tous les comptes (mots de passe hachés), sauvegardes et données en JSON. La restauration fusionne le fichier dans la base.</p>
+<button onclick="backup()">⬇ Exporter une sauvegarde complète</button> <label>⬆ Restaurer <input type="file" accept=".json" onchange="restore(this.files[0])"></label></div>
+<script type="module">
+import { CLUBS } from './js/data.js';
+const $ = s => document.querySelector(s);
+const F = ['id','name','short','city','stadium','capacity','rep','div','c1','c2'];
+let rows = [];
+const hdr = () => ({ 'Content-Type': 'application/json', 'X-Admin-Token': $('#tok').value });
+const msg = (t, ok = true) => { $('#msg').textContent = t; $('#msg').style.color = ok ? '#28c76f' : '#ff5b6b'; };
+async function call(p, o = {}) { const r = await fetch('/api/admin/' + p, { ...o, headers: hdr() }); const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || r.status); return d; }
+window.loadAll = async () => {
+  try { const s = await call('stats'); $('#stats').innerHTML = `Base : <b>${s.store}</b> ${s.store === 'postgres' ? '(persistante ✓)' : '(⚠ fichier local, non persistant sur Render)'} · Comptes : ${s.users} · Sauvegardes : ${s.saves} · Version ${s.version} · commit ${s.commit}`;
+    const d = await call('data'); const src = d.clubs || CLUBS; rows = src.map(c => ({ ...c, c1: c.colors[0], c2: c.colors[1] })); draw(); msg('Connecté ✓' + (d.updatedAt ? ' — données modifiées le ' + d.updatedAt : ' — données par défaut'));
+  } catch (e) { msg(e.message, false); }
+};
+function draw() { $('#tbl').innerHTML = '<tr>' + F.map(f => `<th>${f}</th>`).join('') + '<th></th></tr>' + rows.map((r, i) => '<tr>' + F.map(f => `<td><input data-i="${i}" data-f="${f}" ${f[0] === 'c' && f.length === 2 ? 'type="color"' : ''} value="${String(r[f] ?? '').replace(/"/g, '&quot;')}"></td>`).join('') + `<td><button class="g" onclick="delRow(${i})">✕</button></td></tr>`).join(''); }
+document.addEventListener('input', e => { const i = e.target.dataset.i; if (i == null) return; const f = e.target.dataset.f; let v = e.target.value; if (['capacity', 'rep', 'div'].includes(f)) v = Number(v); rows[i][f] = v; });
+window.addRow = () => { rows.push({ id: 'nouveau' + rows.length, name: 'Nouveau club', short: 'NC', city: '', stadium: '', capacity: 5000, rep: 40, div: 2, c1: '#888888', c2: '#ffffff' }); draw(); };
+window.delRow = i => { rows.splice(i, 1); draw(); };
+window.saveData = async () => {
+  const ids = new Set(); for (const r of rows) { if (!r.id || ids.has(r.id)) return msg('Identifiant vide ou en double : ' + r.id, false); ids.add(r.id); if (![1, 2].includes(r.div)) return msg('Division invalide pour ' + r.name, false); }
+  if (rows.filter(r => r.div === 1).length < 4) return msg('Il faut au moins 4 clubs en Ligue 1.', false);
+  const clubs = rows.map(r => ({ id: r.id, name: r.name, short: r.short, city: r.city, stadium: r.stadium, capacity: r.capacity, rep: r.rep, div: r.div, colors: [r.c1, r.c2], away: [r.c2, r.c1] }));
+  try { await call('data', { method: 'PUT', body: JSON.stringify({ clubs }) }); msg('Données enregistrées ✓'); } catch (e) { msg(e.message, false); }
+};
+window.resetDefault = async () => { if (!confirm('Revenir aux données par défaut ?')) return; try { await call('data', { method: 'PUT', body: JSON.stringify({}) }); loadAll(); } catch (e) { msg(e.message, false); } };
+window.backup = async () => { try { const d = await call('backup'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], { type: 'application/json' })); a.download = 'ft26-backup-' + new Date().toISOString().slice(0, 10) + '.json'; a.click(); msg('Export réalisé ✓'); } catch (e) { msg(e.message, false); } };
+window.restore = async f => { if (!f || !confirm('Restaurer ce fichier dans la base ?')) return; try { await call('restore', { method: 'POST', body: await f.text() }); msg('Restauration terminée ✓'); loadAll(); } catch (e) { msg(e.message, false); } };
+</script></body></html>

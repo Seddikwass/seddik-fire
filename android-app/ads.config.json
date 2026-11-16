@@ -1,0 +1,6 @@
+{
+  "_note": "Identifiants de TEST Google AdMob. Remplacer par vos identifiants réels (appId, rewarded) puis mettre test à false avant publication.",
+  "appId": "ca-app-pub-3940256099942544~3347511713",
+  "rewarded": "ca-app-pub-3940256099942544/5224354917",
+  "test": true
+}

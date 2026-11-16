@@ -1,0 +1,22 @@
+# Blueprint Render (référence) — le service a été créé avec ces paramètres.
+services:
+  - type: web
+    name: football-tunisia-2026
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: football-tunisia-2026
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: DATABASE_URL        # à renseigner : URL interne d'une base PostgreSQL persistante (plan payant)
+        sync: false
+      - key: DB_SCHEMA
+        value: ft26

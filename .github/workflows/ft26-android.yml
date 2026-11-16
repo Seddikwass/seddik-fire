@@ -1,0 +1,66 @@
+name: Football Tunisia 2026 — Android
+
+on:
+  push:
+    branches: [football-tunisia-2026]
+    paths: ['public/**', 'android-app/**', '.github/workflows/ft26-android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+
+      - id: node
+        continue-on-error: true
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tests de la logique du jeu
+        id: tests
+        continue-on-error: true
+        run: node tests/career.test.mjs 2>&1 | tail -5 | tee tests.log
+
+      - name: Compiler APK + AAB
+        id: build
+        if: always()
+        continue-on-error: true
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -o pipefail
+          {
+            export JAVA_HOME="${JAVA_HOME_21_X64:-$JAVA_HOME}"
+            export PATH="$JAVA_HOME/bin:$PATH"
+            export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+            export ANDROID_SDK_ROOT="$ANDROID_HOME"
+            echo "JAVA_HOME=$JAVA_HOME ANDROID_HOME=$ANDROID_HOME"
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" 2>&1 | tail -3 || true
+            bash android-app/build.sh
+          } 2>&1 | tee build.log
+
+      - name: Publier le résultat dans la branche football-tunisia-builds
+        if: always()
+        run: |
+          mkdir -p out
+          cp build.log tests.log out/ 2>/dev/null || true
+          cp android-app/dist/* out/ 2>/dev/null || true
+          echo "statut=${{ steps.build.outcome }} tests=${{ steps.tests.outcome }} compilation=${{ github.run_number }} commit=${{ github.sha }}" > out/STATUS.txt
+          cd out
+          git init -q
+          git checkout -q -b football-tunisia-builds
+          git add -A
+          git -c user.name="build-bot" -c user.email="build-bot@users.noreply.github.com" commit -q -m "Compilation ${{ github.run_number }} : ${{ steps.build.outcome }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" football-tunisia-builds

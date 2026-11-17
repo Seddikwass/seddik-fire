@@ -65,3 +65,31 @@ export function autosave(st, onStatus) {
     catch (e) { onStatus && onStatus(e.status === 409 ? 'conflit' : 'en attente'); if (e.status === 409) window.dispatchEvent(new CustomEvent('ft26-conflict', { detail: e.data })); }
   }, 2500);
 }
+
+
+// Reprise automatique des sauvegardes locales mises en attente hors ligne.
+let pendingSync = null;
+export async function syncPending() {
+  if (pendingSync) return pendingSync;
+  if (!auth() || !hasPending() || !navigator.onLine) return false;
+  const snapshot = loadLocal();
+  if (!snapshot) return false;
+  pendingSync = (async () => {
+    try {
+      await pushRemote(snapshot);
+      saveLocal(snapshot);
+      window.dispatchEvent(new CustomEvent('ft26-sync', { detail: { status: 'synchronisé' } }));
+      return true;
+    } catch (e) {
+      if (e.status === 409) window.dispatchEvent(new CustomEvent('ft26-conflict', { detail: e.data }));
+      return false;
+    } finally { pendingSync = null; }
+  })();
+  return pendingSync;
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => { syncPending(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') syncPending();
+  });
+}

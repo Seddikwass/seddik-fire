@@ -29,7 +29,7 @@ function verify(tok) {
   if (!tok) return null; const [body, sig] = tok.split('.'); if (!body || !sig) return null;
   const exp = crypto.createHmac('sha256', SECRET).update(body).digest('base64url');
   if (sig.length !== exp.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(exp))) return null;
-  const d = JSON.parse(Buffer.from(body, 'base64url').toString()); return d.exp > Date.now() ? d : null;
+  try { const d = JSON.parse(Buffer.from(body, 'base64url').toString()); return d && typeof d === 'object' && Number.isFinite(d.exp) && d.exp > Date.now() ? d : null; } catch { return null; }
 }
 const hits = new Map();
 function limited(ip, key, max, winMs) { const k = ip + key, now = Date.now(); const a = (hits.get(k) || []).filter(t => now - t < winMs); a.push(now); hits.set(k, a); return a.length > max; }

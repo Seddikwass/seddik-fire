@@ -2,6 +2,7 @@
 import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 const PORT = 3199, DATA = '/tmp/ft26-test-db.json', BASE = `http://127.0.0.1:${PORT}`;
 fs.rmSync(DATA, { force: true });
 const env = { ...process.env, PORT: String(PORT), DATA_FILE: DATA, ADMIN_TOKEN: 'admintest-123456', SESSION_SECRET: 'test-secret', DATABASE_URL: process.env.TEST_DATABASE_URL || '' };
@@ -24,6 +25,10 @@ r = await j('/api/save', { method: 'PUT', headers: A, body: { data: save, baseRe
 r = await j('/api/save', { method: 'PUT', headers: A, body: { data: { ...save, season: 2027, updatedAt: Date.now() + 1000 }, baseRevision: 1 } }); assert.equal(r.d.revision, 2);
 r = await j('/api/save', { method: 'PUT', headers: A, body: { data: { ...save, updatedAt: Date.now() - 99999 }, baseRevision: 1 } }); assert.equal(r.s, 409, 'conflit détecté'); console.log('conflit OK', r.d.error);
 r = await j('/api/save', { headers: { Authorization: 'Bearer faux.jeton' } }); assert.equal(r.s, 401);
+const malformedBody = Buffer.from('{broken-json').toString('base64url');
+const malformedSig = crypto.createHmac('sha256', 'test-secret').update(malformedBody).digest('base64url');
+r = await j('/api/save', { headers: { Authorization: 'Bearer ' + malformedBody + '.' + malformedSig } });
+assert.equal(r.s, 401, 'un jeton signé mais malformé est refusé sans erreur serveur');
 // redémarrage du serveur : la sauvegarde survit
 srv.kill('SIGTERM'); await new Promise(o => srv.on('exit', o)); srv = await start();
 r = await j('/api/save', { headers: A }); assert.equal(r.d.data.season, 2027); assert.equal(r.d.revision, 2); console.log('sauvegarde après redémarrage OK (révision', r.d.revision + ')');

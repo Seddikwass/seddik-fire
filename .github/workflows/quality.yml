@@ -1,0 +1,26 @@
+name: Quality checks
+on:
+  push:
+    branches: [football-tunisia-2026]
+  pull_request:
+    branches: [football-tunisia-2026]
+permissions:
+  contents: read
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install --omit=dev
+      - name: Syntax check
+        run: find public/js lib tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -n1 node --check && node --check server.js
+      - name: Automated tests
+        run: npm test

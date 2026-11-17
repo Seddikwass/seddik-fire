@@ -119,7 +119,7 @@ function serveStatic(req, res, url) {
   fs.stat(file, (err, s) => {
     if (err || !s.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('Introuvable'); }
     const ext = path.extname(file), type = MIME[ext] || 'application/octet-stream';
-    const cache = ext === '.html' || file.endsWith('sw.js') ? 'no-cache' : 'public, max-age=3600';
+    const cache = ['.html', '.js', '.css', '.webmanifest'].includes(ext) || file.endsWith('sw.js') ? 'no-cache' : 'public, max-age=3600';
     const h = { 'Content-Type': type, 'Cache-Control': cache, ...SEC_HEADERS };
     if (/\.(js|css|html|json|webmanifest|svg)$/.test(ext) && /gzip/.test(req.headers['accept-encoding'] || '')) { res.writeHead(200, { ...h, 'Content-Encoding': 'gzip' }); fs.createReadStream(file).pipe(zlib.createGzip()).pipe(res); }
     else { res.writeHead(200, { ...h, 'Content-Length': s.size }); fs.createReadStream(file).pipe(res); }

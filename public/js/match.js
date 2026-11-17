@@ -474,6 +474,8 @@ export class Match {
     const vz = clamp((tz - 0.12 + 0.5 * G * t * t) / t, 0.5, 12);
     const ang = Math.atan2(ty - p.y, gx - p.x);
     this.kickBall(p, Math.cos(ang) * speed, Math.sin(ang) * speed, vz, 0.6 + power * 0.4);
+    // Rotation latérale selon l'angle de frappe : tirs enroulés plus naturels.
+    this.ball.spin = clamp(((ty - p.y) / Math.max(8, dist)) * (0.55 + power * 0.75) * skill, -0.85, 0.85);
     this.ball.inFlightShot = { team: p.team, shooter: p, t: 0 };
     this.stats.shots[p.team]++;
     const onT = Math.abs(ty) < GOAL_W && tz < GOAL_H;
@@ -586,6 +588,15 @@ export class Match {
       const off = 0.55 + Math.min(sp, 8) * 0.05 + Math.sin(p.anim * 1.6) * 0.08;
       b.x = p.x + fx * off; b.y = p.y + fy * off; b.z = 0; b.vx = p.vx; b.vy = p.vy; b.vz = 0;
       return;
+    }
+    // Effet Magnus léger : la rotation courbe la trajectoire en vol.
+    // Le spin décroît progressivement et n'affecte pas les ballons contrôlés.
+    if (b.z > 0.02 && b.spin) {
+      const spin = clamp(b.spin, -1, 1);
+      b.vx += -b.vy * spin * 0.2 * dt;
+      b.vy += b.vx * spin * 0.2 * dt;
+      b.spin *= Math.exp(-0.42 * dt);
+      if (Math.abs(b.spin) < 0.015) b.spin = 0;
     }
     b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
     if (b.z > 0) { b.vz -= G * dt; b.vx *= 1 - 0.08 * dt; b.vy *= 1 - 0.08 * dt; }

@@ -56,7 +56,7 @@ export class Match {
     this.replayBuf = []; this.replay = null; this.paused = false; this.ended = false;
     this.msg = null; this.msgT = 0; this.ticker = ''; this.tickerT = 0;
     this.goalFxT = 0; this.goalFxTeam = 0;
-    this.matchIntroT = 4.2;
+    this.matchIntroT = 5.8;
     this.r = Math.random; this.acc = 0; this.last = 0; this.frameSkip = 0;
     this.subsLeft = [5, 5];
     this.crowdTex = null;
@@ -1042,30 +1042,49 @@ export class Match {
   }
   drawMatchIntro() {
     const c = this.c, d = this.dpr, t = this.matchIntroT;
-    const alpha = Math.min(1, t / 0.7);
-    const w = Math.min(this.W - 28 * d, 620 * d), h = Math.min(190 * d, this.H * 0.34);
-    const x = (this.W - w) / 2, y = Math.max(16 * d, this.H * 0.11);
+    const alpha = Math.min(1, t / 0.85);
+    const w = Math.min(this.W - 24 * d, 680 * d), h = Math.min(258 * d, this.H * 0.48);
+    const x = (this.W - w) / 2, y = Math.max(12 * d, this.H * 0.07);
+    const left = this.teams[0], right = this.teams[1], mid = this.W / 2;
+    const compact = h < 205 * d;
     c.save(); c.globalAlpha = alpha;
-    c.fillStyle = 'rgba(3,8,18,0.9)';
-    c.beginPath(); c.roundRect(x, y, w, h, 12 * d); c.fill();
-    c.strokeStyle = 'rgba(255,255,255,0.22)'; c.lineWidth = d; c.stroke();
-    const mid = this.W / 2, cy = y + h * 0.46;
+    c.shadowColor = 'rgba(0,0,0,0.42)'; c.shadowBlur = 24 * d;
+    c.fillStyle = 'rgba(3,8,18,0.94)';
+    c.beginPath(); c.roundRect(x, y, w, h, 16 * d); c.fill();
+    c.shadowBlur = 0;
+    c.strokeStyle = 'rgba(255,255,255,0.2)'; c.lineWidth = d; c.stroke();
+    c.fillStyle = '#e6bd62'; c.fillRect(x + 18 * d, y + 31 * d, w - 36 * d, 2 * d);
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillStyle = '#d8e5f7'; c.font = `800 ${Math.max(10, 12 * d)}px system-ui,Arial`;
-    c.fillText('AVANT-MATCH  •  FOOTBALL TUNISIA 2026', mid, y + 19 * d);
-    const left = this.teams[0], right = this.teams[1], badge = 30 * d;
-    c.fillStyle = left.kit.shirt; c.beginPath(); c.arc(x + w * 0.22, cy, badge, 0, Math.PI * 2); c.fill();
-    c.strokeStyle = left.kit.trim; c.lineWidth = 5 * d; c.stroke();
-    c.fillStyle = right.kit.shirt; c.beginPath(); c.arc(x + w * 0.78, cy, badge, 0, Math.PI * 2); c.fill();
-    c.strokeStyle = right.kit.trim; c.lineWidth = 5 * d; c.stroke();
-    c.fillStyle = '#fff'; c.font = `900 ${Math.max(13, 19 * d)}px system-ui,Arial`;
-    c.fillText(left.short || left.name, x + w * 0.22, cy + badge + 17 * d);
-    c.fillText(right.short || right.name, x + w * 0.78, cy + badge + 17 * d);
-    c.fillStyle = '#f4f7fb'; c.font = `900 ${Math.max(18, 25 * d)}px system-ui,Arial`;
+    c.fillStyle = '#e6bd62'; c.font = `900 ${Math.max(10, 12 * d)}px system-ui,Arial`;
+    c.fillText('PRÉSENTATION DES ÉQUIPES  •  FOOTBALL TUNISIA 2026', mid, y + 18 * d);
+    const badge = Math.min(31 * d, h * 0.13), cy = y + (compact ? 78 : 88) * d;
+    for (const [team, ratio] of [[left, 0.22], [right, 0.78]]) {
+      const bx = x + w * ratio;
+      c.fillStyle = team.kit.shirt; c.beginPath(); c.arc(bx, cy, badge, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = team.kit.trim; c.lineWidth = 5 * d; c.stroke();
+      c.fillStyle = '#fff'; c.font = `900 ${Math.max(12, 18 * d)}px system-ui,Arial`;
+      c.fillText(team.short || team.name, bx, cy + badge + 17 * d);
+      c.fillStyle = '#aebbd0'; c.font = `700 ${Math.max(9, 11 * d)}px system-ui,Arial`;
+      c.fillText(team.formation || 'FORMATION', bx, cy + badge + 34 * d);
+    }
+    c.fillStyle = '#f4f7fb'; c.font = `900 ${Math.max(17, 27 * d)}px system-ui,Arial`;
     c.fillText('VS', mid, cy);
-    c.fillStyle = '#aebbd0'; c.font = `700 ${Math.max(10, 12 * d)}px system-ui,Arial`;
+    if (!compact) {
+      const rowY = y + 164 * d;
+      c.fillStyle = 'rgba(255,255,255,0.07)';
+      c.beginPath(); c.roundRect(x + 18 * d, rowY - 10 * d, w - 36 * d, 55 * d, 8 * d); c.fill();
+      const drawStarters = (team, ratio) => {
+        const players = team.ps.filter(p => !p.sentOff).slice(0, 11);
+        const names = players.slice(1, 5).map(p => `${p.num || ''} ${p.name || 'Joueur'}`.trim());
+        c.fillStyle = '#f2f5fa'; c.font = `700 ${Math.max(9, 11 * d)}px system-ui,Arial`;
+        c.textAlign = 'center';
+        names.forEach((name, i) => c.fillText(name.length > 23 ? name.slice(0, 21) + '…' : name, x + w * ratio, rowY + i * 12 * d));
+      };
+      drawStarters(left, 0.25); drawStarters(right, 0.75);
+    }
     const stadium = left.stadium || right.stadium || 'STADE';
-    c.fillText(`${stadium}   •   ${left.formation} / ${right.formation}`, mid, y + h - 17 * d);
+    c.fillStyle = '#aebbd0'; c.font = `700 ${Math.max(9, 11 * d)}px system-ui,Arial`;
+    c.fillText(stadium, mid, y + h - 15 * d);
     c.restore();
   }
   drawGoalCelebration() {

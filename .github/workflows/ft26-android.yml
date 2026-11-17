@@ -27,6 +27,7 @@ jobs:
         id: tests
         continue-on-error: true
         run: |
+          set -o pipefail
           npm install --omit=dev
           npm test 2>&1 | tee tests.log
 

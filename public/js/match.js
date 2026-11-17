@@ -72,7 +72,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, yellow: 0, sentOff: false, injured: false,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, yellow: 0, sentOff: false, injured: false,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -171,6 +171,7 @@ export class Match {
   step(dt) {
     if (this.tickerT > 0) this.tickerT -= dt;
     if (this.msgT > 0) this.msgT -= dt;
+    for (const T of this.teams) for (const p of T.ps) { p.diveT = Math.max(0, (p.diveT || 0) - dt); p.slideT = Math.max(0, (p.slideT || 0) - dt); }
     if (this.state === 'restart') return this.stepRestart(dt);
     if (this.state === 'goal') { this.stateT -= dt; this.moveAll(dt, true); this.physics(dt); if (this.stateT <= 0) this.startReplay(); return; }
     if (this.state === 'halftime') { this.stateT -= dt; if (this.stateT <= 0) { this.half = 2; for (const T of this.teams) T.dir *= -1; this.setupKickoff(1); } return; }
@@ -496,6 +497,7 @@ export class Match {
     let chance = 0.38 + (p.a.def - c.a.dri) / 160 + (user ? 0.12 : 0) - (c.team === this.userSide ? [0.12, 0.05, 0, -0.04][diff] : 0);
     if (this.r() < chance) {
       b.owner = null; b.last = p; b.lastTeam = p.team;
+      p.slideT = 0.38; p.slideDir = Math.sign(c.y - p.y) || 1;
       if (this.r() < 0.55) { b.owner = p; } else { b.vx = (this.r() - 0.5) * 8; b.vy = (this.r() - 0.5) * 8; }
       c.cd = 0.6; p.rating += 0.1;
       if (p.team === this.userSide) this.select(p);
@@ -632,6 +634,7 @@ export class Match {
             const need = Math.abs(yc - gk.y);
             gk.vy += clamp((yc - gk.y) * 14, -18, 18) * dt * 8; // plongeon
             gk.dive = Math.sign(yc - gk.y) * Math.min(1, need / 2);
+            if (need > 0.45) { gk.diveT = Math.max(gk.diveT || 0, 0.42); gk.diveDir = Math.sign(yc - gk.y) || 1; }
             if (!shot.judged && tcross < 0.18) {
               shot.judged = true;
               const sp = Math.hypot(b.vx, b.vy);
@@ -939,8 +942,17 @@ export class Match {
     const g = this.proj(x, y, 0); const s = g[2]; // px par mètre
     if (g[3] < 1) return;
     const hgt = 1.8 * s, w = 0.5 * s;
-    // ombre
+    // ombre et effets d'action au sol : plongeon du gardien / tacle glissé
     c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(g[0] + 0.25 * s, g[1], 0.45 * s, 0.14 * s, 0, 0, 7); c.fill();
+    const divePulse = Math.max(0, Math.min(1, (p.diveT || 0) / 0.42));
+    const slidePulse = Math.max(0, Math.min(1, (p.slideT || 0) / 0.38));
+    if (divePulse > 0.02 || slidePulse > 0.02) {
+      const dir = p.isGK ? (p.diveDir || 1) : (p.slideDir || 1);
+      c.save(); c.globalAlpha = 0.28 * Math.max(divePulse, slidePulse); c.strokeStyle = p.isGK ? '#f5f8ff' : kit.trim;
+      c.lineWidth = Math.max(1, 0.09 * s); c.lineCap = 'round';
+      c.beginPath(); c.moveTo(g[0] - 0.7 * s, g[1] - dir * 0.18 * s); c.lineTo(g[0] - 1.35 * s, g[1] - dir * 0.32 * s); c.stroke();
+      c.beginPath(); c.moveTo(g[0] - 0.55 * s, g[1] + dir * 0.12 * s); c.lineTo(g[0] - 1.05 * s, g[1] + dir * 0.24 * s); c.stroke(); c.restore();
+    }
     // repère joueur sélectionné
     if (p === this.selected && !fp) {
       c.strokeStyle = '#ffe14a'; c.lineWidth = Math.max(2, 0.08 * s);

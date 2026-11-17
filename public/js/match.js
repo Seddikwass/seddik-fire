@@ -130,7 +130,16 @@ export class Match {
     const push = (inPoss ? [20, 24, 27] : [7, 6, 4])[line] + T.mentality * 3 + (line === 0 ? T.line * 4 : T.line * 2);
     let nx = bx + push + bnx * (inPoss ? 0.38 : 0.42) + (p.instr === 'def' ? -6 : p.instr === 'att' && inPoss ? 6 : 0);
     let ny = by * (inPoss ? 1.08 : 0.72) * (0.85 + T.width * 0.15) + bny * (inPoss ? 0.18 : 0.32);
-    if (!inPoss) nx = Math.min(nx, bnx + 6 + (line === 2 ? 14 : 0));
+    if (!inPoss) {
+      nx = Math.min(nx, bnx + 6 + (line === 2 ? 14 : 0));
+      // Bloc défensif compact : les lignes coulissent ensemble vers le ballon.
+      const blockShift = clamp((bnx - bx) * 0.12, -7, 7);
+      nx += blockShift;
+      ny += clamp((bny - by) * 0.16, -5.5, 5.5);
+      // Réduire les espaces entre les lignes lorsque l'adversaire attaque.
+      if (line === 1) nx -= 1.8;
+      if (line === 0) nx -= 0.8;
+    }
     // appel en profondeur des attaquants
     if (inPoss && p.run > 0) {
       const burst = line === 2 ? 13 : line === 1 ? 8 : 3;
@@ -324,7 +333,8 @@ export class Match {
       let pressers = [];
       if (!inPoss) {
         const cand = T.ps.filter(p => !p.isGK && !p.sentOff).map(p => ({ p, d: Math.hypot(p.x - b.x, p.y - b.y) })).sort((a, c) => a.d - c.d);
-        pressers = cand.slice(0, T.pressing >= 2 ? 2 : 1).map(c => c.p);
+        const pressCount = T.pressing >= 3 ? 3 : T.pressing >= 2 ? 2 : 1;
+        pressers = cand.slice(0, pressCount).map(c => c.p);
         if (T.pressing === 0 && cand[0] && Math.abs(b.x - (-HL * T.dir)) > 50) pressers = [];
       }
       for (const p of T.ps) {
@@ -362,7 +372,12 @@ export class Match {
           const opp = this.teams[1 - T.side].ps;
           let mk = null, md = 9;
           for (const o of opp) { if (o.sentOff || o.isGK) continue; const d = Math.hypot(o.x - tx, o.y - ty); if (d < md) { md = d; mk = o; } }
-          if (mk && (p.base[0] < -12 || p.instr === 'mark')) { const gx = -HL * T.dir, k = p.instr === 'mark' ? 0.05 : 0.12; tx = lerp(mk.x, gx, k); ty = lerp(mk.y, 0, k); }
+          if (mk && (p.base[0] < -12 || p.instr === 'mark')) {
+            const gx = -HL * T.dir, k = p.instr === 'mark' ? 0.05 : 0.12;
+            // Marquage côté but : rester entre le porteur et la cage plutôt que courir derrière.
+            tx = lerp(mk.x, gx, k);
+            ty = lerp(mk.y, clamp(b.y * 0.18, -HW * 0.55, HW * 0.55), k);
+          }
         }
         this.moveTo(p, tx, ty, dt, 1, false, Math.hypot(tx - p.x, ty - p.y) > 12);
       }

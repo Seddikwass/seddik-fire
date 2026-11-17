@@ -74,7 +74,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -311,6 +311,7 @@ export class Match {
       p.jumpCd = Math.max(0, (p.jumpCd || 0) - dt);
       p.kickT = Math.max(0, (p.kickT || 0) - dt);
       p.celebrateT = Math.max(0, (p.celebrateT || 0) - dt);
+      p.contactT = Math.max(0, (p.contactT || 0) - dt);
       // Duel aérien : le joueur le plus proche saute pour contester un ballon haut.
       const ball = this.ball;
       if (!p.isGK && p.jumpCd <= 0 && ball.z > 1.15 && ball.z < 5.2 && Math.hypot(p.x - ball.x, p.y - ball.y) < 3.2 && Math.abs(p.vz || 0) < 0.01) {
@@ -321,17 +322,28 @@ export class Match {
       if (p.run > 0) p.run -= dt;
       if (celebrate) { p.vx *= 0.9; p.vy *= 0.9; }
     }
-    // séparation simple
+    // Contacts corporels : séparation souple, puis transfert d'impulsion
+    // lorsque deux adversaires se rencontrent à vitesse réelle.
     const all = this.teams[0].ps.concat(this.teams[1].ps);
     for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
       const a = all[i], c = all[j]; if (a.sentOff || c.sentOff) continue;
       const dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy);
-      if (d > 0 && d < 0.9) {
-        const nx = dx / d, ny = dy / d, push = (0.9 - d) * 0.5;
+      if (d > 0 && d < 1.02) {
+        const nx = dx / d, ny = dy / d, overlap = 1.02 - d;
+        const push = overlap * 0.48;
         a.x -= nx * push; a.y -= ny * push; c.x += nx * push; c.y += ny * push;
-        // léger échange d'impulsion pour éviter l'effet de joueurs qui se traversent
         const closing = (a.vx - c.vx) * nx + (a.vy - c.vy) * ny;
-        if (closing > 0) { const impulse = Math.min(1.8, closing * 0.16); a.vx -= nx * impulse; a.vy -= ny * impulse; c.vx += nx * impulse; c.vy += ny * impulse; }
+        if (closing > 0.8) {
+          const impulse = Math.min(2.8, (closing - 0.8) * 0.2);
+          a.vx -= nx * impulse; a.vy -= ny * impulse; c.vx += nx * impulse; c.vy += ny * impulse;
+          if (a.team !== c.team && closing > 3.2) {
+            a.contactT = c.contactT = 0.22;
+            a.contactDir = -1; c.contactDir = 1;
+          }
+        }
+        // Garder les joueurs dans les limites du terrain après le choc.
+        a.x = clamp(a.x, -HL - 2, HL + 2); a.y = clamp(a.y, -HW - 2, HW + 2);
+        c.x = clamp(c.x, -HL - 2, HL + 2); c.y = clamp(c.y, -HW - 2, HW + 2);
       }
     }
   }
@@ -1157,7 +1169,7 @@ export class Match {
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
     const kickPulse = Math.max(0, Math.min(1, (p.kickT || 0) / 0.24));
     const celebration = Math.max(0, Math.min(1, (p.celebrateT || 0) / 0.7));
-    const bodyLean = Math.min(0.12, sp * 0.018) + slidePulse * 0.2 - celebration * 0.08;
+    const bodyLean = Math.min(0.12, sp * 0.018) + slidePulse * 0.2 - celebration * 0.08 + (p.contactT || 0) * (p.contactDir || 1) * 0.42;
     const hipY = g[1] - hgt * 0.47;
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';

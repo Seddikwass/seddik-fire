@@ -187,3 +187,30 @@ main{background:radial-gradient(ellipse at 80% 0%,#1a2c401c,transparent 42%)}
 .post .player-ratings th,.post .player-ratings td{padding:9px 7px}
 .post .player-ratings tbody tr:first-child{background:rgba(230,190,75,.12)}
 @media(max-width:560px){.post .player-ratings{font-size:.76rem}.post .player-ratings th,.post .player-ratings td{padding:7px 4px}.post .mvp-card{padding:14px 10px}}
+
+
+/* Final quality pass — keyboard, touch and reduced-motion accessibility */
+:where(a,button,input,select,textarea,[role="button"],[tabindex]):focus-visible{
+  outline:3px solid #f1cb68;
+  outline-offset:3px;
+  box-shadow:0 0 0 5px rgba(241,203,104,.18);
+}
+button,.btn,a,select,input[type="checkbox"],input[type="radio"]{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+button:disabled,.btn:disabled{
+  cursor:not-allowed;
+  opacity:.55;
+  filter:saturate(.55);
+}
+@media(hover:none) and (pointer:coarse){
+  .rail button{min-height:48px}
+  .btn{min-height:44px}
+  .tabs button{min-height:42px}
+}
+@media(prefers-contrast:more){
+  :root{--line:#6b8299;--mut:#d1dbe6}
+  .card,.clubcard,.srow,.tacside{border-color:#71869b}
+  .btn{border-width:2px}
+}

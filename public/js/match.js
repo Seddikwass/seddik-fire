@@ -873,6 +873,7 @@ export class Match {
     if (this.ball.owner === out) this.ball.owner = np;
     this.subsLeft[side]--;
     this.events.push({ type: 'sub', min: Math.round(this.minute), team: side, pid: np.id, name: np.name, outName: out.name, outId: out.id });
+    this.banner(`${out.name}  →  ${np.name}`, 2.2);
     return true;
   }
   allPlayersForResult() {
@@ -1274,6 +1275,21 @@ export class Match {
     c.fillStyle = '#fff'; c.fillText(lab, x0 + 14 * d, y0 + h / 2);
     c.fillStyle = '#e70013'; c.fillRect(x0 + tw + 34 * d, y0, 58 * d, h);
     c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(`${String(min).padStart(2, '0')}'`, x0 + tw + 63 * d, y0 + h / 2);
+    // panneau de statistiques en direct, compact et lisible sur mobile
+    if (!isReplay) {
+      const sw = Math.min(210 * d, this.W * 0.43), sh = 54 * d;
+      const sx = this.W - sw - 12 * d, sy = 10 * d;
+      const totalPoss = Math.max(0.01, this.stats.poss[0] + this.stats.poss[1]);
+      const poss0 = Math.round(this.stats.poss[0] / totalPoss * 100), poss1 = 100 - poss0;
+      c.fillStyle = '#07111ddd'; c.fillRect(sx, sy, sw, sh);
+      c.fillStyle = '#ffffff'; c.font = `700 ${10 * d}px system-ui,Arial`;
+      c.textAlign = 'left'; c.fillText('STATISTIQUES', sx + 7 * d, sy + 12 * d);
+      c.fillStyle = T[0].kit.shirt; c.fillRect(sx + 7 * d, sy + 19 * d, sw * poss0 / 100 * 0.48, 4 * d);
+      c.fillStyle = T[1].kit.shirt; c.fillRect(sx + sw * 0.51, sy + 19 * d, sw * poss1 / 100 * 0.48, 4 * d);
+      c.fillStyle = '#e9eef8'; c.font = `600 ${9 * d}px system-ui,Arial`;
+      c.fillText(`Poss. ${poss0}% - ${poss1}%`, sx + 7 * d, sy + 34 * d);
+      c.fillText(`Tirs ${this.stats.shots[0]}-${this.stats.shots[1]}  •  Cadrés ${this.stats.onTarget[0]}-${this.stats.onTarget[1]}`, sx + 7 * d, sy + 47 * d);
+    }
     // bandeau commentaire
     if (this.tickerT > 0 && this.ticker) {
       c.font = `600 ${13 * d}px system-ui,Arial`; const w = c.measureText(this.ticker).width + 24 * d;

@@ -174,3 +174,16 @@ main{background:radial-gradient(ellipse at 80% 0%,#1a2c401c,transparent 42%)}
 @media(prefers-reduced-motion:reduce){
   *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
+
+
+/* Football Tunisia 2026 — full-time awards and player ratings */
+.post .mvp-card{margin:18px auto;padding:18px 16px;max-width:520px;border:1px solid rgba(231,190,75,.48);border-radius:16px;background:linear-gradient(135deg,rgba(34,42,57,.98),rgba(11,19,32,.98));box-shadow:0 12px 32px rgba(0,0,0,.2);color:#fff}
+.post .mvp-card small{color:#f3cc66;font-weight:900;letter-spacing:.12em}
+.post .mvp-card h3{margin:8px 0 3px;font-size:1.35rem}
+.post .mvp-card>b{display:inline-block;color:#f8d66d;font-size:1.5rem}
+.post .mvp-card p{margin:7px 0 0;color:#c7d0df}
+.post .section-title{margin:22px 0 10px;text-align:left}
+.post .player-ratings{width:100%;font-size:.9rem}
+.post .player-ratings th,.post .player-ratings td{padding:9px 7px}
+.post .player-ratings tbody tr:first-child{background:rgba(230,190,75,.12)}
+@media(max-width:560px){.post .player-ratings{font-size:.76rem}.post .player-ratings th,.post .player-ratings td{padding:7px 4px}.post .mvp-card{padding:14px 10px}}

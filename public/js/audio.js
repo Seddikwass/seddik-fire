@@ -53,6 +53,17 @@ export function roar() { // clameur après un but
   startDrums(8);
 }
 export function netSound() { noiseBurst(0.25, 900, 0.4, 'highpass'); }
+export function saveSound() {
+  if (!ctx || !enabled) return;
+  noiseBurst(0.18, 1250, 0.42, 'bandpass');
+  const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'triangle'; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(72, t + 0.16);
+  g.gain.setValueAtTime(0.24, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+  o.connect(g).connect(master); o.start(t); o.stop(t + 0.19);
+}
+export function impact(power = 0.5) {
+  noiseBurst(0.07 + power * 0.05, 520 + power * 420, 0.22 + power * 0.25, 'lowpass');
+}
 function drum(t, freq, dec, g0) {
   const o = ctx.createOscillator(), g = ctx.createGain();
   o.frequency.setValueAtTime(freq, t); o.frequency.exponentialRampToValueAtTime(freq * 0.5, t + dec);

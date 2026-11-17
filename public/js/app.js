@@ -523,9 +523,14 @@ VIEWS.postmatchQuick = () => `<div class="page">${postHTML(args.home.name, args.
 function postHTML(hn, an, hg, ag, res, f = null) {
   const s = res.stats;
   const ev = (res.events || []).filter(e => ['goal', 'yellow', 'red', 'injury', 'sub'].includes(e.type)).sort((a, b) => a.min - b.min);
+  const players = [...(res.players || [])].sort((a, b) => (b.rating || 0) - (a.rating || 0) || (b.goals || 0) - (a.goals || 0));
+  const mvp = players[0];
+  const teamName = side => side === 0 ? hn : an;
   return `<div class="card center post"><small>${t('Fin du match')}</small><div class="score">${esc(hn)} <b>${hg} - ${ag}</b> ${esc(an)}</div>${f && f.pens ? `<p>Tirs au but : ${f.pens[0]}-${f.pens[1]}</p>` : ''}${f && f.agg ? `<p>Cumul : ${f.agg[0]}-${f.agg[1]}</p>` : ''}${f && f.attendance ? `<p class="hint">${f.attendance.toLocaleString('fr-FR')} spectateurs</p>` : ''}
+   ${mvp ? `<section class="mvp-card"><small>🏆 JOUEUR DU MATCH</small><h3>${esc(mvp.name || 'Joueur')}</h3><b>${Number(mvp.rating || 0).toFixed(1)}/10</b><p>${esc(teamName(mvp.team))} · ${mvp.goals || 0} but(s) · ${mvp.assists || 0} passe(s) décisive(s)</p></section>` : ''}
    <ul class="events">${ev.map(e => `<li class="${e.team ? 'r' : 'l'}">${e.min}' ${{ goal: '⚽', yellow: '🟨', red: '🟥', injury: '🩹', sub: '🔁' }[e.type]} ${esc(e.name)}${e.assist ? ` <small>(passe ${esc(e.assist)})</small>` : ''}${e.outName ? ` <small>↔ ${esc(e.outName)}</small>` : ''}</li>`).join('')}</ul>
-   ${s ? `<table class="tbl stats"><tbody>${[['Possession', s.possPct[0] + ' %', s.possPct[1] + ' %'], ['Tirs', s.shots[0], s.shots[1]], ['Cadrés', s.onTarget[0], s.onTarget[1]], ['Passes réussies', `${s.passOk[0]}/${s.passes[0]}`, `${s.passOk[1]}/${s.passes[1]}`], ['Corners', s.corners[0], s.corners[1]], ['Fautes', s.fouls[0], s.fouls[1]], ['Cartons', s.yellows[0] + s.reds[0], s.yellows[1] + s.reds[1]]].map(([l, a, b]) => `<tr><td>${a}</td><th>${l}</th><td>${b}</td></tr>`).join('')}</tbody></table>` : ''}</div>`;
+   ${s ? `<table class="tbl stats"><tbody>${[['Possession', s.possPct[0] + ' %', s.possPct[1] + ' %'], ['Tirs', s.shots[0], s.shots[1]], ['Cadrés', s.onTarget[0], s.onTarget[1]], ['Passes réussies', `${s.passOk[0]}/${s.passes[0]}`, `${s.passOk[1]}/${s.passes[1]}`], ['Corners', s.corners[0], s.corners[1]], ['Fautes', s.fouls[0], s.fouls[1]], ['Cartons', s.yellows[0] + s.reds[0], s.yellows[1] + s.reds[1]]].map(([l, a, b]) => `<tr><td>${a}</td><th>${l}</th><td>${b}</td></tr>`).join('')}</tbody></table>` : ''}
+   ${players.length ? `<h3 class="section-title">Notes des joueurs</h3><table class="tbl player-ratings"><thead><tr><th>Joueur</th><th>Équipe</th><th>Min.</th><th>B</th><th>P.D.</th><th>Note</th></tr></thead><tbody>${players.slice(0, 12).map(p => `<tr><td>${esc(p.name || 'Joueur')}${p.red ? ' 🟥' : ''}${p.yellow ? ' 🟨' : ''}</td><td>${esc(teamName(p.team))}</td><td>${p.minutes || 0}</td><td>${p.goals || 0}</td><td>${p.assists || 0}</td><td><b>${Number(p.rating || 0).toFixed(1)}</b></td></tr>`).join('')}</tbody></table>` : ''}</div>`;
 }
 VIEWS.seasonEnd = () => {
   const r = args.review;

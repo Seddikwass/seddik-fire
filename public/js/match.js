@@ -1060,6 +1060,8 @@ export class Match {
       if (this.crowdTex) c.drawImage(this.crowdTex, 0, (1 - (i + 1) / rows) * 256, 2048, 256 / rows, a[0], b[1], w, h);
       else { c.fillStyle = i % 2 ? '#262a35' : '#20232c'; c.fillRect(a[0], b[1], w, h); }
     }
+    // vague lumineuse dans les tribunes après un but
+    if (this.goalCrowdT > 0) { const pulse = 0.5 + 0.5 * Math.sin((2.2 - this.goalCrowdT) * 19); c.save(); c.globalAlpha = Math.min(0.18, (this.goalCrowdT / 2.2) * 0.1 + pulse * 0.06); c.fillStyle = '#ffe7a0'; c.fillRect(0, 0, this.W, this.H * 0.28); c.restore(); }
     // toit / projecteurs
     const top = this.proj(0, 38 + rows * 1.6, rows * 1.05);
     c.fillStyle = '#0a0c12'; c.fillRect(0, 0, this.W, Math.max(0, top[1]));
@@ -1097,9 +1099,12 @@ export class Match {
     const c = this.c, x = s * HL, xb = s * (HL + 2);
     c.lineWidth = Math.max(1, 1 * this.dpr);
     if (back) {
-      c.strokeStyle = 'rgba(255,255,255,0.35)';
-      for (let i = 0; i <= 8; i++) { const yy = -GOAL_W + i * GOAL_W / 4; const a = this.proj(x, yy, GOAL_H), b = this.proj(xb, yy, GOAL_H * 0.6), d = this.proj(xb, yy, 0); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(d[0], d[1]); c.stroke(); }
-      for (let j = 0; j <= 4; j++) { const z = j * GOAL_H * 0.6 / 4; const a = this.proj(xb, -GOAL_W, z), b = this.proj(xb, GOAL_W, z); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }
+      const scoredHere = this.goalFxT > 0 && s === (this.teams[this.goalFxTeam]?.dir || 0);
+      const ripple = scoredHere ? Math.sin((2.2 - this.goalFxT) * 22) * Math.max(0, this.goalFxT / 2.2) : 0;
+      c.strokeStyle = scoredHere ? 'rgba(255,248,205,0.72)' : 'rgba(255,255,255,0.35)';
+      for (let i = 0; i <= 8; i++) { const yy = -GOAL_W + i * GOAL_W / 4; const bulge = scoredHere ? ripple * (1 - Math.abs(yy) / GOAL_W) * 0.42 : 0; const a = this.proj(x, yy, GOAL_H), b = this.proj(xb + s * bulge, yy, GOAL_H * 0.6), d = this.proj(xb + s * bulge * 0.35, yy, 0); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(d[0], d[1]); c.stroke(); }
+      for (let j = 0; j <= 4; j++) { const z = j * GOAL_H * 0.6 / 4; const bulge = scoredHere ? ripple * Math.sin(Math.PI * j / 4) * 0.42 : 0; const a = this.proj(xb + s * bulge, -GOAL_W, z), b = this.proj(xb + s * bulge, GOAL_W, z); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }
+      if (scoredHere) { c.save(); c.globalAlpha = Math.min(0.5, this.goalFxT / 2.2); c.strokeStyle = '#ffe99a'; c.lineWidth = 2 * this.dpr; const a = this.proj(xb + s * ripple * 0.55, -GOAL_W * 0.8, GOAL_H * 0.35), b = this.proj(xb + s * ripple * 0.55, GOAL_W * 0.8, GOAL_H * 0.35); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); c.restore(); }
       return;
     }
     c.strokeStyle = '#f4f4f4'; c.lineWidth = Math.max(2, 3.5 * this.dpr);

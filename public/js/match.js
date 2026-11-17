@@ -356,11 +356,27 @@ export class Match {
       const inPoss = possTeam === T.side;
       // presseurs
       let pressers = [];
+      let interceptor = null, interceptPoint = null;
       if (!inPoss) {
         const cand = T.ps.filter(p => !p.isGK && !p.sentOff).map(p => ({ p, d: Math.hypot(p.x - b.x, p.y - b.y) })).sort((a, c) => a.d - c.d);
         const pressCount = T.pressing >= 3 ? 3 : T.pressing >= 2 ? 2 : 1;
         pressers = cand.slice(0, pressCount).map(c => c.p);
         if (T.pressing === 0 && cand[0] && Math.abs(b.x - (-HL * T.dir)) > 50) pressers = [];
+        // Sur une passe aérienne ou tendue, un défenseur anticipe le point
+        // de coupe au lieu de poursuivre aveuglément le porteur précédent.
+        const ballSpeed2 = b.vx * b.vx + b.vy * b.vy;
+        if (!b.owner && !b.inFlightShot && ballSpeed2 > 25) {
+          let bestScore = Infinity;
+          for (const p of T.ps) {
+            if (p.isGK || p.sentOff) continue;
+            const rawT = ((p.x - b.x) * b.vx + (p.y - b.y) * b.vy) / ballSpeed2;
+            const t = clamp(rawT, 0.12, 1.35);
+            const ix = clamp(b.x + b.vx * t * 0.82, -HL + 1, HL - 1);
+            const iy = clamp(b.y + b.vy * t * 0.82, -HW + 1, HW - 1);
+            const score = Math.hypot(ix - p.x, iy - p.y) / this.speedOf(p, true) + t * 0.42;
+            if (score < bestScore) { bestScore = score; interceptor = p; interceptPoint = { x: ix, y: iy }; }
+          }
+        }
       }
       for (const p of T.ps) {
         if (p.sentOff) continue;
@@ -370,6 +386,11 @@ export class Match {
         // receveur désigné : va au-devant du ballon
         const pi = this.passInfo;
         if (!own && pi && pi.to === p && pi.t < 3) { const tgt = this.receivePoint(p, pi); this.moveTo(p, tgt.x, tgt.y, dt, 1, false, true); continue; }
+        // Interception prioritaire : le défenseur désigné coupe la ligne de passe.
+        if (!own && interceptor === p && interceptPoint) {
+          this.moveTo(p, interceptPoint.x, interceptPoint.y, dt, 1.08, false, true);
+          continue;
+        }
         // balle libre : le plus proche va la chercher
         if (!own) {
           const t = this.ballLanding();

@@ -414,6 +414,23 @@ export class Match {
           if (carrier && runnerRole && advanced && forwardGap > -5 && forwardGap < 24 && lane > 3.5 && lane < 22 && this.r() < dt * (p.instr === 'run' ? 1.1 : 0.38)) p.run = 2.8;
         }
         let [tx, ty] = this.formationPos(p, inPoss);
+        if (inPoss && own && p !== own && !p.isGK) {
+          // Soutien offensif : proposer une solution devant le porteur,
+          // tout en conservant l'écartement des joueurs de couloir.
+          const advance = clamp((own.x * T.dir + 8) / 34, 0, 1);
+          const side = Math.sign(p.base[1] || p.y || 1);
+          const wideRole = Math.abs(p.base[1]) > 13 || p.instr === 'run';
+          const forwardRun = p.run > 0 || (wideRole && advance > 0.35);
+          if (forwardRun) {
+            const lead = p.run > 0 ? 8 : 4 + advance * 5;
+            tx = clamp(Math.max(tx, own.x + T.dir * lead) , -HL + 3, HL - 3);
+            if (wideRole) ty = clamp(ty * 0.55 + side * (13 + advance * 5) * 0.45, -HW + 2, HW - 2);
+            else ty = clamp(ty * 0.72 + own.y * 0.28, -HW + 3, HW - 3);
+          } else if (advance > 0.5) {
+            // Les milieux proches se placent en diagonale pour créer un angle de passe.
+            ty = clamp(ty * 0.78 + (own.y + side * 4) * 0.22, -HW + 3, HW - 3);
+          }
+        }
         if (!inPoss) { // marquage
           const opp = this.teams[1 - T.side].ps;
           let mk = null, md = 9;

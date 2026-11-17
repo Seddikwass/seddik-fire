@@ -1277,7 +1277,7 @@ export class Match {
     c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(`${String(min).padStart(2, '0')}'`, x0 + tw + 63 * d, y0 + h / 2);
     // panneau de statistiques en direct, compact et lisible sur mobile
     if (!isReplay) {
-      const sw = Math.min(210 * d, this.W * 0.43), sh = 54 * d;
+      const sw = Math.min(220 * d, this.W * 0.45), sh = 76 * d;
       const sx = this.W - sw - 12 * d, sy = 10 * d;
       const totalPoss = Math.max(0.01, this.stats.poss[0] + this.stats.poss[1]);
       const poss0 = Math.round(this.stats.poss[0] / totalPoss * 100), poss1 = 100 - poss0;
@@ -1289,6 +1289,8 @@ export class Match {
       c.fillStyle = '#e9eef8'; c.font = `600 ${9 * d}px system-ui,Arial`;
       c.fillText(`Poss. ${poss0}% - ${poss1}%`, sx + 7 * d, sy + 34 * d);
       c.fillText(`Tirs ${this.stats.shots[0]}-${this.stats.shots[1]}  •  Cadrés ${this.stats.onTarget[0]}-${this.stats.onTarget[1]}`, sx + 7 * d, sy + 47 * d);
+      const passPct = [0, 1].map(i => this.stats.passes[i] ? Math.round(this.stats.passOk[i] / this.stats.passes[i] * 100) : 0);
+      c.fillText(`Passes réussies ${passPct[0]}%-${passPct[1]}%  •  Fautes ${this.stats.fouls[0]}-${this.stats.fouls[1]}`, sx + 7 * d, sy + 62 * d);
     }
     // bandeau commentaire
     if (this.tickerT > 0 && this.ticker) {
@@ -1301,7 +1303,17 @@ export class Match {
       c.fillStyle = '#000a'; c.fillText(this.msg, this.W / 2 + 3 * d, this.H * 0.36 + 3 * d);
       c.fillStyle = isReplay ? '#ffe14a' : '#fff'; c.fillText(this.msg, this.W / 2, this.H * 0.36);
     }
-    if (isReplay) { c.font = `700 ${13 * d}px system-ui`; c.fillStyle = '#fff'; c.fillText('Touchez pour passer', this.W / 2, this.H * 0.44); }
+    if (isReplay) {
+      const rw = Math.min(280 * d, this.W * 0.7), rx = (this.W - rw) / 2, ry = this.H * 0.48;
+      c.fillStyle = '#07111ddd'; c.fillRect(rx, ry, rw, 34 * d);
+      c.fillStyle = '#ffdf45'; c.font = `900 ${12 * d}px system-ui,Arial`; c.textAlign = 'center';
+      c.fillText('RALENTI • ACTION DU MATCH', this.W / 2, ry + 13 * d);
+      c.fillStyle = '#ffffff55'; c.fillRect(rx + 10 * d, ry + 22 * d, rw - 20 * d, 3 * d);
+      const progress = this.replay ? this.replay.i / Math.max(1, this.replay.frames.length - 1) : 0;
+      c.fillStyle = '#ffdf45'; c.fillRect(rx + 10 * d, ry + 22 * d, (rw - 20 * d) * clamp(progress, 0, 1), 3 * d);
+      c.fillStyle = '#fff'; c.font = `700 ${10 * d}px system-ui,Arial`;
+      c.fillText('Touchez pour passer', this.W / 2, ry + 48 * d);
+    }
     // radar
     const mw = 120 * d, mh = 78 * d, mx = this.W / 2 - mw / 2, my = this.H - mh - 8 * d;
     c.fillStyle = '#0a3d0fcc'; c.fillRect(mx, my, mw, mh); c.strokeStyle = '#ffffff88'; c.lineWidth = 1; c.strokeRect(mx, my, mw, mh);

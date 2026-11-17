@@ -7,7 +7,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.0.1';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -716,7 +716,7 @@ window.addEventListener('error', e => { console.error(e.error || e.message); });
   S.health().then(h => { serverInfo = h; if (['account', 'settings', 'settingsHome'].includes(view)) render(); }).catch(() => { serverInfo = null; });
   dataOverrides = await S.fetchDataOverrides();
   if (dataOverrides && dataOverrides.clubs && view === 'newCareer') render();
-  if ('serviceWorker' in navigator && location.protocol === 'https:' && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator && location.protocol === 'https:' && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => reg.update()).catch(() => {});
   window.__ft26 = { get st() { return st; }, get match() { return match; }, C, go };
   // Android (Capacitor) : bouton retour, mise en arrière-plan / reprise après veille
   const cap = window.Capacitor;

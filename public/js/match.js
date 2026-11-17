@@ -18,6 +18,13 @@ export function getRenderDpr(quality = 'high', device = {}) {
   return Math.max(1, Math.min(pixelRatio, qualityCap, hardwareCap));
 }
 
+export function getBallRotation(spin, clockSeconds, speed) {
+  const safeSpin = Number.isFinite(spin) ? spin : 0;
+  const safeClock = Number.isFinite(clockSeconds) ? clockSeconds : 0;
+  const safeSpeed = Number.isFinite(speed) ? Math.max(0, speed) : 0;
+  return safeSpin * safeClock * 5 + safeSpeed * 0.035;
+}
+
 const LINES = {
   fr: {
     kickoff: ['Coup d\'envoi ! {h} contre {a}.', 'C\'est parti au {st} !'],
@@ -1090,7 +1097,7 @@ export class Match {
   // ---------------- ralenti ----------------
   record() {
     if ((this.recT = (this.recT || 0) + 1) % 2) return;
-    const f = { b: [this.ball.x, this.ball.y, this.ball.z, this.ball.vx || 0, this.ball.vy || 0, this.ball.vz || 0, this.ball.spin || 0], p: [] };
+    const f = { b: [this.ball.x, this.ball.y, this.ball.z, this.ball.vx || 0, this.ball.vy || 0, this.ball.vz || 0, this.ball.spin || 0, this.clock], p: [] };
     for (const T of this.teams) for (const p of T.ps) f.p.push([
       p.x, p.y, p.face, p.anim, p.vx, p.vy, p.jumpT || 0, p.diveT || 0,
       p.slideT || 0, p.kickT || 0, p.headerT || 0, p.firstTouchT || 0,
@@ -1668,7 +1675,8 @@ export class Match {
     }
     c.save(); c.translate(b[0], b[1]);
     // Rotation des panneaux pour rendre la balle moins statique en vol et en roulement.
-    const spin = spinValue * (Date.now() / 1000) * 5 + speed * 0.035;
+    const replayClock = replayState && Number.isFinite(replayState[7]) ? replayState[7] : this.clock;
+    const spin = getBallRotation(spinValue, replayClock, speed);
     c.rotate(spin);
     c.fillStyle = '#fff'; c.beginPath(); c.arc(0, 0, r, 0, 7); c.fill();
     c.fillStyle = '#20242b'; c.beginPath(); c.arc(r * 0.2, -r * 0.15, r * 0.35, 0, 7); c.fill();

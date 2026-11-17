@@ -26,7 +26,9 @@ jobs:
       - name: Tests de la logique du jeu
         id: tests
         continue-on-error: true
-        run: node tests/career.test.mjs 2>&1 | tail -5 | tee tests.log
+        run: |
+          npm install --omit=dev
+          npm test 2>&1 | tee tests.log
 
       - name: Compiler APK + AAB
         id: build

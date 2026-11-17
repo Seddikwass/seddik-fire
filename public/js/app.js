@@ -7,7 +7,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '1.4.0';
+export const APP_VERSION = '1.5.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -426,9 +426,9 @@ function accountHTML() {
 VIEWS.account = () => `<div class="page narrow"><div class="ph"><button class="btn ghost" data-a="nav" data-v="home">← ${t('Retour')}</button><h2>${t('Compte')}</h2></div>${accountHTML()}</div>`;
 
 // ------------------------------------------------------------------ match
- VIEWS.match = () => `<div class="match ${settings.leftHanded ? 'lefty' : ''} ${args.userSide == null ? 'spect' : ''}" style="--bs:${settings.btnScale}"><canvas id="cv"></canvas>
-  <div id="joyZone" class="joyzone"><div id="joy" class="joy"><div class="knob"></div></div></div>
-  <div class="btns"><button id="bShoot" class="mb shoot">${t('Tir')}</button><button id="bPass" class="mb pass">${t('Passe')}</button><button id="bThru" class="mb thru">${t('Profondeur')}</button><button id="bSprint" class="mb sprint">${t('Sprint')}</button></div>
+ VIEWS.match = () => `<div class="match ${settings.leftHanded ? 'lefty' : ''} ${args.userSide == null ? 'spect' : ''}" style="--bs:${settings.btnScale}"><canvas id="cv" role="img" aria-label="Terrain de football animé, match à onze contre onze. Utilisez les commandes tactiles pour jouer."></canvas>
+  <div id="joyZone" class="joyzone" role="group" aria-label="Commande directionnelle : maintenir et glisser pour déplacer le joueur"><div id="joy" class="joy"><div class="knob"></div></div></div>
+  <div class="btns"><button id="bShoot" type="button" aria-pressed="false" class="mb shoot">${t('Tir')}</button><button id="bPass" type="button" aria-pressed="false" class="mb pass">${t('Passe')}</button><button id="bThru" type="button" aria-pressed="false" class="mb thru">${t('Profondeur')}</button><button id="bSprint" type="button" aria-pressed="false" class="mb sprint">${t('Sprint')}</button></div>
   <button id="bPause" class="mpause" aria-label="${t('Pause')}">❚❚</button><div id="mLoad" class="mload">Chargement du match…</div></div>`;
 function startMatchView() {
   const cv = $('#cv'); const ctx = args;
@@ -459,6 +459,7 @@ function bindControls(m) {
       if (activePointer === null || (e && e.pointerId !== activePointer)) return;
       const pointerId = activePointer; activePointer = null;
       b.classList.remove('on');
+      b.setAttribute('aria-pressed', 'false');
       if (up) up();
       try { if (b.hasPointerCapture?.(pointerId)) b.releasePointerCapture(pointerId); } catch (err) {}
     };
@@ -468,6 +469,7 @@ function bindControls(m) {
       activePointer = e.pointerId;
       try { b.setPointerCapture(e.pointerId); } catch (err) {}
       b.classList.add('on');
+      b.setAttribute('aria-pressed', 'true');
       A.audioInit();
       down();
     });

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getRenderDpr } from '../public/js/match.js';
+import { getRenderDpr, getBallRotation } from '../public/js/match.js';
 
 assert.equal(getRenderDpr('low', { pixelRatio: 3 }), 1, 'qualité basse : ratio plafonné à 1');
 assert.equal(getRenderDpr('medium', { pixelRatio: 3 }), 1.5, 'qualité moyenne : ratio plafonné à 1,5');
@@ -10,3 +10,10 @@ assert.equal(getRenderDpr('high', { pixelRatio: 3, deviceMemory: 4, hardwareConc
 assert.equal(getRenderDpr('high', { pixelRatio: 1.25, deviceMemory: 8, hardwareConcurrency: 8 }), 1.25, 'respecte le ratio natif disponible');
 
 console.log('RENDER SCALE OK — qualité et adaptation aux capacités matérielles');
+
+assert.equal(getBallRotation(0.5, 2, 10), 5.35, 'rotation calculée à partir du temps de match');
+assert.equal(getBallRotation(0.5, 2, 10), getBallRotation(0.5, 2, 10), 'une même image de replay garde exactement la même rotation');
+assert.equal(getBallRotation(0.5, 0, 10), 0.35, 'la rotation se fige proprement au temps zéro');
+assert.equal(getBallRotation(Number.NaN, Number.NaN, Number.NaN), 0, 'les valeurs invalides ne contaminent pas le rendu');
+
+console.log('REPLAY ROTATION OK — orientation déterministe et indépendante de l horloge système');

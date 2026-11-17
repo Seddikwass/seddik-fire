@@ -214,3 +214,41 @@ button:disabled,.btn:disabled{
   .card,.clubcard,.srow,.tacside{border-color:#71869b}
   .btn{border-width:2px}
 }
+
+
+/* FT26 1.1 — finition broadcast, pelouse et commandes de match */
+.match{background:radial-gradient(ellipse at 50% 42%,#17361c 0%,#08150d 62%,#03070a 100%)}
+.match canvas{filter:saturate(1.08) contrast(1.035)}
+.joy{
+  background:radial-gradient(circle at 38% 30%,#ffffff30,#ffffff0c 58%,#00000024);
+  border:2px solid #ffffff68;
+  box-shadow:inset 0 0 22px #ffffff12,0 8px 24px #0008;
+  backdrop-filter:blur(3px)
+}
+.joy .knob{
+  background:radial-gradient(circle at 35% 28%,#fff,#c8d4dfd9 58%,#7e8997);
+  border:1px solid #ffffffc9;
+  box-shadow:0 4px 14px #0009,inset 0 2px 3px #fff
+}
+.mb{
+  border:2px solid #ffffffb8;
+  box-shadow:0 7px 20px #000b,inset 0 2px 5px #ffffff45;
+  text-shadow:0 2px 3px #0009;
+  backdrop-filter:blur(4px);
+  transition:transform .11s ease,filter .11s ease,box-shadow .11s ease
+}
+.mb.on{transform:scale(.91);filter:brightness(1.32);box-shadow:0 2px 8px #000b,inset 0 2px 5px #ffffff55}
+.mb.shoot{background:radial-gradient(circle at 32% 26%,#ff8a8f,#e32131 55%,#8f0612);border-color:#ffb2b6}
+.mb.pass{background:radial-gradient(circle at 32% 26%,#a8caff,#3479ec 55%,#123b91);border-color:#c4dcff}
+.mb.thru{background:radial-gradient(circle at 32% 26%,#b2ffd7,#28bd78 55%,#087044);border-color:#c4ffe0}
+.mb.sprint{background:radial-gradient(circle at 32% 26%,#fff0a7,#f5bd26 55%,#916000);border-color:#fff1bb}
+.btns{filter:drop-shadow(0 5px 12px #0005)}
+@media(max-width:760px) and (orientation:landscape){
+  .btns{width:calc(250px*var(--bs));height:calc(210px*var(--bs));right:max(14px,env(safe-area-inset-right))}
+  .mb.shoot{width:calc(100px*var(--bs));height:calc(100px*var(--bs))}
+  .mb.pass{width:calc(80px*var(--bs));height:calc(80px*var(--bs))}
+  .joy{border-width:2px}
+}
+@media(prefers-reduced-motion:reduce){
+  .mb,.joy,.joy .knob{transition:none!important}
+}

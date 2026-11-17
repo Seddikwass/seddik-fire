@@ -73,7 +73,7 @@ export class Match {
     const form = FORMATIONS[t.formation] || FORMATIONS['4-3-3'];
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
-      isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, anim: Math.random() * 6,
+      isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, anim: Math.random() * 6,
       stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
@@ -300,9 +300,27 @@ export class Match {
     else p.stamina = Math.min(1, p.stamina + dt * 0.002);
   }
   applyVel(p, wx, wy, dt) {
-    const acc = 9 + p.a.pac / 20;
+    const currentSpeed = Math.hypot(p.vx, p.vy);
+    const targetSpeed = Math.hypot(wx, wy);
+    const pac = p.a.pac || 60;
+    const currentHeading = currentSpeed > 0.2 ? Math.atan2(p.vy, p.vx) : (p.heading ?? Math.atan2(wy, wx));
+    const targetHeading = targetSpeed > 0.2 ? Math.atan2(wy, wx) : currentHeading;
+    const delta = Math.atan2(Math.sin(targetHeading - currentHeading), Math.cos(targetHeading - currentHeading));
+    p.turn = clamp(delta / Math.PI, -1, 1);
+    p.heading = currentHeading + delta * clamp(dt * (3.8 + pac / 42), 0, 1);
+    // Freinage plus franc à l'approche d'une cible et légère perte d'appui
+    // lorsque le joueur doit changer brutalement de direction.
+    const braking = targetSpeed < currentSpeed ? 1.32 : 1;
+    const cornering = 1 - Math.min(0.18, Math.abs(delta) / Math.PI * 0.18);
+    const acc = (9.5 + pac / 24) * braking * cornering;
     p.vx += clamp(wx - p.vx, -acc * dt, acc * dt);
     p.vy += clamp(wy - p.vy, -acc * dt, acc * dt);
+    const actualSpeed = Math.hypot(p.vx, p.vy);
+    if (actualSpeed > 0.3) {
+      const actualHeading = Math.atan2(p.vy, p.vx);
+      const d = Math.atan2(Math.sin(actualHeading - p.heading), Math.cos(actualHeading - p.heading));
+      p.heading += d * clamp(dt * 2.8, 0, 1);
+    }
   }
   moveAll(dt, celebrate = false) {
     for (const T of this.teams) for (const p of T.ps) {
@@ -500,12 +518,34 @@ export class Match {
   }
   aiKeeper(p, dt) {
     const T = this.teams[p.team], b = this.ball, d = T.dir, gx = -HL * d;
-    // ballon proche et libre dans la surface : sortie
+    // Lecture anticipée du tir : le gardien se replace sur la trajectoire
+    // et déclenche son plongeon avant que le ballon n'arrive sur la ligne.
+    const shot = b.inFlightShot;
+    if (shot && shot.team !== p.team && Math.abs(b.vx) > 3) {
+      const tcross = (gx - b.x) / b.vx;
+      if (tcross > 0.02 && tcross < 1.15) {
+        const cy = b.y + b.vy * tcross;
+        const cz = b.z + b.vz * tcross - 0.5 * G * tcross * tcross;
+        if (Math.abs(cy) < GOAL_W + 1.2 && cz > -0.25 && cz < GOAL_H + 1.2) {
+          const targetY = clamp(cy, -GOAL_W + 0.32, GOAL_W - 0.32);
+          const gap = targetY - p.y;
+          if (tcross < 0.9 && Math.abs(gap) > 0.38 && p.keeperReactShot !== shot) {
+            p.keeperReactShot = shot;
+            p.diveDir = Math.sign(gap) || 1;
+            p.diveT = Math.max(p.diveT || 0, 0.48);
+          }
+          this.moveTo(p, gx + d * 1.25, targetY, dt, 1.18, true, true);
+          return;
+        }
+      }
+    }
+    // Sortie maîtrisée sur ballon libre dans la surface.
     const inBox = Math.abs(b.x - gx) < 16 && Math.abs(b.y) < 20;
-    if (!b.owner && inBox && Math.hypot(b.x - p.x, b.y - p.y) < 9 && b.z < 2 && !b.inFlightShot) { this.moveTo(p, b.x, b.y, dt, 1.1, true, true); return; }
-    const [tx, ty] = this.formationPos(p, false);
-    // couvre l'angle
-    const ang = Math.atan2(b.y - 0, b.x - gx);
+    if (!b.owner && inBox && Math.hypot(b.x - p.x, b.y - p.y) < 9 && b.z < 2 && !b.inFlightShot) {
+      this.moveTo(p, b.x, b.y, dt, 1.1, true, true); return;
+    }
+    // Position de base : réduire l'angle offert au tireur.
+    const ang = Math.atan2(b.y, b.x - gx);
     const r = clamp(Math.hypot(b.x - gx, b.y) * 0.08, 0.6, 3.5);
     const ax = gx + Math.cos(ang) * r, ay = clamp(Math.sin(ang) * r, -GOAL_W + 0.4, GOAL_W - 0.4);
     this.moveTo(p, b.inFlightShot ? p.x : ax, ay, dt, 1.1, true, true);
@@ -599,7 +639,8 @@ export class Match {
   kickBall(p, vx, vy, vz, power = 0.5) {
     const b = this.ball;
     b.owner = null; b.vx = vx; b.vy = vy; b.vz = vz; b.z = Math.max(b.z, 0.12); b.last = p; b.lastTeam = p.team;
-    p.kickT = 0.24; p.kickDir = Math.sign(vx) || p.face || 1;
+    p.kickT = 0.34; p.kickStyle = power >= 0.65 ? 'shot' : 'pass'; p.kickPower = power;
+    p.kickDir = Math.sign(vx) || p.face || 1;
     p.cd = 0.35; p.touches++; this.setPiece = null;
     A.kick(power);
   }
@@ -613,12 +654,16 @@ export class Match {
     tx += t.vx * tf * 0.9; ty += t.vy * tf * 0.9;
     if (through) tx += d * (4 + dist0 * 0.08);
     const assist = p.team === this.userSide && this.settings.assist ? 0.5 : 1;
-    const err = (1 - p.a.pas / 100) * 0.11 * assist + (p.team !== this.userSide ? 0.02 : 0);
+    let pressure = 99;
+    for (const o of this.teams[1 - p.team].ps) if (!o.sentOff) pressure = Math.min(pressure, Math.hypot(o.x - p.x, o.y - p.y));
+    const pressureError = clamp((3.8 - pressure) / 3.8, 0, 1) * 0.075;
+    const balanceError = clamp(Math.hypot(p.vx, p.vy) / 12, 0, 1) * 0.035;
+    const err = (1 - p.a.pas / 100) * 0.11 * assist + pressureError + balanceError + (p.team !== this.userSide ? 0.02 : 0);
     let ang = Math.atan2(ty - p.y, tx - p.x) + (this.r() - 0.5) * 2 * err;
     const dist = Math.hypot(tx - p.x, ty - p.y);
     speed = clamp(dist * (lob ? 0.55 : 0.75) + 7, 9, lob ? 20 : 22);
     const vz = lob ? clamp(dist * 0.32, 4, 11) : 0.6;
-    this.kickBall(p, Math.cos(ang) * speed, Math.sin(ang) * speed, vz, 0.4);
+    this.kickBall(p, Math.cos(ang) * speed + p.vx * 0.1, Math.sin(ang) * speed + p.vy * 0.1, vz, 0.4);
     this.stats.passes[p.team]++;
     this.passInfo = { from: p, to: t, team: p.team, t: 0, tx: p.x + Math.cos(ang) * dist, ty: p.y + Math.sin(ang) * dist };
     if (p.team === this.userSide && this.userSide != null) this.select(t);
@@ -650,21 +695,33 @@ export class Match {
   shoot(p, power = 0.7, aimY = null) {
     const T = this.teams[p.team], d = T.dir, gx = HL * d;
     const gk = this.teams[1 - p.team].ps[0];
-    let ty = aimY != null ? aimY : (gk.y > 0 ? -1 : 1) * (1.5 + this.r() * 1.8);
-    let tz = 0.3 + this.r() * 1.6;
+    const movingSpeed = Math.hypot(p.vx, p.vy);
+    let pressure = 99;
+    for (const o of this.teams[1 - p.team].ps) if (!o.sentOff) pressure = Math.min(pressure, Math.hypot(o.x - p.x, o.y - p.y));
+    // Le dosage du bouton distingue frappe rasante, tir placé et frappe puissante.
+    const driven = power < 0.38;
+    const powerShot = power > 0.82;
+    let ty = aimY != null ? aimY : (gk.y > 0 ? -1 : 1) * (1.35 + this.r() * 1.9);
+    let tz = driven ? 0.18 + this.r() * 0.22 : powerShot ? 1.35 + this.r() * 0.75 : 0.52 + this.r() * 0.62;
     const assist = p.team === this.userSide && this.settings.assist ? 0.65 : 1;
     const skill = p.a.sho / 100;
-    const err = (0.4 + (1 - skill) * 2.6 + power * power * 1.4) * assist * (p.team !== this.userSide ? 1.15 : 1);
-    ty += (this.r() - 0.5) * 2 * err; tz += (this.r() - 0.3) * err * 0.7 + Math.max(0, power - 0.8) * 1.5;
+    const pressureError = clamp((3.4 - pressure) / 3.4, 0, 1) * 0.42;
+    const balanceError = clamp(movingSpeed / 10, 0, 1) * 0.2;
+    const err = (0.28 + (1 - skill) * 2.25 + power * power * 1.25 + pressureError + balanceError) * assist * (p.team !== this.userSide ? 1.15 : 1);
+    ty += (this.r() - 0.5) * 2 * err;
+    tz += (this.r() - 0.5) * (0.35 + (1 - skill) * 0.75) + Math.max(0, power - 0.88) * 0.9;
     const dist = Math.hypot(gx - p.x, ty - p.y);
-    const speed = 16 + power * 15 + skill * 4;
+    const speed = 17 + power * 15 + skill * 4 + Math.min(2, movingSpeed * 0.18);
     const t = dist / speed;
     const vz = clamp((tz - 0.12 + 0.5 * G * t * t) / t, 0.5, 12);
     const ang = Math.atan2(ty - p.y, gx - p.x);
-    this.kickBall(p, Math.cos(ang) * speed, Math.sin(ang) * speed, vz, 0.6 + power * 0.4);
-    // Rotation latérale selon l'angle de frappe : tirs enroulés plus naturels.
-    this.ball.spin = clamp(((ty - p.y) / Math.max(8, dist)) * (0.55 + power * 0.75) * skill, -0.85, 0.85);
-    this.ball.inFlightShot = { team: p.team, shooter: p, t: 0 };
+    const vx = Math.cos(ang) * speed + p.vx * 0.1;
+    const vy = Math.sin(ang) * speed + p.vy * 0.1;
+    this.kickBall(p, vx, vy, vz, 0.6 + power * 0.4);
+    // Enroulé plus lisible : la technique du joueur module la courbe du ballon.
+    this.ball.spin = clamp(((ty - p.y) / Math.max(8, dist)) * (0.5 + power * 0.65) * skill * (0.65 + (p.a.tec || 50) / 220), -0.95, 0.95);
+    this.ball.shotType = driven ? 'driven' : powerShot ? 'power' : 'placed';
+    this.ball.inFlightShot = { team: p.team, shooter: p, t: 0, type: this.ball.shotType };
     this.stats.shots[p.team]++;
     const onT = Math.abs(ty) < GOAL_W && tz < GOAL_H;
     if (onT) this.stats.onTarget[p.team]++;
@@ -822,14 +879,19 @@ export class Match {
       const gxLine = -HL * T.dir;
       if (shot && shot.team !== T.side && (b.vx * -T.dir) > 4) {
         const tcross = (gxLine - b.x) / b.vx;
-        if (tcross > 0 && tcross < 0.6) {
+        if (tcross > 0 && tcross < 1.05) {
           const yc = b.y + b.vy * tcross, zc = b.z + b.vz * tcross - 0.5 * G * tcross * tcross;
           if (Math.abs(yc) < GOAL_W + 0.3 && zc < GOAL_H + 0.3) {
             const reach = 1.6 + gk.a.gk / 100 * 1.6 + (gk.team === this.userSide ? 0 : [-.3, 0, .15, .3][this.settings.difficulty] || 0);
             const need = Math.abs(yc - gk.y);
-            gk.vy += clamp((yc - gk.y) * 14, -18, 18) * dt * 8; // plongeon
+            const reaction = clamp((1.05 - tcross) / 0.72, 0, 1);
+            gk.vy += clamp((yc - gk.y) * 10, -14, 14) * dt * (4.5 + reaction * 2);
             gk.dive = Math.sign(yc - gk.y) * Math.min(1, need / 2);
-            if (need > 0.45) { gk.diveT = Math.max(gk.diveT || 0, 0.42); gk.diveDir = Math.sign(yc - gk.y) || 1; }
+            if (need > 0.4 && tcross < 0.82) {
+              gk.diveT = Math.max(gk.diveT || 0, 0.48);
+              gk.diveDir = Math.sign(yc - gk.y) || 1;
+              gk.keeperReactShot = shot;
+            }
             if (!shot.judged && tcross < 0.18) {
               shot.judged = true;
               const sp = Math.hypot(b.vx, b.vy);
@@ -1211,12 +1273,14 @@ export class Match {
     const c = this.c;
     // gazon autour
     this.poly([this.proj(-62, -40, 0), this.proj(62, -40, 0), this.proj(62, 36, 0), this.proj(-62, 36, 0)], '#2b6f2a');
-    const n = 14, sw = 2 * HL / n;
+    const n = this.settings.quality === 'low' ? 12 : 22, sw = 2 * HL / n;
     for (let i = 0; i < n; i++) {
       const x0 = -HL + i * sw, x1 = x0 + sw;
       this.poly([this.proj(x0, -HW, 0), this.proj(x1, -HW, 0), this.proj(x1, HW, 0), this.proj(x0, HW, 0)], i % 2 ? '#3d8f37' : '#357f31');
     }
-    c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = Math.max(1, 2 * this.dpr);
+    c.save();
+    c.strokeStyle = 'rgba(245,250,241,0.92)'; c.lineWidth = Math.max(1, 2 * this.dpr);
+    c.shadowColor = 'rgba(226,255,219,0.24)'; c.shadowBlur = this.settings.quality === 'low' ? 0 : 4 * this.dpr;
     const line = pts => { c.beginPath(); pts.forEach((p, i) => { const q = this.proj(p[0], p[1], 0); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); }); c.stroke(); };
     line([[-HL, -HW], [HL, -HW], [HL, HW], [-HL, HW], [-HL, -HW]]);
     line([[0, -HW], [0, HW]]);
@@ -1230,6 +1294,18 @@ export class Match {
       const ps = this.proj(s * (HL - 11), 0, 0); c.fillStyle = '#fff'; c.beginPath(); c.arc(ps[0], ps[1], 2 * this.dpr, 0, 7); c.fill();
     }
     const cs = this.proj(0, 0, 0); c.fillStyle = '#fff'; c.beginPath(); c.arc(cs[0], cs[1], 2 * this.dpr, 0, 7); c.fill();
+    // Arcs de corner et points de penalty : marquages complets et mieux lisibles.
+    for (const sx of [-1, 1]) {
+      for (const sy of [-1, 1]) {
+        const arc = [];
+        for (let i = 0; i <= 10; i++) {
+          const a = i / 10 * Math.PI / 2;
+          arc.push([sx * (HL - 0.9 + Math.cos(a) * 0.9), sy * (HW - 0.9 + Math.sin(a) * 0.9)]);
+        }
+        line(arc);
+      }
+    }
+    c.restore();
   }
   drawGoal(s, back) {
     const c = this.c, x = s * HL, xb = s * (HL + 2);
@@ -1259,7 +1335,12 @@ export class Match {
     const keeperSave = !fp && p.isGK ? Math.max(0, Math.min(1, (p.saveT || 0) / 0.75)) : 0;
     const diveSide = p.diveDir || 1;
     const slidePulse = Math.max(0, Math.min(1, (p.slideT || 0) / 0.38));
-    const g = [ground[0] + slidePulse * (p.face || 1) * 0.22 * s + keeperDive * diveSide * 0.28 * s, ground[1] - Math.sin(jump * Math.PI) * 0.62 * s - keeperDive * 0.12 * s + slidePulse * 0.14 * s, ground[2], ground[3]];
+    const divePoint = this.proj(x, y + diveSide * 0.72, 0);
+    const g = [
+      ground[0] + slidePulse * (p.face || 1) * 0.22 * s + (divePoint[0] - ground[0]) * keeperDive * 0.72,
+      ground[1] - Math.sin(jump * Math.PI) * 0.62 * s - keeperDive * 0.12 * s + slidePulse * 0.14 * s + (divePoint[1] - ground[1]) * keeperDive * 0.72,
+      ground[2], ground[3]
+    ];
     const hgt = 1.8 * s, w = 0.5 * s;
     // ombre et effets d'action au sol : plongeon du gardien / tacle glissé
     c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(ground[0] + 0.25 * s, ground[1], 0.45 * s * (1 - jump * 0.22), 0.14 * s, 0, 0, 7); c.fill();
@@ -1284,17 +1365,23 @@ export class Match {
     const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim * 2.15, sw = Math.sin(phase) * gait * 0.58;
     const diveReach = keeperDive * (0.38 + keeperSave * 0.35);
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
-    const kickPulse = Math.max(0, Math.min(1, (p.kickT || 0) / 0.24));
+    const kickProgress = clamp(1 - (p.kickT || 0) / 0.34, 0, 1);
+    const kickPulse = Math.sin(kickProgress * Math.PI);
     const celebration = Math.max(0, Math.min(1, (p.celebrateT || 0) / 0.7));
     // Petit saut synchronisé à la célébration, sans déplacer le joueur au sol.
     if (celebration > 0.02) g[1] -= Math.sin((1 - celebration) * Math.PI * 2.2) * 0.18 * s * celebration;
-    const bodyLean = Math.min(0.12, sp * 0.018) + slidePulse * 0.2 - celebration * 0.08 + (p.contactT || 0) * (p.contactDir || 1) * 0.42;
+    const heading = p.heading ?? Math.atan2(vy, vx || face || 1);
+    const bodyLean = clamp(sp * 0.012 + Math.sin(heading) * Math.min(0.14, sp * 0.018) + (p.turn || 0) * gait * 0.1 + slidePulse * 0.24 - celebration * 0.08 + (p.contactT || 0) * (p.contactDir || 1) * 0.32 + keeperDive * diveSide * 0.28, -0.28, 0.42);
     const hipY = g[1] - hgt * 0.47;
+    // Inclinaison dynamique du corps : accélération, changement d'appui,
+    // contact et plongeon sont visibles jusque dans le haut du joueur.
+    c.save(); c.translate(g[0], hipY); c.rotate(bodyLean); c.translate(-g[0], -hipY);
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';
     for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const injuryLimp = p.injured ? (k === 1 ? -0.12 : 0.035) * (0.55 + 0.45 * Math.sin(anim * 1.4)) : 0;
       const celebrateStep = celebration * Math.sin(anim * 3.2 + k * Math.PI) * 0.22;
-      const stride = sw * k * face + kickingLeg * face * 0.48 + celebrateStep * face + injuryLimp; const lift = Math.max(0, Math.sin(phase * k)) * gait * (p.injured ? 0.045 : 0.12) * s + kickingLeg * 0.18 * s + Math.max(0, celebrateStep) * 0.22 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
+      const stride = sw * k * face + kickingLeg * face * (0.42 + 0.18 * Math.sin(kickProgress * Math.PI * 0.5)) + celebrateStep * face + injuryLimp + (p.turn || 0) * gait * 0.06;
+      const lift = Math.max(0, Math.sin(phase * k)) * gait * (p.injured ? 0.045 : 0.15) * s + kickingLeg * 0.28 * s + Math.max(0, celebrateStep) * 0.22 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
     // chaussettes
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.17 * s);
     for (const k of [-1, 1]) { const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face + kickLeg * face * 0.24 * s; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx + kickLeg * face * 0.12 * s, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.stroke(); }
@@ -1409,6 +1496,7 @@ export class Match {
       c.fillStyle = '#000a'; const tw = c.measureText(nm).width + 8; c.fillRect(g[0] - tw / 2, g[1] + 0.25 * s, tw, 0.42 * s);
       c.fillStyle = p.team === this.userSide ? '#ffe14a' : '#fff'; c.fillText(nm, g[0], g[1] + 0.56 * s);
     }
+    c.restore();
   }
   rr(x, y, w, h, r) { const c = this.c; c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
   drawBall(x, y, z) {

@@ -1273,11 +1273,27 @@ export class Match {
   rr(x, y, w, h, r) { const c = this.c; c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
   drawBall(x, y, z) {
     const c = this.c, sh = this.proj(x, y, 0), b = this.proj(x, y, z + 0.11);
+    const ball = this.ball, speed = Math.hypot(ball.vx || 0, ball.vy || 0);
     const r = Math.max(2.5 * this.dpr, 0.13 * b[2]);
-    c.fillStyle = 'rgba(0,0,0,0.4)'; c.beginPath(); c.ellipse(sh[0], sh[1], r * 1.1, r * 0.4, 0, 0, 7); c.fill();
-    c.fillStyle = '#fff'; c.beginPath(); c.arc(b[0], b[1], r, 0, 7); c.fill();
-    c.fillStyle = '#222'; c.beginPath(); c.arc(b[0] + r * 0.2, b[1] - r * 0.15, r * 0.35, 0, 7); c.fill();
-    c.strokeStyle = '#0006'; c.lineWidth = 1; c.beginPath(); c.arc(b[0], b[1], r, 0, 7); c.stroke();
+    // Ombre portée : elle s'élargit lorsque le ballon prend de la hauteur.
+    c.fillStyle = 'rgba(0,0,0,0.4)'; c.beginPath(); c.ellipse(sh[0], sh[1], r * (1.1 + z * 0.08), r * 0.4, 0, 0, 7); c.fill();
+    // Traînée courte, orientée selon la vitesse réelle du ballon.
+    if (speed > 7) {
+      const len = Math.min(2.8, speed * 0.13), tail = this.proj(x - (ball.vx / speed) * len, y - (ball.vy / speed) * len, z + 0.11);
+      const grad = c.createLinearGradient(tail[0], tail[1], b[0], b[1]);
+      grad.addColorStop(0, 'rgba(255,255,255,0)'); grad.addColorStop(1, 'rgba(255,255,255,0.62)');
+      c.strokeStyle = grad; c.lineWidth = Math.max(1.2 * this.dpr, r * 0.42); c.lineCap = 'round';
+      c.beginPath(); c.moveTo(tail[0], tail[1]); c.lineTo(b[0], b[1]); c.stroke();
+    }
+    c.save(); c.translate(b[0], b[1]);
+    // Rotation des panneaux pour rendre la balle moins statique en vol et en roulement.
+    const spin = (ball.spin || 0) * (Date.now() / 1000) * 5 + speed * 0.035;
+    c.rotate(spin);
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(0, 0, r, 0, 7); c.fill();
+    c.fillStyle = '#20242b'; c.beginPath(); c.arc(r * 0.2, -r * 0.15, r * 0.35, 0, 7); c.fill();
+    c.fillStyle = '#20242b'; c.beginPath(); c.moveTo(-r * 0.65, r * 0.1); c.lineTo(-r * 0.25, -r * 0.5); c.lineTo(r * 0.05, -r * 0.15); c.lineTo(-r * 0.1, r * 0.55); c.closePath(); c.fill();
+    c.strokeStyle = '#0006'; c.lineWidth = 1; c.beginPath(); c.arc(0, 0, r, 0, 7); c.stroke();
+    c.restore();
   }
   drawHUD(isReplay) {
     const c = this.c, d = this.dpr, T = this.teams;

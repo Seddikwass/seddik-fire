@@ -1057,6 +1057,13 @@ export class Match {
     c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillStyle = '#e6bd62'; c.font = `900 ${Math.max(10, 12 * d)}px system-ui,Arial`;
     c.fillText('PRÉSENTATION DES ÉQUIPES  •  FOOTBALL TUNISIA 2026', mid, y + 18 * d);
+    // Drapeau tunisien stylisé, dessiné en vectoriel pour rester net sur mobile.
+    const flagX = mid - 13 * d, flagY = y + 43 * d, flagW = 26 * d, flagH = 17 * d;
+    c.fillStyle = '#e21b2d'; c.fillRect(flagX, flagY, flagW, flagH);
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(mid, flagY + flagH / 2, 5.8 * d, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#e21b2d'; c.beginPath(); c.arc(mid + 2 * d, flagY + flagH / 2, 4.5 * d, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#e21b2d'; c.font = `900 ${8 * d}px system-ui,Arial`;
+    c.fillText('★', mid + 1.8 * d, flagY + flagH / 2 + 2.8 * d);
     const badge = Math.min(31 * d, h * 0.13), cy = y + (compact ? 78 : 88) * d;
     for (const [team, ratio] of [[left, 0.22], [right, 0.78]]) {
       const bx = x + w * ratio;
@@ -1078,7 +1085,13 @@ export class Match {
         const names = players.slice(1, 5).map(p => `${p.num || ''} ${p.name || 'Joueur'}`.trim());
         c.fillStyle = '#f2f5fa'; c.font = `700 ${Math.max(9, 11 * d)}px system-ui,Arial`;
         c.textAlign = 'center';
-        names.forEach((name, i) => c.fillText(name.length > 23 ? name.slice(0, 21) + '…' : name, x + w * ratio, rowY + i * 12 * d));
+        names.forEach((name, i) => {
+          const reveal = clamp((5.8 - t - i * 0.22) / 0.45, 0, 1);
+          if (reveal <= 0) return;
+          c.globalAlpha = alpha * reveal;
+          c.fillText(name.length > 23 ? name.slice(0, 21) + '…' : name, x + w * ratio, rowY + i * 12 * d);
+        });
+        c.globalAlpha = alpha;
       };
       drawStarters(left, 0.25); drawStarters(right, 0.75);
     }

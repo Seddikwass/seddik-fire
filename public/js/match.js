@@ -221,8 +221,12 @@ export class Match {
     this.record();
     for (const T of this.teams) for (const p of T.ps) if (!p.sentOff) p.minutes += dt / this.secondsPerMinute;
     // ambiance
-    const b = this.ball, atk = Math.abs(b.x) > 30 ? 0.55 : 0.25;
-    if ((this.crowdT = (this.crowdT || 0) + dt) > 0.5) { this.crowdT = 0; A.crowd(atk); }
+    const b = this.ball;
+    const attackThreat = clamp((Math.abs(b.x) - 17) / 35, 0, 1);
+    const shotThreat = b.inFlightShot ? 0.24 : 0;
+    const boxThreat = b.owner && Math.abs(b.owner.x) > 34 && Math.abs(b.owner.y) < 21 ? 0.18 : 0;
+    const atk = clamp(0.18 + attackThreat * 0.42 + shotThreat + boxThreat, 0.18, 0.92);
+    if ((this.crowdT = (this.crowdT || 0) + dt) > 0.45) { this.crowdT = 0; A.crowd(atk); }
   }
   addTime(h) { return this._add?.[h] ?? ((this._add = this._add || {})[h] = h === 1 ? 1 + Math.floor(this.r() * 2) : 2 + Math.floor(this.r() * 4)); }
 
@@ -683,6 +687,7 @@ export class Match {
       p.slideT = 0.38; p.slideDir = Math.sign(c.y - p.y) || 1;
       if (this.r() < 0.55) { b.owner = p; } else { b.vx = (this.r() - 0.5) * 8; b.vy = (this.r() - 0.5) * 8; }
       c.cd = 0.6; p.rating += 0.1;
+      A.impact(Math.min(1, (2.4 - dist) / 2.4));
       if (p.team === this.userSide) this.select(p);
       return true;
     }
@@ -835,7 +840,7 @@ export class Match {
                 else if (this.r() < 0.45) { b.vx = b.vx * 0.25; b.vy = (yc >= gk.y ? 1 : -1) * (7 + this.r() * 5); b.vz = 2 + this.r() * 3; b.last = gk; b.lastTeam = gk.team; b.inFlightShot = null; } // détourné en corner
                 else { b.vx = -b.vx * 0.35; b.vy = (this.r() - 0.5) * 14; b.vz = 3 + this.r() * 3; b.last = gk; b.lastTeam = gk.team; b.inFlightShot = null; }
                 gk.rating += 0.4; gk.saveT = 0.75; gk.diveT = Math.max(gk.diveT || 0, 0.5); gk.diveDir = Math.sign(yc - gk.y) || 1; this.say('save', { p: gk.name }); this.addEvent('save', gk);
-                A.crowd(0.7);
+                A.crowd(0.82); A.saveSound();
                 return;
               }
             }

@@ -1115,10 +1115,11 @@ export class Match {
     const keeperDive = !fp && p.isGK ? Math.max(0, Math.min(1, (p.diveT || 0) / 0.5)) : 0;
     const keeperSave = !fp && p.isGK ? Math.max(0, Math.min(1, (p.saveT || 0) / 0.75)) : 0;
     const diveSide = p.diveDir || 1;
-    const g = [ground[0], ground[1] - Math.sin(jump * Math.PI) * 0.62 * s + keeperDive * diveSide * 0.16 * s, ground[2], ground[3]];
+    const g = [ground[0] + slidePulse * (p.face || 1) * 0.22 * s, ground[1] - Math.sin(jump * Math.PI) * 0.62 * s + keeperDive * diveSide * 0.16 * s + slidePulse * 0.14 * s, ground[2], ground[3]];
     const hgt = 1.8 * s, w = 0.5 * s;
     // ombre et effets d'action au sol : plongeon du gardien / tacle glissé
     c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(ground[0] + 0.25 * s, ground[1], 0.45 * s * (1 - jump * 0.22), 0.14 * s, 0, 0, 7); c.fill();
+    if (slidePulse > 0.03) { c.save(); c.globalAlpha = slidePulse * 0.38; c.fillStyle = '#d8d2bd'; c.beginPath(); c.ellipse(ground[0] - (p.face || 1) * 0.35 * s, ground[1] + 0.02 * s, (0.45 + slidePulse * 0.7) * s, 0.18 * s, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = kit.trim; c.lineWidth = Math.max(1, 0.045 * s); c.beginPath(); c.arc(ground[0], ground[1], (0.38 + (1 - slidePulse) * 0.55) * s, 0, Math.PI * 2); c.stroke(); c.restore(); }
     const divePulse = Math.max(0, Math.min(1, (p.diveT || 0) / 0.42));
     const slidePulse = Math.max(0, Math.min(1, (p.slideT || 0) / 0.38));
     if (keeperSave > 0.02) { c.save(); c.globalAlpha = keeperSave * 0.55; c.strokeStyle = '#fff'; c.lineWidth = Math.max(1.5, 0.1 * s); c.beginPath(); c.ellipse(ground[0], ground[1] - 0.28 * s, (0.55 + (1 - keeperSave) * 0.55) * s, 0.28 * s, 0, 0, Math.PI * 2); c.stroke(); c.restore(); }
@@ -1141,7 +1142,7 @@ export class Match {
     const diveReach = keeperDive * (0.38 + keeperSave * 0.35);
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
     const kickPulse = Math.max(0, Math.min(1, (p.kickT || 0) / 0.24));
-    const bodyLean = Math.min(0.12, sp * 0.018);
+    const bodyLean = Math.min(0.12, sp * 0.018) + slidePulse * 0.2;
     const hipY = g[1] - hgt * 0.47;
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';
@@ -1233,8 +1234,8 @@ export class Match {
     // bras, manches et poignets contrastés
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
     for (const k of [-1, 1]) {
-      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * diveReach * s : 0);
-      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? diveReach * 0.45 * s : 0);
+      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * diveReach * s : 0) + (!p.isGK ? slidePulse * face * 0.3 * s : 0);
+      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? diveReach * 0.45 * s : 0) + (!p.isGK ? slidePulse * 0.16 * s : 0);
       c.beginPath(); c.moveTo(ax, tY + 0.08 * s); c.lineTo(ex, ey); c.stroke();
       c.strokeStyle = kit.trim; c.lineWidth = Math.max(1.2, 0.075 * s);
       c.beginPath(); c.moveTo(ax + (ex - ax) * 0.72, tY + 0.08 * s + (ey - (tY + 0.08 * s)) * 0.72);

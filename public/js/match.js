@@ -1075,11 +1075,12 @@ export class Match {
   // ---------------- ralenti ----------------
   record() {
     if ((this.recT = (this.recT || 0) + 1) % 2) return;
-    const f = { b: [this.ball.x, this.ball.y, this.ball.z], p: [] };
+    const f = { b: [this.ball.x, this.ball.y, this.ball.z, this.ball.vx || 0, this.ball.vy || 0, this.ball.vz || 0, this.ball.spin || 0], p: [] };
     for (const T of this.teams) for (const p of T.ps) f.p.push([
       p.x, p.y, p.face, p.anim, p.vx, p.vy, p.jumpT || 0, p.diveT || 0,
       p.slideT || 0, p.kickT || 0, p.headerT || 0, p.firstTouchT || 0,
-      p.stumbleT || 0, p.keeperCatchT || 0, p.keeperPunchT || 0, p.headerDir || p.face
+      p.stumbleT || 0, p.keeperCatchT || 0, p.keeperPunchT || 0, p.headerDir || p.face,
+      p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }
@@ -1186,11 +1187,11 @@ export class Match {
       ents.push({ y: fp ? fp[1] : p.y, draw: () => this.drawPlayer(p, fp) });
     }
     const bz = frame ? frame.b[2] : this.ball.z;
-    ents.push({ y: by + 0.01, draw: () => this.drawBall(bx, by, bz) });
+    ents.push({ y: by + 0.01, draw: () => this.drawBall(bx, by, bz, frame ? frame.b : null) });
     ents.sort((a, b) => b.y - a.y);
     for (const e of ents) e.draw();
     this.drawGoal(-1, false); this.drawGoal(1, false);
-    this.drawHUD(!!frame);
+    this.drawHUD(!!frame, frame);
     if (!frame && this.matchIntroT > 0) this.drawMatchIntro();
     if (!frame && this.goalFxT > 0) this.drawGoalCelebration();
   }
@@ -1426,7 +1427,11 @@ export class Match {
     const jump = Math.max(0, Math.min(1, action(6, 'jumpT') / 0.46));
     const keeperDive = p.isGK ? Math.max(0, Math.min(1, action(7, 'diveT') / 0.5)) : 0;
     const keeperSave = !fp && p.isGK ? Math.max(0, Math.min(1, (p.saveT || 0) / 0.75)) : 0;
-    const diveSide = p.diveDir || 1;
+    const diveSide = fp ? (fp[16] || 1) : (p.diveDir || 1);
+    const slideSide = fp ? (fp[17] || 1) : (p.slideDir || 1);
+    const kickDir = fp ? (fp[18] || face) : (p.kickDir || face);
+    const firstTouchDir = fp ? (fp[19] || 1) : (p.firstTouchDir || 1);
+    const stumbleDir = fp ? (fp[20] || 1) : (p.stumbleDir || 1);
     const slidePulse = Math.max(0, Math.min(1, action(8, 'slideT') / 0.38));
     const headerPulse = Math.sin(Math.max(0, Math.min(1, 1 - action(10, 'headerT') / 0.44)) * Math.PI);
     const firstTouchProgress = Math.max(0, Math.min(1, 1 - action(11, 'firstTouchT') / 0.32));
@@ -1444,11 +1449,11 @@ export class Match {
     const hgt = 1.8 * s, w = 0.5 * s;
     // ombre et effets d'action au sol : plongeon du gardien / tacle glissé
     c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(ground[0] + 0.25 * s, ground[1], 0.45 * s * (1 - jump * 0.22), 0.14 * s, 0, 0, 7); c.fill();
-    if (slidePulse > 0.03) { c.save(); c.globalAlpha = slidePulse * 0.38; c.fillStyle = '#d8d2bd'; c.beginPath(); c.ellipse(ground[0] - (p.face || 1) * 0.35 * s, ground[1] + 0.02 * s, (0.45 + slidePulse * 0.7) * s, 0.18 * s, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = kit.trim; c.lineWidth = Math.max(1, 0.045 * s); c.beginPath(); c.arc(ground[0], ground[1], (0.38 + (1 - slidePulse) * 0.55) * s, 0, Math.PI * 2); c.stroke(); c.restore(); }
+    if (slidePulse > 0.03) { c.save(); c.globalAlpha = slidePulse * 0.38; c.fillStyle = '#d8d2bd'; c.beginPath(); c.ellipse(ground[0] - face * 0.35 * s, ground[1] + 0.02 * s, (0.45 + slidePulse * 0.7) * s, 0.18 * s, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = kit.trim; c.lineWidth = Math.max(1, 0.045 * s); c.beginPath(); c.arc(ground[0], ground[1], (0.38 + (1 - slidePulse) * 0.55) * s, 0, Math.PI * 2); c.stroke(); c.restore(); }
     const divePulse = Math.max(0, Math.min(1, action(7, 'diveT') / 0.42));
     if (keeperSave > 0.02) { c.save(); c.globalAlpha = keeperSave * 0.55; c.strokeStyle = '#fff'; c.lineWidth = Math.max(1.5, 0.1 * s); c.beginPath(); c.ellipse(ground[0], ground[1] - 0.28 * s, (0.55 + (1 - keeperSave) * 0.55) * s, 0.28 * s, 0, 0, Math.PI * 2); c.stroke(); c.restore(); }
     if (divePulse > 0.02 || slidePulse > 0.02) {
-      const dir = p.isGK ? (p.diveDir || 1) : (p.slideDir || 1);
+      const dir = p.isGK ? diveSide : slideSide;
       c.save(); c.globalAlpha = 0.28 * Math.max(divePulse, slidePulse); c.strokeStyle = p.isGK ? '#f5f8ff' : kit.trim;
       c.lineWidth = Math.max(1, 0.09 * s); c.lineCap = 'round';
       c.beginPath(); c.moveTo(g[0] - 0.7 * s, g[1] - dir * 0.18 * s); c.lineTo(g[0] - 1.35 * s, g[1] - dir * 0.32 * s); c.stroke();
@@ -1489,9 +1494,9 @@ export class Match {
       const celebrateStep = celebration * Math.sin(anim * 3.2 + k * Math.PI) * 0.22;
       const touchLeg = k === 1 ? firstTouchPulse : 0;
       const stride = sw * k * face + kickingLeg * face * (0.42 + 0.18 * Math.sin(kickProgress * Math.PI * 0.5)) +
-        touchLeg * (p.firstTouchDir || 1) * 0.32 + headerPulse * k * 0.12 +
+        touchLeg * firstTouchDir * 0.32 + headerPulse * k * 0.12 +
         celebrateStep * face + injuryLimp + (p.turn || 0) * gait * 0.06 -
-        stumblePulse * (p.stumbleDir || 1) * 0.16;
+        stumblePulse * stumbleDir * 0.16;
       const lift = Math.max(0, Math.sin(phase * k)) * gait * (p.injured ? 0.045 : 0.15) * s +
         kickingLeg * 0.28 * s + touchLeg * 0.14 * s + Math.max(0, celebrateStep) * 0.22 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
     // chaussettes
@@ -1509,8 +1514,8 @@ export class Match {
     // mouvement bref du pied au moment de la frappe ou de la passe
     if (kickPulse > 0.03) {
       c.save(); c.globalAlpha = kickPulse * 0.85; c.strokeStyle = '#f4f6fa'; c.lineWidth = Math.max(1, 0.045 * s); c.lineCap = 'round';
-      const kx = g[0] + (p.kickDir || face) * 0.34 * s, ky = g[1] - 0.12 * s;
-      c.beginPath(); c.moveTo(kx, ky); c.lineTo(kx + (p.kickDir || face) * 0.3 * s, ky - 0.12 * s); c.stroke(); c.restore();
+      const kx = g[0] + kickDir * 0.34 * s, ky = g[1] - 0.12 * s;
+      c.beginPath(); c.moveTo(kx, ky); c.lineTo(kx + kickDir * 0.3 * s, ky - 0.12 * s); c.stroke(); c.restore();
     }
     // short : volume, coutures et liseré aux couleurs du club
     c.fillStyle = kit.shorts; c.fillRect(g[0] - w * 0.5, hipY - 0.06 * s, w, 0.3 * s);
@@ -1621,21 +1626,26 @@ export class Match {
     c.restore();
   }
   rr(x, y, w, h, r) { const c = this.c; c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
-  drawBall(x, y, z) {
+  drawBall(x, y, z, replayState = null) {
     const c = this.c, sh = this.proj(x, y, 0), b = this.proj(x, y, z + 0.11);
-    const ball = this.ball, speed = Math.hypot(ball.vx || 0, ball.vy || 0);
+    const ball = this.ball;
+    const vx = replayState ? (replayState[3] || 0) : (ball.vx || 0);
+    const vy = replayState ? (replayState[4] || 0) : (ball.vy || 0);
+    const vz = replayState ? (replayState[5] || 0) : (ball.vz || 0);
+    const spinValue = replayState ? (replayState[6] || 0) : (ball.spin || 0);
+    const speed = Math.hypot(vx, vy);
     const r = Math.max(2.5 * this.dpr, 0.13 * b[2]);
     // Ombre portée : elle s'élargit lorsque le ballon prend de la hauteur.
     c.fillStyle = 'rgba(0,0,0,0.4)'; c.beginPath(); c.ellipse(sh[0], sh[1], r * (1.1 + z * 0.08), r * 0.4, 0, 0, 7); c.fill();
     // Petit anneau d'impact à la retombée après un rebond.
-    if (z < 0.22 && (ball.vz || 0) < -1.2) {
+    if (z < 0.22 && vz < -1.2) {
       const impact = Math.max(0, 1 - z / 0.22);
       c.save(); c.globalAlpha = impact * 0.28; c.strokeStyle = '#fff'; c.lineWidth = Math.max(1, this.dpr);
       c.beginPath(); c.ellipse(sh[0], sh[1], r * (1.2 + impact * 1.1), r * (0.45 + impact * 0.18), 0, 0, Math.PI * 2); c.stroke(); c.restore();
     }
     // Traînée courte, orientée selon la vitesse réelle du ballon.
     if (speed > 7) {
-      const len = Math.min(2.8, speed * 0.13), tail = this.proj(x - (ball.vx / speed) * len, y - (ball.vy / speed) * len, z + 0.11);
+      const len = Math.min(2.8, speed * 0.13), tail = this.proj(x - (vx / speed) * len, y - (vy / speed) * len, z + 0.11);
       const grad = c.createLinearGradient(tail[0], tail[1], b[0], b[1]);
       grad.addColorStop(0, 'rgba(255,255,255,0)'); grad.addColorStop(1, 'rgba(255,255,255,0.62)');
       c.strokeStyle = grad; c.lineWidth = Math.max(1.2 * this.dpr, r * 0.42); c.lineCap = 'round';
@@ -1643,7 +1653,7 @@ export class Match {
     }
     c.save(); c.translate(b[0], b[1]);
     // Rotation des panneaux pour rendre la balle moins statique en vol et en roulement.
-    const spin = (ball.spin || 0) * (Date.now() / 1000) * 5 + speed * 0.035;
+    const spin = spinValue * (Date.now() / 1000) * 5 + speed * 0.035;
     c.rotate(spin);
     c.fillStyle = '#fff'; c.beginPath(); c.arc(0, 0, r, 0, 7); c.fill();
     c.fillStyle = '#20242b'; c.beginPath(); c.arc(r * 0.2, -r * 0.15, r * 0.35, 0, 7); c.fill();
@@ -1651,7 +1661,7 @@ export class Match {
     c.strokeStyle = '#0006'; c.lineWidth = 1; c.beginPath(); c.arc(0, 0, r, 0, 7); c.stroke();
     c.restore();
   }
-  drawHUD(isReplay) {
+  drawHUD(isReplay, frame = null) {
     const c = this.c, d = this.dpr, T = this.teams;
     // tableau des scores
     const x0 = 12 * d, y0 = 10 * d, h = 30 * d;
@@ -1707,7 +1717,8 @@ export class Match {
     c.fillStyle = '#0a3d0fcc'; c.fillRect(mx, my, mw, mh); c.strokeStyle = '#ffffff88'; c.lineWidth = 1; c.strokeRect(mx, my, mw, mh);
     c.beginPath(); c.moveTo(mx + mw / 2, my); c.lineTo(mx + mw / 2, my + mh); c.stroke();
     for (const Tm of T) for (const p of Tm.ps) { if (p.sentOff) continue; c.fillStyle = p === this.selected ? '#ffe14a' : Tm.kit.shirt; c.beginPath(); c.arc(mx + (p.x + HL) / (2 * HL) * mw, my + (HW - p.y) / (2 * HW) * mh, (p === this.selected ? 3.2 : 2.4) * d, 0, 7); c.fill(); }
-    c.fillStyle = '#fff'; c.beginPath(); c.arc(mx + (this.ball.x + HL) / (2 * HL) * mw, my + (HW - this.ball.y) / (2 * HW) * mh, 2 * d, 0, 7); c.fill();
+    const radarBall = frame ? frame.b : [this.ball.x, this.ball.y];
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(mx + (radarBall[0] + HL) / (2 * HL) * mw, my + (HW - radarBall[1]) / (2 * HW) * mh, 2 * d, 0, 7); c.fill();
     c.textBaseline = 'alphabetic';
   }
 }

@@ -51,11 +51,26 @@ assert.equal(match.ball.inFlightShot.type, 'header', 'le tir de la tête doit ê
 header.firstTouchT = 0.27;
 header.stumbleT = 0.18;
 header.keeperCatchT = 0.2;
+header.diveDir = -1;
+header.slideDir = 1;
+header.kickDir = -1;
+header.firstTouchDir = 1;
+header.stumbleDir = -1;
+match.ball.vx = 8; match.ball.vy = -3; match.ball.vz = 2; match.ball.spin = 0.42;
 match.recT = 0;
 match.record(); match.record();
 const last = match.replayBuf.at(-1);
 assert.equal(last.p[header.team * 11 + header.i][10] > 0, true, 'la tête doit être enregistrée dans le replay');
 assert.equal(last.p[header.team * 11 + header.i][11] > 0, true, 'la première touche doit être enregistrée dans le replay');
 assert.equal(last.p[header.team * 11 + header.i][12] > 0, true, 'la perte d équilibre doit être enregistrée dans le replay');
+const recordedPlayer = last.p[header.team * 11 + header.i];
+assert.equal(last.b[3], 8, 'la vitesse horizontale du ballon doit être enregistrée');
+assert.equal(last.b[4], -3, 'la vitesse latérale du ballon doit être enregistrée');
+assert.equal(last.b[5], 2, 'la vitesse verticale du ballon doit être enregistrée');
+assert.equal(last.b[6], 0.42, 'la rotation du ballon doit être enregistrée');
+assert.equal(recordedPlayer[16], -1, 'la direction du plongeon doit être enregistrée');
+assert.equal(recordedPlayer[17], 1, 'la direction du tacle doit être enregistrée');
+assert.equal(recordedPlayer[18], -1, 'la direction du geste de frappe doit être enregistrée');
+assert.equal(recordedPlayer[20], -1, 'la direction de déséquilibre doit être enregistrée');
 
 console.log('ACTIONS OK — duel aérien prioritaire, tête offensive, poses de replay');

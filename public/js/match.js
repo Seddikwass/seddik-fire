@@ -678,8 +678,15 @@ export class Match {
     if (b.owner) {
       const p = b.owner, sp = Math.hypot(p.vx, p.vy);
       const fx = sp > 0.5 ? p.vx / sp : p.face, fy = sp > 0.5 ? p.vy / sp : 0;
-      const off = 0.55 + Math.min(sp, 8) * 0.05 + Math.sin(p.anim * 1.6) * 0.08;
-      b.x = p.x + fx * off; b.y = p.y + fy * off; b.z = 0; b.vx = p.vx; b.vy = p.vy; b.vz = 0;
+      // Touches de conduite rapprochées : ballon plus près du pied en contrôle lent,
+      // légèrement poussé devant le joueur lors d'une accélération.
+      const stride = Math.sin((p.anim || 0) * 2.25);
+      const control = p === this.selected && p.team === this.userSide && this.input && this.input.sprint ? 1 : 0;
+      const off = 0.43 + Math.min(sp, 8) * (control ? 0.058 : 0.045) + stride * (sp > 2 ? 0.055 : 0.025);
+      const lateral = Math.cos((p.anim || 0) * 2.25) * Math.min(0.09, sp * 0.012);
+      b.x = p.x + fx * off - fy * lateral;
+      b.y = p.y + fy * off + fx * lateral;
+      b.z = 0; b.vx = p.vx; b.vy = p.vy; b.vz = 0;
       return;
     }
     // Effet Magnus léger : la rotation courbe la trajectoire en vol.
@@ -1277,6 +1284,12 @@ export class Match {
     const r = Math.max(2.5 * this.dpr, 0.13 * b[2]);
     // Ombre portée : elle s'élargit lorsque le ballon prend de la hauteur.
     c.fillStyle = 'rgba(0,0,0,0.4)'; c.beginPath(); c.ellipse(sh[0], sh[1], r * (1.1 + z * 0.08), r * 0.4, 0, 0, 7); c.fill();
+    // Petit anneau d'impact à la retombée après un rebond.
+    if (z < 0.22 && (ball.vz || 0) < -1.2) {
+      const impact = Math.max(0, 1 - z / 0.22);
+      c.save(); c.globalAlpha = impact * 0.28; c.strokeStyle = '#fff'; c.lineWidth = Math.max(1, this.dpr);
+      c.beginPath(); c.ellipse(sh[0], sh[1], r * (1.2 + impact * 1.1), r * (0.45 + impact * 0.18), 0, 0, Math.PI * 2); c.stroke(); c.restore();
+    }
     // Traînée courte, orientée selon la vitesse réelle du ballon.
     if (speed > 7) {
       const len = Math.min(2.8, speed * 0.13), tail = this.proj(x - (ball.vx / speed) * len, y - (ball.vy / speed) * len, z + 0.11);

@@ -64,3 +64,9 @@ jobs:
           git add -A
           git -c user.name="build-bot" -c user.email="build-bot@users.noreply.github.com" commit -q -m "Compilation ${{ github.run_number }} : ${{ steps.build.outcome }}"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" football-tunisia-builds
+
+      - name: Échouer le workflow si les tests ou la compilation ont échoué
+        if: always()
+        run: |
+          test "${{ steps.tests.outcome }}" = "success"
+          test "${{ steps.build.outcome }}" = "success"

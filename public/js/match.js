@@ -1006,11 +1006,13 @@ export class Match {
       // jauge de tir
       if (this.input.shooting) { const pw = this.input.shootHold; c.fillStyle = '#0008'; c.fillRect(g[0] - 0.6 * s, g[1] - hgt - 0.95 * s, 1.2 * s, 0.18 * s); c.fillStyle = pw > 0.85 ? '#ff4d4d' : '#ffe14a'; c.fillRect(g[0] - 0.6 * s, g[1] - hgt - 0.95 * s, 1.2 * s * pw, 0.18 * s); }
     }
-    const sp = Math.hypot(vx, vy), sw = Math.sin(anim * 1.6) * Math.min(1, sp / 4) * 0.45;
+    const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim * 2.15, sw = Math.sin(phase) * gait * 0.58;
+    const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
+    const bodyLean = Math.min(0.12, sp * 0.018);
     const hipY = g[1] - hgt * 0.47;
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';
-    for (const k of [-1, 1]) { c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + sw * k * 0.5 * s * face, g[1] - 0.05 * s); c.stroke(); }
+    for (const k of [-1, 1]) { const stride = sw * k * face; const lift = Math.max(0, Math.sin(phase * k)) * gait * 0.12 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
     // chaussettes
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.17 * s);
     for (const k of [-1, 1]) { const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx, g[1] - 0.08 * s); c.stroke(); }
@@ -1092,8 +1094,8 @@ export class Match {
     // bras, manches et poignets contrastés
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
     for (const k of [-1, 1]) {
-      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 - sw * k * 0.35 * s * face;
-      const ey = tY + tH * 0.85;
+      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face;
+      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s;
       c.beginPath(); c.moveTo(ax, tY + 0.08 * s); c.lineTo(ex, ey); c.stroke();
       c.strokeStyle = kit.trim; c.lineWidth = Math.max(1.2, 0.075 * s);
       c.beginPath(); c.moveTo(ax + (ex - ax) * 0.72, tY + 0.08 * s + (ey - (tY + 0.08 * s)) * 0.72);

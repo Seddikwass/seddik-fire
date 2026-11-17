@@ -948,10 +948,37 @@ export class Match {
     for (const k of [-1, 1]) { const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx, g[1] - 0.08 * s); c.stroke(); }
     // short
     c.fillStyle = kit.shorts; c.fillRect(g[0] - w * 0.5, hipY - 0.06 * s, w, 0.3 * s);
-    // maillot
+    // maillot : rendu textile enrichi, panneaux, fines rayures et col
     const tY = g[1] - hgt * 0.82, tH = hgt * 0.37;
-    c.fillStyle = kit.shirt; this.rr(g[0] - w * 0.55, tY, w * 1.1, tH, 0.1 * s); c.fill();
-    c.fillStyle = kit.trim; c.fillRect(g[0] - w * 0.12, tY, w * 0.24, tH);
+    const shirtX = g[0] - w * 0.55, shirtW = w * 1.1;
+    c.save();
+    this.rr(shirtX, tY, shirtW, tH, 0.1 * s); c.clip();
+    c.fillStyle = kit.shirt; c.fillRect(shirtX, tY, shirtW, tH);
+    // Panneaux latéraux légèrement ombrés pour donner du volume au tissu
+    c.fillStyle = 'rgba(0,0,0,0.13)';
+    c.fillRect(shirtX, tY, shirtW * 0.13, tH);
+    c.fillRect(shirtX + shirtW * 0.87, tY, shirtW * 0.13, tH);
+    // Rayures fines aux couleurs du club, visibles sans surcharger les petits sprites
+    c.globalAlpha = 0.42;
+    c.fillStyle = kit.trim;
+    for (let stripe = 1; stripe <= 4; stripe++) {
+      const sx = shirtX + shirtW * stripe / 5;
+      c.fillRect(sx - Math.max(0.45, 0.018 * s), tY, Math.max(0.9, 0.036 * s), tH);
+    }
+    c.globalAlpha = 1;
+    // Bande centrale / détail distinctif du maillot
+    c.fillStyle = kit.trim;
+    c.fillRect(g[0] - w * 0.055, tY, w * 0.11, tH);
+    // Reflet textile discret sur le haut du torse
+    const sheen = c.createLinearGradient(shirtX, tY, shirtX + shirtW, tY + tH);
+    sheen.addColorStop(0, 'rgba(255,255,255,0.16)');
+    sheen.addColorStop(0.48, 'rgba(255,255,255,0.015)');
+    sheen.addColorStop(1, 'rgba(0,0,0,0.12)');
+    c.fillStyle = sheen; c.fillRect(shirtX, tY, shirtW, tH);
+    c.restore();
+    // Col contrasté
+    c.strokeStyle = kit.trim; c.lineWidth = Math.max(1, 0.055 * s);
+    c.beginPath(); c.arc(g[0], tY + 0.015 * s, 0.105 * s, 0.12 * Math.PI, 0.88 * Math.PI); c.stroke();
     // bras
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
     for (const k of [-1, 1]) { c.beginPath(); c.moveTo(g[0] + k * w * 0.5, tY + 0.08 * s); c.lineTo(g[0] + k * w * 0.62 - sw * k * 0.35 * s * face, tY + tH * 0.85); c.stroke(); }

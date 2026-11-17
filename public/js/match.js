@@ -132,7 +132,12 @@ export class Match {
     let ny = by * (inPoss ? 1.08 : 0.72) * (0.85 + T.width * 0.15) + bny * (inPoss ? 0.18 : 0.32);
     if (!inPoss) nx = Math.min(nx, bnx + 6 + (line === 2 ? 14 : 0));
     // appel en profondeur des attaquants
-    if (inPoss && line === 2 && p.run > 0) nx += 10;
+    if (inPoss && p.run > 0) {
+      const burst = line === 2 ? 13 : line === 1 ? 8 : 3;
+      nx += burst;
+      // écarter légèrement les appels pour ouvrir une ligne de passe.
+      ny += Math.sign(by || p.y || 1) * (line === 2 ? 1.8 : 1.1);
+    }
     nx = clamp(nx, -HL + 3, HL - 4); ny = clamp(ny, -HW + 1.5, HW - 1.5);
     return [nx * d, ny * d];
   }
@@ -343,7 +348,15 @@ export class Match {
           if (pressers[0] === p) this.tryTackle(p, false);
           continue;
         }
-        if (inPoss && (p.base[0] > -14 || p.instr === 'run') && p.run <= 0 && this.r() < dt * (p.instr === 'run' ? 0.45 : 0.15)) p.run = 2.5;
+        if (inPoss && p.run <= 0 && !p.isGK) {
+          const carrier = own;
+          const forwardGap = carrier ? (carrier.x - p.x) * T.dir : 0;
+          const lane = carrier ? Math.abs(p.y - carrier.y) : 99;
+          const advanced = carrier && carrier.x * T.dir > -8;
+          const runnerRole = p.base[0] > -20 || p.instr === 'run' || p.instr === 'att';
+          // Déclencher un appel quand le porteur progresse et qu'un couloir se libère.
+          if (carrier && runnerRole && advanced && forwardGap > -5 && forwardGap < 24 && lane > 3.5 && lane < 22 && this.r() < dt * (p.instr === 'run' ? 1.1 : 0.38)) p.run = 2.8;
+        }
         let [tx, ty] = this.formationPos(p, inPoss);
         if (!inPoss) { // marquage
           const opp = this.teams[1 - T.side].ps;
@@ -432,6 +445,9 @@ export class Match {
       for (const o of opp) { if (o.sentOff) continue; const sd = segDist(o.x, o.y, p.x, p.y, tx, ty); if (sd < 2.2) risk += (2.2 - sd) * 6; }
       let open = 99; for (const o of opp) if (!o.sentOff) open = Math.min(open, Math.hypot(o.x - tx, o.y - ty));
       score += Math.min(open, 8) * 1.2 - risk;
+      // Récompenser les appels en profondeur seulement si le joueur a de l'espace devant lui.
+      if (th && dx * d > 5) score += Math.min(12, Math.max(0, open - 2) * 1.4) + Math.min(7, dx * d * 0.12);
+      if (t.run > 0) score += 4;
       if (t.isGK) score -= 12;
       if (!best || score > best.score) best = { p: t, score, through: th, tx, ty };
     }

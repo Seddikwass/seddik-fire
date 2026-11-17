@@ -55,6 +55,7 @@ export class Match {
     this.selected = null; this.cam = { x: 0, y: 0, zoom: 1 };
     this.replayBuf = []; this.replay = null; this.paused = false; this.ended = false;
     this.msg = null; this.msgT = 0; this.ticker = ''; this.tickerT = 0;
+    this.goalFxT = 0; this.goalFxTeam = 0;
     this.r = Math.random; this.acc = 0; this.last = 0; this.frameSkip = 0;
     this.subsLeft = [5, 5];
     this.crowdTex = null;
@@ -171,6 +172,7 @@ export class Match {
   step(dt) {
     if (this.tickerT > 0) this.tickerT -= dt;
     if (this.msgT > 0) this.msgT -= dt;
+    this.goalFxT = Math.max(0, (this.goalFxT || 0) - dt);
     for (const T of this.teams) for (const p of T.ps) { p.diveT = Math.max(0, (p.diveT || 0) - dt); p.slideT = Math.max(0, (p.slideT || 0) - dt); }
     if (this.state === 'restart') return this.stepRestart(dt);
     if (this.state === 'goal') { this.stateT -= dt; this.moveAll(dt, true); this.physics(dt); if (this.stateT <= 0) this.startReplay(); return; }
@@ -289,7 +291,13 @@ export class Match {
     for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
       const a = all[i], c = all[j]; if (a.sentOff || c.sentOff) continue;
       const dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy);
-      if (d > 0 && d < 0.9) { const push = (0.9 - d) / 2, nx = dx / d, ny = dy / d; a.x -= nx * push; a.y -= ny * push; c.x += nx * push; c.y += ny * push; }
+      if (d > 0 && d < 0.9) {
+        const nx = dx / d, ny = dy / d, push = (0.9 - d) * 0.5;
+        a.x -= nx * push; a.y -= ny * push; c.x += nx * push; c.y += ny * push;
+        // léger échange d'impulsion pour éviter l'effet de joueurs qui se traversent
+        const closing = (a.vx - c.vx) * nx + (a.vy - c.vy) * ny;
+        if (closing > 0) { const impulse = Math.min(1.8, closing * 0.16); a.vx -= nx * impulse; a.vy -= ny * impulse; c.vx += nx * impulse; c.vy += ny * impulse; }
+      }
     }
   }
 
@@ -713,6 +721,7 @@ export class Match {
     this.events.push({ type: 'goal', min: Math.max(1, Math.round(this.minute)), team, pid: scorer?.id, name, own: !scorer, assist: scorer?.lastPasser?.name });
     b.vx *= 0.2; b.vy *= 0.2; b.inFlightShot = null;
     this.state = 'goal'; this.stateT = 2.2;
+    this.goalFxT = 2.2; this.goalFxTeam = team;
     this.banner('BUT ! ' + T.short, 2.2);
     A.netSound(); A.roar();
     this.say('goal', { p: name, t: T.short }, true);
@@ -834,6 +843,31 @@ export class Match {
     for (const e of ents) e.draw();
     this.drawGoal(-1, false); this.drawGoal(1, false);
     this.drawHUD(!!frame);
+    if (!frame && this.goalFxT > 0) this.drawGoalCelebration();
+  }
+  drawGoalCelebration() {
+    const c = this.c, d = this.dpr, t = this.goalFxT, team = this.teams[this.goalFxTeam];
+    const pulse = 0.5 + 0.5 * Math.sin((2.2 - t) * 17);
+    c.save();
+    c.fillStyle = `rgba(255,255,255,${0.045 + pulse * 0.055})`; c.fillRect(0, 0, this.W, this.H);
+    const w = Math.min(this.W - 28 * d, 420 * d), h = 88 * d, x = (this.W - w) / 2, y = this.H * 0.19;
+    c.fillStyle = 'rgba(5,10,18,0.88)'; c.fillRect(x, y, w, h);
+    c.fillStyle = team.kit.shirt; c.fillRect(x, y, 7 * d, h);
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillStyle = '#fff'; c.font = `900 ${Math.max(24, 36 * d)}px system-ui,Arial`;
+    c.fillText('BUUUUT !', this.W / 2, y + 31 * d);
+    c.fillStyle = team.kit.trim === team.kit.shirt ? '#ffe16a' : team.kit.trim;
+    c.font = `800 ${Math.max(13, 18 * d)}px system-ui,Arial`;
+    c.fillText(`${team.short}  ${this.score[0]} - ${this.score[1]}`, this.W / 2, y + 64 * d);
+    // confettis légers et déterministes, sans allocations d'images
+    for (let i = 0; i < 28; i++) {
+      const phase = (i * 2.399 + (2.2 - t) * (1.8 + (i % 5) * 0.25));
+      const px = this.W / 2 + Math.cos(phase) * (24 + (2.2 - t) * (35 + i % 7 * 8)) * d;
+      const py = y + h + Math.sin(phase * 1.3) * (10 + (2.2 - t) * (18 + i % 6 * 5)) * d;
+      c.globalAlpha = Math.max(0, t / 2.2) * 0.85; c.fillStyle = i % 2 ? team.kit.trim : '#fff';
+      c.fillRect(px, py, (2 + i % 3) * d, (4 + i % 4) * d);
+    }
+    c.restore();
   }
   buildCrowd() {
     const cv = document.createElement('canvas'); cv.width = 2048; cv.height = 256;

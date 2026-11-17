@@ -73,7 +73,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -187,7 +187,7 @@ export class Match {
     if (this.tickerT > 0) this.tickerT -= dt;
     if (this.msgT > 0) this.msgT -= dt;
     this.goalFxT = Math.max(0, (this.goalFxT || 0) - dt);
-    for (const T of this.teams) for (const p of T.ps) { p.diveT = Math.max(0, (p.diveT || 0) - dt); p.slideT = Math.max(0, (p.slideT || 0) - dt); }
+    for (const T of this.teams) for (const p of T.ps) { p.diveT = Math.max(0, (p.diveT || 0) - dt); p.slideT = Math.max(0, (p.slideT || 0) - dt); p.saveT = Math.max(0, (p.saveT || 0) - dt); }
     if (this.state === 'restart') return this.stepRestart(dt);
     if (this.state === 'goal') { this.stateT -= dt; this.moveAll(dt, true); this.physics(dt); if (this.stateT <= 0) this.startReplay(); return; }
     if (this.state === 'halftime') { this.stateT -= dt; if (this.stateT <= 0) { this.half = 2; for (const T of this.teams) T.dir *= -1; this.setupKickoff(1); } return; }
@@ -722,7 +722,7 @@ export class Match {
                 if (sp < 22 && this.r() < 0.55) { b.owner = gk; b.last = gk; b.lastTeam = gk.team; b.inFlightShot = null; }
                 else if (this.r() < 0.45) { b.vx = b.vx * 0.25; b.vy = (yc >= gk.y ? 1 : -1) * (7 + this.r() * 5); b.vz = 2 + this.r() * 3; b.last = gk; b.lastTeam = gk.team; b.inFlightShot = null; } // détourné en corner
                 else { b.vx = -b.vx * 0.35; b.vy = (this.r() - 0.5) * 14; b.vz = 3 + this.r() * 3; b.last = gk; b.lastTeam = gk.team; b.inFlightShot = null; }
-                gk.rating += 0.4; this.say('save', { p: gk.name }); this.addEvent('save', gk);
+                gk.rating += 0.4; gk.saveT = 0.75; gk.diveT = Math.max(gk.diveT || 0, 0.5); gk.diveDir = Math.sign(yc - gk.y) || 1; this.say('save', { p: gk.name }); this.addEvent('save', gk);
                 A.crowd(0.7);
                 return;
               }
@@ -1052,12 +1052,16 @@ export class Match {
     const ground = this.proj(x, y, 0); const s = ground[2]; // px par mètre
     if (ground[3] < 1) return;
     const jump = fp ? 0 : Math.max(0, Math.min(1, (p.jumpT || 0) / 0.42));
-    const g = [ground[0], ground[1] - Math.sin(jump * Math.PI) * 0.62 * s, ground[2], ground[3]];
+    const keeperDive = !fp && p.isGK ? Math.max(0, Math.min(1, (p.diveT || 0) / 0.5)) : 0;
+    const keeperSave = !fp && p.isGK ? Math.max(0, Math.min(1, (p.saveT || 0) / 0.75)) : 0;
+    const diveSide = p.diveDir || 1;
+    const g = [ground[0], ground[1] - Math.sin(jump * Math.PI) * 0.62 * s + keeperDive * diveSide * 0.16 * s, ground[2], ground[3]];
     const hgt = 1.8 * s, w = 0.5 * s;
     // ombre et effets d'action au sol : plongeon du gardien / tacle glissé
     c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(ground[0] + 0.25 * s, ground[1], 0.45 * s * (1 - jump * 0.22), 0.14 * s, 0, 0, 7); c.fill();
     const divePulse = Math.max(0, Math.min(1, (p.diveT || 0) / 0.42));
     const slidePulse = Math.max(0, Math.min(1, (p.slideT || 0) / 0.38));
+    if (keeperSave > 0.02) { c.save(); c.globalAlpha = keeperSave * 0.55; c.strokeStyle = '#fff'; c.lineWidth = Math.max(1.5, 0.1 * s); c.beginPath(); c.ellipse(ground[0], ground[1] - 0.28 * s, (0.55 + (1 - keeperSave) * 0.55) * s, 0.28 * s, 0, 0, Math.PI * 2); c.stroke(); c.restore(); }
     if (divePulse > 0.02 || slidePulse > 0.02) {
       const dir = p.isGK ? (p.diveDir || 1) : (p.slideDir || 1);
       c.save(); c.globalAlpha = 0.28 * Math.max(divePulse, slidePulse); c.strokeStyle = p.isGK ? '#f5f8ff' : kit.trim;
@@ -1074,6 +1078,7 @@ export class Match {
       if (this.input.shooting) { const pw = this.input.shootHold; c.fillStyle = '#0008'; c.fillRect(g[0] - 0.6 * s, g[1] - hgt - 0.95 * s, 1.2 * s, 0.18 * s); c.fillStyle = pw > 0.85 ? '#ff4d4d' : '#ffe14a'; c.fillRect(g[0] - 0.6 * s, g[1] - hgt - 0.95 * s, 1.2 * s * pw, 0.18 * s); }
     }
     const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim * 2.15, sw = Math.sin(phase) * gait * 0.58;
+    const diveReach = keeperDive * (0.38 + keeperSave * 0.35);
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
     const kickPulse = Math.max(0, Math.min(1, (p.kickT || 0) / 0.24));
     const bodyLean = Math.min(0.12, sp * 0.018);
@@ -1168,8 +1173,8 @@ export class Match {
     // bras, manches et poignets contrastés
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
     for (const k of [-1, 1]) {
-      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face;
-      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s;
+      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * diveReach * s : 0);
+      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? diveReach * 0.45 * s : 0);
       c.beginPath(); c.moveTo(ax, tY + 0.08 * s); c.lineTo(ex, ey); c.stroke();
       c.strokeStyle = kit.trim; c.lineWidth = Math.max(1.2, 0.075 * s);
       c.beginPath(); c.moveTo(ax + (ex - ax) * 0.72, tY + 0.08 * s + (ey - (tY + 0.08 * s)) * 0.72);

@@ -73,7 +73,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, yellow: 0, sentOff: false, injured: false,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -283,6 +283,7 @@ export class Match {
       p.anim += sp * dt * 2.2;
       p.jumpT = Math.max(0, (p.jumpT || 0) - dt);
       p.jumpCd = Math.max(0, (p.jumpCd || 0) - dt);
+      p.kickT = Math.max(0, (p.kickT || 0) - dt);
       // Duel aérien : le joueur le plus proche saute pour contester un ballon haut.
       const ball = this.ball;
       if (!p.isGK && p.jumpCd <= 0 && ball.z > 1.15 && ball.z < 5.2 && Math.hypot(p.x - ball.x, p.y - ball.y) < 3.2 && Math.abs(p.vz || 0) < 0.01) {
@@ -441,6 +442,7 @@ export class Match {
   kickBall(p, vx, vy, vz, power = 0.5) {
     const b = this.ball;
     b.owner = null; b.vx = vx; b.vy = vy; b.vz = vz; b.z = Math.max(b.z, 0.12); b.last = p; b.lastTeam = p.team;
+    p.kickT = 0.24; p.kickDir = Math.sign(vx) || p.face || 1;
     p.cd = 0.35; p.touches++; this.setPiece = null;
     A.kick(power);
   }
@@ -682,10 +684,14 @@ export class Match {
     }
     if (best) {
       const rel = Math.hypot(b.vx - best.vx, b.vy - best.vy);
-      const ctl = 17 + best.a.dri / 8 + (best.isGK ? 10 : 0) + (this.passInfo && this.passInfo.to === best ? 4 : 0);
+      const receiveBonus = this.passInfo && this.passInfo.to === best ? 5 : 0;
+      const ctl = 15 + best.a.dri / 7 + best.a.tec / 18 + (best.isGK ? 10 : 0) + receiveBonus;
       if (rel > ctl && this.r() < 0.6) { b.vx *= 0.35; b.vy *= 0.35; b.vz = Math.abs(b.vz) * 0.3 + 1; best.cd = 0.25; b.last = best; b.lastTeam = best.team; return; }
       const prevTeam = b.lastTeam, pi = this.passInfo;
       b.owner = best; b.last = best; b.inFlightShot = null; best.touches++;
+      // Première touche amortie selon la technique et le contrôle du joueur.
+      const firstTouch = clamp(0.2 + best.a.dri / 180 + best.a.tec / 220 + (receiveBonus ? 0.12 : 0), 0.25, 0.82);
+      b.vx *= 1 - firstTouch; b.vy *= 1 - firstTouch; b.vz *= 0.18;
       if (pi && pi.team === best.team && pi.from !== best) { this.stats.passOk[best.team]++; pi.from.rating += 0.03; best.lastPasser = pi.from; }
       else best.lastPasser = null;
       this.passInfo = null;
@@ -1008,6 +1014,7 @@ export class Match {
     }
     const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim * 2.15, sw = Math.sin(phase) * gait * 0.58;
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
+    const kickPulse = Math.max(0, Math.min(1, (p.kickT || 0) / 0.24));
     const bodyLean = Math.min(0.12, sp * 0.018);
     const hipY = g[1] - hgt * 0.47;
     // jambes
@@ -1024,6 +1031,12 @@ export class Match {
       c.strokeStyle = '#d9dce2'; c.lineWidth = Math.max(0.7, 0.035 * s);
       c.beginPath(); c.moveTo(fx - 0.04 * s, g[1] - 0.02 * s); c.lineTo(fx + face * 0.12 * s, g[1] - 0.02 * s); c.stroke();
       c.strokeStyle = '#17191d'; c.lineWidth = Math.max(1.8, 0.11 * s);
+    }
+    // mouvement bref du pied au moment de la frappe ou de la passe
+    if (kickPulse > 0.03) {
+      c.save(); c.globalAlpha = kickPulse * 0.85; c.strokeStyle = '#f4f6fa'; c.lineWidth = Math.max(1, 0.045 * s); c.lineCap = 'round';
+      const kx = g[0] + (p.kickDir || face) * 0.34 * s, ky = g[1] - 0.12 * s;
+      c.beginPath(); c.moveTo(kx, ky); c.lineTo(kx + (p.kickDir || face) * 0.3 * s, ky - 0.12 * s); c.stroke(); c.restore();
     }
     // short : volume, coutures et liseré aux couleurs du club
     c.fillStyle = kit.shorts; c.fillRect(g[0] - w * 0.5, hipY - 0.06 * s, w, 0.3 * s);

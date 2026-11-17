@@ -591,10 +591,23 @@ export class Match {
     if (p.team === this.userSide && this.userSide != null) this.select(t);
   }
   cross(p) {
-    const T = this.teams[p.team], d = T.dir;
-    const targets = T.ps.filter(t => !t.sentOff && !t.isGK && t !== p && Math.abs(t.x - d * HL) < 18 && Math.abs(t.y) < 14);
-    const t = targets.sort((a, c) => (c.a.phy + c.a.sho) - (a.a.phy + a.a.sho))[0];
-    if (t) this.pass(p, t, false, true); else this.clearance(p);
+    const T = this.teams[p.team], d = T.dir, opp = this.teams[1 - p.team].ps;
+    // Choisir le partenaire qui attaque réellement la zone, pas seulement le plus fort.
+    const targets = T.ps.filter(t => !t.sentOff && !t.isGK && t !== p && (d * (t.x - p.x)) > -2 && Math.abs(t.x - d * HL) < 23 && Math.abs(t.y) < 19);
+    let target = null, best = -Infinity;
+    for (const t of targets) {
+      const goalDepth = d * t.x;
+      const centrality = 1 - Math.min(1, Math.abs(t.y) / 20);
+      let marking = 0;
+      for (const o of opp) if (!o.sentOff) {
+        const gap = Math.hypot(o.x - t.x, o.y - t.y);
+        if (gap < 5) marking += (5 - gap) * 1.8;
+      }
+      const runBonus = t.run > 0 ? 7 : 0;
+      const score = goalDepth * 0.32 + centrality * 8 + t.a.phy * 0.12 + t.a.sho * 0.1 + t.a.hea * 0.18 + runBonus - marking;
+      if (score > best) { best = score; target = t; }
+    }
+    if (target) this.pass(p, target, false, true); else this.clearance(p);
   }
   clearance(p) {
     const d = this.teams[p.team].dir, ang = (this.r() - 0.5) * 0.9;

@@ -839,13 +839,13 @@ export class Match {
   finish() {
     this.ended = true; this.running = false;
     A.crowd(0.1);
-    const res = this.result();
+    const res = this.allPlayersForResult();
     this.destroy();
     this.o.onEnd && this.o.onEnd(res);
   }
   result() {
     const players = [];
-    for (const T of this.teams) for (const p of T.ps) players.push({ id: p.id, team: T.side, minutes: Math.round(p.minutes), goals: p.goals, assists: p.assists, rating: clamp(Math.round(p.rating * 10) / 10, 3, 10), stamina: p.stamina, injured: p.injured, yellow: p.yellow, red: p.sentOff });
+    for (const T of this.teams) for (const p of T.ps) players.push({ id: p.id, name: p.name, num: p.num, pos: p.pos, team: T.side, minutes: Math.round(p.minutes), goals: p.goals, assists: p.assists, rating: clamp(Math.round(p.rating * 10) / 10, 3, 10), stamina: p.stamina, injured: p.injured, yellow: p.yellow, red: p.sentOff });
     const tp = this.stats.poss[0] + this.stats.poss[1] || 1;
     return { hg: this.score[0], ag: this.score[1], events: this.events, stats: { ...this.stats, possPct: [Math.round(this.stats.poss[0] / tp * 100), Math.round(this.stats.poss[1] / tp * 100)] }, players, played: true };
   }
@@ -878,7 +878,7 @@ export class Match {
   }
   allPlayersForResult() {
     const r = this.result();
-    for (const p of this.subbedOff || []) r.players.push({ id: p.id, team: p.team, minutes: Math.round(p.minutes), goals: p.goals, assists: p.assists, rating: Math.round(p.rating * 10) / 10, stamina: p.stamina, injured: p.injured, yellow: p.yellow, red: false });
+    for (const p of this.subbedOff || []) r.players.push({ id: p.id, name: p.name, num: p.num, pos: p.pos, team: p.team, minutes: Math.round(p.minutes), goals: p.goals, assists: p.assists, rating: clamp(Math.round(p.rating * 10) / 10, 3, 10), stamina: p.stamina, injured: p.injured, yellow: p.yellow, red: false });
     return r;
   }
 

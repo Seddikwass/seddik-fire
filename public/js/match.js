@@ -930,7 +930,7 @@ export class Match {
     this.banner('RALENTI', 99);
   }
   updateReplay(dt) {
-    this.replay.i += dt * 30 * 0.5;
+    this.replay.i += dt * 30 * 0.34;
     if (this.replay.i >= this.replay.frames.length - 1) this.skipReplay();
   }
   skipReplay() { if (!this.replay) return; this.replay = null; this.msgT = 0; this.afterGoal(); }
@@ -1255,8 +1255,9 @@ export class Match {
     const hipY = g[1] - hgt * 0.47;
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';
-    for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const celebrateStep = celebration * Math.sin(anim * 3.2 + k * Math.PI) * 0.22;
-      const stride = sw * k * face + kickingLeg * face * 0.48 + celebrateStep * face; const lift = Math.max(0, Math.sin(phase * k)) * gait * 0.12 * s + kickingLeg * 0.18 * s + Math.max(0, celebrateStep) * 0.22 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
+    for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const injuryLimp = p.injured ? (k === 1 ? -0.12 : 0.035) * (0.55 + 0.45 * Math.sin(anim * 1.4)) : 0;
+      const celebrateStep = celebration * Math.sin(anim * 3.2 + k * Math.PI) * 0.22;
+      const stride = sw * k * face + kickingLeg * face * 0.48 + celebrateStep * face + injuryLimp; const lift = Math.max(0, Math.sin(phase * k)) * gait * (p.injured ? 0.045 : 0.12) * s + kickingLeg * 0.18 * s + Math.max(0, celebrateStep) * 0.22 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
     // chaussettes
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.17 * s);
     for (const k of [-1, 1]) { const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face + kickLeg * face * 0.24 * s; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx + kickLeg * face * 0.12 * s, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.stroke(); }

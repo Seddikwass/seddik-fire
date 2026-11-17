@@ -121,3 +121,56 @@ main{overflow:auto;padding:12px;padding-right:max(12px,env(safe-area-inset-right
 @media (orientation:portrait) and (max-width:600px){.match:after{content:"↻ Tournez votre téléphone en mode paysage";position:absolute;top:40%;left:0;right:0;text-align:center;color:#fff;background:#000c;padding:14px;font-weight:700;pointer-events:none}}
 
 .match.spect .joyzone,.match.spect .btns{display:none}
+
+
+/* Football Tunisia 2026 — modern broadcast / stadium visual refresh */
+:root{
+  --bg:#070b13;--bg2:#0d1422;--card:#111c2d;--line:#263b50;
+  --tx:#f4f7fb;--mut:#a8b8c9;--red:#d71920;--red2:#f02d38;
+  --gold:#e8c66a;--green:#28c77a;--rad:16px;
+}
+html,body{background:radial-gradient(ellipse at 50% -15%,#20364a 0,transparent 46%),#070b13}
+button,.btn{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+.btn{border-radius:12px;box-shadow:0 5px 16px #0003}
+.btn.primary{background:linear-gradient(135deg,#f0444c,#a90e1a);border:1px solid #ff7a80;box-shadow:0 8px 22px #c5152538}
+.btn.primary:hover{filter:brightness(1.12);box-shadow:0 10px 26px #d719204d}
+.card,.clubcard,.srow,.tacside{border-radius:16px;background:linear-gradient(145deg,#17263a,#0f1929);border-color:#2b4057;box-shadow:0 10px 28px #0003}
+.card{padding:16px}
+.top{background:linear-gradient(100deg,#151d2a 0%,#101827 55%,#3b1019 100%);border-bottom:1px solid #b82a35;box-shadow:0 8px 24px #0005}
+.rail{background:linear-gradient(180deg,#0d1725,#080d16);border-color:#26394d}
+.rail button{min-height:54px;border-radius:12px;transition:background .15s,color .15s}
+.rail button.on{background:linear-gradient(90deg,#76202a66,#25364b);box-shadow:inset 3px 0 #ed3b45;color:#fff}
+main{background:radial-gradient(ellipse at 80% 0%,#1a2c401c,transparent 42%)}
+.ph{padding:5px 2px 12px;border-bottom:1px solid #26394d;margin-bottom:14px}
+.ph h2{font-size:clamp(20px,3vw,27px);font-weight:850;letter-spacing:.15px}
+.tabs button{border-radius:999px;padding:8px 14px;background:#17263a;border-color:#30455c}
+.tabs button.on{background:linear-gradient(135deg,#e23843,#a90e1a);border-color:#f05a63;box-shadow:0 5px 16px #d7192038}
+.clubcard{padding:15px 12px;min-height:132px;justify-content:center;position:relative;overflow:hidden}
+.clubcard:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#ffffff0c,transparent 48%);pointer-events:none}
+.clubcard:hover{transform:translateY(-3px);border-color:#d9b75d;box-shadow:0 12px 26px #0005}
+.crest{filter:drop-shadow(0 4px 5px #0007)}
+.tbl{border:1px solid #2b4057;border-radius:14px;overflow:hidden}
+.tbl th{background:linear-gradient(90deg,#1b2b40,#172337);color:#c5d2df;padding:10px 9px}
+.tbl td{padding:9px;border-color:#24364a}
+.tbl tr.me{background:#501c284a}
+.title-bg{background:radial-gradient(ellipse at 50% 112%,#246a3c 0,#0d351f 26%,transparent 59%),linear-gradient(180deg,#050911 0%,#101e30 57%,#07140f 100%)}
+.title-bg:after{background:repeating-linear-gradient(90deg,#ffffff08 0 1px,transparent 1px 72px),linear-gradient(180deg,#0002,transparent 45%,#0005)}
+.logo h1{font-size:clamp(30px,7vw,54px);text-shadow:0 5px 22px #000b;letter-spacing:1.5px}
+.logo p{color:#d6e0e9}
+.title-in{padding:clamp(18px,4vw,36px);border:1px solid #ffffff20;border-radius:24px;background:linear-gradient(145deg,#101c2dbb,#070d18bb);box-shadow:0 24px 70px #0008;backdrop-filter:blur(12px)}
+.menu .btn{min-height:50px;font-size:15px;letter-spacing:.2px}
+.pitch2d{background:repeating-linear-gradient(0deg,#26723a 0 8%,#2d8042 8% 16%);box-shadow:inset 0 0 35px #001b0a;border-color:#d7ead4}
+.dot{box-shadow:0 4px 12px #0008;border-radius:12px}
+.match{background:#07100b}
+.match canvas{image-rendering:auto}
+@media(max-width:760px){
+  .shell{grid-template-columns:58px minmax(0,1fr)}
+  .rail{padding:5px 3px}
+  .rail button{min-height:50px}
+  main{padding:10px}
+  .card{padding:13px}
+  .clubcard{min-height:116px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}

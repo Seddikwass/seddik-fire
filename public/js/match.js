@@ -73,7 +73,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, yellow: 0, sentOff: false, injured: false,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, yellow: 0, sentOff: false, injured: false,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -281,6 +281,13 @@ export class Match {
       p.x = clamp(p.x, -HL - 2, HL + 2); p.y = clamp(p.y, -HW - 2, HW + 2);
       const sp = Math.hypot(p.vx, p.vy);
       p.anim += sp * dt * 2.2;
+      p.jumpT = Math.max(0, (p.jumpT || 0) - dt);
+      p.jumpCd = Math.max(0, (p.jumpCd || 0) - dt);
+      // Duel aérien : le joueur le plus proche saute pour contester un ballon haut.
+      const ball = this.ball;
+      if (!p.isGK && p.jumpCd <= 0 && ball.z > 1.15 && ball.z < 5.2 && Math.hypot(p.x - ball.x, p.y - ball.y) < 3.2 && Math.abs(p.vz || 0) < 0.01) {
+        p.jumpT = 0.42; p.jumpCd = 0.9;
+      }
       if (sp > 0.3) p.face = p.vx >= 0 ? 1 : -1;
       if (p.cd > 0) p.cd -= dt; if (p.tackleCd > 0) p.tackleCd -= dt;
       if (p.run > 0) p.run -= dt;
@@ -721,7 +728,7 @@ export class Match {
     this.events.push({ type: 'goal', min: Math.max(1, Math.round(this.minute)), team, pid: scorer?.id, name, own: !scorer, assist: scorer?.lastPasser?.name });
     b.vx *= 0.2; b.vy *= 0.2; b.inFlightShot = null;
     this.state = 'goal'; this.stateT = 2.2;
-    this.goalFxT = 2.2; this.goalFxTeam = team;
+    this.goalFxT = 2.2; this.goalFxTeam = team; this.goalFxScorer = scorer ? scorer.name : 'BUT CONTRE SON CAMP';
     this.banner('BUT ! ' + T.short, 2.2);
     A.netSound(); A.roar();
     this.say('goal', { p: name, t: T.short }, true);
@@ -858,7 +865,9 @@ export class Match {
     c.fillText('BUUUUT !', this.W / 2, y + 31 * d);
     c.fillStyle = team.kit.trim === team.kit.shirt ? '#ffe16a' : team.kit.trim;
     c.font = `800 ${Math.max(13, 18 * d)}px system-ui,Arial`;
-    c.fillText(`${team.short}  ${this.score[0]} - ${this.score[1]}`, this.W / 2, y + 64 * d);
+    c.fillText(`${team.short}  ${this.score[0]} - ${this.score[1]}`, this.W / 2, y + 59 * d);
+    c.fillStyle = '#fff'; c.font = `700 ${Math.max(10, 12 * d)}px system-ui,Arial`;
+    c.fillText(this.goalFxScorer || 'BUT !', this.W / 2, y + 78 * d);
     // confettis légers et déterministes, sans allocations d'images
     for (let i = 0; i < 28; i++) {
       const phase = (i * 2.399 + (2.2 - t) * (1.8 + (i % 5) * 0.25));
@@ -973,11 +982,13 @@ export class Match {
     const x = fp ? fp[0] : p.x, y = fp ? fp[1] : p.y, face = fp ? fp[2] : p.face, anim = fp ? fp[3] : p.anim;
     const vx = fp ? fp[4] : p.vx, vy = fp ? fp[5] : p.vy;
     const T = this.teams[p.team], kit = p.isGK ? T.gkKit : T.kit;
-    const g = this.proj(x, y, 0); const s = g[2]; // px par mètre
-    if (g[3] < 1) return;
+    const ground = this.proj(x, y, 0); const s = ground[2]; // px par mètre
+    if (ground[3] < 1) return;
+    const jump = fp ? 0 : Math.max(0, Math.min(1, (p.jumpT || 0) / 0.42));
+    const g = [ground[0], ground[1] - Math.sin(jump * Math.PI) * 0.62 * s, ground[2], ground[3]];
     const hgt = 1.8 * s, w = 0.5 * s;
     // ombre et effets d'action au sol : plongeon du gardien / tacle glissé
-    c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(g[0] + 0.25 * s, g[1], 0.45 * s, 0.14 * s, 0, 0, 7); c.fill();
+    c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(ground[0] + 0.25 * s, ground[1], 0.45 * s * (1 - jump * 0.22), 0.14 * s, 0, 0, 7); c.fill();
     const divePulse = Math.max(0, Math.min(1, (p.diveT || 0) / 0.42));
     const slidePulse = Math.max(0, Math.min(1, (p.slideT || 0) / 0.38));
     if (divePulse > 0.02 || slidePulse > 0.02) {

@@ -7,7 +7,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '1.3.0';
+export const APP_VERSION = '1.4.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -452,11 +452,44 @@ function bindControls(m) {
   zone.addEventListener('pointermove', e => { if (e.pointerId === jid) setJ(e.clientX - ox, e.clientY - oy); });
   const end = e => { if (e.pointerId === jid) { jid = null; setJ(0, 0); joy.classList.remove('act'); } };
   zone.addEventListener('pointerup', end); zone.addEventListener('pointercancel', end);
-  const hold = (id, down, up) => { const b = $(id); b.addEventListener('pointerdown', e => { e.preventDefault(); b.classList.add('on'); down(); }); const u = e => { b.classList.remove('on'); up && up(); }; b.addEventListener('pointerup', u); b.addEventListener('pointercancel', u); b.addEventListener('pointerleave', e => { if (b.classList.contains('on')) u(e); }); };
+  const heldReleases = [];
+  const hold = (id, down, up) => {
+    const b = $(id); let activePointer = null;
+    const release = e => {
+      if (activePointer === null || (e && e.pointerId !== activePointer)) return;
+      const pointerId = activePointer; activePointer = null;
+      b.classList.remove('on');
+      if (up) up();
+      try { if (b.hasPointerCapture?.(pointerId)) b.releasePointerCapture(pointerId); } catch (err) {}
+    };
+    b.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      if (activePointer !== null) return;
+      activePointer = e.pointerId;
+      try { b.setPointerCapture(e.pointerId); } catch (err) {}
+      b.classList.add('on');
+      A.audioInit();
+      down();
+    });
+    b.addEventListener('pointerup', release);
+    b.addEventListener('pointercancel', release);
+    b.addEventListener('lostpointercapture', release);
+    heldReleases.push(() => release());
+  };
   hold('#bShoot', () => m.btnShootDown(), () => m.btnShootUp());
   hold('#bPass', () => m.btnPass(false));
   hold('#bThru', () => m.btnPass(true), () => { m.input.press = false; });
   hold('#bSprint', () => { m.input.sprint = true; }, () => { m.input.sprint = false; });
+  const releaseAll = () => {
+    if (jid !== null) { jid = null; setJ(0, 0); joy.classList.remove('act'); }
+    heldReleases.forEach(release => release());
+    m.btnShootUp();
+    m.input.jx = 0; m.input.jy = 0; m.input.sprint = false; m.input.press = false;
+    document.querySelectorAll('.mb.on').forEach(b => b.classList.remove('on'));
+  };
+  const onVisibility = () => { if (document.hidden) releaseAll(); };
+  window.addEventListener('blur', releaseAll);
+  document.addEventListener('visibilitychange', onVisibility);
   $('#bPause').onclick = () => { m.paused = true; pauseMenu(); };
   $('#cv').addEventListener('pointerdown', () => { if (m.replay) m.skipReplay(); });
   // clavier (PC)
@@ -465,7 +498,13 @@ function bindControls(m) {
   m._kd = e => { if (keys[e.code]) return; keys[e.code] = true; upd(); A.audioInit(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootDown(); if (e.code === 'KeyC') m.btnPass(false); if (e.code === 'KeyV') m.btnPass(true); if (e.code === 'KeyQ') m.switchPlayer(); if (e.code === 'Escape' || e.code === 'KeyP') { m.paused = true; pauseMenu(); } if (m.replay && e.code === 'Enter') m.skipReplay(); };
   m._ku = e => { keys[e.code] = false; upd(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootUp(); if (e.code === 'KeyV') m.input.press = false; };
   addEventListener('keydown', m._kd); addEventListener('keyup', m._ku);
-  const od = m.destroy.bind(m); m.destroy = () => { removeEventListener('keydown', m._kd); removeEventListener('keyup', m._ku); clearInterval(m._lbl); od(); };
+  const od = m.destroy.bind(m); m.destroy = () => {
+    releaseAll();
+    window.removeEventListener('blur', releaseAll);
+    document.removeEventListener('visibilitychange', onVisibility);
+    removeEventListener('keydown', m._kd); removeEventListener('keyup', m._ku);
+    clearInterval(m._lbl); od();
+  };
   // libellés contextuels (attaque / défense)
   m._lbl = setInterval(() => {
     const att = m.ball.owner && m.selected && m.ball.owner === m.selected;

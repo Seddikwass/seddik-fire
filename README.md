@@ -6,6 +6,11 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 1.4.0 — fiabilité mobile et performances
+- Ratio de rendu Canvas adapté à la mémoire et au nombre de cœurs détectés, tout en respectant le niveau de qualité choisi.
+- Commandes tactiles sécurisées par capture du pointeur ; les touches virtuelles sont relâchées automatiquement en cas de perte de focus ou de passage en arrière-plan.
+- Tests de non-régression dédiés à la politique de résolution.
+
 ## Démarrer en local
 ```bash
 npm install          # installe pg (facultatif en local)

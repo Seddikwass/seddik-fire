@@ -7,6 +7,17 @@ const HL = 52.5, HW = 34, GOAL_W = 3.66, GOAL_H = 2.44, G = 9.81;
 const DT = 1 / 60;
 const SKIN = ['#8d5524', '#c68642', '#e0ac69', '#a0662f', '#5c3a1e', '#f1c27d'];
 
+export function getRenderDpr(quality = 'high', device = {}) {
+  const pixelRatio = Number(device.pixelRatio) > 0 ? Number(device.pixelRatio) : 1;
+  const qualityCap = quality === 'low' ? 1 : quality === 'medium' ? 1.5 : 2;
+  const memory = Number(device.deviceMemory) || 0;
+  const cores = Number(device.hardwareConcurrency) || 0;
+  let hardwareCap = 2;
+  if ((memory > 0 && memory <= 3) || (cores > 0 && cores <= 4)) hardwareCap = 1.25;
+  else if (memory > 0 && memory <= 4) hardwareCap = 1.5;
+  return Math.max(1, Math.min(pixelRatio, qualityCap, hardwareCap));
+}
+
 const LINES = {
   fr: {
     kickoff: ['Coup d\'envoi ! {h} contre {a}.', 'C\'est parti au {st} !'],
@@ -90,7 +101,11 @@ export class Match {
   start() { this.running = true; this.last = performance.now(); A.audioInit(); A.crowd(0.25); requestAnimationFrame(this.loop); }
   destroy() { this.running = false; window.removeEventListener('resize', this.resize); document.removeEventListener('visibilitychange', this.onVis); A.stopDrums(); A.crowd(0); }
   resize() {
-    const dpr = this.settings.quality === 'low' ? 1 : this.settings.quality === 'medium' ? Math.min(1.5, devicePixelRatio || 1) : Math.min(2, devicePixelRatio || 1);
+    const nav = typeof navigator === 'undefined' ? {} : navigator;
+    const ratio = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
+    const dpr = getRenderDpr(this.settings.quality, {
+      pixelRatio: ratio, deviceMemory: nav.deviceMemory, hardwareConcurrency: nav.hardwareConcurrency
+    });
     const w = this.canvas.clientWidth || innerWidth, h = this.canvas.clientHeight || innerHeight;
     this.canvas.width = Math.round(w * dpr); this.canvas.height = Math.round(h * dpr);
     this.W = this.canvas.width; this.H = this.canvas.height; this.dpr = dpr;

@@ -3,7 +3,7 @@ name: Football Tunisia 2026 — Android
 on:
   push:
     branches: [football-tunisia-2026]
-    paths: ['public/**', 'android-app/**', '.github/workflows/ft26-android.yml']
+    paths: ['public/**', 'android-app/**', 'tests/**', 'package.json', '.github/workflows/ft26-android.yml']
   workflow_dispatch:
 
 permissions:

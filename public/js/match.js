@@ -352,6 +352,26 @@ export class Match {
   ai(dt) {
     const b = this.ball, own = b.owner;
     const possTeam = own ? own.team : (b.last ? b.lastTeam : -1);
+    // Remplacements automatiques pour les équipes pilotées par l'IA.
+    this.autoSubT = Math.max(0, (this.autoSubT || 0) - dt);
+    if (this.autoSubT <= 0 && this.minute >= 58) {
+      this.autoSubT = 8;
+      for (const team of this.teams) {
+        if (team.side === this.userSide || this.subsLeft[team.side] <= 0) continue;
+        const candidates = team.ps.map((p, idx) => ({ p, idx })).filter(v => !v.p.isGK && !v.p.sentOff && !v.p.subbedOff && (v.p.stamina < 0.43 || v.p.injured));
+        candidates.sort((a, b) => (a.p.stamina - (a.p.injured ? 0.18 : 0)) - (b.p.stamina - (b.p.injured ? 0.18 : 0)));
+        const tired = candidates[0];
+        if (!tired) continue;
+        const bench = team.bench.map((p, idx) => ({ p, idx })).filter(v => !v.p.used && v.p.pos !== 'GK');
+        bench.sort((a, b) => {
+          const posA = a.p.pos === tired.p.pos ? 3 : (String(a.p.pos || '').[0] === String(tired.p.pos || '')[0] ? 1 : 0);
+          const posB = b.p.pos === tired.p.pos ? 3 : (String(b.p.pos || '').[0] === String(tired.p.pos || '')[0] ? 1 : 0);
+          return (posB * 10 + (b.p.fitness ?? 1) * 4 + (b.p.attrs?.pac ?? 50) / 100) - (posA * 10 + (a.p.fitness ?? 1) * 4 + (a.p.attrs?.pac ?? 50) / 100);
+        });
+        const fresh = bench[0];
+        if (fresh && ((fresh.p.fitness ?? 1) > tired.p.stamina + 0.12 || tired.p.injured)) this.substitute(team.side, tired.idx, fresh.idx);
+      }
+    }
     // Ajustement tactique contextuel : le score et le temps influencent
     // progressivement la prise de risque sans écraser les réglages initiaux.
     for (const T of this.teams) {

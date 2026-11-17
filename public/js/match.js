@@ -128,7 +128,7 @@ export class Match {
       return [gx * d, clamp(bny * 0.15, -2.5, 2.5) * d];
     }
     const line = bx < -28 ? 0 : bx < -12 ? 1 : 2;
-    const push = (inPoss ? [20, 24, 27] : [7, 6, 4])[line] + T.mentality * 3 + (line === 0 ? T.line * 4 : T.line * 2);
+    const push = (inPoss ? [20, 24, 27] : [7, 6, 4])[line] + (T.liveMentality ?? T.mentality) * 3 + (line === 0 ? T.line * 4 : T.line * 2);
     let nx = bx + push + bnx * (inPoss ? 0.38 : 0.42) + (p.instr === 'def' ? -6 : p.instr === 'att' && inPoss ? 6 : 0);
     let ny = by * (inPoss ? 1.08 : 0.72) * (0.85 + T.width * 0.15) + bny * (inPoss ? 0.18 : 0.32);
     if (!inPoss) {
@@ -352,16 +352,25 @@ export class Match {
   ai(dt) {
     const b = this.ball, own = b.owner;
     const possTeam = own ? own.team : (b.last ? b.lastTeam : -1);
+    // Ajustement tactique contextuel : le score et le temps influencent
+    // progressivement la prise de risque sans écraser les réglages initiaux.
     for (const T of this.teams) {
+      const goalDiff = this.score[T.side] - this.score[1 - T.side];
+      const lateFactor = clamp((this.minute - 58) / 32, 0, 1);
+      const urgency = goalDiff < 0 ? lateFactor * Math.min(1.25, 0.45 + Math.abs(goalDiff) * 0.32) : 0;
+      const protectLead = goalDiff > 0 ? lateFactor * Math.min(0.9, 0.28 + goalDiff * 0.22) : 0;
+      T.liveMentality = clamp(T.mentality + urgency * 0.85 - protectLead * 0.48, -2, 2);
+      T.livePressing = clamp(T.pressing + urgency * 1.2 - protectLead * 0.45, 0, 3);
       const inPoss = possTeam === T.side;
       // presseurs
       let pressers = [];
       let interceptor = null, interceptPoint = null;
       if (!inPoss) {
         const cand = T.ps.filter(p => !p.isGK && !p.sentOff).map(p => ({ p, d: Math.hypot(p.x - b.x, p.y - b.y) })).sort((a, c) => a.d - c.d);
-        const pressCount = T.pressing >= 3 ? 3 : T.pressing >= 2 ? 2 : 1;
+        const pressing = T.livePressing ?? T.pressing;
+        const pressCount = pressing >= 2.7 ? 3 : pressing >= 1.7 ? 2 : 1;
         pressers = cand.slice(0, pressCount).map(c => c.p);
-        if (T.pressing === 0 && cand[0] && Math.abs(b.x - (-HL * T.dir)) > 50) pressers = [];
+        if (pressing < 0.5 && cand[0] && Math.abs(b.x - (-HL * T.dir)) > 50) pressers = [];
         // Sur une passe aérienne ou tendue, un défenseur anticipe le point
         // de coupe au lieu de poursuivre aveuglément le porteur précédent.
         const ballSpeed2 = b.vx * b.vx + b.vy * b.vy;

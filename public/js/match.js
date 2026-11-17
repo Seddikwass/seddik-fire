@@ -74,7 +74,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -310,6 +310,7 @@ export class Match {
       p.jumpT = Math.max(0, (p.jumpT || 0) - dt);
       p.jumpCd = Math.max(0, (p.jumpCd || 0) - dt);
       p.kickT = Math.max(0, (p.kickT || 0) - dt);
+      p.celebrateT = Math.max(0, (p.celebrateT || 0) - dt);
       // Duel aérien : le joueur le plus proche saute pour contester un ballon haut.
       const ball = this.ball;
       if (!p.isGK && p.jumpCd <= 0 && ball.z > 1.15 && ball.z < 5.2 && Math.hypot(p.x - ball.x, p.y - ball.y) < 3.2 && Math.abs(p.vz || 0) < 0.01) {
@@ -808,6 +809,7 @@ export class Match {
     b.vx *= 0.2; b.vy *= 0.2; b.inFlightShot = null;
     this.state = 'goal'; this.stateT = 2.2;
     this.goalFxT = 2.2; this.goalFxTeam = team; this.goalFxScorer = scorer ? scorer.name : 'BUT CONTRE SON CAMP';
+    for (const p of T.ps) if (!p.sentOff) { p.celebrateT = p === scorer ? 2.2 : 1.55; p.vx *= 0.35; p.vy *= 0.35; }
     this.goalCrowdT = 2.2; this.goalCrowdPulseT = 0;
     this.banner('BUT ! ' + T.short, 2.2);
     A.netSound(); A.roar();
@@ -1142,7 +1144,8 @@ export class Match {
     const diveReach = keeperDive * (0.38 + keeperSave * 0.35);
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
     const kickPulse = Math.max(0, Math.min(1, (p.kickT || 0) / 0.24));
-    const bodyLean = Math.min(0.12, sp * 0.018) + slidePulse * 0.2;
+    const celebration = Math.max(0, Math.min(1, (p.celebrateT || 0) / 0.7));
+    const bodyLean = Math.min(0.12, sp * 0.018) + slidePulse * 0.2 - celebration * 0.08;
     const hipY = g[1] - hgt * 0.47;
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';
@@ -1234,8 +1237,8 @@ export class Match {
     // bras, manches et poignets contrastés
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
     for (const k of [-1, 1]) {
-      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * diveReach * s : 0) + (!p.isGK ? slidePulse * face * 0.3 * s : 0);
-      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? diveReach * 0.45 * s : 0) + (!p.isGK ? slidePulse * 0.16 * s : 0);
+      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * diveReach * s : 0) + (!p.isGK ? slidePulse * face * 0.3 * s : 0) + celebration * k * 0.42 * s;
+      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? diveReach * 0.45 * s : 0) + (!p.isGK ? slidePulse * 0.16 * s : 0) - celebration * 0.62 * s;
       c.beginPath(); c.moveTo(ax, tY + 0.08 * s); c.lineTo(ex, ey); c.stroke();
       c.strokeStyle = kit.trim; c.lineWidth = Math.max(1.2, 0.075 * s);
       c.beginPath(); c.moveTo(ax + (ex - ax) * 0.72, tY + 0.08 * s + (ey - (tY + 0.08 * s)) * 0.72);

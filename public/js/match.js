@@ -189,7 +189,17 @@ export class Match {
     this.goalFxT = Math.max(0, (this.goalFxT || 0) - dt);
     for (const T of this.teams) for (const p of T.ps) { p.diveT = Math.max(0, (p.diveT || 0) - dt); p.slideT = Math.max(0, (p.slideT || 0) - dt); p.saveT = Math.max(0, (p.saveT || 0) - dt); }
     if (this.state === 'restart') return this.stepRestart(dt);
-    if (this.state === 'goal') { this.stateT -= dt; this.moveAll(dt, true); this.physics(dt); if (this.stateT <= 0) this.startReplay(); return; }
+    if (this.state === 'goal') {
+      this.stateT -= dt; this.goalCrowdT = Math.max(0, (this.goalCrowdT || 0) - dt);
+      this.goalCrowdPulseT = (this.goalCrowdPulseT || 0) - dt;
+      if (this.goalCrowdPulseT <= 0) {
+        this.goalCrowdPulseT = 0.18;
+        A.crowd(0.42 + 0.48 * Math.max(0, this.goalCrowdT / 2.2));
+      }
+      this.moveAll(dt, true); this.physics(dt);
+      if (this.stateT <= 0) { A.crowd(0.3); this.startReplay(); }
+      return;
+    }
     if (this.state === 'halftime') { this.stateT -= dt; if (this.stateT <= 0) { this.half = 2; for (const T of this.teams) T.dir *= -1; this.setupKickoff(1); } return; }
     if (this.state === 'fulltime') { this.stateT -= dt; if (this.stateT <= 0 && !this.ended) this.finish(); return; }
     // horloge
@@ -796,6 +806,7 @@ export class Match {
     b.vx *= 0.2; b.vy *= 0.2; b.inFlightShot = null;
     this.state = 'goal'; this.stateT = 2.2;
     this.goalFxT = 2.2; this.goalFxTeam = team; this.goalFxScorer = scorer ? scorer.name : 'BUT CONTRE SON CAMP';
+    this.goalCrowdT = 2.2; this.goalCrowdPulseT = 0;
     this.banner('BUT ! ' + T.short, 2.2);
     A.netSound(); A.roar();
     this.say('goal', { p: name, t: T.short }, true);
@@ -942,6 +953,23 @@ export class Match {
       const py = y + h + Math.sin(phase * 1.3) * (10 + (2.2 - t) * (18 + i % 6 * 5)) * d;
       c.globalAlpha = Math.max(0, t / 2.2) * 0.85; c.fillStyle = i % 2 ? team.kit.trim : '#fff';
       c.fillRect(px, py, (2 + i % 3) * d, (4 + i % 4) * d);
+    }
+    // Faisceaux lumineux et silhouettes de supporters qui lèvent les bras au but.
+    const flash = 0.5 + 0.5 * Math.sin((2.2 - t) * 11);
+    c.globalAlpha = 0.12 + flash * 0.12;
+    for (let i = 0; i < 4; i++) {
+      const lx = (i + 0.5) * this.W / 4;
+      c.fillStyle = team.kit.trim;
+      c.beginPath(); c.moveTo(lx - 5 * d, 0); c.lineTo(lx + 5 * d, 0);
+      c.lineTo(lx + (i % 2 ? 72 : -72) * d, this.H * 0.46); c.lineTo(lx + (i % 2 ? 34 : -34) * d, this.H * 0.46); c.closePath(); c.fill();
+    }
+    c.globalAlpha = Math.max(0, t / 2.2) * 0.72;
+    for (let i = 0; i < 18; i++) {
+      const px = (i + 0.5) * this.W / 18, base = this.H - (i % 3) * 3 * d;
+      const wave = Math.sin((2.2 - t) * 13 + i * 1.7) * 5 * d;
+      c.strokeStyle = i % 2 ? team.kit.shirt : team.kit.trim; c.lineWidth = 2.5 * d; c.lineCap = 'round';
+      c.beginPath(); c.arc(px, base - 10 * d, 4 * d, Math.PI, 0); c.stroke();
+      c.beginPath(); c.moveTo(px - 2 * d, base - 7 * d); c.lineTo(px - 9 * d + wave, base - 20 * d); c.moveTo(px + 2 * d, base - 7 * d); c.lineTo(px + 9 * d - wave, base - 20 * d); c.stroke();
     }
     c.restore();
   }

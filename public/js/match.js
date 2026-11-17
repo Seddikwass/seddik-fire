@@ -364,8 +364,8 @@ export class Match {
         if (!tired) continue;
         const bench = team.bench.map((p, idx) => ({ p, idx })).filter(v => !v.p.used && v.p.pos !== 'GK');
         bench.sort((a, b) => {
-          const posA = a.p.pos === tired.p.pos ? 3 : (String(a.p.pos || '').[0] === String(tired.p.pos || '')[0] ? 1 : 0);
-          const posB = b.p.pos === tired.p.pos ? 3 : (String(b.p.pos || '').[0] === String(tired.p.pos || '')[0] ? 1 : 0);
+          const posA = a.p.pos === tired.p.pos ? 3 : (String(a.p.pos || '')[0] === String(tired.p.pos || '')[0] ? 1 : 0);
+          const posB = b.p.pos === tired.p.pos ? 3 : (String(b.p.pos || '')[0] === String(tired.p.pos || '')[0] ? 1 : 0);
           return (posB * 10 + (b.p.fitness ?? 1) * 4 + (b.p.attrs?.pac ?? 50) / 100) - (posA * 10 + (a.p.fitness ?? 1) * 4 + (a.p.attrs?.pac ?? 50) / 100);
         });
         const fresh = bench[0];

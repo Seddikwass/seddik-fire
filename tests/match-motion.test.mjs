@@ -35,6 +35,15 @@ assert.ok(match.ball.inFlightShot && match.ball.vx > 0, 'la frappe doit partir v
 
 const keeper = match.teams[1].ps[0];
 keeper.y = 0;
+// Scénario déterministe : tir cadré qui traverse la ligne dans moins d'une seconde,
+// avec une hauteur encore atteignable par le gardien.
+match.ball.x = 40;
+match.ball.y = 0;
+match.ball.z = 2.2;
+match.ball.vx = 20;
+match.ball.vy = 2;
+match.ball.vz = 0;
+match.ball.inFlightShot = { team: 0, t: 0 };
 match.aiKeeper(keeper, 1 / 60);
 assert.ok(keeper.diveT > 0, 'le gardien doit anticiper et amorcer son plongeon avant la ligne');
 

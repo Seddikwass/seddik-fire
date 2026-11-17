@@ -425,8 +425,38 @@ export class Match {
       if (this.aiThink <= 0) { const opt = this.bestPass(p, null, false); if (opt && opt.score > -5 && this.r() < 0.6) this.pass(p, opt.p, false); else this.clearance(p); }
       return;
     }
-    if (this.setPiece === 'corner' && this.aiThink <= 0) { this.cross(p); return; }
-    if (this.setPiece === 'penalty' && this.aiThink <= 0) { this.shoot(p, 0.75 + this.r() * 0.2); return; }
+    if (this.setPiece === 'corner' && this.aiThink <= 0) {
+      // Corner : privilégier un centre vers un partenaire placé dans la zone dangereuse.
+      const boxTargets = T.ps.filter(t => !t.sentOff && !t.isGK && t !== p && (gx - t.x) * d > -15 && (gx - t.x) * d < 22 && Math.abs(t.y) < 15);
+      boxTargets.sort((a, c) => {
+        const score = q => q.a.phy * 0.45 + q.a.sho * 0.35 + q.a.pac * 0.2 - Math.abs(q.y) * 0.25;
+        return score(c) - score(a);
+      });
+      if (boxTargets[0]) this.pass(p, boxTargets[0], false, true); else this.cross(p);
+      return;
+    }
+    if (this.setPiece === 'penalty' && this.aiThink <= 0) {
+      const keeper = this.teams[1 - p.team].ps[0];
+      const side = keeper.y >= 0 ? -1 : 1;
+      const aim = side * (2.1 + this.r() * 1.1);
+      this.shoot(p, 0.76 + this.r() * 0.18, aim);
+      return;
+    }
+    if (this.setPiece === 'freekick' && this.aiThink <= 0) {
+      const freeDist = Math.hypot(gx - p.x, p.y);
+      const central = Math.abs(p.y) < 17;
+      // Frappe directe dans une zone favorable, sinon combinaison ou centre.
+      if (freeDist < 30 && central && this.r() < (freeDist < 23 ? 0.72 : 0.42)) {
+        const keeper = this.teams[1 - p.team].ps[0];
+        const aim = (keeper.y >= 0 ? -1 : 1) * (1.4 + this.r() * 1.5);
+        this.shoot(p, clamp(0.58 + (30 - freeDist) * 0.012, 0.58, 0.88), aim);
+      } else {
+        const opt = this.bestPass(p, null, false);
+        if (opt && opt.score > -2) this.pass(p, opt.p, opt.through, freeDist < 26);
+        else this.cross(p);
+      }
+      return;
+    }
     // dribble vers le but en évitant le défenseur le plus proche
     let tx = gx, ty = p.y * 0.6;
     let near = null, nd = 99; for (const o of opp) { if (o.sentOff) continue; const dd = Math.hypot(o.x - p.x, o.y - p.y); if (dd < nd && (o.x - p.x) * d > -1) { nd = dd; near = o; } }

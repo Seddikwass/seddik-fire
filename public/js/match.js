@@ -1146,15 +1146,15 @@ export class Match {
     const hipY = g[1] - hgt * 0.47;
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';
-    for (const k of [-1, 1]) { const stride = sw * k * face; const lift = Math.max(0, Math.sin(phase * k)) * gait * 0.12 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
+    for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const stride = sw * k * face + kickingLeg * face * 0.48; const lift = Math.max(0, Math.sin(phase * k)) * gait * 0.12 * s + kickingLeg * 0.18 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
     // chaussettes
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.17 * s);
-    for (const k of [-1, 1]) { const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx, g[1] - 0.08 * s); c.stroke(); }
+    for (const k of [-1, 1]) { const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face + kickLeg * face * 0.24 * s; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx + kickLeg * face * 0.12 * s, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.stroke(); }
     // crampons sombres avec semelle claire, visibles en course
     c.strokeStyle = '#17191d'; c.lineWidth = Math.max(1.8, 0.11 * s); c.lineCap = 'round';
     for (const k of [-1, 1]) {
-      const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face;
-      c.beginPath(); c.moveTo(fx, g[1] - 0.08 * s); c.lineTo(fx + face * 0.13 * s, g[1] - 0.015 * s); c.stroke();
+      const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face + kickLeg * face * 0.24 * s;
+      c.beginPath(); c.moveTo(fx, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.lineTo(fx + face * (0.13 + kickLeg * 0.2) * s, g[1] - 0.015 * s - kickLeg * 0.16 * s); c.stroke();
       c.strokeStyle = '#d9dce2'; c.lineWidth = Math.max(0.7, 0.035 * s);
       c.beginPath(); c.moveTo(fx - 0.04 * s, g[1] - 0.02 * s); c.lineTo(fx + face * 0.12 * s, g[1] - 0.02 * s); c.stroke();
       c.strokeStyle = '#17191d'; c.lineWidth = Math.max(1.8, 0.11 * s);

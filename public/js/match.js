@@ -1118,7 +1118,7 @@ export class Match {
     const keeperSave = !fp && p.isGK ? Math.max(0, Math.min(1, (p.saveT || 0) / 0.75)) : 0;
     const diveSide = p.diveDir || 1;
     const slidePulse = Math.max(0, Math.min(1, (p.slideT || 0) / 0.38));
-    const g = [ground[0] + slidePulse * (p.face || 1) * 0.22 * s, ground[1] - Math.sin(jump * Math.PI) * 0.62 * s + keeperDive * diveSide * 0.16 * s + slidePulse * 0.14 * s, ground[2], ground[3]];
+    const g = [ground[0] + slidePulse * (p.face || 1) * 0.22 * s + keeperDive * diveSide * 0.28 * s, ground[1] - Math.sin(jump * Math.PI) * 0.62 * s - keeperDive * 0.12 * s + slidePulse * 0.14 * s, ground[2], ground[3]];
     const hgt = 1.8 * s, w = 0.5 * s;
     // ombre et effets d'action au sol : plongeon du gardien / tacle glissé
     c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(ground[0] + 0.25 * s, ground[1], 0.45 * s * (1 - jump * 0.22), 0.14 * s, 0, 0, 7); c.fill();
@@ -1237,13 +1237,20 @@ export class Match {
     // bras, manches et poignets contrastés
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
     for (const k of [-1, 1]) {
-      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * diveReach * s : 0) + (!p.isGK ? slidePulse * face * 0.3 * s : 0) + celebration * k * 0.42 * s;
-      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? diveReach * 0.45 * s : 0) + (!p.isGK ? slidePulse * 0.16 * s : 0) - celebration * 0.62 * s;
+      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * (0.12 + diveReach) * s : 0) + (!p.isGK ? slidePulse * face * 0.3 * s : 0) + celebration * k * 0.42 * s;
+      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? (0.1 + diveReach * 0.72) * s : 0) + (!p.isGK ? slidePulse * 0.16 * s : 0) - celebration * 0.62 * s;
       c.beginPath(); c.moveTo(ax, tY + 0.08 * s); c.lineTo(ex, ey); c.stroke();
       c.strokeStyle = kit.trim; c.lineWidth = Math.max(1.2, 0.075 * s);
       c.beginPath(); c.moveTo(ax + (ex - ax) * 0.72, tY + 0.08 * s + (ey - (tY + 0.08 * s)) * 0.72);
       c.lineTo(ex, ey); c.stroke();
       c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
+      if (p.isGK) {
+        c.fillStyle = '#f5d34f'; c.beginPath(); c.arc(ex, ey, Math.max(2.2, 0.105 * s), 0, Math.PI * 2); c.fill();
+        c.strokeStyle = '#fff4b0'; c.lineWidth = Math.max(1, 0.035 * s); c.beginPath(); c.arc(ex, ey, Math.max(2.5, 0.13 * s), -0.8, 0.8); c.stroke();
+      }
+    }
+    if (p.isGK && (keeperDive > 0.02 || keeperSave > 0.02)) {
+      c.save(); c.globalAlpha = Math.max(keeperDive, keeperSave) * 0.45; c.strokeStyle = '#f7d86a'; c.lineWidth = Math.max(1.5, 0.07 * s); c.beginPath(); c.ellipse(g[0], g[1] - 0.72 * s, (0.42 + diveReach * 0.85) * s, 0.22 * s, 0, 0, Math.PI * 2); c.stroke(); c.restore();
     }
     // tête
     c.fillStyle = p.skin; c.beginPath(); c.arc(g[0], tY - 0.14 * s, 0.13 * s, 0, 7); c.fill();

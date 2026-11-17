@@ -954,6 +954,33 @@ export class Match {
     c.save();
     this.rr(shirtX, tY, shirtW, tH, 0.1 * s); c.clip();
     c.fillStyle = kit.shirt; c.fillRect(shirtX, tY, shirtW, tH);
+    // Motifs distincts par club : créations originales inspirées des couleurs,
+    // sans prétendre reproduire un maillot officiel sous licence.
+    const kitId = T.id || T.short || '';
+    const pattern = kit.pattern || ({
+      est: 'hoops', ca: 'stripes', css: 'pinstripes', ess: 'hoops',
+      st: 'sash', usm: 'split', cab: 'stripes', esz: 'split',
+      esm: 'stripes', usbg: 'hoops', asm: 'sash', ob: 'split'
+    }[kitId] || (p.team === 0 ? 'stripes' : 'sash'));
+    c.fillStyle = kit.trim;
+    c.globalAlpha = 0.78;
+    if (pattern === 'stripes' || pattern === 'pinstripes') {
+      const count = pattern === 'pinstripes' ? 7 : 3;
+      const band = shirtW / (count * 2 + 1);
+      for (let n = 0; n < count; n++) {
+        const width = pattern === 'pinstripes' ? Math.max(0.7, band * 0.28) : band;
+        c.fillRect(shirtX + band * (1 + n * 2), tY, width, tH);
+      }
+    } else if (pattern === 'hoops') {
+      c.fillRect(shirtX, tY + tH * 0.28, shirtW, Math.max(1, tH * 0.15));
+      c.fillRect(shirtX, tY + tH * 0.67, shirtW, Math.max(1, tH * 0.13));
+    } else if (pattern === 'sash') {
+      c.beginPath(); c.moveTo(shirtX + shirtW * 0.68, tY); c.lineTo(shirtX + shirtW * 0.91, tY);
+      c.lineTo(shirtX + shirtW * 0.34, tY + tH); c.lineTo(shirtX + shirtW * 0.11, tY + tH); c.closePath(); c.fill();
+    } else if (pattern === 'split') {
+      c.fillRect(shirtX + shirtW * 0.5, tY, shirtW * 0.5, tH);
+    }
+    c.globalAlpha = 1;
     // Panneaux latéraux légèrement ombrés pour donner du volume au tissu
     c.fillStyle = 'rgba(0,0,0,0.13)';
     c.fillRect(shirtX, tY, shirtW * 0.13, tH);

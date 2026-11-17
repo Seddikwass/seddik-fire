@@ -1249,11 +1249,14 @@ export class Match {
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
     const kickPulse = Math.max(0, Math.min(1, (p.kickT || 0) / 0.24));
     const celebration = Math.max(0, Math.min(1, (p.celebrateT || 0) / 0.7));
+    // Petit saut synchronisé à la célébration, sans déplacer le joueur au sol.
+    if (celebration > 0.02) g[1] -= Math.sin((1 - celebration) * Math.PI * 2.2) * 0.18 * s * celebration;
     const bodyLean = Math.min(0.12, sp * 0.018) + slidePulse * 0.2 - celebration * 0.08 + (p.contactT || 0) * (p.contactDir || 1) * 0.42;
     const hipY = g[1] - hgt * 0.47;
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';
-    for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const stride = sw * k * face + kickingLeg * face * 0.48; const lift = Math.max(0, Math.sin(phase * k)) * gait * 0.12 * s + kickingLeg * 0.18 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
+    for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const celebrateStep = celebration * Math.sin(anim * 3.2 + k * Math.PI) * 0.22;
+      const stride = sw * k * face + kickingLeg * face * 0.48 + celebrateStep * face; const lift = Math.max(0, Math.sin(phase * k)) * gait * 0.12 * s + kickingLeg * 0.18 * s + Math.max(0, celebrateStep) * 0.22 * s; c.beginPath(); c.moveTo(g[0] + k * 0.1 * s, hipY); c.lineTo(g[0] + k * 0.1 * s + stride * 0.5 * s, g[1] - 0.05 * s - lift); c.stroke(); }
     // chaussettes
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.17 * s);
     for (const k of [-1, 1]) { const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face + kickLeg * face * 0.24 * s; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx + kickLeg * face * 0.12 * s, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.stroke(); }
@@ -1341,8 +1344,8 @@ export class Match {
     // bras, manches et poignets contrastés
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
     for (const k of [-1, 1]) {
-      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * (0.12 + diveReach) * s : 0) + (!p.isGK ? slidePulse * face * 0.3 * s : 0) + celebration * k * 0.42 * s;
-      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? (0.1 + diveReach * 0.72) * s : 0) + (!p.isGK ? slidePulse * 0.16 * s : 0) - celebration * 0.62 * s;
+      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 + armSwing * k * s * face + (p.isGK ? k * (0.12 + diveReach) * s : 0) + (!p.isGK ? slidePulse * face * 0.3 * s : 0) + celebration * k * 0.62 * s;
+      const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s - (p.isGK ? (0.1 + diveReach * 0.72) * s : 0) + (!p.isGK ? slidePulse * 0.16 * s : 0) - celebration * 0.98 * s;
       c.beginPath(); c.moveTo(ax, tY + 0.08 * s); c.lineTo(ex, ey); c.stroke();
       c.strokeStyle = kit.trim; c.lineWidth = Math.max(1.2, 0.075 * s);
       c.beginPath(); c.moveTo(ax + (ex - ax) * 0.72, tY + 0.08 * s + (ey - (tY + 0.08 * s)) * 0.72);

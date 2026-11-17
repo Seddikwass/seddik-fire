@@ -36,8 +36,8 @@ async function call(path, opts = {}) {
   } finally { clearTimeout(to); }
 }
 export async function health() { return call('/health', { timeout: 60000 }); }
-export async function register(username, password) { const d = await call('/auth/register', { method: 'POST', body: { username, password } }); setAuth({ token: d.token, username: d.username }); return d; }
-export async function login(username, password) { const d = await call('/auth/login', { method: 'POST', body: { username, password } }); setAuth({ token: d.token, username: d.username }); return d; }
+export async function register(username, password) { const d = await call('/auth/register', { method: 'POST', body: { username, password } }); setAuth({ token: d.token, username: d.username }); void syncPending(); return d; }
+export async function login(username, password) { const d = await call('/auth/login', { method: 'POST', body: { username, password } }); setAuth({ token: d.token, username: d.username }); void syncPending(); return d; }
 export function logout() { setAuth(null); }
 export async function fetchRemote() { return call('/save'); }
 export async function pushRemote(st, force = false) {
@@ -88,6 +88,8 @@ export async function syncPending() {
   return pendingSync;
 }
 if (typeof window !== 'undefined') {
+  // Reprendre aussi les sauvegardes en attente dès le premier chargement, pas seulement au retour réseau.
+  if (navigator.onLine) Promise.resolve().then(() => syncPending());
   window.addEventListener('online', () => { syncPending(); });
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') syncPending();

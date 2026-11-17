@@ -946,8 +946,23 @@ export class Match {
     // chaussettes
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.17 * s);
     for (const k of [-1, 1]) { const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx, g[1] - 0.08 * s); c.stroke(); }
-    // short
+    // crampons sombres avec semelle claire, visibles en course
+    c.strokeStyle = '#17191d'; c.lineWidth = Math.max(1.8, 0.11 * s); c.lineCap = 'round';
+    for (const k of [-1, 1]) {
+      const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face;
+      c.beginPath(); c.moveTo(fx, g[1] - 0.08 * s); c.lineTo(fx + face * 0.13 * s, g[1] - 0.015 * s); c.stroke();
+      c.strokeStyle = '#d9dce2'; c.lineWidth = Math.max(0.7, 0.035 * s);
+      c.beginPath(); c.moveTo(fx - 0.04 * s, g[1] - 0.02 * s); c.lineTo(fx + face * 0.12 * s, g[1] - 0.02 * s); c.stroke();
+      c.strokeStyle = '#17191d'; c.lineWidth = Math.max(1.8, 0.11 * s);
+    }
+    // short : volume, coutures et liseré aux couleurs du club
     c.fillStyle = kit.shorts; c.fillRect(g[0] - w * 0.5, hipY - 0.06 * s, w, 0.3 * s);
+    c.fillStyle = kit.trim; c.globalAlpha = 0.9;
+    c.fillRect(g[0] - w * 0.5, hipY - 0.06 * s, Math.max(1, 0.035 * s), 0.3 * s);
+    c.fillRect(g[0] + w * 0.465, hipY - 0.06 * s, Math.max(1, 0.035 * s), 0.3 * s);
+    c.globalAlpha = 1;
+    c.strokeStyle = 'rgba(255,255,255,0.2)'; c.lineWidth = Math.max(0.7, 0.025 * s);
+    c.beginPath(); c.moveTo(g[0], hipY - 0.02 * s); c.lineTo(g[0], hipY + 0.2 * s); c.stroke();
     // maillot : rendu textile enrichi, panneaux, fines rayures et col
     const tY = g[1] - hgt * 0.82, tH = hgt * 0.37;
     const shirtX = g[0] - w * 0.55, shirtW = w * 1.1;
@@ -1006,9 +1021,17 @@ export class Match {
     // Col contrasté
     c.strokeStyle = kit.trim; c.lineWidth = Math.max(1, 0.055 * s);
     c.beginPath(); c.arc(g[0], tY + 0.015 * s, 0.105 * s, 0.12 * Math.PI, 0.88 * Math.PI); c.stroke();
-    // bras
+    // bras, manches et poignets contrastés
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
-    for (const k of [-1, 1]) { c.beginPath(); c.moveTo(g[0] + k * w * 0.5, tY + 0.08 * s); c.lineTo(g[0] + k * w * 0.62 - sw * k * 0.35 * s * face, tY + tH * 0.85); c.stroke(); }
+    for (const k of [-1, 1]) {
+      const ax = g[0] + k * w * 0.5, ex = g[0] + k * w * 0.62 - sw * k * 0.35 * s * face;
+      const ey = tY + tH * 0.85;
+      c.beginPath(); c.moveTo(ax, tY + 0.08 * s); c.lineTo(ex, ey); c.stroke();
+      c.strokeStyle = kit.trim; c.lineWidth = Math.max(1.2, 0.075 * s);
+      c.beginPath(); c.moveTo(ax + (ex - ax) * 0.72, tY + 0.08 * s + (ey - (tY + 0.08 * s)) * 0.72);
+      c.lineTo(ex, ey); c.stroke();
+      c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
+    }
     // tête
     c.fillStyle = p.skin; c.beginPath(); c.arc(g[0], tY - 0.14 * s, 0.13 * s, 0, 7); c.fill();
     c.fillStyle = '#1b130d'; c.beginPath(); c.arc(g[0] - face * 0.02 * s, tY - 0.18 * s, 0.12 * s, Math.PI, 0); c.fill();

@@ -188,6 +188,109 @@ export function getPressingPlan(defenders = [], carrier = {}, direction = 1, int
   return assignments;
 }
 
+// Organise les solutions autour du porteur : profondeur, largeur et appui court.
+// Les appels en profondeur restent derrière la ligne de hors-jeu estimée.
+export function getAttackingSupportPlan(players = [], carrier = {}, opponents = [], direction = 1, halfLength = HL, halfWidth = HW) {
+  if (!carrier || !Number.isFinite(carrier.x) || !Number.isFinite(carrier.y)) return [];
+  const dir = direction < 0 ? -1 : 1;
+  const length = Number.isFinite(halfLength) && halfLength > 10 ? halfLength : HL;
+  const width = Number.isFinite(halfWidth) && halfWidth > 10 ? halfWidth : HW;
+  const teammates = players.filter(p => p && p !== carrier && !p.isGK && !p.sentOff);
+  const rivals = opponents.filter(p => p && !p.sentOff && Number.isFinite(p.x) && Number.isFinite(p.y));
+  if (!teammates.length) return [];
+
+  // Le deuxième adversaire le plus proche de la ligne de but fixe la limite du dernier défenseur.
+  const defensiveLine = rivals.map(p => p.x * dir).sort((a, b) => b - a);
+  const offsideLimit = defensiveLine.length >= 2 ? defensiveLine[1] - 1.1 : length - 4;
+  const carrierX = carrier.x * dir;
+  const carrierY = carrier.y * dir;
+  const advance = clamp((carrierX + 8) / 34, 0, 1);
+  const assignments = [];
+  const remaining = new Set(teammates);
+  const local = p => ({ x: p.x * dir, y: p.y * dir });
+  const pressure = p => {
+    const pos = local(p);
+    let load = 0;
+    for (const o of rivals) {
+      const gap = Math.hypot(pos.x - o.x * dir, pos.y - o.y * dir);
+      if (gap < 5.5) load += (5.5 - gap) * 0.42;
+    }
+    return load;
+  };
+  const choose = (candidates, score) => {
+    let selected = null, best = -Infinity;
+    for (const p of candidates) {
+      const value = score(p);
+      if (value > best) { best = value; selected = p; }
+    }
+    return selected;
+  };
+  const add = (player, role, x, y) => {
+    if (!player) return;
+    remaining.delete(player);
+    assignments.push({
+      player, role,
+      x: clamp(x * dir, -length + 2, length - 2),
+      y: clamp(y * dir, -width + 2, width - 2),
+    });
+  };
+
+  // 1. Un joueur attaque l'espace libre sans dépasser le dernier rideau défensif.
+  const runX = Math.min(carrierX + 8.5 + advance * 2.2, offsideLimit, length - 4);
+  if (runX >= carrierX + 2.5) {
+    const runner = choose(teammates.filter(p => {
+      const baseX = Number.isFinite(p.base?.[0]) ? p.base[0] : p.x * dir;
+      return (baseX >= -22 || p.instr === 'run' || p.instr === 'att') && p.x * dir <= offsideLimit + 1.5;
+    }), p => {
+      const baseX = Number.isFinite(p.base?.[0]) ? p.base[0] : p.x * dir;
+      const pace = clamp(Number(p.a?.pac) || 50, 0, 100);
+      const finish = clamp(Number(p.a?.sho) || 50, 0, 100);
+      return baseX * 0.32 + pace * 0.035 + finish * 0.03 - pressure(p) * 0.8;
+    });
+    if (runner) {
+      const pos = local(runner);
+      const baseY = Number.isFinite(runner.base?.[1]) ? runner.base[1] : pos.y;
+      const side = Math.sign(pos.y - carrierY || baseY || 1);
+      const targetY = clamp(pos.y * 0.45 + carrierY * 0.55 + side * 1.1, -width + 2, width - 2);
+      add(runner, 'forward-run', runX, targetY);
+    }
+  }
+
+  // 2. Un joueur de couloir étire la défense et garde une largeur exploitable.
+  const winger = choose([...remaining].filter(p => {
+    const baseY = Number.isFinite(p.base?.[1]) ? p.base[1] : p.y * dir;
+    return Math.abs(baseY) >= 10 || p.instr === 'wide';
+  }), p => {
+    const baseY = Number.isFinite(p.base?.[1]) ? p.base[1] : p.y * dir;
+    const pace = clamp(Number(p.a?.pac) || 50, 0, 100);
+    return Math.abs(baseY) * 0.28 + pace * 0.025 - pressure(p) * 0.65;
+  });
+  if (winger) {
+    const baseY = Number.isFinite(winger.base?.[1]) ? winger.base[1] : winger.y * dir;
+    const side = Math.sign(baseY || winger.y * dir || 1);
+    const targetX = Math.min(carrierX + 2.8 + advance * 1.8, offsideLimit - 0.8);
+    const targetY = side * Math.min(width - 4, 14 + advance * 4.5);
+    add(winger, 'wide-support', targetX, targetY);
+  }
+
+  // 3. Un milieu se rend disponible derrière ou à côté du ballon pour une passe de sécurité.
+  const option = choose([...remaining].filter(p => {
+    const baseX = Number.isFinite(p.base?.[0]) ? p.base[0] : p.x * dir;
+    return baseX >= -32 && baseX <= 16;
+  }), p => {
+    const pos = local(p);
+    const passing = clamp(Number(p.a?.pas) || 50, 0, 100);
+    const technique = clamp(Number(p.a?.tec) || 50, 0, 100);
+    return -Math.hypot(pos.x - carrierX, pos.y - carrierY) * 0.42 + passing * 0.045 + technique * 0.025 - pressure(p) * 0.7;
+  });
+  if (option) {
+    const pos = local(option);
+    const side = Math.sign(pos.y - carrierY || (Number(option.base?.[1]) || 1));
+    add(option, 'short-option', carrierX - 4.2, clamp(carrierY + side * 4.2, -width + 3, width - 3));
+  }
+  return assignments;
+}
+
 export function getTackleAssessment(defender, carrier, distance, user = false, difficultyPenalty = 0) {
   const d = Math.max(0.01, Number(distance) || 0.01);
   const nx = (carrier.x - defender.x) / d, ny = (carrier.y - defender.y) / d;
@@ -747,6 +850,11 @@ export class Match {
       T.liveMentality = clamp(T.mentality + urgency * 0.85 - protectLead * 0.48, -2, 2);
       T.livePressing = clamp(T.pressing + urgency * 1.2 - protectLead * 0.45, 0, 3);
       const inPoss = possTeam === T.side;
+      const supportPlayers = T.ps.filter(p => !(p === this.selected && this.userSide === T.side));
+      const attackingPlan = inPoss && own
+        ? getAttackingSupportPlan(supportPlayers, own, this.teams[1 - T.side].ps, T.dir)
+        : [];
+      const supportByPlayer = new Map(attackingPlan.map(entry => [entry.player, entry]));
       // presseurs
       let pressers = [], pressingPlan = [];
       let interceptor = null, interceptPoint = null;
@@ -799,15 +907,6 @@ export class Match {
           if (assignment?.role === 'press') this.tryTackle(p, false);
           continue;
         }
-        if (inPoss && p.run <= 0 && !p.isGK) {
-          const carrier = own;
-          const forwardGap = carrier ? (carrier.x - p.x) * T.dir : 0;
-          const lane = carrier ? Math.abs(p.y - carrier.y) : 99;
-          const advanced = carrier && carrier.x * T.dir > -8;
-          const runnerRole = p.base[0] > -20 || p.instr === 'run' || p.instr === 'att';
-          // Déclencher un appel quand le porteur progresse et qu'un couloir se libère.
-          if (carrier && runnerRole && advanced && forwardGap > -5 && forwardGap < 24 && lane > 3.5 && lane < 22 && this.r() < dt * (p.instr === 'run' ? 1.1 : 0.38)) p.run = 2.8;
-        }
         let [tx, ty] = this.formationPos(p, inPoss);
         if (inPoss && own && p !== own && !p.isGK) {
           // Soutien offensif : proposer une solution devant le porteur,
@@ -824,6 +923,12 @@ export class Match {
           } else if (advance > 0.5) {
             // Les milieux proches se placent en diagonale pour créer un angle de passe.
             ty = clamp(ty * 0.78 + (own.y + side * 4) * 0.22, -HW + 3, HW - 3);
+          }
+          const support = supportByPlayer.get(p);
+          if (support) {
+            const weight = support.role === 'forward-run' ? 0.8 : support.role === 'wide-support' ? 0.72 : 0.64;
+            tx = lerp(tx, support.x, weight);
+            ty = lerp(ty, support.y, weight);
           }
         }
         if (!inPoss) { // marquage

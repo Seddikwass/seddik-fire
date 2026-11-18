@@ -6,6 +6,12 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.6.0 — appels offensifs et soutien collectif
+- Le porteur dispose de trois solutions coordonnées : appel en profondeur, soutien extérieur et appui court.
+- Les appels de profondeur sont plafonnés derrière le deuxième dernier adversaire pour éviter les courses artificiellement hors-jeu.
+- Les rôles sont attribués à des joueurs distincts, en tenant compte du poste, des qualités et de la pression adverse.
+- Les tests couvrent les lignes défensives compactes et les deux sens d'attaque.
+
 ## Version 2.5.0 — pressing collectif et couverture des lignes
 - Pressing réparti en rôles : premier défenseur sur le porteur, deuxième en couverture intérieure, troisième en fermeture du couloir opposé selon l'intensité.
 - Attribution des rôles selon le temps d'interception, la vitesse et la forme physique ; gardiens et joueurs expulsés exclus.

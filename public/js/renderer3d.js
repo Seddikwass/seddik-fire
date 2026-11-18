@@ -229,7 +229,7 @@ export class MatchRenderer3D {
     line([0,y,-34],[0,y,34]);
     for (let i=0;i<64;i++) {
       const a=i/64*Math.PI*2,b=(i+1)/64*Math.PI*2;
-      line([Math.cos(a)*9.15,y,Math.Math.sin(a)*9.15],[Math.cos(b)*9.15,y,Math.sin(b)*9.15],0.07);
+      line([Math.cos(a)*9.15,y,Math.sin(a)*9.15],[Math.cos(b)*9.15,y,Math.sin(b)*9.15],0.07);
     }
     sphere(g,[0,y+0.025,0],[0.13,0.035,0.13],white,8,4);
     for (const s of [-1,1]) {

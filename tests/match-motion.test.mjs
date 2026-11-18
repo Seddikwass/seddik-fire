@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -56,3 +56,27 @@ assert.equal(attacker.kickStyle, 'pass', 'la passe doit déclencher son animatio
 assert.ok(match.stats.passes[0] > 0, 'la passe doit être comptabilisée');
 
 console.log('MOTION OK — orientation, frappe rasante, anticipation gardien et passe');
+
+
+const fresh = getMovementTuning({ pac: 88, phy: 86, dri: 84, tec: 82 }, 1);
+const exhausted = getMovementTuning({ pac: 48, phy: 42, dri: 44, tec: 40 }, 0.28);
+assert.ok(fresh.acceleration > exhausted.acceleration, 'un joueur rapide et frais accélère mieux qu un joueur fatigué');
+assert.ok(fresh.turnRate > exhausted.turnRate, 'la fatigue réduit aussi la vivacité des changements de direction');
+
+const lanePlayer = { x: 0, y: 0 };
+const blockedLane = [{ x: 4, y: 0, vx: 0, vy: 0, sentOff: false }];
+const lane = getDribbleLaneTarget(lanePlayer, blockedLane, 1);
+assert.ok(Math.abs(lane.y) > 0.5, 'le porteur choisit un couloir latéral si l axe direct est fermé');
+assert.ok(lane.x > 0, 'le couloir choisi conserve une progression vers le but');
+const freeLane = getDribbleLaneTarget(lanePlayer, [], 1);
+assert.ok(Math.abs(freeLane.y) < 0.01, 'le porteur garde l axe lorsque le couloir est libre');
+
+const defenderFront = { x: 2.2, y: 0, vx: 2, vy: 0, heading: Math.PI, a: { def: 88 } };
+const carrierFront = { x: 0.5, y: 0, vx: 2, vy: 0, heading: 0, a: { dri: 55 } };
+const frontalTackle = getTackleAssessment(defenderFront, carrierFront, 1.7, false, 0);
+const defenderRear = { x: -1.2, y: 0, vx: 8, vy: 0, heading: 0, a: { def: 88 } };
+const rearTackle = getTackleAssessment(defenderRear, carrierFront, 1.7, false, 0);
+assert.ok(frontalTackle.successChance > rearTackle.successChance, 'un duel frontal bien orienté est mieux évalué qu un tacle arrière lancé');
+assert.ok(rearTackle.foulChance > frontalTackle.foulChance, 'un tacle arrière rapide augmente le risque de faute');
+
+console.log('MATCH FEEL OK — fatigue, conduite en couloir et duels orientés');

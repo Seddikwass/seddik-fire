@@ -111,6 +111,65 @@ function segDist(px, py, ax, ay, bx, by) {
   return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
 }
 
+// Réponse du joueur modulée par ses qualités, sa forme physique et sa fatigue.
+export function getMovementTuning(attrs = {}, stamina = 1) {
+  const pac = clamp(Number(attrs.pac) || 50, 0, 100);
+  const phy = clamp(Number(attrs.phy) || 50, 0, 100);
+  const dri = clamp(Number(attrs.dri) || 50, 0, 100);
+  const tec = clamp(Number(attrs.tec) || 50, 0, 100);
+  const energy = clamp(Number.isFinite(stamina) ? stamina : 1, 0.25, 1);
+  const agility = clamp((dri * 0.42 + tec * 0.34 + phy * 0.24) / 100, 0.4, 1.05);
+  return {
+    agility,
+    acceleration: (8.8 + pac / 27 + phy / 85) * (0.76 + energy * 0.24),
+    turnRate: (3.1 + pac / 55 + agility * 1.15) * (0.78 + energy * 0.22),
+  };
+}
+
+// Choisit un couloir de conduite en évaluant plusieurs trajectoires courtes,
+// les déplacements adverses étant légèrement anticipés.
+export function getDribbleLaneTarget(player, opponents = [], direction = 1, halfWidth = 34, halfLength = 52.5) {
+  const dir = direction < 0 ? -1 : 1;
+  const angles = [-0.72, -0.48, -0.24, 0, 0.24, 0.48, 0.72];
+  let best = null;
+  for (const angle of angles) {
+    const forward = Math.cos(angle), lateral = Math.sin(angle);
+    const x = clamp(player.x + dir * forward * 8.5, -halfLength + 2, halfLength - 2);
+    const y = clamp(player.y + lateral * 8.5, -halfWidth + 1.5, halfWidth - 1.5);
+    let clearance = 12;
+    for (const o of opponents) {
+      if (!o || o.sentOff) continue;
+      const ox = o.x + (o.vx || 0) * 0.22, oy = o.y + (o.vy || 0) * 0.22;
+      const gap = segDist(ox, oy, player.x + dir * forward * 1.1, player.y + lateral * 1.1, x, y);
+      clearance = Math.min(clearance, gap);
+    }
+    const progress = forward * 4.2;
+    const sidelinePenalty = Math.max(0, Math.abs(y) - halfWidth * 0.72) * 0.12;
+    const score = Math.min(clearance, 8) * 1.35 + progress - sidelinePenalty;
+    if (!best || score > best.score) best = { x, y, score, clearance, angle };
+  }
+  return best || { x: player.x + dir * 7, y: player.y, score: 0, clearance: 12, angle: 0 };
+}
+
+// Lecture d'un duel : orientation, vitesse d'arrivée et position par rapport au porteur.
+export function getTackleAssessment(defender, carrier, distance, user = false, difficultyPenalty = 0) {
+  const d = Math.max(0.01, Number(distance) || 0.01);
+  const nx = (carrier.x - defender.x) / d, ny = (carrier.y - defender.y) / d;
+  const heading = Number.isFinite(defender.heading) ? defender.heading : Math.atan2(defender.vy || 0, defender.vx || 1);
+  const facing = Math.cos(Math.atan2(ny, nx) - heading);
+  const carrierHeading = Number.isFinite(carrier.heading) ? carrier.heading : Math.atan2(carrier.vy || 0, carrier.vx || 1);
+  const carrierToDefender = Math.atan2(defender.y - carrier.y, defender.x - carrier.x);
+  const rear = clamp((-Math.cos(carrierToDefender - carrierHeading) + 0.12) / 1.12, 0, 1);
+  const closingSpeed = Math.max(0, (defender.vx - carrier.vx) * nx + (defender.vy - carrier.vy) * ny);
+  const skillGap = ((defender.a?.def ?? 50) - (carrier.a?.dri ?? 50)) / 160;
+  const proximity = clamp((2.5 - d) / 2.5, 0, 1) * 0.055;
+  const successChance = clamp(0.38 + skillGap + (user ? 0.12 : 0) - difficultyPenalty +
+    facing * 0.055 - rear * 0.065 + proximity - Math.max(0, closingSpeed - 7) * 0.012, 0.08, 0.84);
+  const foulChance = clamp((user ? 0.11 : 0.075) + (d > 1.4 ? 0.04 : 0) +
+    clamp((closingSpeed - 3) / 9, 0, 1) * 0.13 + rear * 0.055 + (facing < -0.2 ? 0.04 : 0), 0.03, 0.4);
+  return { successChance, foulChance, facing, rear, closingSpeed };
+}
+
 export class Match {
   constructor(opts) {
     this.o = opts;
@@ -120,7 +179,7 @@ export class Match {
     this.teams = [this.makeTeam(opts.home, 0), this.makeTeam(opts.away, 1)];
     this.ball = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, owner: null, last: null, lastTeam: 0, prevOwnerT: -1 };
     this.score = [0, 0]; this.minute = 0; this.half = 1; this.clock = 0;
-    this.stats = { poss: [0, 0], shots: [0, 0], onTarget: [0, 0], passes: [0, 0], passOk: [0, 0], fouls: [0, 0], corners: [0, 0], yellows: [0, 0], reds: [0, 0] };
+    this.stats = { poss: [0, 0], shots: [0, 0], onTarget: [0, 0], passes: [0, 0], passOk: [0, 0], fouls: [0, 0], corners: [0, 0], yellows: [0, 0], reds: [0, 0], tackles: [0, 0], tacklesWon: [0, 0] };
     this.events = []; this.state = 'kickoff'; this.stateT = 0; this.kickTeam = 0;
     this.input = { jx: 0, jy: 0, sprint: false, shootHold: 0, shooting: false, press: false };
     this.selected = null; this.cam = { x: 0, y: 0, zoom: 1 };
@@ -406,12 +465,13 @@ export class Match {
     const targetHeading = targetSpeed > 0.2 ? Math.atan2(wy, wx) : currentHeading;
     const delta = Math.atan2(Math.sin(targetHeading - currentHeading), Math.cos(targetHeading - currentHeading));
     p.turn = clamp(delta / Math.PI, -1, 1);
-    p.heading = currentHeading + delta * clamp(dt * (3.8 + pac / 42), 0, 1);
+    const tuning = getMovementTuning(p.a, p.stamina);
+    p.heading = currentHeading + delta * clamp(dt * tuning.turnRate, 0, 1);
     // Freinage plus franc à l'approche d'une cible et légère perte d'appui
     // lorsque le joueur doit changer brutalement de direction.
     const braking = targetSpeed < currentSpeed ? 1.32 : 1;
     const cornering = 1 - Math.min(0.18, Math.abs(delta) / Math.PI * 0.18);
-    const acc = (9.5 + pac / 24) * braking * cornering;
+    const acc = tuning.acceleration * braking * cornering;
     p.vx += clamp(wx - p.vx, -acc * dt, acc * dt);
     p.vy += clamp(wy - p.vy, -acc * dt, acc * dt);
     const actualSpeed = Math.hypot(p.vx, p.vy);
@@ -724,11 +784,19 @@ export class Match {
       }
       return;
     }
-    // dribble vers le but en évitant le défenseur le plus proche
-    let tx = gx, ty = p.y * 0.6;
-    let near = null, nd = 99; for (const o of opp) { if (o.sentOff) continue; const dd = Math.hypot(o.x - p.x, o.y - p.y); if (dd < nd && (o.x - p.x) * d > -1) { nd = dd; near = o; } }
-    if (near && nd < 6) { ty = p.y + (p.y > near.y ? 6 : -6); }
-    this.moveTo(p, tx, clamp(ty, -HW + 2, HW - 2), dt, 1, false, nd > 5);
+    // Conduite : recherche du couloir le plus libre plutôt que course rectiligne.
+    let near = null, nd = 99;
+    for (const o of opp) {
+      if (o.sentOff) continue;
+      const dd = Math.hypot(o.x - p.x, o.y - p.y);
+      if (dd < nd && (o.x - p.x) * d > -1) { nd = dd; near = o; }
+    }
+    const lane = getDribbleLaneTarget(p, opp, d, HW, HL);
+    const tx = lane.x, ty = lane.y;
+    // Si l'axe est fermé à courte distance, temporiser la pointe de vitesse
+    // permet au porteur d'utiliser son contrôle technique au lieu de foncer.
+    const carryPace = nd < 2.7 && (p.a.dri || 50) < 72 ? 0.88 : nd < 4.2 ? 0.95 : 1.02;
+    this.moveTo(p, tx, clamp(ty, -HW + 2, HW - 2), dt, carryPace, false, nd > 5.2 && p.stamina > 0.38);
     if (this.aiThink > 0) return;
     this.aiThink = 0.25 + this.r() * 0.2;
     const angleOK = Math.abs(p.y) < 19 && (gx - p.x) * d > 0;
@@ -862,18 +930,28 @@ export class Match {
     const b = this.ball, c = b.owner;
     if (p.tackleCd > 0) return false;
     if (!c || c.team === p.team) {
-      if (user && !c && Math.hypot(b.x - p.x, b.y - p.y) < 2.2 && b.z < 1) { p.vx += (b.x - p.x) * 3; p.vy += (b.y - p.y) * 3; p.tackleCd = 0.6; }
+      if (user && !c && Math.hypot(b.x - p.x, b.y - p.y) < 2.2 && b.z < 1) {
+        p.vx += (b.x - p.x) * 3; p.vy += (b.y - p.y) * 3; p.tackleCd = 0.6;
+        p.slideT = Math.max(p.slideT || 0, 0.18); p.slideDir = Math.sign(b.y - p.y) || 1;
+      }
       return false;
     }
     const dist = Math.hypot(c.x - p.x, c.y - p.y);
     if (dist > (user ? 2.4 : 1.7)) { if (user) { p.tackleCd = 0.5; p.vx += (c.x - p.x) * 2.5; p.vy += (c.y - p.y) * 2.5; } return false; }
     p.tackleCd = user ? 0.7 : 0.9 + this.r() * 0.6;
     const diff = this.settings.difficulty;
-    let chance = 0.38 + (p.a.def - c.a.dri) / 160 + (user ? 0.12 : 0) - (c.team === this.userSide ? [0.12, 0.05, 0, -0.04][diff] : 0);
-    if (this.r() < chance) {
+    const difficultyPenalty = c.team === this.userSide ? ([0.12, 0.05, 0, -0.04][diff] || 0) : 0;
+    const assessment = getTackleAssessment(p, c, dist, user, difficultyPenalty);
+    this.stats.tackles[p.team] = (this.stats.tackles[p.team] || 0) + 1;
+    if (this.r() < assessment.successChance) {
       b.owner = null; b.last = p; b.lastTeam = p.team;
       p.slideT = 0.38; p.slideDir = Math.sign(c.y - p.y) || 1;
-      if (this.r() < 0.55) { b.owner = p; } else { b.vx = (this.r() - 0.5) * 8; b.vy = (this.r() - 0.5) * 8; }
+      if (this.r() < 0.58) { b.owner = p; }
+      else {
+        b.vx = p.vx * 0.28 + c.vx * 0.12 + (this.r() - 0.5) * 4.2;
+        b.vy = p.vy * 0.28 + c.vy * 0.12 + (this.r() - 0.5) * 4.2;
+      }
+      this.stats.tacklesWon[p.team] = (this.stats.tacklesWon[p.team] || 0) + 1;
       c.cd = 0.6; p.rating += 0.1;
       c.stumbleT = Math.max(c.stumbleT || 0, 0.24); c.stumbleDir = Math.sign(c.y - p.y) || 1;
       c.contactT = Math.max(c.contactT || 0, 0.22); c.contactDir = c.stumbleDir;
@@ -882,9 +960,10 @@ export class Match {
       if (p.team === this.userSide) this.select(p);
       return true;
     }
-    // faute ?
-    const foulP = (user ? 0.22 : 0.12) * (1 + (dist > 1.4 ? 0.5 : 0));
-    if (this.r() < foulP) this.foul(p, c);
+    // Une tentative manquée garde une animation visible ; le risque de faute
+    // augmente sur une arrivée rapide ou par derrière.
+    p.slideT = Math.max(p.slideT || 0, assessment.closingSpeed > 3.2 ? 0.2 : 0.12);
+    if (this.r() < assessment.foulChance) this.foul(p, c);
     else if (dist < 2.8) { p.stumbleT = Math.max(p.stumbleT || 0, 0.13); p.stumbleDir = Math.sign(c.y - p.y) || 1; }
     return false;
   }

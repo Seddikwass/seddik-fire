@@ -6,6 +6,14 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.1.0 — intelligence de match, conduite et duels
+- IA du porteur : évaluation de plusieurs couloirs courts avec anticipation des déplacements adverses ; la progression reste privilégiée lorsque l'axe est libre.
+- Mouvement des joueurs : accélération et rotation adaptées à la vitesse, à l'agilité, à la technique, au physique et à la fatigue.
+- Tacles : probabilité de récupération et de faute évaluée selon les attributs, l'orientation, la distance, la vitesse de fermeture et une approche par derrière.
+- Ballon dévié après un tacle : l'impulsion tient davantage compte du mouvement des deux joueurs.
+- Statistiques de match : tentatives de tacle et tacles gagnés comptabilisés.
+- Tests de non-régression ajoutés sur les couloirs de conduite, la fatigue et l'équilibre des duels.
+
 ## Version 2.0.0 — refonte visuelle du match 2.5D
 - Pelouse procédurale haute définition : brins courbes et micro-reflets, avec une densité adaptée aux profils graphique bas, moyen et haut.
 - Zones d'usure subtiles autour du rond central et des surfaces pour donner plus de matière au terrain sans masquer les lignes.

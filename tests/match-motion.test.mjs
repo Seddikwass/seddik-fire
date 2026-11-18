@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getPressingPlan } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -112,3 +112,24 @@ assert.ok(keeperElite.chance > keeperAverage.chance, 'la note du gardien augment
 assert.ok(keeperBeaten.chance < keeperAverage.chance, 'un tir puissant dans la lucarne est nettement plus difficile');
 assert.ok(keeperElite.reach > keeperAverage.reach, 'la portée dépend de la qualité du gardien');
 console.log('GOALKEEPING OK — portée, placement, hauteur du tir et temps de réaction');
+
+// Le pressing répartit les défenseurs entre porteur, axe intérieur et couloir opposé.
+const carrierForPress = { x: 8, y: 7, vx: -3, vy: 0.5 };
+const pressingDefenders = [
+  { id: 'near', x: 6, y: 7, a: { pac: 65 }, stamina: 1 },
+  { id: 'inside', x: 11, y: 3, a: { pac: 78 }, stamina: 0.9 },
+  { id: 'wide', x: 13, y: -2, a: { pac: 72 }, stamina: 0.95 },
+  { id: 'keeper', x: -48, y: 0, isGK: true, a: { pac: 50 } },
+  { id: 'sent-off', x: 9, y: 8, sentOff: true, a: { pac: 99 } },
+];
+const pressOne = getPressingPlan(pressingDefenders, carrierForPress, 1, 1);
+const pressTwo = getPressingPlan(pressingDefenders, carrierForPress, 1, 2);
+const pressThree = getPressingPlan(pressingDefenders, carrierForPress, 1, 3);
+assert.equal(pressOne.length, 1, 'pressing bas : un seul joueur');
+assert.equal(pressTwo.length, 2, 'pressing moyen : un joueur presse et un couvre l axe');
+assert.equal(pressThree.length, 3, 'pressing haut : trois rôles');
+assert.deepEqual(pressThree.map(x => x.role), ['press', 'cover-inside', 'cover-outside']);
+assert.equal(new Set(pressThree.map(x => x.player.id)).size, 3, 'chaque rôle est confié à un joueur distinct');
+assert.ok(pressThree.every(x => x.player.id !== 'keeper' && x.player.id !== 'sent-off'), 'gardien et joueur expulsé exclus');
+assert.ok(pressThree.every(x => Number.isFinite(x.x) && Number.isFinite(x.y)), 'les cibles du pressing restent valides');
+console.log('PRESSING SHAPE OK — pressing du porteur et couvertures intérieure/extérieure');

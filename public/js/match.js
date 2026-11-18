@@ -153,6 +153,41 @@ export function getDribbleLaneTarget(player, opponents = [], direction = 1, half
 }
 
 // Lecture d'un duel : orientation, vitesse d'arrivée et position par rapport au porteur.
+// Organise le pressing : un défenseur sur le porteur, les autres ferment les lignes.
+export function getPressingPlan(defenders = [], carrier = {}, direction = 1, intensity = 1) {
+  if (!carrier || !Number.isFinite(carrier.x) || !Number.isFinite(carrier.y)) return [];
+  const dir = direction < 0 ? -1 : 1;
+  const level = clamp(Number.isFinite(intensity) ? intensity : 1, 0, 3);
+  const count = level >= 2.7 ? 3 : level >= 1.7 ? 2 : 1;
+  const available = defenders.filter(p => p && !p.isGK && !p.sentOff);
+  const assignments = [], remaining = new Set(available);
+  const addNearest = (role, target) => {
+    let best = null, bestTime = Infinity;
+    for (const p of remaining) {
+      const pace = clamp(Number(p.a?.pac) || 50, 0, 100);
+      const stamina = clamp(Number.isFinite(p.stamina) ? p.stamina : 1, 0.25, 1);
+      const speed = (5.4 + pace * 0.03) * (0.72 + stamina * 0.28);
+      const time = Math.hypot(target.x - p.x, target.y - p.y) / speed;
+      if (time < bestTime) { bestTime = time; best = p; }
+    }
+    if (best) { remaining.delete(best); assignments.push({ player: best, role, x: target.x, y: target.y }); }
+  };
+  // Le premier défenseur ferme directement le porteur en anticipant sa vitesse.
+  addNearest('press', {
+    x: clamp(carrier.x + (carrier.vx || 0) * 0.28, -HL + 2, HL - 2),
+    y: clamp(carrier.y + (carrier.vy || 0) * 0.28, -HW + 2, HW - 2),
+  });
+  if (count >= 2) addNearest('cover-inside', {
+    x: clamp(carrier.x + dir * 3.4, -HL + 2, HL - 2),
+    y: clamp(carrier.y * 0.48, -HW + 4, HW - 4),
+  });
+  if (count >= 3) addNearest('cover-outside', {
+    x: clamp(carrier.x + dir * 5.1, -HL + 2, HL - 2),
+    y: clamp(carrier.y + (carrier.y >= 0 ? -1 : 1) * 5.5, -HW + 3, HW - 3),
+  });
+  return assignments;
+}
+
 export function getTackleAssessment(defender, carrier, distance, user = false, difficultyPenalty = 0) {
   const d = Math.max(0.01, Number(distance) || 0.01);
   const nx = (carrier.x - defender.x) / d, ny = (carrier.y - defender.y) / d;
@@ -713,14 +748,14 @@ export class Match {
       T.livePressing = clamp(T.pressing + urgency * 1.2 - protectLead * 0.45, 0, 3);
       const inPoss = possTeam === T.side;
       // presseurs
-      let pressers = [];
+      let pressers = [], pressingPlan = [];
       let interceptor = null, interceptPoint = null;
       if (!inPoss) {
         const cand = T.ps.filter(p => !p.isGK && !p.sentOff).map(p => ({ p, d: Math.hypot(p.x - b.x, p.y - b.y) })).sort((a, c) => a.d - c.d);
         const pressing = T.livePressing ?? T.pressing;
-        const pressCount = pressing >= 2.7 ? 3 : pressing >= 1.7 ? 2 : 1;
-        pressers = cand.slice(0, pressCount).map(c => c.p);
-        if (pressing < 0.5 && cand[0] && Math.abs(b.x - (-HL * T.dir)) > 50) pressers = [];
+        pressingPlan = own ? getPressingPlan(T.ps, own, T.dir, pressing) : [];
+        pressers = pressingPlan.map(entry => entry.player);
+        if (pressing < 0.5 && cand[0] && Math.abs(b.x - (-HL * T.dir)) > 50) { pressers = []; pressingPlan = []; }
         // Sur une passe aérienne ou tendue, un défenseur anticipe le point
         // de coupe au lieu de poursuivre aveuglément le porteur précédent.
         const ballSpeed2 = b.vx * b.vx + b.vy * b.vy;
@@ -757,10 +792,11 @@ export class Match {
           if (mine === p) { this.moveTo(p, t.x, t.y, dt, 1, false, true); continue; }
         }
         if (pressers.includes(p) && own) {
-          const lead = 0.35;
-          const tx = own.x + own.vx * lead - (pressers[0] === p ? 0 : T.dir * 3), ty = own.y + own.vy * lead;
-          this.moveTo(p, tx, ty, dt, 1, false, Math.hypot(own.x - p.x, own.y - p.y) > 4);
-          if (pressers[0] === p) this.tryTackle(p, false);
+          const assignment = pressingPlan.find(entry => entry.player === p);
+          const tx = assignment?.x ?? own.x + (own.vx || 0) * 0.35;
+          const ty = assignment?.y ?? own.y + (own.vy || 0) * 0.35;
+          this.moveTo(p, tx, ty, dt, assignment?.role === 'press' ? 1.08 : 0.98, false, true);
+          if (assignment?.role === 'press') this.tryTackle(p, false);
           continue;
         }
         if (inPoss && p.run <= 0 && !p.isGK) {

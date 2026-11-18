@@ -6,6 +6,13 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.5.0 — pressing collectif et couverture des lignes
+- Pressing réparti en rôles : premier défenseur sur le porteur, deuxième en couverture intérieure, troisième en fermeture du couloir opposé selon l'intensité.
+- Attribution des rôles selon le temps d'interception, la vitesse et la forme physique ; gardiens et joueurs expulsés exclus.
+- Le bloc défensif conserve sa structure au lieu d'envoyer plusieurs joueurs au même endroit.
+- Version affichée dans l'interface alignée sur la version du moteur et du serveur.
+- Tests de répartition, de couverture, d'exclusion et de cibles valides ajoutés.
+
 ## Version 2.4.0 — passes et frappes plus intelligentes
 - Évaluation des lignes de passe sur la durée réelle du ballon : les trajectoires tiennent compte des adversaires qui se déplacent pour couper la passe, pas seulement de leur position au départ.
 - Choix du receveur enrichi par l'espace estimé à l'arrivée et la sécurité de la trajectoire.

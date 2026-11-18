@@ -1,10 +1,20 @@
 # ⚽ Football Tunisia 2026
 
-Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contre 11, IA, commandes tactiles) et **carrière de président** (Ligue 1 2026-27, Coupe de Tunisie, Ligue des Champions et Coupe de la Confédération CAF, élections, staff, transferts, médical, finances, infrastructures, supporters).
+Jeu de football tunisien : **matchs 3D WebGL jouables** (caméra télé, 11 contre 11, IA, commandes tactiles) et **carrière de président** (Ligue 1 2026-27, Coupe de Tunisie, Ligue des Champions et Coupe de la Confédération CAF, élections, staff, transferts, médical, finances, infrastructures, supporters).
 
 - **Web** : `server.js` (Node 20+, sans framework) sert le jeu et l'API (`/api`). Déployé sur Render.
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
+
+## Version 3.3.0 — premier moteur de match 3D WebGL
+- Passage du rendu de match à une scène WebGL en perspective 3D, avec caméra TV mobile qui suit le ballon.
+- Terrain dimensionné, bandes de pelouse, lignes, surface de réparation, arcs, buts, poteaux et filets rendus en volume.
+- Stade avec tribunes étagées, public, panneaux publicitaires, bancs techniques et projecteurs.
+- Joueurs reconstruits en modèles 3D articulés : tête, torse, maillot, short, membres, chaussures et gants de gardien.
+- Animations 3D synchronisées avec la simulation existante : course, appuis, tacles, plongeons, sauts, frappes et célébrations.
+- Ballon sphérique animé avec ombre au sol ; le tableau de score et les commandes tactiles restent conservés en surimpression.
+- Rendu WebGL local sans dépendance externe, donc compatible avec le cache hors ligne et le paquet Android ; retour automatique au rendu 2.5D si WebGL n'est pas disponible.
+- Niveaux de détail bas, moyen et haut pour limiter la charge sur les téléphones modestes.
 
 ## Version 3.2.0 — tirs cadrés mesurés et gardiens plus réactifs
 - Un tir cadré est comptabilisé au moment où il est réellement arrêté dans le cadre ou lorsqu'il entre dans le but ; la visée initiale ne suffit plus.

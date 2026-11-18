@@ -2,6 +2,7 @@
 import { clamp, lerp } from './util.js';
 import { FORMATIONS } from './data.js';
 import * as A from './audio.js';
+import { MatchRenderer3D } from './renderer3d.js';
 
 const HL = 52.5, HW = 34, GOAL_W = 3.66, GOAL_H = 2.44, G = 9.81;
 const DT = 1 / 60;
@@ -611,6 +612,15 @@ export class Match {
     this.onVis = () => { if (document.hidden) { this.paused = true; A.audioSuspend(); this.o.onPause && this.o.onPause(); } };
     window.addEventListener('resize', this.resize); document.addEventListener('visibilitychange', this.onVis);
     this.resize();
+    this.renderer3d = null;
+    if (this.canvas.parentElement && typeof document !== 'undefined') {
+      try {
+        this.renderer3d = new MatchRenderer3D(this.canvas, this);
+      } catch (error) {
+        this.canvas.parentElement.querySelector('.ft26-3d-canvas')?.remove();
+        console.warn('Rendu 3D indisponible, retour au moteur 2.5D :', error);
+      }
+    }
   }
 
   makeTeam(t, side) {
@@ -632,7 +642,7 @@ export class Match {
 
   // ---------------- cycle de vie ----------------
   start() { this.running = true; this.last = performance.now(); A.audioInit(); A.crowd(0.25); requestAnimationFrame(this.loop); }
-  destroy() { this.running = false; window.removeEventListener('resize', this.resize); document.removeEventListener('visibilitychange', this.onVis); A.stopDrums(); A.crowd(0); }
+  destroy() { this.running = false; window.removeEventListener('resize', this.resize); document.removeEventListener('visibilitychange', this.onVis); this.renderer3d?.dispose(); this.renderer3d = null; A.stopDrums(); A.crowd(0); }
   resize() {
     const nav = typeof navigator === 'undefined' ? {} : navigator;
     const ratio = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
@@ -1837,6 +1847,20 @@ export class Match {
       inFlightShot: frame ? null : this.ball.inFlightShot
     }, !!frame);
     this.setCamera(follow.x, follow.y, !!frame, follow.zoom);
+    if (this.renderer3d && !this.renderer3d.lost) {
+      try {
+        this.renderer3d.render(this, frame);
+        c.clearRect(0, 0, W, H);
+        this.drawHUD(!!frame, frame);
+        if (!frame && this.matchIntroT > 0) this.drawMatchIntro();
+        if (!frame && this.goalFxT > 0) this.drawGoalCelebration();
+        return;
+      } catch (error) {
+        console.warn('Le rendu 3D a été interrompu, retour au rendu 2.5D :', error);
+        this.renderer3d.dispose();
+        this.renderer3d = null;
+      }
+    }
     // ciel / fond
     const g = c.createLinearGradient(0, 0, 0, H * 0.4);
     g.addColorStop(0, '#05070d'); g.addColorStop(1, '#16213a');

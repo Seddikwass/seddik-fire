@@ -312,3 +312,9 @@ button:disabled,.btn:disabled{
   .match .btns { transform: scale(.88); transform-origin: bottom right; }
   .match.lefty .btns { transform-origin: bottom left; }
 }
+
+/* FT26 v3.3 — couche WebGL du match 3D et HUD au premier plan */
+.match .ft26-3d-canvas { z-index: 0; pointer-events: none; }
+.match #cv { z-index: 1; background: transparent; }
+.match .joyzone, .match .btns, .match .mpause { z-index: 4; }
+.match .mload { z-index: 6; }

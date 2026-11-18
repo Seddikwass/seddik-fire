@@ -6,6 +6,13 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.9.0 — gestes de tacle et ralentis enrichis
+- Tacle glissé animé en trois temps : engagement, extension de la jambe et reprise d'appui.
+- Les bras s'écartent pour équilibrer le geste, tandis que le joueur descend légèrement vers le sol.
+- La durée de l'animation varie entre un tacle réussi, une tentative courte et une intervention sur ballon libre.
+- Les ralentis enregistrent la réaction au contact et la durée exacte du tacle pour reproduire le même mouvement.
+- Tests dédiés à la progression, à l'extension, à la récupération et aux limites des animations.
+
 ## Version 2.8.0 — duels physiques et équilibre des frappes
 - Les impacts entre adversaires sont répartis selon le physique, l'agilité et l'endurance : un joueur robuste garde mieux son équilibre.
 - L'impulsion transmise à chaque joueur varie avec sa masse athlétique au lieu d'être parfaitement symétrique.

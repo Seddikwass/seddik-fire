@@ -319,6 +319,19 @@ export function getBodyContactAssessment(a = {}, b = {}, closingSpeed = 0) {
   };
 }
 
+// Animation du tacle glissé : approche, extension puis retour à l'appui.
+// Le profil est indépendant du rendu et reste léger pour les appareils Android.
+export function getTackleAnimationProfile(remaining = 0, duration = 0.38) {
+  const total = clamp(Number.isFinite(duration) ? duration : 0.38, 0.08, 0.8);
+  const left = clamp(Number.isFinite(remaining) ? remaining : 0, 0, total);
+  const progress = clamp(1 - left / total, 0, 1);
+  if (left <= 0) return { progress: 1, lunge: 0, reach: 0, recovery: 1 };
+  const lunge = Math.sin(progress * Math.PI);
+  const reach = Math.sin(clamp(progress / 0.68, 0, 1) * Math.PI / 2) * (1 - progress * 0.22);
+  const recovery = clamp((progress - 0.58) / 0.42, 0, 1);
+  return { progress, lunge, reach, recovery };
+}
+
 export function getTackleAssessment(defender, carrier, distance, user = false, difficultyPenalty = 0) {
   const d = Math.max(0.01, Number(distance) || 0.01);
   const nx = (carrier.x - defender.x) / d, ny = (carrier.y - defender.y) / d;
@@ -512,7 +525,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, diveHeight: 0, diveStretch: 0, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -1267,7 +1280,7 @@ export class Match {
     if (!c || c.team === p.team) {
       if (user && !c && Math.hypot(b.x - p.x, b.y - p.y) < 2.2 && b.z < 1) {
         p.vx += (b.x - p.x) * 3; p.vy += (b.y - p.y) * 3; p.tackleCd = 0.6;
-        p.slideT = Math.max(p.slideT || 0, 0.18); p.slideDir = Math.sign(b.y - p.y) || 1;
+        p.slideT = Math.max(p.slideT || 0, 0.18); p.slideDuration = 0.18; p.slideDir = Math.sign(b.y - p.y) || 1;
       }
       return false;
     }
@@ -1280,7 +1293,7 @@ export class Match {
     this.stats.tackles[p.team] = (this.stats.tackles[p.team] || 0) + 1;
     if (this.r() < assessment.successChance) {
       b.owner = null; b.last = p; b.lastTeam = p.team;
-      p.slideT = 0.38; p.slideDir = Math.sign(c.y - p.y) || 1;
+      p.slideT = 0.38; p.slideDuration = 0.38; p.slideDir = Math.sign(c.y - p.y) || 1;
       if (this.r() < 0.58) { b.owner = p; }
       else {
         b.vx = p.vx * 0.28 + c.vx * 0.12 + (this.r() - 0.5) * 4.2;
@@ -1297,7 +1310,8 @@ export class Match {
     }
     // Une tentative manquée garde une animation visible ; le risque de faute
     // augmente sur une arrivée rapide ou par derrière.
-    p.slideT = Math.max(p.slideT || 0, assessment.closingSpeed > 3.2 ? 0.2 : 0.12);
+    const missDuration = assessment.closingSpeed > 3.2 ? 0.22 : 0.14;
+    p.slideT = Math.max(p.slideT || 0, missDuration); p.slideDuration = missDuration;
     if (this.r() < assessment.foulChance) this.foul(p, c);
     else if (dist < 2.8) { p.stumbleT = Math.max(p.stumbleT || 0, 0.13); p.stumbleDir = Math.sign(c.y - p.y) || 1; }
     return false;
@@ -1610,7 +1624,8 @@ export class Match {
       p.slideT || 0, p.kickT || 0, p.headerT || 0, p.firstTouchT || 0,
       p.stumbleT || 0, p.keeperCatchT || 0, p.keeperPunchT || 0, p.headerDir || p.face,
       p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1,
-      p.diveHeight || 0, p.diveStretch || 0
+      p.diveHeight || 0, p.diveStretch || 0,
+      p.contactT || 0, p.contactDir || 1, p.slideDuration || 0.38
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }
@@ -2116,7 +2131,11 @@ export class Match {
     const kickDir = fp ? (fp[18] || face) : (p.kickDir || face);
     const firstTouchDir = fp ? (fp[19] || 1) : (p.firstTouchDir || 1);
     const stumbleDir = fp ? (fp[20] || 1) : (p.stumbleDir || 1);
-    const slidePulse = Math.max(0, Math.min(1, action(8, 'slideT') / 0.38));
+    const slideDuration = fp ? (fp[25] || 0.38) : (p.slideDuration || 0.38);
+    const tackleProfile = getTackleAnimationProfile(action(8, 'slideT'), slideDuration);
+    const slidePulse = tackleProfile.lunge;
+    const contactDir = fp ? (fp[24] || 1) : (p.contactDir || 1);
+    const contactPulse = Math.max(0, Math.min(1, action(23, 'contactT') / 0.26));
     const headerPulse = Math.sin(Math.max(0, Math.min(1, 1 - action(10, 'headerT') / 0.44)) * Math.PI);
     const firstTouchProgress = Math.max(0, Math.min(1, 1 - action(11, 'firstTouchT') / 0.32));
     const firstTouchPulse = Math.sin(firstTouchProgress * Math.PI);
@@ -2127,7 +2146,7 @@ export class Match {
     const divePoint = this.proj(x, y + diveSide * 0.72, 0);
     const g = [
       ground[0] + slidePulse * (p.face || 1) * 0.22 * s + (divePoint[0] - ground[0]) * keeperDive * 0.72,
-      ground[1] - Math.sin(jump * Math.PI) * 0.62 * s - keeperDive * (0.12 + diveHeight * 0.26) * s + slidePulse * 0.14 * s + (divePoint[1] - ground[1]) * keeperDive * 0.72,
+      ground[1] - Math.sin(jump * Math.PI) * 0.62 * s - keeperDive * (0.12 + diveHeight * 0.26) * s + slidePulse * 0.1 * s + (divePoint[1] - ground[1]) * keeperDive * 0.72,
       ground[2], ground[3]
     ];
     const hgt = 1.8 * s, w = 0.5 * s;
@@ -2162,8 +2181,8 @@ export class Match {
     const heading = p.heading ?? Math.atan2(vy, vx || face || 1);
     const bodyLean = clamp(
       sp * 0.012 + Math.sin(heading) * Math.min(0.14, sp * 0.018) +
-      (p.turn || 0) * gait * 0.1 + slidePulse * 0.24 -
-      celebration * 0.08 + (!fp ? (p.contactT || 0) * (p.contactDir || 1) * 0.32 : 0) +
+      (p.turn || 0) * gait * 0.1 + tackleProfile.lunge * 0.3 -
+      celebration * 0.08 + contactPulse * contactDir * 0.32 +
       keeperDive * diveSide * 0.28 + headerPulse * headerDir * 0.3 +
       stumblePulse * (p.stumbleDir || 1) * 0.23,
       -0.42, 0.52
@@ -2179,6 +2198,7 @@ export class Match {
       const touchLeg = k === 1 ? firstTouchPulse : 0;
       const stride = sw * k * face + kickingLeg * face * (0.42 + 0.18 * Math.sin(kickProgress * Math.PI * 0.5)) +
         touchLeg * firstTouchDir * 0.32 + headerPulse * k * 0.12 +
+        (k === 1 ? tackleProfile.reach * face * 0.52 : -tackleProfile.lunge * face * 0.1) +
         celebrateStep * face + injuryLimp + (p.turn || 0) * gait * 0.06 -
         stumblePulse * stumbleDir * 0.16;
       const lift = Math.max(0, Math.sin(phase * k)) * gait * (p.injured ? 0.045 : 0.15) * s +
@@ -2186,7 +2206,8 @@ export class Match {
       const rootX = g[0] + k * 0.1 * s;
       const kneeX = rootX + stride * 0.28 * s;
       const kneeY = hipY + hgt * 0.22 - lift * 0.36 - kickingLeg * 0.045 * s;
-      const footX = rootX + stride * 0.5 * s + kickingLeg * face * 0.08 * s;
+      const footX = rootX + stride * 0.5 * s + kickingLeg * face * 0.08 * s +
+        (k === 1 ? tackleProfile.reach * face * 0.16 * s : 0);
       const footY = g[1] - 0.05 * s - lift;
       c.beginPath(); c.moveTo(rootX, hipY); c.lineTo(kneeX, kneeY); c.lineTo(footX, footY); c.stroke();
       c.fillStyle = p.skin; c.beginPath(); c.arc(kneeX, kneeY, Math.max(1, 0.055 * s), 0, Math.PI * 2); c.fill();
@@ -2281,11 +2302,11 @@ export class Match {
       const ax = g[0] + k * w * 0.5;
       const ex = g[0] + k * w * 0.62 + armSwing * k * s * face +
         (p.isGK ? k * (0.12 + diveReach + keeperCatchPulse * 0.52 + keeperPunchPulse * 0.28) * s : 0) +
-        (!p.isGK ? slidePulse * face * 0.3 * s : 0) +
+        (!p.isGK ? tackleProfile.reach * face * 0.42 * s + tackleProfile.lunge * k * 0.14 * s : 0) +
         celebration * k * 0.62 * s + (p.isGK ? 0 : headerPulse * k * 0.28 * s);
       const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s -
         (p.isGK ? (0.1 + diveReach * 0.72 + keeperCatchPulse * 0.48 + keeperPunchPulse * 0.28 + keeperDive * diveHeight * 0.24) * s : 0) +
-        (!p.isGK ? slidePulse * 0.16 * s : 0) - celebration * 0.98 * s -
+        (!p.isGK ? tackleProfile.lunge * 0.18 * s : 0) - celebration * 0.98 * s -
         (p.isGK ? 0 : headerPulse * 0.45 * s);
       const shoulderY = tY + 0.08 * s;
       const elbowX = ax + (ex - ax) * 0.52 + Math.sin(phase * 1.1 + k * 0.9) * gait * 0.14 * s * face;

@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getBodyContactAssessment, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getBodyContactAssessment, getTackleAnimationProfile, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -195,3 +195,20 @@ assert.ok(balancedContact.impulseA < balancedContact.impulseB, 'le joueur plus l
 assert.ok(balancedContact.collision > 0 && balancedContact.collision <= 1, 'la sévérité du contact reste bornée');
 assert.equal(getBodyContactAssessment(powerfulFresh, lightTired, 0).collision, 0, 'pas d impact sans vitesse de fermeture');
 console.log('BODY CONTACT OK — physique, équilibre, fatigue et impulsion différenciée');
+
+
+// Le tacle glissé suit une vraie séquence : départ progressif, extension, puis récupération.
+const tackleStart = getTackleAnimationProfile(0.38, 0.38);
+const tackleMid = getTackleAnimationProfile(0.19, 0.38);
+const tackleRecovery = getTackleAnimationProfile(0.015, 0.38);
+const shortAttempt = getTackleAnimationProfile(0.07, 0.14);
+assert.equal(tackleStart.lunge, 0, 'le tacle part sans saut visuel');
+assert.ok(tackleMid.lunge > 0.98, 'le corps atteint son extension au milieu du geste');
+assert.ok(tackleMid.reach > tackleStart.reach, 'la jambe d intervention s allonge progressivement');
+assert.ok(tackleRecovery.lunge < 0.13 && tackleRecovery.recovery > 0.9, 'la fin du geste revient vers la course');
+assert.ok(shortAttempt.progress > 0.45 && shortAttempt.progress < 0.55, 'la durée réduite d un tacle manqué garde un mouvement partiel cohérent');
+assert.ok([tackleStart, tackleMid, tackleRecovery, shortAttempt].every(x =>
+  [x.progress, x.lunge, x.reach, x.recovery].every(Number.isFinite) &&
+  x.progress >= 0 && x.progress <= 1 && x.lunge >= 0 && x.lunge <= 1 && x.reach >= 0 && x.reach <= 1),
+  'le profil d animation reste borné et fini');
+console.log('TACKLE ANIMATION OK — extension progressive, récupération et valeurs bornées');

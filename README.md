@@ -6,6 +6,14 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 3.1.0 — conduite de balle et foulée plus naturelles
+- La cadence des foulées dépend de la vitesse et de l'attribut de vitesse, avec une transition progressive entre marche, course et sprint.
+- La conduite du ballon alterne des touches courtes et des poussées plus longues selon la vitesse, le dribble, la technique et la fatigue.
+- Les joueurs techniques gardent le ballon plus près du pied, y compris en accélération.
+- L'IA évalue les positions futures des adversaires sur ses couloirs de conduite et réduit son allure quand l'espace se ferme.
+- Le sprint du porteur est réservé aux couloirs réellement dégagés.
+- Tests dédiés à la cadence, au contrôle rapproché, à la fatigue et aux limites des touches de balle.
+
 ## Version 3.0.1 — projection des joueurs stabilisée
 - Correction de la silhouette pour les déplacements vers la profondeur : compression horizontale contrôlée sans incliner ni écraser le corps.
 - Le profil latéral reste complet quand le joueur traverse le terrain et le sprite se retourne proprement dans le sens opposé.

@@ -127,10 +127,39 @@ export function getMovementTuning(attrs = {}, stamina = 1) {
   };
 }
 
+// Cadence de foulée réaliste : fréquence progressive selon la vitesse et la qualité athlétique.
+export function getRunningCadence(speed = 0, pace = 50) {
+  const velocity = clamp(Number.isFinite(speed) ? Math.max(0, speed) : 0, 0, 12);
+  const acceleration = clamp(Number.isFinite(pace) ? pace : 50, 0, 100) / 100;
+  return clamp(6.8 + velocity * 0.9 + acceleration * 1.6, 6.8, 18.5);
+}
+
+// Distance de conduite et décalage latéral du ballon selon le contrôle technique.
+export function getCarryBallOffset({
+  speed = 0, dribbling = 50, technique = 50, stamina = 1, sprinting = false, phase = 0
+} = {}) {
+  const velocity = clamp(Number.isFinite(speed) ? Math.max(0, speed) : 0, 0, 12);
+  const dribble = clamp(Number.isFinite(dribbling) ? dribbling : 50, 0, 100) / 100;
+  const tech = clamp(Number.isFinite(technique) ? technique : 50, 0, 100) / 100;
+  const energy = clamp(Number.isFinite(stamina) ? stamina : 1, 0.25, 1);
+  const skill = clamp(dribble * 0.68 + tech * 0.32, 0, 1) * (0.82 + energy * 0.18);
+  const pace = clamp(velocity / 10, 0, 1);
+  const phaseValue = Number.isFinite(phase) ? phase : 0;
+  const touchWave = Math.sin(phaseValue + 0.35);
+  const forwardBase = 0.31 + pace * (0.34 - skill * 0.12) +
+    (sprinting ? 0.07 - skill * 0.025 : 0);
+  const forward = clamp(forwardBase + touchWave * (0.035 + pace * (0.07 - skill * 0.025)), 0.24, 0.86);
+  const lateral = Math.cos(phaseValue + 0.35) * (0.025 + pace * (0.065 - skill * 0.025));
+  return { forward, lateral, skill };
+}
+
 // Choisit un couloir de conduite en évaluant plusieurs trajectoires courtes,
 // les déplacements adverses étant légèrement anticipés.
 export function getDribbleLaneTarget(player, opponents = [], direction = 1, halfWidth = 34, halfLength = 52.5) {
   const dir = direction < 0 ? -1 : 1;
+  const dribbleSkill = clamp(((Number(player.a?.dri) || 50) * 0.62 +
+    (Number(player.a?.tec) || 50) * 0.38) / 100, 0, 1);
+  const safeMargin = 2.15 - dribbleSkill * 0.95;
   const angles = [-0.72, -0.48, -0.24, 0, 0.24, 0.48, 0.72];
   let best = null;
   for (const angle of angles) {
@@ -140,13 +169,18 @@ export function getDribbleLaneTarget(player, opponents = [], direction = 1, half
     let clearance = 12;
     for (const o of opponents) {
       if (!o || o.sentOff) continue;
-      const ox = o.x + (o.vx || 0) * 0.22, oy = o.y + (o.vy || 0) * 0.22;
+      const opponentSpeed = Math.hypot(o.vx || 0, o.vy || 0);
+      const horizon = clamp(0.28 + opponentSpeed * 0.018, 0.28, 0.48);
+      const ox = o.x + (o.vx || 0) * horizon, oy = o.y + (o.vy || 0) * horizon;
       const gap = segDist(ox, oy, player.x + dir * forward * 1.1, player.y + lateral * 1.1, x, y);
       clearance = Math.min(clearance, gap);
     }
     const progress = forward * 4.2;
     const sidelinePenalty = Math.max(0, Math.abs(y) - halfWidth * 0.72) * 0.12;
-    const score = Math.min(clearance, 8) * 1.35 + progress - sidelinePenalty;
+    const crowdedPenalty = Math.max(0, safeMargin - clearance) * (1.25 - dribbleSkill * 0.5);
+    const directionChangePenalty = Math.abs(angle) * 0.38;
+    const score = Math.min(clearance, 8) * 1.35 + progress - sidelinePenalty -
+      crowdedPenalty - directionChangePenalty;
     if (!best || score > best.score) best = { x, y, score, clearance, angle };
   }
   return best || { x: player.x + dir * 7, y: player.y, score: 0, clearance: 12, angle: 0 };
@@ -851,7 +885,7 @@ export class Match {
       p.x += p.vx * dt; p.y += p.vy * dt;
       p.x = clamp(p.x, -HL - 2, HL + 2); p.y = clamp(p.y, -HW - 2, HW + 2);
       const sp = Math.hypot(p.vx, p.vy);
-      p.anim += sp * dt * 1.48;
+      if (sp > 0.18) p.anim += getRunningCadence(sp, p.a.pac) * dt;
       p.jumpT = Math.max(0, (p.jumpT || 0) - dt);
       p.jumpCd = Math.max(0, (p.jumpCd || 0) - dt);
       p.kickT = Math.max(0, (p.kickT || 0) - dt);
@@ -1180,10 +1214,11 @@ export class Match {
     }
     const lane = getDribbleLaneTarget(p, opp, d, HW, HL);
     const tx = lane.x, ty = lane.y;
-    // Si l'axe est fermé à courte distance, temporiser la pointe de vitesse
-    // permet au porteur d'utiliser son contrôle technique au lieu de foncer.
-    const carryPace = nd < 2.7 && (p.a.dri || 50) < 72 ? 0.88 : nd < 4.2 ? 0.95 : 1.02;
-    this.moveTo(p, tx, clamp(ty, -HW + 2, HW - 2), dt, carryPace, false, nd > 5.2 && p.stamina > 0.38);
+    const skill = clamp(((p.a.dri || 50) * 0.62 + (p.a.tec || 50) * 0.38) / 100, 0, 1);
+    const pressure = clamp((4.8 - nd) / 4.8, 0, 1);
+    const carryPace = clamp(1.01 + (skill - 0.5) * 0.1 - pressure * (0.16 - skill * 0.075), 0.82, 1.08);
+    const canSprint = nd > 5.2 && lane.clearance > 3.1 && p.stamina > 0.38;
+    this.moveTo(p, tx, clamp(ty, -HW + 2, HW - 2), dt, carryPace, false, canSprint);
     if (this.aiThink > 0) return;
     this.aiThink = 0.25 + this.r() * 0.2;
     const angleOK = Math.abs(p.y) < 19 && (gx - p.x) * d > 0;
@@ -1455,15 +1490,17 @@ export class Match {
     const b = this.ball;
     if (b.owner) {
       const p = b.owner, sp = Math.hypot(p.vx, p.vy);
-      const fx = sp > 0.5 ? p.vx / sp : p.face, fy = sp > 0.5 ? p.vy / sp : 0;
-      // Touches de conduite rapprochées : ballon plus près du pied en contrôle lent,
-      // légèrement poussé devant le joueur lors d'une accélération.
-      const stride = Math.sin((p.anim || 0) * 2.25);
-      const control = p === this.selected && p.team === this.userSide && this.input && this.input.sprint ? 1 : 0;
-      const off = 0.43 + Math.min(sp, 8) * (control ? 0.058 : 0.045) + stride * (sp > 2 ? 0.055 : 0.025);
-      const lateral = Math.cos((p.anim || 0) * 2.25) * Math.min(0.09, sp * 0.012);
-      b.x = p.x + fx * off - fy * lateral;
-      b.y = p.y + fy * off + fx * lateral;
+      const heading = Number.isFinite(p.heading) ? p.heading : Math.atan2(p.vy || 0, p.vx || p.face || 1);
+      const fx = sp > 0.5 ? p.vx / sp : Math.cos(heading);
+      const fy = sp > 0.5 ? p.vy / sp : Math.sin(heading);
+      const userSprint = p === this.selected && p.team === this.userSide && this.input && this.input.sprint;
+      const aiSprint = sp > this.speedOf(p, false) * 1.06;
+      const carry = getCarryBallOffset({
+        speed: sp, dribbling: p.a.dri, technique: p.a.tec, stamina: p.stamina,
+        sprinting: !!(userSprint || aiSprint), phase: p.anim || 0
+      });
+      b.x = p.x + fx * carry.forward - fy * carry.lateral;
+      b.y = p.y + fy * carry.forward + fx * carry.lateral;
       b.z = 0; b.vx = p.vx; b.vy = p.vy; b.vz = 0;
       return;
     }
@@ -2237,7 +2274,7 @@ export class Match {
     c.save(); c.translate(g[0], g[1]);
     c.transform(bodyTransform.a, bodyTransform.b, bodyTransform.c, bodyTransform.d, 0, 0);
     c.translate(-g[0], -g[1]);
-    const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim * 2, sw = Math.sin(phase) * gait * 0.58;
+    const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim, sw = Math.sin(phase) * gait * 0.58;
     const diveReach = keeperDive * (0.38 + keeperSave * 0.35 + diveStretch * 0.18);
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
     const kickProgress = clamp(1 - action(9, 'kickT') / 0.34, 0, 1);
@@ -2258,8 +2295,8 @@ export class Match {
     c.save(); c.translate(g[0], hipY); c.rotate(bodyLean); c.translate(-g[0], -hipY);
     // jambes
     c.strokeStyle = p.skin; c.lineWidth = Math.max(1.5, 0.15 * s); c.lineCap = 'round';
-    for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const injuryLimp = p.injured ? (k === 1 ? -0.12 : 0.035) * (0.55 + 0.45 * Math.sin(anim * 1.4)) : 0;
-      const celebrateStep = celebration * Math.sin(anim * 3.2 + k * Math.PI) * 0.22;
+    for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const injuryLimp = p.injured ? (k === 1 ? -0.12 : 0.035) * (0.55 + 0.45 * Math.sin(anim * 0.55)) : 0;
+      const celebrateStep = celebration * Math.sin(anim * 1.1 + k * Math.PI) * 0.22;
       const touchLeg = k === 1 ? firstTouchPulse : 0;
       const stride = sw * k + kickingLeg * (0.42 + 0.18 * Math.sin(kickProgress * Math.PI * 0.5)) +
         touchLeg * firstTouchDir * 0.32 + headerPulse * k * 0.12 +

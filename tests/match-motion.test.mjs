@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getPlayerBodyTransform, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -245,3 +245,24 @@ assert.ok(reversed.a < 0, 'le sprite se retourne quand le joueur court dans la d
 console.log('PRO MOVEMENT OK — freinage d arrivée, accélération vectorielle, cibles lissées et orientation projetée');
 
 console.log('PLAYER PROJECTION OK — silhouette stable de profil et en profondeur');
+
+
+// La cadence varie progressivement avec l'allure et la vitesse naturelle du joueur.
+const walkingCadence = getRunningCadence(2.2, 55);
+const sprintCadence = getRunningCadence(9.5, 88);
+assert.ok(sprintCadence > walkingCadence, 'la foulée accélère avec la vitesse');
+assert.ok(sprintCadence < 18.5 && walkingCadence > 6.8, 'la fréquence reste dans une plage d animation stable');
+
+// La conduite garde le ballon plus près du pied d'un joueur technique, même en sprint.
+const closeControl = getCarryBallOffset({ speed: 9, dribbling: 92, technique: 90, stamina: 0.96, sprinting: true, phase: 0.4 });
+const looseControl = getCarryBallOffset({ speed: 9, dribbling: 42, technique: 45, stamina: 0.55, sprinting: true, phase: 0.4 });
+assert.ok(closeControl.forward < looseControl.forward, 'un joueur technique conserve un ballon plus proche');
+assert.ok(closeControl.skill > looseControl.skill, 'la maîtrise dépend du dribble et de la technique');
+const touchA = getCarryBallOffset({ speed: 7, dribbling: 75, technique: 80, stamina: 0.9, phase: 0 });
+const touchB = getCarryBallOffset({ speed: 7, dribbling: 75, technique: 80, stamina: 0.9, phase: Math.PI });
+assert.ok(touchA.forward !== touchB.forward, 'la touche de balle évolue au fil des foulées');
+assert.ok([closeControl, looseControl, touchA, touchB].every(x =>
+  Number.isFinite(x.forward) && Number.isFinite(x.lateral) && x.forward >= 0.24 && x.forward <= 0.86),
+  'les offsets de conduite restent bornés');
+console.log('BALL CONTROL OK — touches dynamiques, maîtrise technique et sprint');
+console.log('RUNNING CADENCE OK — fréquence de foulée adaptée à l allure');

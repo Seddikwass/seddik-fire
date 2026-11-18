@@ -6,6 +6,12 @@ Jeu de football tunisien : **matchs 3D WebGL jouables** (caméra télé, 11 cont
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 3.5.0 — caméra 3D rapprochée et cadrage mobile
+- Caméra de diffusion rapprochée : recul et hauteur réduits d'environ un quart par rapport au cadrage 3D précédent, pour mieux voir les joueurs, les duels et le ballon.
+- Suivi de caméra relié au cadrage progressif du moteur de match : les déplacements restent fluides et le zoom d'action rapproche encore légèrement la scène dans les phases dangereuses.
+- Recul et hauteur proportionnels au zoom pour préserver l'angle de vue, avec un champ vertical adapté aux écrans étroits.
+- Tests de régression dédiés à la distance, au suivi, au zoom d'action et au mode ralenti.
+
 ## Version 3.4.0 — finition des joueurs et enrichissement du stade 3D
 - Modèles des joueurs enrichis selon les profils physiques et les teintes de peau déjà présentes dans les données.
 - Visages plus détaillés : yeux, pupilles, sourcils, nez et coiffures différenciées.

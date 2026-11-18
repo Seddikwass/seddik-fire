@@ -75,6 +75,26 @@ function multiply4(a, b) {
   }
   return out;
 }
+
+// Caméra 3D de diffusion plus proche : elle exploite le suivi progressif du moteur
+// et resserre le cadre sans perdre les lignes du terrain en format paysage.
+export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
+  const cam = match.cam || {};
+  const zoom = replay ? 1.02 : clamp(cam.actionZoom || 1, 1, 1.16);
+  const targetX = clamp(Number.isFinite(cam.x) ? cam.x : 0, -48, 48);
+  const targetZ = clamp(Number.isFinite(cam.y) ? -cam.y : 0, -28, 28);
+  const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
+  const eye = [targetX - 6 / zoom, 58 / zoom, targetZ + 66 / zoom];
+  const target = [targetX, 0, targetZ];
+  return {
+    eye,
+    target,
+    zoom,
+    aspect: safeAspect,
+    fovy: safeAspect < 1.15 ? 0.86 : 0.78,
+    distance: Math.hypot(eye[0] - targetX, eye[1], eye[2] - targetZ),
+  };
+}
 function parseColor(value, fallback = [0.8, 0.8, 0.8]) {
   if (typeof value !== 'string') return fallback;
   let s = value.trim().toLowerCase();
@@ -563,12 +583,9 @@ export class MatchRenderer3D {
     if(this.lost)return;
     this.resize();
     const gl=this.gl;
-    const zoom=frame?1.02:clamp(match.cam.actionZoom||1,1,1.12);
-    const targetX=clamp(match.cam.x,-48,48),targetZ=clamp(-match.cam.y,-28,28);
     const aspect=this.width/Math.max(1,this.height);
-    const eye=[targetX-7,82/zoom,targetZ+82/zoom];
-    const target=[targetX,0,targetZ];
-    const vp=multiply4(perspective(0.78,aspect,0.25,260),lookAt(eye,target,[0,1,0]));
+    const camera=get3DCameraPose(match,frame,aspect);
+    const vp=multiply4(perspective(camera.fovy,aspect,0.25,220),lookAt(camera.eye,camera.target,[0,1,0]));
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.useProgram(this.program);
     gl.uniformMatrix4fv(this.matrixLoc,false,vp);

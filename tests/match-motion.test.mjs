@@ -232,10 +232,16 @@ assert.ok(smoothedTarget.y < 0 && smoothedTarget.y > -6, 'la cible Y est amortie
 assert.deepEqual(getSmoothedTarget(2, 3, 2, 3, 1 / 60, 8), { x: 2, y: 3 }, 'une cible stable reste immobile');
 
 // La projection du joueur suit la direction de course tout en gardant une verticale stable.
-const sideOn = getPlayerBodyTransform(10, 0, 0, -10, 10);
+const sideOn = getPlayerBodyTransform(10, 0);
 assert.ok(Math.abs(sideOn.a - 1) < 1e-9 && Math.abs(sideOn.d - 1) < 1e-9, 'le mouvement longitudinal garde le profil latéral');
 assert.ok(Math.abs(sideOn.b) < 1e-9 && Math.abs(sideOn.c) < 1e-9, 'la projection latérale n inclut pas de cisaillement');
-const endOn = getPlayerBodyTransform(0, -8, 0, -8, 8);
-assert.ok(Math.abs(endOn.a) < 1e-9 && Math.abs(endOn.b + 1) < 1e-9, 'un joueur orienté vers la profondeur tourne réellement à l écran');
-assert.ok(Math.abs(endOn.c) < 1e-9 && Math.abs(endOn.d - 1) < 1e-9, 'la verticale du corps reste debout');
+const endOn = getPlayerBodyTransform(0, -8);
+assert.ok(endOn.a >= 0.63 && endOn.a <= 0.65, 'un joueur orienté vers la profondeur reste visible avec une largeur réduite');
+assert.equal(endOn.b, 0, 'la course vers la profondeur ne couche pas la silhouette');
+assert.equal(endOn.c, 0, 'la verticale du corps ne se mélange pas à la largeur');
+assert.equal(endOn.d, 1, 'la hauteur du joueur reste intacte');
+const reversed = getPlayerBodyTransform(-10, 0);
+assert.ok(reversed.a < 0, 'le sprite se retourne quand le joueur court dans la direction opposée');
 console.log('PRO MOVEMENT OK — freinage d arrivée, accélération vectorielle, cibles lissées et orientation projetée');
+
+console.log('PLAYER PROJECTION OK — silhouette stable de profil et en profondeur');

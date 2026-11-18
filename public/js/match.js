@@ -353,13 +353,17 @@ export function getSmoothedTarget(x, y, targetX, targetY, dt, rate = 8) {
 
 // Matrice de projection du joueur : axe local X = direction de course,
 // axe local Y = verticale du corps. La perspective tourne réellement la silhouette.
-export function getPlayerBodyTransform(forwardX, forwardY, upX, upY, scale = 1) {
-  const unit = Number.isFinite(scale) && scale > 1e-6 ? scale : 1;
-  const fx = Number.isFinite(forwardX) ? forwardX / unit : 1;
-  const fy = Number.isFinite(forwardY) ? forwardY / unit : 0;
-  const ux = Number.isFinite(upX) ? upX / unit : 0;
-  const uy = Number.isFinite(upY) ? upY / unit : -1;
-  return { a: fx, b: fy, c: -ux, d: -uy };
+export function getPlayerBodyTransform(forwardX, forwardY, minimumWidth = 0.64) {
+  const fx = Number.isFinite(forwardX) ? forwardX : 1;
+  const fy = Number.isFinite(forwardY) ? forwardY : 0;
+  const length = Math.hypot(fx, fy) || 1;
+  // L'axe de course peut se projeter presque verticalement à l'écran.
+  // On réduit alors la largeur du sprite, sans coucher ni écraser sa hauteur.
+  const horizontalFacing = clamp(Math.abs(fx) / length, 0, 1);
+  const minWidth = clamp(Number.isFinite(minimumWidth) ? minimumWidth : 0.64, 0.5, 0.9);
+  const width = minWidth + (1 - minWidth) * horizontalFacing;
+  const direction = Math.abs(fx) < 1e-4 ? 1 : (fx < 0 ? -1 : 1);
+  return { a: direction * width, b: 0, c: 0, d: 1 };
 }
 
 export function getTackleAnimationProfile(remaining = 0, duration = 0.38) {
@@ -2199,8 +2203,7 @@ export class Match {
     const forwardPoint = this.proj(x + Math.cos(heading), y + Math.sin(heading), 0);
     const upPoint = this.proj(x, y, 1);
     const bodyTransform = getPlayerBodyTransform(
-      forwardPoint[0] - ground[0], forwardPoint[1] - ground[1],
-      upPoint[0] - ground[0], upPoint[1] - ground[1], s
+      forwardPoint[0] - ground[0], forwardPoint[1] - ground[1]
     );
     const divePoint = this.proj(x, y + diveSide * 0.72, 0);
     const g = [

@@ -6,6 +6,14 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.2.0 — règle du hors-jeu
+- Position de hors-jeu calculée au départ de chaque passe selon le ballon, la moitié de terrain et le deuxième dernier adversaire.
+- Le drapeau n'est sifflé que lorsque le joueur en position intervient sur le ballon ; la reprise revient à l'équipe adverse à l'endroit de l'infraction.
+- Les corners, six mètres, touches et engagements sont exemptés.
+- Commentaire de hors-jeu en français et en arabe.
+- Statistique et événement de hors-jeu intégrés au rapport du match.
+- Tests dédiés aux deux sens d'attaque, à l'alignement défensif et aux exceptions de remise en jeu.
+
 ## Version 2.1.0 — intelligence de match, conduite et duels
 - IA du porteur : évaluation de plusieurs couloirs courts avec anticipation des déplacements adverses ; la progression reste privilégiée lorsque l'axe est libre.
 - Mouvement des joueurs : accélération et rotation adaptées à la vitesse, à l'agilité, à la technique, au physique et à la fatigue.

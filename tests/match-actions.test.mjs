@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match } = await import('../public/js/match.js');
+const { Match, getOffsideDecision } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 23 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -74,3 +74,36 @@ assert.equal(recordedPlayer[18], -1, 'la direction du geste de frappe doit être
 assert.equal(recordedPlayer[20], -1, 'la direction de déséquilibre doit être enregistrée');
 
 console.log('ACTIONS OK — duel aérien prioritaire, tête offensive, poses de replay');
+
+
+const defence = [
+  { x: 47, sentOff: false }, { x: 43, sentOff: false },
+  { x: -10, sentOff: false }, { x: -18, sentOff: false }
+];
+const ballAtPass = { x: 12, y: 0 };
+assert.equal(getOffsideDecision({ x: 45 }, ballAtPass, defence, 1).offside, true,
+  'un attaquant derrière le deuxième dernier défenseur et le ballon est hors-jeu');
+assert.equal(getOffsideDecision({ x: 42.8 }, ballAtPass, defence, 1).offside, false,
+  'un attaquant aligné avec la ligne défensive reste en jeu');
+assert.equal(getOffsideDecision({ x: 46 }, { x: 46.2 }, defence, 1).offside, false,
+  'un attaquant derrière le ballon au moment de la passe reste en jeu');
+assert.equal(getOffsideDecision({ x: -2 }, ballAtPass, defence, 1).offside, false,
+  'un joueur dans sa propre moitié de terrain ne peut pas être hors-jeu');
+const reverseDefence = defence.map(p => ({ ...p, x: -p.x }));
+assert.equal(getOffsideDecision({ x: -45 }, { x: -12 }, reverseDefence, -1).offside, true,
+  'le calcul du hors-jeu fonctionne aussi lorsque les équipes changent de côté');
+
+const passer = home.ps.find(p => !p.isGK);
+const receiver = home.ps.find(p => p !== passer && !p.isGK);
+passer.x = 10; passer.y = 0; passer.vx = passer.vy = 0;
+receiver.x = 45; receiver.y = 4; receiver.vx = receiver.vy = 0;
+away.ps.forEach((d, i) => { d.x = i === 0 ? 47 : i === 1 ? 43 : -40 + i; d.y = i * 2 - 8; d.vx = d.vy = 0; });
+match.ball.x = 10; match.ball.y = 0; match.ball.z = 0; match.ball.owner = passer;
+match.setPiece = null;
+match.pass(passer, receiver, false);
+assert.ok(match.passInfo.offsidePlayers.includes(receiver), 'la passe enregistre le destinataire hors-jeu au moment du départ');
+match.setPiece = 'corner';
+match.pass(passer, receiver, false, true);
+assert.equal(match.passInfo.offsidePlayers.length, 0, 'une passe sur corner est exemptée du hors-jeu');
+
+console.log('OFFSIDE OK — ligne défensive, ballon, changement de côté et exceptions sur corner');

@@ -63,12 +63,13 @@ const LINES = {
     full: ['Coup de sifflet final ! {h} {sh} - {sa} {a}.'],
     chance: ['Grosse occasion pour {t} !', '{p} s\'infiltre dans la surface !'],
     injury: ['{p} est touché, il reste au sol.'],
+    offside: ['Hors-jeu de {p}.', 'Le drapeau se lève : {p} était hors-jeu.'],
   },
   ar: {
     kickoff: ['انطلاق المباراة! {h} ضد {a}.'], goal: ['هدف! {p} يسجل ل{t}!', 'هدددف! رائع من {p}!'], save: ['تصد رائع من {p}!'],
     miss: ['بجانب القائم!', 'فوق العارضة!'], post: ['القائم!'], foul: ['خطأ من {p}.'], yellow: ['بطاقة صفراء ل{p}.'], red: ['بطاقة حمراء! طرد {p}!'],
     corner: ['ركنية ل{t}.'], penalty: ['ضربة جزاء ل{t}!'], half: ['نهاية الشوط الأول. {h} {sh} - {sa} {a}.'], full: ['نهاية المباراة! {h} {sh} - {sa} {a}.'],
-    chance: ['فرصة خطيرة ل{t}!'], injury: ['{p} مصاب.'],
+    chance: ['فرصة خطيرة ل{t}!'], injury: ['{p} مصاب.'], offside: ['تسلل على {p}.'],
   },
 };
 LINES.en = LINES.fr;
@@ -160,7 +161,7 @@ export function getTackleAssessment(defender, carrier, distance, user = false, d
   const carrierHeading = Number.isFinite(carrier.heading) ? carrier.heading : Math.atan2(carrier.vy || 0, carrier.vx || 1);
   const carrierToDefender = Math.atan2(defender.y - carrier.y, defender.x - carrier.x);
   const rear = clamp((-Math.cos(carrierToDefender - carrierHeading) + 0.12) / 1.12, 0, 1);
-  const closingSpeed = Math.max(0, (defender.vx - carrier.vx) * nx + (defender.vy - carrier.vy) * ny);
+  const closingSpeed = Math.max(0, ((defender.vx || 0) - (carrier.vx || 0)) * nx + ((defender.vy || 0) - (carrier.vy || 0)) * ny);
   const skillGap = ((defender.a?.def ?? 50) - (carrier.a?.dri ?? 50)) / 160;
   const proximity = clamp((2.5 - d) / 2.5, 0, 1) * 0.055;
   const successChance = clamp(0.38 + skillGap + (user ? 0.12 : 0) - difficultyPenalty +
@@ -168,6 +169,24 @@ export function getTackleAssessment(defender, carrier, distance, user = false, d
   const foulChance = clamp((user ? 0.11 : 0.075) + (d > 1.4 ? 0.04 : 0) +
     clamp((closingSpeed - 3) / 9, 0, 1) * 0.13 + rear * 0.055 + (facing < -0.2 ? 0.04 : 0), 0.03, 0.4);
   return { successChance, foulChance, facing, rear, closingSpeed };
+}
+
+// Hors-jeu à l'instant où le ballon est joué : deuxième dernier adversaire,
+// ligne du ballon et moitié de terrain adverse sont tous pris en compte.
+export function getOffsideDecision(attacker, ball, defenders = [], direction = 1) {
+  const dir = direction < 0 ? -1 : 1;
+  const defenderLines = defenders
+    .filter(p => p && !p.sentOff)
+    .map(p => Number(p.x) * dir)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+  const secondLastDefender = defenderLines.length >= 2 ? defenderLines[defenderLines.length - 2] : -Infinity;
+  const ballProgress = (Number(ball?.x) || 0) * dir;
+  const line = Math.max(secondLastDefender, ballProgress);
+  const playerProgress = (Number(attacker?.x) || 0) * dir;
+  const attackingHalf = playerProgress > 0;
+  const offside = attackingHalf && playerProgress > line + 0.08;
+  return { offside, line, playerProgress, secondLastDefender, ballProgress };
 }
 
 export class Match {
@@ -179,7 +198,7 @@ export class Match {
     this.teams = [this.makeTeam(opts.home, 0), this.makeTeam(opts.away, 1)];
     this.ball = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, owner: null, last: null, lastTeam: 0, prevOwnerT: -1 };
     this.score = [0, 0]; this.minute = 0; this.half = 1; this.clock = 0;
-    this.stats = { poss: [0, 0], shots: [0, 0], onTarget: [0, 0], passes: [0, 0], passOk: [0, 0], fouls: [0, 0], corners: [0, 0], yellows: [0, 0], reds: [0, 0], tackles: [0, 0], tacklesWon: [0, 0] };
+    this.stats = { poss: [0, 0], shots: [0, 0], onTarget: [0, 0], passes: [0, 0], passOk: [0, 0], fouls: [0, 0], corners: [0, 0], yellows: [0, 0], reds: [0, 0], tackles: [0, 0], tacklesWon: [0, 0], offsides: [0, 0] };
     this.events = []; this.state = 'kickoff'; this.stateT = 0; this.kickTeam = 0;
     this.input = { jx: 0, jy: 0, sprint: false, shootHold: 0, shooting: false, press: false };
     this.selected = null; this.cam = { x: 0, y: 0, zoom: 1 };
@@ -864,7 +883,16 @@ export class Match {
     const vz = lob ? clamp(dist * 0.32, 4, 11) : 0.6;
     this.kickBall(p, Math.cos(ang) * speed + p.vx * 0.1, Math.sin(ang) * speed + p.vy * 0.1, vz, 0.4);
     this.stats.passes[p.team]++;
-    this.passInfo = { from: p, to: t, team: p.team, t: 0, tx: p.x + Math.cos(ang) * dist, ty: p.y + Math.sin(ang) * dist };
+    const restartExempt = ['kickoff', 'corner', 'goalkick', 'throw'].includes(this.setPiece);
+    const offsidePlayers = restartExempt ? [] : T.ps.filter(candidate =>
+      candidate !== p && !candidate.isGK && !candidate.sentOff &&
+      getOffsideDecision(candidate, b, this.teams[1 - p.team].ps, d).offside
+    );
+    this.passInfo = {
+      from: p, to: t, team: p.team, t: 0,
+      tx: p.x + Math.cos(ang) * dist, ty: p.y + Math.sin(ang) * dist,
+      offsidePlayers
+    };
     if (p.team === this.userSide && this.userSide != null) this.select(t);
   }
   cross(p) {
@@ -966,6 +994,16 @@ export class Match {
     if (this.r() < assessment.foulChance) this.foul(p, c);
     else if (dist < 2.8) { p.stumbleT = Math.max(p.stumbleT || 0, 0.13); p.stumbleDir = Math.sign(c.y - p.y) || 1; }
     return false;
+  }
+  callOffside(p) {
+    this.stats.offsides[p.team] = (this.stats.offsides[p.team] || 0) + 1;
+    this.addEvent('offside', p);
+    this.banner('HORS-JEU !', 1.7);
+    this.say('offside', { p: p.name }, true);
+    A.whistle();
+    this.passInfo = null;
+    this.setRestart('freekick', 1 - p.team,
+      clamp(p.x, -HL + 1, HL - 1), clamp(p.y, -HW + 1, HW - 1));
   }
   foul(p, victim) {
     this.stats.fouls[p.team]++; p.rating -= 0.2;
@@ -1141,6 +1179,9 @@ export class Match {
       const d = Math.hypot(p.x - b.x, p.y - b.y);
       const reachZ = p.isGK && Math.abs(b.x - (-HL * T.dir)) < 17 && Math.abs(b.y) < 21 ? 2.6 : 1.0;
       const rad = this.passInfo && this.passInfo.to === p ? 1.7 : 1.1;
+      const activeOffside = this.passInfo && this.passInfo.t < 3 &&
+        this.passInfo.offsidePlayers?.includes(p) && d < Math.max(1.1, rad);
+      if (activeOffside) { this.callOffside(p); return; }
       if (d < rad && b.z < reachZ && d < bd) { bd = d; best = p; }
       // Tête : le saut aide à atteindre le ballon, mais un ballon bas peut
       // également être dévié de la tête sans saut complet.

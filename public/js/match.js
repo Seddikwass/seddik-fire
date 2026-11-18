@@ -887,7 +887,7 @@ export class Match {
     this.stats.passes[p.team]++;
     const offsidePlayers = restartExempt ? [] : T.ps.filter(candidate =>
       candidate !== p && !candidate.isGK && !candidate.sentOff &&
-      getOffsideDecision(candidate, b, this.teams[1 - p.team].ps, d).offside
+      getOffsideDecision(candidate, this.ball, this.teams[1 - p.team].ps, d).offside
     );
     this.passInfo = {
       from: p, to: t, team: p.team, t: 0,

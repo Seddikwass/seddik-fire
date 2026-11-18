@@ -6,6 +6,15 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 3.0.0 — mouvement professionnel et orientation des joueurs
+- Accélération vectorielle : la poussée maximale est identique en ligne droite et en diagonale, avec inertie de course conservée.
+- Freinage d'approche : les joueurs réduisent leur vitesse avant le point de replacement au lieu de le dépasser et de zigzaguer.
+- Consignes IA amorties : les changements de cibles tactiques sont progressifs pour limiter les hésitations et les à-coups.
+- Orientation du corps projetée depuis l'angle réel de déplacement : les joueurs ne restent plus dessinés de profil quand ils courent vers le haut ou le bas du terrain.
+- La cadence des jambes est recalibrée et les gestes de passe, tir, tête et première touche suivent l'orientation du joueur.
+- Rendu des maillots et du visage enrichi par des ombrages et des contours discrets.
+- Tests dédiés au freinage, à l'accélération diagonale, au lissage tactique et à la matrice de projection.
+
 ## Version 2.9.0 — gestes de tacle et ralentis enrichis
 - Tacle glissé animé en trois temps : engagement, extension de la jambe et reprise d'appui.
 - Les bras s'écartent pour équilibrer le geste, tandis que le joueur descend légèrement vers le sol.

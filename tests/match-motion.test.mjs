@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getBodyContactAssessment, getTackleAnimationProfile, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getPlayerBodyTransform, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -212,3 +212,30 @@ assert.ok([tackleStart, tackleMid, tackleRecovery, shortAttempt].every(x =>
   x.progress >= 0 && x.progress <= 1 && x.lunge >= 0 && x.lunge <= 1 && x.reach >= 0 && x.reach <= 1),
   'le profil d animation reste borné et fini');
 console.log('TACKLE ANIMATION OK — extension progressive, récupération et valeurs bornées');
+
+
+// La vitesse d'arrivée freine avant la cible et ne dépasse jamais la vitesse maximale.
+assert.equal(getArriveSpeed(0, 8, 9), 0, 'à la cible, la vitesse désirée est nulle');
+assert.ok(getArriveSpeed(0.5, 8, 9) < 8, 'le joueur ralentit à proximité de son point de course');
+assert.equal(getArriveSpeed(100, 7, 9), 7, 'la vitesse maximale est conservée loin de la cible');
+
+// L'accélération est limitée sur le vecteur complet, y compris en diagonale.
+const accelStraight = getVelocityStep(0, 0, 8, 0, 0.15);
+const accelDiagonal = getVelocityStep(0, 0, 8, 8, 0.15);
+assert.ok(Math.abs(Math.hypot(accelStraight.vx, accelStraight.vy) - 0.15) < 1e-9, 'l accélération droite respecte le budget');
+assert.ok(Math.abs(Math.hypot(accelDiagonal.vx, accelDiagonal.vy) - 0.15) < 1e-9, 'l accélération diagonale respecte le même budget');
+
+// La cible tactique évolue progressivement sans dépasser son point d'arrivée.
+const smoothedTarget = getSmoothedTarget(0, 0, 10, -6, 1 / 60, 8);
+assert.ok(smoothedTarget.x > 0 && smoothedTarget.x < 10, 'la cible X est amortie');
+assert.ok(smoothedTarget.y < 0 && smoothedTarget.y > -6, 'la cible Y est amortie');
+assert.deepEqual(getSmoothedTarget(2, 3, 2, 3, 1 / 60, 8), { x: 2, y: 3 }, 'une cible stable reste immobile');
+
+// La projection du joueur suit la direction de course tout en gardant une verticale stable.
+const sideOn = getPlayerBodyTransform(10, 0, 0, -10, 10);
+assert.ok(Math.abs(sideOn.a - 1) < 1e-9 && Math.abs(sideOn.d - 1) < 1e-9, 'le mouvement longitudinal garde le profil latéral');
+assert.ok(Math.abs(sideOn.b) < 1e-9 && Math.abs(sideOn.c) < 1e-9, 'la projection latérale n inclut pas de cisaillement');
+const endOn = getPlayerBodyTransform(0, -8, 0, -8, 8);
+assert.ok(Math.abs(endOn.a) < 1e-9 && Math.abs(endOn.b + 1) < 1e-9, 'un joueur orienté vers la profondeur tourne réellement à l écran');
+assert.ok(Math.abs(endOn.c) < 1e-9 && Math.abs(endOn.d - 1) < 1e-9, 'la verticale du corps reste debout');
+console.log('PRO MOVEMENT OK — freinage d arrivée, accélération vectorielle, cibles lissées et orientation projetée');

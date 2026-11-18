@@ -321,6 +321,47 @@ export function getBodyContactAssessment(a = {}, b = {}, closingSpeed = 0) {
 
 // Animation du tacle glissé : approche, extension puis retour à l'appui.
 // Le profil est indépendant du rendu et reste léger pour les appareils Android.
+// Vitesse d'approche avec freinage progressif : le joueur ralentit avant sa cible.
+export function getArriveSpeed(distance, maxSpeed, brakingAcceleration = 8) {
+  const d = Number.isFinite(distance) ? Math.max(0, distance) : 0;
+  const cap = Number.isFinite(maxSpeed) ? Math.max(0, maxSpeed) : 0;
+  const braking = Number.isFinite(brakingAcceleration) ? Math.max(0, brakingAcceleration) : 0;
+  return Math.min(cap, Math.sqrt(2 * braking * d));
+}
+
+// Limite l'accélération sur le vecteur complet, quelle que soit sa direction.
+export function getVelocityStep(vx, vy, targetX, targetY, maxChange) {
+  const x = Number.isFinite(vx) ? vx : 0, y = Number.isFinite(vy) ? vy : 0;
+  const tx = Number.isFinite(targetX) ? targetX : 0, ty = Number.isFinite(targetY) ? targetY : 0;
+  const dx = tx - x, dy = ty - y, gap = Math.hypot(dx, dy);
+  const step = Number.isFinite(maxChange) ? Math.max(0, maxChange) : 0;
+  const scale = gap > step && gap > 1e-9 ? step / gap : 1;
+  return { vx: x + dx * scale, vy: y + dy * scale };
+}
+
+// Lisse les variations de consigne de l'IA sans retarder excessivement un changement tactique.
+export function getSmoothedTarget(x, y, targetX, targetY, dt, rate = 8) {
+  const time = clamp(Number.isFinite(dt) ? dt : 0, 0, 0.1);
+  const smoothing = clamp(Number.isFinite(rate) ? rate : 8, 1, 30);
+  const alpha = 1 - Math.exp(-time * smoothing);
+  const fromX = Number.isFinite(x) ? x : (Number.isFinite(targetX) ? targetX : 0);
+  const fromY = Number.isFinite(y) ? y : (Number.isFinite(targetY) ? targetY : 0);
+  const toX = Number.isFinite(targetX) ? targetX : fromX;
+  const toY = Number.isFinite(targetY) ? targetY : fromY;
+  return { x: fromX + (toX - fromX) * alpha, y: fromY + (toY - fromY) * alpha };
+}
+
+// Matrice de projection du joueur : axe local X = direction de course,
+// axe local Y = verticale du corps. La perspective tourne réellement la silhouette.
+export function getPlayerBodyTransform(forwardX, forwardY, upX, upY, scale = 1) {
+  const unit = Number.isFinite(scale) && scale > 1e-6 ? scale : 1;
+  const fx = Number.isFinite(forwardX) ? forwardX / unit : 1;
+  const fy = Number.isFinite(forwardY) ? forwardY / unit : 0;
+  const ux = Number.isFinite(upX) ? upX / unit : 0;
+  const uy = Number.isFinite(upY) ? upY / unit : -1;
+  return { a: fx, b: fy, c: -ux, d: -uy };
+}
+
 export function getTackleAnimationProfile(remaining = 0, duration = 0.38) {
   const total = clamp(Number.isFinite(duration) ? duration : 0.38, 0.08, 0.8);
   const left = clamp(Number.isFinite(remaining) ? remaining : 0, 0, total);
@@ -764,10 +805,18 @@ export class Match {
     return s;
   }
   moveTo(p, tx, ty, dt, mult = 1, nostam = false, sprint = false) {
-    const dx = tx - p.x, dy = ty - p.y, d = Math.hypot(dx, dy);
-    const sp = this.speedOf(p, sprint) * mult;
-    let wx = 0, wy = 0;
-    if (d > 0.25) { const s = Math.min(sp, d * 2.2); wx = dx / d * s; wy = dy / d * s; }
+    // Les consignes tactiques sont lissées pour éviter qu'un joueur hésite
+    // lorsque la balle, le porteur ou son rôle change légèrement à chaque image.
+    const target = getSmoothedTarget(
+      p.moveTargetX, p.moveTargetY, tx, ty, dt, sprint ? 13 : 8
+    );
+    p.moveTargetX = target.x; p.moveTargetY = target.y;
+    const dx = target.x - p.x, dy = target.y - p.y, d = Math.hypot(dx, dy);
+    const tuning = getMovementTuning(p.a, p.stamina);
+    const maxSpeed = this.speedOf(p, sprint) * mult;
+    const desiredSpeed = getArriveSpeed(d, maxSpeed, tuning.acceleration * 1.45);
+    const wx = d > 0.025 ? dx / d * desiredSpeed : 0;
+    const wy = d > 0.025 ? dy / d * desiredSpeed : 0;
     this.applyVel(p, wx, wy, dt);
     if (sprint && !nostam) p.stamina = Math.max(0.3, p.stamina - dt * 0.012 * (1.2 - p.a.phy / 200));
     else p.stamina = Math.min(1, p.stamina + dt * 0.002);
@@ -775,26 +824,22 @@ export class Match {
   applyVel(p, wx, wy, dt) {
     const currentSpeed = Math.hypot(p.vx, p.vy);
     const targetSpeed = Math.hypot(wx, wy);
-    const pac = p.a.pac || 60;
-    const currentHeading = currentSpeed > 0.2 ? Math.atan2(p.vy, p.vx) : (p.heading ?? Math.atan2(wy, wx));
-    const targetHeading = targetSpeed > 0.2 ? Math.atan2(wy, wx) : currentHeading;
+    const currentHeading = Number.isFinite(p.heading) ? p.heading :
+      (currentSpeed > 0.2 ? Math.atan2(p.vy, p.vx) : Math.atan2(wy || 0, wx || 1));
+    const targetHeading = targetSpeed > 0.15 ? Math.atan2(wy, wx) : currentHeading;
     const delta = Math.atan2(Math.sin(targetHeading - currentHeading), Math.cos(targetHeading - currentHeading));
     p.turn = clamp(delta / Math.PI, -1, 1);
     const tuning = getMovementTuning(p.a, p.stamina);
-    p.heading = currentHeading + delta * clamp(dt * tuning.turnRate, 0, 1);
-    // Freinage plus franc à l'approche d'une cible et légère perte d'appui
-    // lorsque le joueur doit changer brutalement de direction.
-    const braking = targetSpeed < currentSpeed ? 1.32 : 1;
-    const cornering = 1 - Math.min(0.18, Math.abs(delta) / Math.PI * 0.18);
-    const acc = tuning.acceleration * braking * cornering;
-    p.vx += clamp(wx - p.vx, -acc * dt, acc * dt);
-    p.vy += clamp(wy - p.vy, -acc * dt, acc * dt);
-    const actualSpeed = Math.hypot(p.vx, p.vy);
-    if (actualSpeed > 0.3) {
-      const actualHeading = Math.atan2(p.vy, p.vx);
-      const d = Math.atan2(Math.sin(actualHeading - p.heading), Math.cos(actualHeading - p.heading));
-      p.heading += d * clamp(dt * 2.8, 0, 1);
-    }
+    // Le freinage et les virages consomment une partie de l'accélération disponible.
+    const turnLoad = clamp(Math.abs(delta) / Math.PI, 0, 1);
+    const braking = targetSpeed + 0.12 < currentSpeed ? 1.42 : 1;
+    const acceleration = tuning.acceleration * braking * (1 - turnLoad * 0.16);
+    const next = getVelocityStep(p.vx, p.vy, wx, wy, acceleration * Math.max(0, dt));
+    p.vx = next.vx; p.vy = next.vy;
+    // Le torse anticipe le virage, alors que la vitesse conserve son inertie.
+    const turnRate = tuning.turnRate * (currentSpeed < 1 ? 1.2 : 1);
+    p.heading = currentHeading + delta * clamp(dt * turnRate, 0, 1);
+    p.face = Math.cos(p.heading) >= 0 ? 1 : -1;
   }
   moveAll(dt, celebrate = false) {
     for (const T of this.teams) for (const p of T.ps) {
@@ -802,7 +847,7 @@ export class Match {
       p.x += p.vx * dt; p.y += p.vy * dt;
       p.x = clamp(p.x, -HL - 2, HL + 2); p.y = clamp(p.y, -HW - 2, HW + 2);
       const sp = Math.hypot(p.vx, p.vy);
-      p.anim += sp * dt * 2.2;
+      p.anim += sp * dt * 1.48;
       p.jumpT = Math.max(0, (p.jumpT || 0) - dt);
       p.jumpCd = Math.max(0, (p.jumpCd || 0) - dt);
       p.kickT = Math.max(0, (p.kickT || 0) - dt);
@@ -813,7 +858,7 @@ export class Match {
       p.keeperPunchT = Math.max(0, (p.keeperPunchT || 0) - dt);
       p.celebrateT = Math.max(0, (p.celebrateT || 0) - dt);
       p.contactT = Math.max(0, (p.contactT || 0) - dt);
-      if (sp > 0.3) p.face = p.vx >= 0 ? 1 : -1;
+      if (sp > 0.3 && Number.isFinite(p.heading)) p.face = Math.cos(p.heading) >= 0 ? 1 : -1;
       if (p.cd > 0) p.cd -= dt; if (p.tackleCd > 0) p.tackleCd -= dt;
       if (p.run > 0) p.run -= dt;
       if (celebrate) { p.vx *= 0.9; p.vy *= 0.9; }
@@ -881,8 +926,8 @@ export class Match {
       p.jumpT = 0.46;
       p.jumpCd = 0.92;
       p.heading = Math.atan2(b.y - p.y, b.x - p.x);
-      p.headerDir = T.dir;
-      p.face = Math.sign(b.x - p.x) || T.dir;
+      p.headerDir = 1;
+      p.face = Math.cos(p.heading) >= 0 ? 1 : -1;
       p.vx += clamp((landing.x - p.x) * 0.18, -1.8, 1.8);
       p.vy += clamp((landing.y - p.y) * 0.18, -1.8, 1.8);
     }
@@ -1177,7 +1222,9 @@ export class Match {
     const b = this.ball;
     b.owner = null; b.vx = vx; b.vy = vy; b.vz = vz; b.z = Math.max(b.z, 0.12); b.last = p; b.lastTeam = p.team;
     p.kickT = 0.34; p.kickStyle = power >= 0.65 ? 'shot' : 'pass'; p.kickPower = power;
-    p.kickDir = Math.sign(vx) || p.face || 1;
+    if (Math.hypot(vx, vy) > 0.1) p.heading = Math.atan2(vy, vx);
+    p.face = Math.cos(p.heading || 0) >= 0 ? 1 : -1;
+    p.kickDir = 1;
     p.cd = 0.35; p.touches++; this.setPiece = null;
     A.kick(power);
   }
@@ -1535,8 +1582,10 @@ export class Match {
         0.2, 0.82
       );
       best.firstTouchT = 0.32;
-      best.firstTouchDir = Math.sign(b.vy - best.vy) || best.face || 1;
+      const firstTouchAngle = Math.atan2(b.vy - best.vy, (b.vx - best.vx) || best.face || 1);
       best.heading = Math.atan2(b.vy || best.vy, b.vx || best.vx || best.face);
+      best.firstTouchDir = Math.cos(firstTouchAngle - best.heading) >= 0 ? 1 : -1;
+      best.face = Math.cos(best.heading) >= 0 ? 1 : -1;
       b.controlQuality = firstTouch;
       // Micro-déviation contrôlée : une touche orientée accompagne l'action
       // sans téléporter le ballon ni supprimer les pertes de balle.
@@ -1555,9 +1604,10 @@ export class Match {
   }
   header(p) {
     const b = this.ball, T = this.teams[p.team], d = T.dir, gx = HL * d;
-    p.cd = 0.62; p.headerT = 0.44; p.headerDir = d;
+    p.cd = 0.62; p.headerT = 0.44; p.headerDir = 1;
     p.heading = Math.atan2(b.y - p.y, b.x - p.x);
-    p.kickT = 0.22; p.kickStyle = 'header'; p.kickDir = d;
+    p.face = Math.cos(p.heading) >= 0 ? 1 : -1;
+    p.kickT = 0.22; p.kickStyle = 'header'; p.kickDir = 1;
     b.last = p; b.lastTeam = p.team; b.owner = null;
     if (Math.abs(gx - p.x) < 16 && Math.abs(p.y) < 12) {
       const keeper = this.teams[1 - p.team].ps[0];
@@ -1625,7 +1675,7 @@ export class Match {
       p.stumbleT || 0, p.keeperCatchT || 0, p.keeperPunchT || 0, p.headerDir || p.face,
       p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1,
       p.diveHeight || 0, p.diveStretch || 0,
-      p.contactT || 0, p.contactDir || 1, p.slideDuration || 0.38
+      p.contactT || 0, p.contactDir || 1, p.slideDuration || 0.38, p.heading || 0
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }
@@ -2115,8 +2165,11 @@ export class Match {
   }
   drawPlayer(p, fp) {
     const c = this.c;
-    const x = fp ? fp[0] : p.x, y = fp ? fp[1] : p.y, face = fp ? fp[2] : p.face, anim = fp ? fp[3] : p.anim;
+    const x = fp ? fp[0] : p.x, y = fp ? fp[1] : p.y, anim = fp ? fp[3] : p.anim;
     const vx = fp ? fp[4] : p.vx, vy = fp ? fp[5] : p.vy;
+    const heading = fp && Number.isFinite(fp[26]) ? fp[26] :
+      (Number.isFinite(p.heading) ? p.heading : Math.atan2(vy || 0, vx || 1));
+    const face = Math.cos(heading) >= 0 ? 1 : -1;
     const T = this.teams[p.team], kit = p.isGK ? T.gkKit : T.kit;
     const ground = this.proj(x, y, 0); const s = ground[2]; // px par mètre
     if (ground[3] < 1) return;
@@ -2142,10 +2195,16 @@ export class Match {
     const stumblePulse = Math.max(0, Math.min(1, action(12, 'stumbleT') / 0.24));
     const keeperCatchPulse = p.isGK ? Math.max(0, Math.min(1, action(13, 'keeperCatchT') / 0.48)) : 0;
     const keeperPunchPulse = p.isGK ? Math.max(0, Math.min(1, action(14, 'keeperPunchT') / 0.42)) : 0;
-    const headerDir = fp ? (fp[15] || face) : (p.headerDir || face);
+    const headerDir = fp ? (fp[15] || 1) : (p.headerDir || 1);
+    const forwardPoint = this.proj(x + Math.cos(heading), y + Math.sin(heading), 0);
+    const upPoint = this.proj(x, y, 1);
+    const bodyTransform = getPlayerBodyTransform(
+      forwardPoint[0] - ground[0], forwardPoint[1] - ground[1],
+      upPoint[0] - ground[0], upPoint[1] - ground[1], s
+    );
     const divePoint = this.proj(x, y + diveSide * 0.72, 0);
     const g = [
-      ground[0] + slidePulse * (p.face || 1) * 0.22 * s + (divePoint[0] - ground[0]) * keeperDive * 0.72,
+      ground[0] + slidePulse * 0.22 * s + (divePoint[0] - ground[0]) * keeperDive * 0.72,
       ground[1] - Math.sin(jump * Math.PI) * 0.62 * s - keeperDive * (0.12 + diveHeight * 0.26) * s + slidePulse * 0.1 * s + (divePoint[1] - ground[1]) * keeperDive * 0.72,
       ground[2], ground[3]
     ];
@@ -2170,7 +2229,12 @@ export class Match {
       // jauge de tir
       if (this.input.shooting) { const pw = this.input.shootHold; c.fillStyle = '#0008'; c.fillRect(g[0] - 0.6 * s, g[1] - hgt - 0.95 * s, 1.2 * s, 0.18 * s); c.fillStyle = pw > 0.85 ? '#ff4d4d' : '#ffe14a'; c.fillRect(g[0] - 0.6 * s, g[1] - hgt - 0.95 * s, 1.2 * s * pw, 0.18 * s); }
     }
-    const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim * 2.15, sw = Math.sin(phase) * gait * 0.58;
+    // Projection affine du corps : la direction suivie par le joueur est visible,
+    // y compris lorsqu'il court vers le haut ou le bas du terrain.
+    c.save(); c.translate(g[0], g[1]);
+    c.transform(bodyTransform.a, bodyTransform.b, bodyTransform.c, bodyTransform.d, 0, 0);
+    c.translate(-g[0], -g[1]);
+    const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim * 2, sw = Math.sin(phase) * gait * 0.58;
     const diveReach = keeperDive * (0.38 + keeperSave * 0.35 + diveStretch * 0.18);
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
     const kickProgress = clamp(1 - action(9, 'kickT') / 0.34, 0, 1);
@@ -2178,10 +2242,8 @@ export class Match {
     const celebration = !fp ? Math.max(0, Math.min(1, (p.celebrateT || 0) / 0.7)) : 0;
     // Petit saut synchronisé à la célébration, sans déplacer le joueur au sol.
     if (celebration > 0.02) g[1] -= Math.sin((1 - celebration) * Math.PI * 2.2) * 0.18 * s * celebration;
-    const heading = p.heading ?? Math.atan2(vy, vx || face || 1);
     const bodyLean = clamp(
-      sp * 0.012 + Math.sin(heading) * Math.min(0.14, sp * 0.018) +
-      (p.turn || 0) * gait * 0.1 + tackleProfile.lunge * 0.3 -
+      sp * 0.012 + (p.turn || 0) * gait * 0.16 + tackleProfile.lunge * 0.3 -
       celebration * 0.08 + contactPulse * contactDir * 0.32 +
       keeperDive * diveSide * 0.28 + headerPulse * headerDir * 0.3 +
       stumblePulse * (p.stumbleDir || 1) * 0.23,
@@ -2196,32 +2258,32 @@ export class Match {
     for (const k of [-1, 1]) { const kickingLeg = k === 1 ? kickPulse : 0; const injuryLimp = p.injured ? (k === 1 ? -0.12 : 0.035) * (0.55 + 0.45 * Math.sin(anim * 1.4)) : 0;
       const celebrateStep = celebration * Math.sin(anim * 3.2 + k * Math.PI) * 0.22;
       const touchLeg = k === 1 ? firstTouchPulse : 0;
-      const stride = sw * k * face + kickingLeg * face * (0.42 + 0.18 * Math.sin(kickProgress * Math.PI * 0.5)) +
+      const stride = sw * k + kickingLeg * (0.42 + 0.18 * Math.sin(kickProgress * Math.PI * 0.5)) +
         touchLeg * firstTouchDir * 0.32 + headerPulse * k * 0.12 +
-        (k === 1 ? tackleProfile.reach * face * 0.52 : -tackleProfile.lunge * face * 0.1) +
-        celebrateStep * face + injuryLimp + (p.turn || 0) * gait * 0.06 -
+        (k === 1 ? tackleProfile.reach * 0.52 : -tackleProfile.lunge * 0.1) +
+        celebrateStep + injuryLimp + (p.turn || 0) * gait * 0.06 -
         stumblePulse * stumbleDir * 0.16;
       const lift = Math.max(0, Math.sin(phase * k)) * gait * (p.injured ? 0.045 : 0.15) * s +
         kickingLeg * 0.28 * s + touchLeg * 0.14 * s + Math.max(0, celebrateStep) * 0.22 * s;
       const rootX = g[0] + k * 0.1 * s;
       const kneeX = rootX + stride * 0.28 * s;
       const kneeY = hipY + hgt * 0.22 - lift * 0.36 - kickingLeg * 0.045 * s;
-      const footX = rootX + stride * 0.5 * s + kickingLeg * face * 0.08 * s +
-        (k === 1 ? tackleProfile.reach * face * 0.16 * s : 0);
+      const footX = rootX + stride * 0.5 * s + kickingLeg * 0.08 * s +
+        (k === 1 ? tackleProfile.reach * 0.16 * s : 0);
       const footY = g[1] - 0.05 * s - lift;
       c.beginPath(); c.moveTo(rootX, hipY); c.lineTo(kneeX, kneeY); c.lineTo(footX, footY); c.stroke();
       c.fillStyle = p.skin; c.beginPath(); c.arc(kneeX, kneeY, Math.max(1, 0.055 * s), 0, Math.PI * 2); c.fill();
     }
     // chaussettes
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.17 * s);
-    for (const k of [-1, 1]) { const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face + kickLeg * face * 0.24 * s; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s * face, g[1] - 0.45 * s); c.lineTo(fx + kickLeg * face * 0.12 * s, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.stroke(); }
+    for (const k of [-1, 1]) { const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s + kickLeg * 0.24 * s; c.beginPath(); c.moveTo(fx - sw * k * 0.12 * s, g[1] - 0.45 * s); c.lineTo(fx + kickLeg * 0.12 * s, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.stroke(); }
     // crampons sombres avec semelle claire, visibles en course
     c.strokeStyle = '#17191d'; c.lineWidth = Math.max(1.8, 0.11 * s); c.lineCap = 'round';
     for (const k of [-1, 1]) {
-      const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s * face + kickLeg * face * 0.24 * s;
-      c.beginPath(); c.moveTo(fx, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.lineTo(fx + face * (0.13 + kickLeg * 0.2) * s, g[1] - 0.015 * s - kickLeg * 0.16 * s); c.stroke();
+      const kickLeg = k === 1 ? kickPulse : 0; const fx = g[0] + k * 0.1 * s + sw * k * 0.5 * s + kickLeg * 0.24 * s;
+      c.beginPath(); c.moveTo(fx, g[1] - 0.08 * s - kickLeg * 0.16 * s); c.lineTo(fx + (0.13 + kickLeg * 0.2) * s, g[1] - 0.015 * s - kickLeg * 0.16 * s); c.stroke();
       c.strokeStyle = '#d9dce2'; c.lineWidth = Math.max(0.7, 0.035 * s);
-      c.beginPath(); c.moveTo(fx - 0.04 * s, g[1] - 0.02 * s); c.lineTo(fx + face * 0.12 * s, g[1] - 0.02 * s); c.stroke();
+      c.beginPath(); c.moveTo(fx - 0.04 * s, g[1] - 0.02 * s); c.lineTo(fx + 0.12 * s, g[1] - 0.02 * s); c.stroke();
       c.strokeStyle = '#17191d'; c.lineWidth = Math.max(1.8, 0.11 * s);
     }
     // mouvement bref du pied au moment de la frappe ou de la passe
@@ -2293,6 +2355,8 @@ export class Match {
     sheen.addColorStop(1, 'rgba(0,0,0,0.12)');
     c.fillStyle = sheen; c.fillRect(shirtX, tY, shirtW, tH);
     c.restore();
+    c.strokeStyle = 'rgba(3,8,15,0.34)'; c.lineWidth = Math.max(0.8, 0.035 * s);
+    this.rr(shirtX, tY, shirtW, tH, 0.1 * s); c.stroke();
     // Col contrasté
     c.strokeStyle = kit.trim; c.lineWidth = Math.max(1, 0.055 * s);
     c.beginPath(); c.arc(g[0], tY + 0.015 * s, 0.105 * s, 0.12 * Math.PI, 0.88 * Math.PI); c.stroke();
@@ -2300,16 +2364,16 @@ export class Match {
     c.strokeStyle = kit.shirt; c.lineWidth = Math.max(1.5, 0.13 * s);
     for (const k of [-1, 1]) {
       const ax = g[0] + k * w * 0.5;
-      const ex = g[0] + k * w * 0.62 + armSwing * k * s * face +
+      const ex = g[0] + k * w * 0.62 + armSwing * k * s +
         (p.isGK ? k * (0.12 + diveReach + keeperCatchPulse * 0.52 + keeperPunchPulse * 0.28) * s : 0) +
-        (!p.isGK ? tackleProfile.reach * face * 0.42 * s + tackleProfile.lunge * k * 0.14 * s : 0) +
+        (!p.isGK ? tackleProfile.reach * 0.42 * s + tackleProfile.lunge * k * 0.14 * s : 0) +
         celebration * k * 0.62 * s + (p.isGK ? 0 : headerPulse * k * 0.28 * s);
       const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s -
         (p.isGK ? (0.1 + diveReach * 0.72 + keeperCatchPulse * 0.48 + keeperPunchPulse * 0.28 + keeperDive * diveHeight * 0.24) * s : 0) +
         (!p.isGK ? tackleProfile.lunge * 0.18 * s : 0) - celebration * 0.98 * s -
         (p.isGK ? 0 : headerPulse * 0.45 * s);
       const shoulderY = tY + 0.08 * s;
-      const elbowX = ax + (ex - ax) * 0.52 + Math.sin(phase * 1.1 + k * 0.9) * gait * 0.14 * s * face;
+      const elbowX = ax + (ex - ax) * 0.52 + Math.sin(phase * 1.1 + k * 0.9) * gait * 0.14 * s;
       const elbowY = shoulderY + (ey - shoulderY) * 0.5 + Math.abs(armSwing) * 0.055 * s + k * 0.012 * s;
       c.beginPath(); c.moveTo(ax, shoulderY); c.lineTo(elbowX, elbowY); c.lineTo(ex, ey); c.stroke();
       c.strokeStyle = kit.trim; c.lineWidth = Math.max(1.2, 0.075 * s);
@@ -2329,7 +2393,9 @@ export class Match {
     // tête
     const headX = g[0] + headerPulse * headerDir * 0.1 * s;
     const headY = tY - 0.14 * s - headerPulse * 0.12 * s;
-    c.fillStyle = p.skin; c.beginPath(); c.arc(headX, headY, 0.13 * s, 0, 7); c.fill();
+    const skinLight = c.createRadialGradient(headX - 0.045 * s, headY - 0.055 * s, 0.012 * s, headX, headY, 0.14 * s);
+    skinLight.addColorStop(0, '#f2c59b'); skinLight.addColorStop(0.55, p.skin); skinLight.addColorStop(1, '#543522');
+    c.fillStyle = skinLight; c.beginPath(); c.arc(headX, headY, 0.13 * s, 0, 7); c.fill();
     c.fillStyle = '#1b130d'; c.beginPath(); c.arc(headX - face * 0.02 * s, headY - 0.04 * s, 0.12 * s, Math.PI, 0); c.fill();
     // numéro
     if (s > 14) { c.fillStyle = kit.trim === kit.shirt ? '#000' : '#fff'; c.font = `bold ${Math.round(0.24 * s)}px Arial`; c.textAlign = 'center'; c.fillText(p.num, g[0], tY + tH * 0.62); }
@@ -2340,6 +2406,7 @@ export class Match {
       c.fillStyle = '#000a'; const tw = c.measureText(nm).width + 8; c.fillRect(g[0] - tw / 2, g[1] + 0.25 * s, tw, 0.42 * s);
       c.fillStyle = p.team === this.userSide ? '#ffe14a' : '#fff'; c.fillText(nm, g[0], g[1] + 0.56 * s);
     }
+    c.restore();
     c.restore();
   }
   rr(x, y, w, h, r) { const c = this.c; c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }

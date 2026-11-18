@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -80,3 +80,26 @@ assert.ok(frontalTackle.successChance > rearTackle.successChance, 'un duel front
 assert.ok(rearTackle.foulChance > frontalTackle.foulChance, 'un tacle arrière rapide augmente le risque de faute');
 
 console.log('MATCH FEEL OK — fatigue, conduite en couloir et duels orientés');
+
+// Une passe doit pénaliser les défenseurs qui coupent la trajectoire pendant le temps de vol.
+const laneFrom = { x: 0, y: 0 }, laneTo = { x: 20, y: 0 };
+const staticInterceptor = getPassLaneAssessment(laneFrom, laneTo, [{ x: 10, y: 0 }], 1.1);
+const openPassingLane = getPassLaneAssessment(laneFrom, laneTo, [{ x: 10, y: 5 }], 1.1);
+const movingInterceptor = getPassLaneAssessment(laneFrom, laneTo, [{ x: 10, y: 5, vy: -6 }], 1.1);
+assert.ok(staticInterceptor.risk > openPassingLane.risk, 'une ligne directement occupée est risquée');
+assert.ok(movingInterceptor.risk > openPassingLane.risk, 'un défenseur qui ferme la ligne est anticipé');
+assert.ok(movingInterceptor.interceptor, 'le défenseur interceptant est identifié');
+
+// Les tireurs techniques gardent une meilleure précision ; pression et puissance élevée dégradent le geste.
+const composedShot = getShotAccuracy({ shooting: 92, technique: 94, pressure: 8, movingSpeed: 1, power: 0.68, assist: 1 });
+const pressuredShot = getShotAccuracy({ shooting: 52, technique: 48, pressure: 1, movingSpeed: 12, power: 0.98, assist: 1 });
+assert.ok(composedShot.spread < pressuredShot.spread, 'le tir élite et équilibré est moins dispersé');
+assert.ok(composedShot.verticalSpread < pressuredShot.verticalSpread, 'la technique limite aussi l erreur verticale');
+assert.ok(getShotAccuracy({ shooting: 80, technique: 80, pressure: 8, power: 0.98 }).spread >
+  getShotAccuracy({ shooting: 80, technique: 80, pressure: 8, power: 0.65 }).spread,
+  'une frappe maximale coûte un peu de précision');
+assert.ok(getShotTargetY(1.5, 0) < 0, 'le tireur vise le côté opposé au gardien');
+assert.ok(getShotTargetY(-1.5, 0) > 0, 'le choix de côté s inverse avec le gardien');
+assert.ok(getShotTargetY(0, 2) < 0, 'un gardien centré laisse le tireur viser de l autre côté de son couloir');
+assert.equal(getShotTargetY(1, 0, 99), 3.38, 'la visée tactile est bornée dans le but');
+console.log('PASSING + SHOOTING OK — anticipation des interceptions, précision contextualisée et visée opposée au gardien');

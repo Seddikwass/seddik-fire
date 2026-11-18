@@ -6,6 +6,13 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.4.0 — passes et frappes plus intelligentes
+- Évaluation des lignes de passe sur la durée réelle du ballon : les trajectoires tiennent compte des adversaires qui se déplacent pour couper la passe, pas seulement de leur position au départ.
+- Choix du receveur enrichi par l'espace estimé à l'arrivée et la sécurité de la trajectoire.
+- Dispersion des frappes recalibrée selon la finition, la technique, la pression, l'équilibre et la puissance demandée ; une frappe puissante reste plus difficile à maîtriser.
+- Visée automatique vers le côté opposé au gardien, tout en conservant la visée manuelle du joueur et les limites physiques du but.
+- Tests dédiés aux interceptions statiques et anticipées, à la précision des tireurs et à la visée face au gardien.
+
 ## Version 2.3.0 — caméra de match plus vivante
 - Caméra broadcast légèrement anticipée sur la vitesse et la direction du ballon.
 - Zoom d'action progressif lorsque le jeu entre dans le dernier tiers offensif ou qu'une frappe est déclenchée.

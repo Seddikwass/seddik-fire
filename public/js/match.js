@@ -173,6 +173,70 @@ export function getTackleAssessment(defender, carrier, distance, user = false, d
 
 // Hors-jeu à l'instant où le ballon est joué : deuxième dernier adversaire,
 // ligne du ballon et moitié de terrain adverse sont tous pris en compte.
+// Évalue une ligne de passe avec anticipation des déplacements adverses sur le temps de trajet.
+export function getPassLaneAssessment(from = {}, to = {}, opponents = [], flightTime = 0.8) {
+  const sx = Number.isFinite(from.x) ? from.x : 0;
+  const sy = Number.isFinite(from.y) ? from.y : 0;
+  const dx = (Number.isFinite(to.x) ? to.x : sx) - sx;
+  const dy = (Number.isFinite(to.y) ? to.y : sy) - sy;
+  const duration = clamp(Number.isFinite(flightTime) ? flightTime : 0.8, 0.12, 2.4);
+  let risk = 0, clearance = 12, interceptor = null, interceptAt = 1;
+  for (const opponent of opponents) {
+    if (!opponent || opponent.sentOff) continue;
+    const ox = Number.isFinite(opponent.x) ? opponent.x : 0;
+    const oy = Number.isFinite(opponent.y) ? opponent.y : 0;
+    const ovx = Number.isFinite(opponent.vx) ? opponent.vx : 0;
+    const ovy = Number.isFinite(opponent.vy) ? opponent.vy : 0;
+    let nearest = Infinity, nearestAt = 1;
+    // Un défenseur qui ferme la ligne est détecté même s'il n'est pas dessus au départ.
+    for (let step = 1; step <= 5; step++) {
+      const phase = step / 5;
+      const ballX = sx + dx * phase, ballY = sy + dy * phase;
+      const time = duration * phase;
+      const defenderX = ox + ovx * time * 0.82;
+      const defenderY = oy + ovy * time * 0.82;
+      const gap = Math.hypot(defenderX - ballX, defenderY - ballY);
+      if (gap < nearest) { nearest = gap; nearestAt = phase; }
+    }
+    clearance = Math.min(clearance, nearest);
+    if (nearest < 2.4) {
+      const urgency = 1.08 - nearestAt * 0.22;
+      risk += (2.4 - nearest) ** 2 * 1.6 * urgency;
+      if (!interceptor || nearest < interceptor.clearance) {
+        interceptor = { player: opponent, clearance: nearest };
+        interceptAt = nearestAt;
+      }
+    }
+  }
+  return { risk, clearance, interceptor: interceptor?.player || null, interceptAt };
+}
+
+// Dispersion des frappes : qualité technique, pression, équilibre et puissance influencent le geste.
+export function getShotAccuracy({ shooting = 50, technique = 50, pressure = 99, movingSpeed = 0, power = 0.7, assist = 1 } = {}) {
+  const shotSkill = clamp(Number(shooting) || 50, 0, 100) / 100;
+  const techSkill = clamp(Number(technique) || 50, 0, 100) / 100;
+  const pressureLoad = clamp((4.2 - (Number.isFinite(pressure) ? pressure : 99)) / 4.2, 0, 1);
+  const balanceLoad = clamp(((Number.isFinite(movingSpeed) ? movingSpeed : 0) - 3) / 11, 0, 1);
+  const powerLoad = clamp(((Number.isFinite(power) ? power : 0.7) - 0.72) / 0.28, 0, 1);
+  const support = clamp(Number(assist) || 1, 0.45, 1.2);
+  const spread = (0.26 + (1 - shotSkill) * 1.15 + (1 - techSkill) * 0.42 +
+    pressureLoad * 1.05 + balanceLoad * 0.58 + powerLoad * 0.36) * support;
+  const verticalSpread = (0.1 + (1 - techSkill) * 0.44 +
+    pressureLoad * 0.24 + balanceLoad * 0.16 + powerLoad * 0.12) * support;
+  return { spread: clamp(spread, 0.2, 4.5), verticalSpread: clamp(verticalSpread, 0.08, 1.25), pressureLoad, balanceLoad };
+}
+
+// Recherche la zone opposée au gardien ; une visée tactile explicite reste prioritaire.
+export function getShotTargetY(keeperY = 0, shooterY = 0, aimY = null) {
+  const limit = GOAL_W - 0.28;
+  if (Number.isFinite(aimY)) return clamp(aimY, -limit, limit);
+  const keeper = Number.isFinite(keeperY) ? keeperY : 0;
+  const shooter = Number.isFinite(shooterY) ? shooterY : 0;
+  const side = Math.abs(keeper) > 0.3 ? -Math.sign(keeper) : (Math.abs(shooter) > 0.45 ? -Math.sign(shooter) : 1);
+  const depth = clamp(1.45 + Math.min(0.35, Math.abs(keeper) * 0.12), 1.2, limit);
+  return side * depth;
+}
+
 export function getOffsideDecision(attacker, ball, defenders = [], direction = 1) {
   const dir = direction < 0 ? -1 : 1;
   const defenderLines = defenders
@@ -858,10 +922,10 @@ export class Match {
       if (dist < 4 || dist > 45) continue;
       let score = (dx * d) * 0.7 - Math.max(0, dist - 25) * 0.4 + (Math.abs(HL * d - tx) < 25 ? 6 : 0);
       if (dir) { const cos = (dx * dir[0] + dy * dir[1]) / dist; if (cos < 0.45) continue; score += cos * 25; }
-      let risk = 0;
-      for (const o of opp) { if (o.sentOff) continue; const sd = segDist(o.x, o.y, p.x, p.y, tx, ty); if (sd < 2.2) risk += (2.2 - sd) * 6; }
-      let open = 99; for (const o of opp) if (!o.sentOff) open = Math.min(open, Math.hypot(o.x - tx, o.y - ty));
-      score += Math.min(open, 8) * 1.2 - risk;
+      const passSpeed = clamp(dist * 0.75 + 7, 9, 22);
+      const lane = getPassLaneAssessment(p, { x: tx, y: ty }, opp, dist / passSpeed);
+      let open = 99; for (const o of opp) if (!o.sentOff) open = Math.min(open, Math.hypot(o.x + (o.vx || 0) * 0.25 - tx, o.y + (o.vy || 0) * 0.25 - ty));
+      score += Math.min(open, 8) * 1.1 + Math.min(lane.clearance, 6) * 0.35 - lane.risk;
       // Récompenser les appels en profondeur seulement si le joueur a de l'espace devant lui.
       if (th && dx * d > 5) score += Math.min(12, Math.max(0, open - 2) * 1.4) + Math.min(7, dx * d * 0.12);
       if (t.run > 0) score += 4;
@@ -946,15 +1010,16 @@ export class Match {
     // Le dosage du bouton distingue frappe rasante, tir placé et frappe puissante.
     const driven = power < 0.38;
     const powerShot = power > 0.82;
-    let ty = aimY != null ? aimY : (gk.y > 0 ? -1 : 1) * (1.35 + this.r() * 1.9);
+    const assist = p.team === this.userSide && this.settings.assist ? 0.72 : (p.team === this.userSide ? 1 : 1.08);
+    const skill = clamp(Number(p.a.sho) || 50, 0, 100) / 100;
+    const accuracy = getShotAccuracy({
+      shooting: p.a.sho, technique: p.a.tec, pressure, movingSpeed, power, assist
+    });
+    const targetY = getShotTargetY(gk.y, p.y, aimY);
+    const distanceFactor = clamp(Math.hypot(gx - p.x, targetY - p.y) / 24, 0.72, 1.28);
+    let ty = targetY + (this.r() - 0.5) * 2 * accuracy.spread * distanceFactor;
     let tz = driven ? 0.18 + this.r() * 0.22 : powerShot ? 1.35 + this.r() * 0.75 : 0.52 + this.r() * 0.62;
-    const assist = p.team === this.userSide && this.settings.assist ? 0.65 : 1;
-    const skill = p.a.sho / 100;
-    const pressureError = clamp((3.4 - pressure) / 3.4, 0, 1) * 0.42;
-    const balanceError = clamp(movingSpeed / 10, 0, 1) * 0.2;
-    const err = (0.28 + (1 - skill) * 2.25 + power * power * 1.25 + pressureError + balanceError) * assist * (p.team !== this.userSide ? 1.15 : 1);
-    ty += (this.r() - 0.5) * 2 * err;
-    tz += (this.r() - 0.5) * (0.35 + (1 - skill) * 0.75) + Math.max(0, power - 0.88) * 0.9;
+    tz += (this.r() - 0.5) * 2 * accuracy.verticalSpread + Math.max(0, power - 0.88) * 0.28;
     const dist = Math.hypot(gx - p.x, ty - p.y);
     const speed = 17 + power * 15 + skill * 4 + Math.min(2, movingSpeed * 0.18);
     const t = dist / speed;

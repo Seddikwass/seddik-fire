@@ -6,6 +6,12 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 1.8.0 — ambiance sonore de stade
+- Ambiance des tribunes synthétisée en trois bandes (grave, médium, aigu) pour une sensation de stade plus ample.
+- L'équilibre fréquentiel suit l'intensité du match ; les buts renforcent temporairement la clameur et les percussions originales.
+- Aucune piste ou captation audio protégée n'est utilisée ; le moteur reste Web Audio natif.
+- Test automatique du graphe audio et des événements sonores dans un environnement simulé.
+
 ## Version 1.7.0 — adaptation graphique en temps réel
 - Mesure lissée de la durée des images, en respectant la cible 30/60 FPS choisie.
 - Réduit temporairement foule détaillée, texture de pelouse et faisceaux lorsque la cadence reste trop basse ; restaure les effets après une période stable.

@@ -1,6 +1,6 @@
 // Audio 100 % synthétisé (Web Audio) : ambiance de stade, sifflet, frappes, darbouka originale.
 // Aucune musique ni enregistrement protégé. Voix : synthèse vocale du navigateur ou moteur natif Android.
-let ctx = null, master = null, crowdGain = null, crowdFilter = null, drumTimer = null;
+let ctx = null, master = null, crowdGain = null, crowdFilter = null, crowdLowFilter = null, crowdHighFilter = null, drumTimer = null;
 let enabled = true, volume = 0.8, excitement = 0.2;
 
 export function audioInit() {
@@ -13,19 +13,36 @@ export function audioInit() {
   const len = ctx.sampleRate * 3, buf = ctx.createBuffer(2, len, ctx.sampleRate);
   for (let ch = 0; ch < 2; ch++) { const d = buf.getChannelData(ch); let last = 0; for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; } }
   const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
-  crowdFilter = ctx.createBiquadFilter(); crowdFilter.type = 'bandpass'; crowdFilter.frequency.value = 700; crowdFilter.Q.value = 0.6;
+  // Trois bandes complémentaires donnent une foule plus large et moins monotone
+  // sans télécharger d'enregistrement : grave des tribunes, médiums et clameur aiguë.
+  crowdLowFilter = ctx.createBiquadFilter();
+  crowdLowFilter.type = 'lowpass'; crowdLowFilter.frequency.value = 260;
+  crowdFilter = ctx.createBiquadFilter();
+  crowdFilter.type = 'bandpass'; crowdFilter.frequency.value = 700; crowdFilter.Q.value = 0.6;
+  crowdHighFilter = ctx.createBiquadFilter();
+  crowdHighFilter.type = 'highpass'; crowdHighFilter.frequency.value = 1450;
+  const lowGain = ctx.createGain(); lowGain.gain.value = 0.46;
+  const midGain = ctx.createGain(); midGain.gain.value = 0.72;
+  const highGain = ctx.createGain(); highGain.gain.value = 0.2;
   crowdGain = ctx.createGain(); crowdGain.gain.value = 0;
-  src.connect(crowdFilter).connect(crowdGain).connect(master); src.start();
+  src.connect(crowdLowFilter).connect(lowGain).connect(crowdGain);
+  src.connect(crowdFilter).connect(midGain).connect(crowdGain);
+  src.connect(crowdHighFilter).connect(highGain).connect(crowdGain);
+  crowdGain.connect(master);
+  src.start();
 }
 export function setAudio(on, vol) { enabled = on; if (vol != null) volume = vol; if (master) master.gain.value = enabled ? volume : 0; }
 export function audioSuspend() { if (ctx && ctx.state === 'running') ctx.suspend(); stopDrums(); }
 export function audioResume() { if (ctx && ctx.state === 'suspended') ctx.resume(); }
 
 export function crowd(level) { // 0..1
-  excitement = level;
-  if (!crowdGain) return;
-  crowdGain.gain.setTargetAtTime(0.10 + level * 0.45, ctx.currentTime, 0.4);
-  crowdFilter.frequency.setTargetAtTime(500 + level * 900, ctx.currentTime, 0.4);
+  excitement = Math.max(0, Math.min(1, Number(level) || 0));
+  if (!crowdGain || !ctx) return;
+  const t = ctx.currentTime, e = excitement;
+  crowdGain.gain.setTargetAtTime(0.10 + e * 0.45, t, 0.4);
+  crowdLowFilter.frequency.setTargetAtTime(210 + e * 170, t, 0.55);
+  crowdFilter.frequency.setTargetAtTime(500 + e * 900, t, 0.4);
+  crowdHighFilter.frequency.setTargetAtTime(1750 + e * 1550, t, 0.5);
 }
 function noiseBurst(dur, freq, gain, type = 'lowpass') {
   if (!ctx || !enabled) return;
@@ -48,7 +65,9 @@ export function roar() { // clameur après un but
   const t = ctx.currentTime;
   crowdGain.gain.cancelScheduledValues(t); crowdGain.gain.setValueAtTime(crowdGain.gain.value, t);
   crowdGain.gain.linearRampToValueAtTime(1.0, t + 0.4); crowdGain.gain.linearRampToValueAtTime(0.35, t + 5);
+  crowdLowFilter.frequency.setTargetAtTime(420, t, 0.15);
   crowdFilter.frequency.setValueAtTime(1500, t);
+  crowdHighFilter.frequency.setTargetAtTime(2350, t, 0.15);
   noiseBurst(1.6, 2200, 0.6, 'bandpass');
   startDrums(8);
 }

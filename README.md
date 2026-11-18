@@ -6,6 +6,13 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 3.2.0 — tirs cadrés mesurés et gardiens plus réactifs
+- Un tir cadré est comptabilisé au moment où il est réellement arrêté dans le cadre ou lorsqu'il entre dans le but ; la visée initiale ne suffit plus.
+- Les arrêts et les buts ne sont comptés qu'une fois, et les frappes hors cadre ne gonflent plus la statistique des tirs cadrés.
+- Les têtes suivent la même règle de comptage que les frappes au pied.
+- Les appuis latéraux du gardien varient selon sa note et le temps restant avant l'arrivée du tir.
+- Le banc IA contre IA utilise une graine déterministe et six matchs dans les tests automatiques afin de rendre les comparaisons reproductibles.
+
 ## Version 3.1.0 — conduite de balle et foulée plus naturelles
 - La cadence des foulées dépend de la vitesse et de l'attribut de vitesse, avec une transition progressive entre marche, course et sprint.
 - La conduite du ballon alterne des touches courtes et des poussées plus longues selon la vitesse, le dribble, la technique et la fatigue.

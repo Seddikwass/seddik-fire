@@ -503,6 +503,20 @@ export function getKeeperDiveProfile({ keeperY = 0, shotY = 0, shotZ = 0.8, shot
 
 // Recherche la zone opposée au gardien ; une visée tactile explicite reste prioritaire.
 // Probabilité d'arrêt : distance latérale, hauteur, vitesse et temps de réaction du gardien.
+// Déplacement latéral du gardien : qualité des appuis et urgence de l'intervention.
+export function getKeeperFootworkPace(rating = 50, crossingTime = 0.5) {
+  const skill = clamp(Number.isFinite(rating) ? rating : 50, 0, 100) / 100;
+  const timing = clamp(Number.isFinite(crossingTime) ? crossingTime : 0.5, 0.02, 1.5);
+  const urgency = clamp((1.1 - timing) / 0.95, 0, 1);
+  return clamp(0.96 + skill * 0.22 + urgency * 0.08, 0.96, 1.26);
+}
+
+// Un tir est cadré uniquement si son point de passage coupe réellement le cadre du but.
+export function isShotOnTargetAtGoalLine(y = 0, z = 0) {
+  return Number.isFinite(y) && Number.isFinite(z) &&
+    Math.abs(y) < GOAL_W && z >= 0 && z < GOAL_H;
+}
+
 export function getKeeperSaveAssessment({ rating = 50, keeperY = 0, shotY = 0, shotZ = 0.8, shotSpeed = 20, crossingTime = 0.5, difficulty = 0 } = {}) {
   const skill = clamp(Number(rating) || 50, 0, 100);
   const lateralGap = (Number.isFinite(shotY) ? shotY : 0) - (Number.isFinite(keeperY) ? keeperY : 0);
@@ -1146,7 +1160,7 @@ export class Match {
             p.diveStretch = dive.stretch;
             p.diveT = Math.max(p.diveT || 0, dive.duration);
           }
-          this.moveTo(p, gx + d * 1.25, targetY, dt, 1.18, true, true);
+          this.moveTo(p, gx + d * 1.25, targetY, dt, getKeeperFootworkPace(p.a?.gk ?? 50, tcross), true, true);
           return;
         }
       }
@@ -1324,6 +1338,13 @@ export class Match {
     const sp = 24 + this.r() * 6;
     this.kickBall(p, Math.cos(ang) * sp * d, Math.sin(ang) * sp, 11 + this.r() * 4, 0.8);
   }
+  recordShotOnTarget(shot, y, z) {
+    if (!shot || shot.onTargetRecorded || !isShotOnTargetAtGoalLine(y, z)) return false;
+    if (shot.team !== 0 && shot.team !== 1) return false;
+    this.stats.onTarget[shot.team]++;
+    shot.onTargetRecorded = true;
+    return true;
+  }
   shoot(p, power = 0.7, aimY = null) {
     const T = this.teams[p.team], d = T.dir, gx = HL * d;
     const gk = this.teams[1 - p.team].ps[0];
@@ -1356,8 +1377,6 @@ export class Match {
     this.ball.shotType = driven ? 'driven' : powerShot ? 'power' : 'placed';
     this.ball.inFlightShot = { team: p.team, shooter: p, t: 0, type: this.ball.shotType };
     this.stats.shots[p.team]++;
-    const onT = Math.abs(ty) < GOAL_W && tz < GOAL_H;
-    if (onT) this.stats.onTarget[p.team]++;
     if (this.r() < 0.5) this.say('chance', { t: T.short, p: p.name });
   }
   tryTackle(p, user) {
@@ -1562,6 +1581,7 @@ export class Match {
               let pSave = assessment.chance;
               if (Math.abs(yc) > GOAL_W - 0.5 && zc > GOAL_H - 0.6) pSave -= 0.25; // lucarne
               if (this.r() < clamp(pSave, 0.02, 0.95)) {
+                this.recordShotOnTarget(shot, yc, zc);
                 if (sp < 22 && this.r() < 0.55) {
                   b.owner = gk; b.last = gk; b.lastTeam = gk.team; b.inFlightShot = null;
                   gk.keeperCatchT = 0.48; gk.keeperPunchT = 0;
@@ -1666,7 +1686,6 @@ export class Match {
       b.spin = clamp((ty - p.y) / 18 * (headingSkill / 100), -0.45, 0.45);
       b.inFlightShot = { team: p.team, shooter: p, t: 0, type: 'header' };
       this.stats.shots[p.team]++;
-      if (Math.abs(ty) < GOAL_W && b.vz < 2) this.stats.onTarget[p.team]++;
       p.rating += 0.06;
     } else {
       b.vx = d * (8 + this.r() * 6); b.vy = (this.r() - 0.5) * 8; b.vz = 2.4 + this.r() * 1.2;
@@ -1689,6 +1708,7 @@ export class Match {
   }
   goal(team) {
     const b = this.ball, scorer = b.last && b.last.team === team ? b.last : null;
+    if (b.inFlightShot?.team === team) this.recordShotOnTarget(b.inFlightShot, b.y, b.z);
     this.score[team]++;
     const T = this.teams[team];
     let name = scorer ? scorer.name : 'c.s.c.';

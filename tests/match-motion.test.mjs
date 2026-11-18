@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -266,3 +266,25 @@ assert.ok([closeControl, looseControl, touchA, touchB].every(x =>
   'les offsets de conduite restent bornés');
 console.log('BALL CONTROL OK — touches dynamiques, maîtrise technique et sprint');
 console.log('RUNNING CADENCE OK — fréquence de foulée adaptée à l allure');
+
+
+// Les tirs cadrés sont déterminés au cadre réel, pas à la seule visée initiale.
+assert.equal(isShotOnTargetAtGoalLine(0, 1.1), true, 'un ballon dans le cadre est cadré');
+assert.equal(isShotOnTargetAtGoalLine(3.7, 1.1), false, 'un ballon à côté du poteau n est pas cadré');
+assert.equal(isShotOnTargetAtGoalLine(0, 2.5), false, 'un ballon au-dessus de la barre n est pas cadré');
+assert.equal(isShotOnTargetAtGoalLine(0, -0.1), false, 'un point sous le terrain n est pas cadré');
+const onTargetStart = match.stats.onTarget[0];
+const countedShot = { team: 0 };
+assert.equal(match.recordShotOnTarget(countedShot, 0.5, 1.0), true, 'un arrêt sur un tir dans le cadre est comptabilisé');
+assert.equal(match.recordShotOnTarget(countedShot, 0.5, 1.0), false, 'le même tir ne peut être compté deux fois');
+assert.equal(match.stats.onTarget[0], onTargetStart + 1, 'un tir cadré n est ajouté qu une seule fois');
+
+const averageKeeperFootwork = getKeeperFootworkPace(52, 0.55);
+const eliteKeeperFootwork = getKeeperFootworkPace(92, 0.55);
+const urgentKeeperFootwork = getKeeperFootworkPace(72, 0.18);
+const relaxedKeeperFootwork = getKeeperFootworkPace(72, 1.05);
+assert.ok(eliteKeeperFootwork > averageKeeperFootwork, 'un gardien plus fort ajuste plus vite ses appuis');
+assert.ok(urgentKeeperFootwork > relaxedKeeperFootwork, 'le gardien accélère ses appuis quand le tir approche');
+assert.ok([averageKeeperFootwork, eliteKeeperFootwork, urgentKeeperFootwork, relaxedKeeperFootwork]
+  .every(v => Number.isFinite(v) && v >= 0.96 && v <= 1.26), 'la réponse latérale reste bornée');
+console.log('SHOT ACCOUNTING + KEEPER FOOTWORK OK — cadre réel, anti-double comptage et appuis contextualisés');

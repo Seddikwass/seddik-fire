@@ -6,6 +6,12 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.3.0 — caméra de match plus vivante
+- Caméra broadcast légèrement anticipée sur la vitesse et la direction du ballon.
+- Zoom d'action progressif lorsque le jeu entre dans le dernier tiers offensif ou qu'une frappe est déclenchée.
+- Cadrage de replay conservé, avec transitions douces pour éviter les mouvements brusques.
+- Tests sur l'anticipation, les limites de zoom et le maintien du cadrage ralenti.
+
 ## Version 2.2.0 — règle du hors-jeu
 - Position de hors-jeu calculée au départ de chaque passe selon le ballon, la moitié de terrain et le deuxième dernier adversaire.
 - Le drapeau n'est sifflé que lorsque le joueur en position intervient sur le ballon ; la reprise revient à l'équipe adverse à l'endroit de l'infraction.

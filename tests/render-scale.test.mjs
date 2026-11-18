@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getRenderDpr, getBallRotation, getMatchHudLayout, shouldReduceRenderDetail, canRestoreRenderDetail, getTurfTextureConfig, getBallShadowMetrics } from '../public/js/match.js';
+import { getRenderDpr, getBallRotation, getMatchHudLayout, shouldReduceRenderDetail, canRestoreRenderDetail, getTurfTextureConfig, getBallShadowMetrics, getCameraFollow } from '../public/js/match.js';
 
 assert.equal(getRenderDpr('low', { pixelRatio: 3 }), 1, 'qualité basse : ratio plafonné à 1');
 assert.equal(getRenderDpr('medium', { pixelRatio: 3 }), 1.5, 'qualité moyenne : ratio plafonné à 1,5');
@@ -57,3 +57,13 @@ assert.ok(aerialShadow.spread > groundedShadow.spread, 'l ombre s élargit lorsq
 assert.ok(Number.isFinite(getBallShadowMetrics(Number.NaN).opacity), 'les valeurs invalides gardent une ombre sûre');
 
 console.log('MATCH MATERIALS OK — gazon multi-densité et ombre du ballon en hauteur');
+
+
+const openPlayCamera = getCameraFollow({ x: 4, y: 18, vx: 0, vy: 0 });
+const attackCamera = getCameraFollow({ x: 42, y: 1, vx: 16, vy: 0, inFlightShot: {} });
+assert.ok(attackCamera.x > 42, 'la caméra anticipe légèrement un ballon rapide');
+assert.ok(attackCamera.zoom > openPlayCamera.zoom, 'la caméra resserre le cadre dans une phase offensive');
+assert.ok(attackCamera.zoom <= 1.09, 'le zoom reste plafonné pour préserver la lisibilité');
+assert.equal(getCameraFollow({ x: 42, y: 1, vx: 16, vy: 0 }, true).zoom, 1, 'un replay conserve son cadrage dédié');
+
+console.log('CAMERA FOLLOW OK — anticipation du ballon et zoom d action progressif');

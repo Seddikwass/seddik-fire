@@ -189,6 +189,23 @@ export function getOffsideDecision(attacker, ball, defenders = [], direction = 1
   return { offside, line, playerProgress, secondLastDefender, ballProgress };
 }
 
+// Caméra broadcast : léger suivi anticipé et zoom d'action progressif, jamais instantané.
+export function getCameraFollow(ball = {}, close = false) {
+  const x = Number.isFinite(ball.x) ? ball.x : 0;
+  const y = Number.isFinite(ball.y) ? ball.y : 0;
+  const vx = Number.isFinite(ball.vx) ? ball.vx : 0;
+  const vy = Number.isFinite(ball.vy) ? ball.vy : 0;
+  const speed = Math.hypot(vx, vy);
+  const lead = close ? 0.035 : clamp(speed / 120, 0, 0.18);
+  const threat = clamp((Math.abs(x) - 25) / 26, 0, 1) * clamp(1 - Math.abs(y) / 38, 0.3, 1);
+  const zoom = close ? 1 : clamp(1 + threat * 0.055 + (ball.inFlightShot ? 0.035 : 0), 1, 1.09);
+  return {
+    x: clamp(x + vx * lead, -HL + 6, HL - 6),
+    y: clamp(y + vy * lead * 0.65, -HW + 4, HW - 4),
+    zoom,
+  };
+}
+
 export class Match {
   constructor(opts) {
     this.o = opts;
@@ -1373,12 +1390,14 @@ export class Match {
     const k = this.focal / Math.max(zc, 0.1);
     return [this.W / 2 + xc * k, this.H * 0.5 - yc * k, k, zc];
   }
-  setCamera(bx, by, close = false) {
+  setCamera(bx, by, close = false, actionZoom = 1) {
     const aspect = this.W / this.H;
     const target = clamp(bx, -HL + 6, HL - 6);
     this.cam.x = lerp(this.cam.x, target, close ? 0.2 : 0.06);
     this.cam.y = lerp(this.cam.y, by, 0.04);
-    const z = this.settings.zoom || 1;
+    const zoomTarget = close ? 1 : clamp(actionZoom, 1, 1.09);
+    this.cam.actionZoom = lerp(this.cam.actionZoom || 1, zoomTarget, close ? 0.16 : 0.035);
+    const z = (this.settings.zoom || 1) * this.cam.actionZoom;
     const camY = -44 + this.cam.y * 0.35 + (close ? 16 : 0), camZ = (close ? 11 : 17) / Math.sqrt(z);
     const C = [this.cam.x, camY, camZ], T = [this.cam.x, this.cam.y * 0.6 + (close ? 4 : 0), 0];
     let f = [T[0] - C[0], T[1] - C[1], T[2] - C[2]]; const fl = Math.hypot(...f); f = f.map(v => v / fl);
@@ -1392,7 +1411,13 @@ export class Match {
     let frame = null;
     if (this.replay) { const fr = this.replay.frames, i = Math.floor(this.replay.i); frame = fr[Math.min(i, fr.length - 1)]; }
     const bx = frame ? frame.b[0] : this.ball.x, by = frame ? frame.b[1] : this.ball.y;
-    this.setCamera(bx, by, !!frame);
+    const follow = getCameraFollow({
+      x: bx, y: by,
+      vx: frame ? frame.b[3] : this.ball.vx,
+      vy: frame ? frame.b[4] : this.ball.vy,
+      inFlightShot: frame ? null : this.ball.inFlightShot
+    }, !!frame);
+    this.setCamera(follow.x, follow.y, !!frame, follow.zoom);
     // ciel / fond
     const g = c.createLinearGradient(0, 0, 0, H * 0.4);
     g.addColorStop(0, '#05070d'); g.addColorStop(1, '#16213a');

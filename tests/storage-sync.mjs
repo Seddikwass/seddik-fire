@@ -6,7 +6,7 @@ globalThis.localStorage = {
   setItem: (k,v) => data.set(k,String(v)),
   removeItem: k => data.delete(k),
 };
-globalThis.navigator = { onLine: true };
+Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { onLine: true } });
 globalThis.document = { addEventListener() {}, visibilityState: 'visible' };
 globalThis.CustomEvent = class { constructor(type, init={}) { this.type=type; this.detail=init.detail; } };
 globalThis.window = { FT26_API:'', addEventListener() {}, dispatchEvent() {} };

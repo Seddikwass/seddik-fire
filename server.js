@@ -33,11 +33,19 @@ function verify(tok) {
 }
 const hits = new Map();
 function limited(ip, key, max, winMs) { const k = ip + key, now = Date.now(); const a = (hits.get(k) || []).filter(t => now - t < winMs); a.push(now); hits.set(k, a); return a.length > max; }
-setInterval(() => hits.clear(), 10 * 60e3).unref();
+// Nettoyage mémoire sans effacer prématurément les fenêtres glissantes de 15 minutes.
+setInterval(() => {
+  const cutoff = Date.now() - 15 * 60e3;
+  for (const [key, times] of hits) {
+    const active = times.filter(t => t > cutoff);
+    if (active.length) hits.set(key, active);
+    else hits.delete(key);
+  }
+}, 60e3).unref();
 
 // ---------- HTTP utilitaires
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8' };
-const SEC_HEADERS = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'SAMEORIGIN', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()' };
+const SEC_HEADERS = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'SAMEORIGIN', 'X-Permitted-Cross-Domain-Policies': 'none', 'X-Download-Options': 'noopen', 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains', 'Permissions-Policy': 'camera=(), microphone=(), geolocation=()' };
 function send(res, code, obj, req) {
   const body = JSON.stringify(obj);
   const h = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...SEC_HEADERS, ...cors(req) };
@@ -48,10 +56,27 @@ function send(res, code, obj, req) {
 function cors(req) { const o = req?.headers.origin; if (!o) return {}; const ok = /^https?:\/\/localhost(:\d+)?$/.test(o) || o === 'capacitor://localhost' || (process.env.ALLOWED_ORIGINS || '').split(',').includes(o); return ok ? { 'Access-Control-Allow-Origin': o, 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS', Vary: 'Origin' } : {}; }
 function readBody(req, max = 6e6) {
   return new Promise((ok, ko) => {
-    let n = 0; const chunks = [];
-    req.on('data', c => { n += c.length; if (n > max) { ko(Object.assign(new Error('Requête trop volumineuse'), { status: 413 })); req.destroy(); } else chunks.push(c); });
-    req.on('end', () => { try { ok(chunks.length ? JSON.parse(Buffer.concat(chunks)) : {}); } catch (e) { ko(Object.assign(new Error('JSON invalide'), { status: 400 })); } });
-    req.on('error', ko);
+    let n = 0, settled = false;
+    const chunks = [];
+    req.on('data', chunk => {
+      if (settled) return;
+      n += chunk.length;
+      if (n > max) {
+        settled = true;
+        chunks.length = 0;
+        ko(Object.assign(new Error('Requête trop volumineuse'), { status: 413 }));
+        // Drainer le flux pour pouvoir renvoyer proprement le 413 sans stocker la suite.
+        req.resume();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => {
+      if (settled) return;
+      try { settled = true; ok(chunks.length ? JSON.parse(Buffer.concat(chunks)) : {}); }
+      catch { settled = true; ko(Object.assign(new Error('JSON invalide'), { status: 400 })); }
+    });
+    req.on('error', error => { if (!settled) { settled = true; ko(error); } });
   });
 }
 const userOf = req => verify((req.headers.authorization || '').replace(/^Bearer /, ''));
@@ -115,9 +140,9 @@ async function api(req, res, url) {
 function serveStatic(req, res, url) {
   let rel = decodeURIComponent(url.pathname); if (rel === '/' || rel === '') rel = '/index.html';
   const file = path.join(PUB, path.normalize(rel).replace(/^(\.\.[/\\])+/, ''));
-  if (!file.startsWith(PUB)) { res.writeHead(403); return res.end(); }
+  if (file !== PUB && !file.startsWith(PUB + path.sep)) { res.writeHead(403, SEC_HEADERS); return res.end(); }
   fs.stat(file, (err, s) => {
-    if (err || !s.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('Introuvable'); }
+    if (err || !s.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', ...SEC_HEADERS }); return res.end('Introuvable'); }
     const ext = path.extname(file), type = MIME[ext] || 'application/octet-stream';
     const cache = ['.html', '.js', '.css', '.webmanifest'].includes(ext) || file.endsWith('sw.js') ? 'no-cache' : 'public, max-age=3600';
     const h = { 'Content-Type': type, 'Cache-Control': cache, ...SEC_HEADERS };

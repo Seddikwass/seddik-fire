@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getRenderDpr, getBallRotation, getMatchHudLayout, shouldReduceRenderDetail, canRestoreRenderDetail } from '../public/js/match.js';
+import { getRenderDpr, getBallRotation, getMatchHudLayout, shouldReduceRenderDetail, canRestoreRenderDetail, getTurfTextureConfig, getBallShadowMetrics } from '../public/js/match.js';
 
 assert.equal(getRenderDpr('low', { pixelRatio: 3 }), 1, 'qualité basse : ratio plafonné à 1');
 assert.equal(getRenderDpr('medium', { pixelRatio: 3 }), 1.5, 'qualité moyenne : ratio plafonné à 1,5');
@@ -39,3 +39,21 @@ assert.equal(canRestoreRenderDetail(22, 60), false, 'les détails ne reviennent 
 assert.equal(canRestoreRenderDetail(35, 30), true, 'restauration correcte en mode 30 FPS');
 
 console.log('ADAPTIVE DETAIL OK — baisse des effets sous charge et restauration avec marge');
+
+
+const lowTurf = getTurfTextureConfig('low');
+const mediumTurf = getTurfTextureConfig('medium');
+const highTurf = getTurfTextureConfig('high');
+assert.equal(lowTurf.size, 0, 'la qualité basse évite la texture coûteuse');
+assert.equal(mediumTurf.size, 256, 'la qualité moyenne utilise la texture détaillée');
+assert.ok(highTurf.blades > mediumTurf.blades, 'la qualité haute augmente la densité des brins');
+assert.ok(highTurf.flecks > mediumTurf.flecks, 'la qualité haute enrichit les micro-détails');
+assert.ok(highTurf.alpha > mediumTurf.alpha, 'le détail de la pelouse reste discret en qualité moyenne');
+
+const groundedShadow = getBallShadowMetrics(0);
+const aerialShadow = getBallShadowMetrics(7);
+assert.ok(aerialShadow.opacity < groundedShadow.opacity, 'l ombre du ballon s atténue avec la hauteur');
+assert.ok(aerialShadow.spread > groundedShadow.spread, 'l ombre s élargit lorsque le ballon monte');
+assert.ok(Number.isFinite(getBallShadowMetrics(Number.NaN).opacity), 'les valeurs invalides gardent une ombre sûre');
+
+console.log('MATCH MATERIALS OK — gazon multi-densité et ombre du ballon en hauteur');

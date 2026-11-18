@@ -277,3 +277,38 @@ button:disabled,.btn:disabled{
 @media(prefers-reduced-motion:reduce){
   .match .mb,.match .joy,.match .joy .knob{transition:none!important}
 }
+
+
+/* FT26 v2.0 — commandes tactiles renforcées pour les matchs sur téléphone */
+@media (max-width: 760px) and (orientation: landscape) {
+  .match .btns {
+    width: calc(292px * var(--bs));
+    height: calc(244px * var(--bs));
+  }
+  .match .mb { font-size: clamp(12px, 2vw, 15px); }
+  .match .mb.shoot {
+    width: calc(108px * var(--bs)); height: calc(108px * var(--bs));
+    right: 0; bottom: 8px;
+  }
+  .match .mb.pass {
+    width: calc(86px * var(--bs)); height: calc(86px * var(--bs));
+    right: calc(116px * var(--bs)); bottom: 0;
+  }
+  .match .mb.thru {
+    width: calc(76px * var(--bs)); height: calc(76px * var(--bs));
+    right: calc(76px * var(--bs)); bottom: calc(116px * var(--bs));
+  }
+  .match .mb.sprint {
+    width: calc(68px * var(--bs)); height: calc(68px * var(--bs));
+    right: calc(212px * var(--bs)); bottom: calc(102px * var(--bs));
+  }
+  .match .joy {
+    width: calc(132px * var(--bs)); height: calc(132px * var(--bs));
+    margin: calc(-66px * var(--bs)) 0 0 calc(-66px * var(--bs));
+  }
+  .match .mpause { width: 50px; height: 50px; }
+}
+@media (max-width: 390px) and (orientation: landscape) {
+  .match .btns { transform: scale(.88); transform-origin: bottom right; }
+  .match.lefty .btns { transform-origin: bottom left; }
+}

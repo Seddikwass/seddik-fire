@@ -6,6 +6,12 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 1.7.0 — adaptation graphique en temps réel
+- Mesure lissée de la durée des images, en respectant la cible 30/60 FPS choisie.
+- Réduit temporairement foule détaillée, texture de pelouse et faisceaux lorsque la cadence reste trop basse ; restaure les effets après une période stable.
+- La simulation, la physique, les commandes et la durée du match ne changent jamais avec ce mode.
+- Seuils et hystérésis couverts par des tests de non-régression.
+
 ## Version 1.6.0 — présentation stade et diffusion télévisée
 - Pelouse enrichie d'une texture procédurale déterministe, mise en cache une fois par match et désactivée en qualité basse.
 - Éclairage de stade renforcé : faisceaux des projecteurs et zones lumineuses douces sur le terrain.

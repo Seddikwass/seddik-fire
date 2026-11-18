@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getRenderDpr, getBallRotation, getMatchHudLayout } from '../public/js/match.js';
+import { getRenderDpr, getBallRotation, getMatchHudLayout, shouldReduceRenderDetail, canRestoreRenderDetail } from '../public/js/match.js';
 
 assert.equal(getRenderDpr('low', { pixelRatio: 3 }), 1, 'qualité basse : ratio plafonné à 1');
 assert.equal(getRenderDpr('medium', { pixelRatio: 3 }), 1.5, 'qualité moyenne : ratio plafonné à 1,5');
@@ -29,3 +29,13 @@ assert.ok(desktopHud.panelWidth + desktopHud.statsWidth < 1600, 'score et statis
 assert.equal(getMatchHudLayout(0, 0).compact, false, 'les paramètres invalides utilisent une mise en page sûre');
 
 console.log('BROADCAST HUD OK — scoreboard adaptatif et statistiques sans chevauchement');
+
+assert.equal(shouldReduceRenderDetail(25, 60), true, 'une moyenne inférieure à 40 FPS déclenche le détail réduit');
+assert.equal(shouldReduceRenderDetail(20, 60), false, 'un rendu fluide ne déclenche pas le détail réduit');
+assert.equal(shouldReduceRenderDetail(45, 30), false, 'une cible volontaire à 30 FPS ne déclenche pas de réduction');
+assert.equal(shouldReduceRenderDetail(48, 30), true, 'un rendu inférieur à la cible 30 FPS réduit les effets');
+assert.equal(canRestoreRenderDetail(18, 60), true, 'les détails reviennent lorsque la cadence est stable');
+assert.equal(canRestoreRenderDetail(22, 60), false, 'les détails ne reviennent pas pendant une baisse persistante');
+assert.equal(canRestoreRenderDetail(35, 30), true, 'restauration correcte en mode 30 FPS');
+
+console.log('ADAPTIVE DETAIL OK — baisse des effets sous charge et restauration avec marge');

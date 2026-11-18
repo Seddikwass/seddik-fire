@@ -51,6 +51,18 @@ const LINES = {
 };
 LINES.en = LINES.fr;
 
+export function shouldReduceRenderDetail(frameAverageMs, targetFps = 60) {
+  const fps = Number.isFinite(targetFps) && targetFps > 0 ? targetFps : 60;
+  const average = Number.isFinite(frameAverageMs) ? frameAverageMs : 0;
+  return average > (1000 / fps) * 1.42;
+}
+
+export function canRestoreRenderDetail(frameAverageMs, targetFps = 60) {
+  const fps = Number.isFinite(targetFps) && targetFps > 0 ? targetFps : 60;
+  const average = Number.isFinite(frameAverageMs) ? frameAverageMs : Infinity;
+  return average < (1000 / fps) * 1.12;
+}
+
 export function getMatchHudLayout(width, dpr = 1) {
   const scale = Number.isFinite(dpr) && dpr > 0 ? dpr : 1;
   const screenWidth = Number.isFinite(width) && width > 0 ? width : 800 * scale;
@@ -99,6 +111,10 @@ export class Match {
     this.crowdTex = null;
     this.pitchPattern = null;
     this.pitchPatternBuilt = false;
+    this.autoReduced = false;
+    this.frameAverageMs = 1000 / 60;
+    this.performanceSamples = 0;
+    this.lastPerformanceTransition = 0;
     this.halfLen = 45;
     this.secondsPerMinute = (this.settings.duration * 60) / 90;
     this.setupKickoff(0);
@@ -138,11 +154,28 @@ export class Match {
     this.canvas.width = Math.round(w * dpr); this.canvas.height = Math.round(h * dpr);
     this.W = this.canvas.width; this.H = this.canvas.height; this.dpr = dpr;
   }
+  updateRenderBudget(frameMs, now) {
+    if (this.settings.quality === 'low') return;
+    const sample = clamp(Number.isFinite(frameMs) ? frameMs : 1000 / 60, 0, 120);
+    this.frameAverageMs += (sample - this.frameAverageMs) * 0.08;
+    this.performanceSamples++;
+    if (this.performanceSamples < 45 || now - this.lastPerformanceTransition < (this.autoReduced ? 5500 : 1800)) return;
+    const targetFps = this.settings.fps === 30 ? 30 : 60;
+    if (!this.autoReduced && shouldReduceRenderDetail(this.frameAverageMs, targetFps)) {
+      this.autoReduced = true;
+      this.lastPerformanceTransition = now;
+    } else if (this.autoReduced && canRestoreRenderDetail(this.frameAverageMs, targetFps)) {
+      this.autoReduced = false;
+      this.lastPerformanceTransition = now;
+    }
+  }
   loop(now) {
     if (!this.running) return;
     requestAnimationFrame(this.loop);
     if (this.settings.fps === 30 && (this.frameSkip ^= 1)) return;
-    let dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
+    let dt = Math.min(0.1, (now - this.last) / 1000);
+    if (!this.paused) this.updateRenderBudget(dt * 1000, now);
+    this.last = now;
     if (!this.paused) {
       if (this.replay) this.updateReplay(dt);
       else { this.acc += dt; while (this.acc >= DT) { this.step(DT); this.acc -= DT; } }
@@ -1382,10 +1415,10 @@ export class Match {
   }
   drawStands() {
     const c = this.c;
-    if (this.settings.quality !== 'low' && !this.crowdTex) this.buildCrowd();
+    if (this.settings.quality !== 'low' && !this.autoReduced && !this.crowdTex) this.buildCrowd();
     if (!this.adTex) this.buildCrowd();
     // tribune lointaine : bandes horizontales
-    const rows = this.settings.quality === 'low' ? 6 : 18;
+    const rows = this.settings.quality === 'low' || this.autoReduced ? 6 : 18;
     for (let i = 0; i < rows; i++) {
       const y0 = 38 + i * 1.6, z0 = i * 1.05, y1 = y0 + 1.6, z1 = z0 + 1.05;
       const a = this.proj(-75, y0, z0), b = this.proj(-75, y1, z1);
@@ -1401,7 +1434,7 @@ export class Match {
     c.fillStyle = '#0a0c12'; c.fillRect(0, 0, this.W, Math.max(0, top[1]));
     for (const lx of [-60, -20, 20, 60]) {
       const p = this.proj(lx, 70, 30), target = this.proj(lx * 0.72, 10, 0);
-      if (this.settings.quality !== 'low') {
+      if (this.settings.quality !== 'low' && !this.autoReduced) {
         const beam = c.createLinearGradient(p[0], p[1], target[0], target[1]);
         beam.addColorStop(0, 'rgba(255,248,220,0.07)');
         beam.addColorStop(0.55, 'rgba(255,244,205,0.035)');
@@ -1451,8 +1484,8 @@ export class Match {
       const x0 = -HL + i * sw, x1 = x0 + sw;
       this.poly([this.proj(x0, -HW, 0), this.proj(x1, -HW, 0), this.proj(x1, HW, 0), this.proj(x0, HW, 0)], i % 2 ? '#3d8f37' : '#357f31');
     }
-    if (!this.pitchPatternBuilt) this.buildPitchPattern();
-    if (this.pitchPattern) {
+    if (!this.pitchPatternBuilt && !this.autoReduced) this.buildPitchPattern();
+    if (this.pitchPattern && !this.autoReduced) {
       const corners = [[-HL, -HW], [HL, -HW], [HL, HW], [-HL, HW]].map(([x, y]) => this.proj(x, y, 0));
       const xs = corners.map(p => p[0]), ys = corners.map(p => p[1]);
       c.save();
@@ -1463,7 +1496,7 @@ export class Match {
       c.fillRect(Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
       c.restore();
     }
-    if (this.settings.quality !== 'low') {
+    if (this.settings.quality !== 'low' && !this.autoReduced) {
       for (const lx of [-42, -14, 14, 42]) {
         const p = this.proj(lx, 0, 0), radius = (this.settings.quality === 'high' ? 112 : 86) * this.dpr;
         const light = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], radius);

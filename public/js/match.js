@@ -344,6 +344,7 @@ export class Match {
     if (this.userSide === team) this.select(taker);
   }
   setRestart(type, team, x, y) {
+    this.passInfo = null;
     const T = this.teams[team];
     let taker;
     if (type === 'goalkick') taker = T.ps[0];
@@ -881,9 +882,9 @@ export class Match {
     const dist = Math.hypot(tx - p.x, ty - p.y);
     speed = clamp(dist * (lob ? 0.55 : 0.75) + 7, 9, lob ? 20 : 22);
     const vz = lob ? clamp(dist * 0.32, 4, 11) : 0.6;
+    const restartExempt = ['corner', 'goalkick', 'throw'].includes(this.setPiece);
     this.kickBall(p, Math.cos(ang) * speed + p.vx * 0.1, Math.sin(ang) * speed + p.vy * 0.1, vz, 0.4);
     this.stats.passes[p.team]++;
-    const restartExempt = ['kickoff', 'corner', 'goalkick', 'throw'].includes(this.setPiece);
     const offsidePlayers = restartExempt ? [] : T.ps.filter(candidate =>
       candidate !== p && !candidate.isGK && !candidate.sentOff &&
       getOffsideDecision(candidate, b, this.teams[1 - p.team].ps, d).offside

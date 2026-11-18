@@ -105,5 +105,9 @@ assert.ok(match.passInfo.offsidePlayers.includes(receiver), 'la passe enregistre
 match.setPiece = 'corner';
 match.pass(passer, receiver, false, true);
 assert.equal(match.passInfo.offsidePlayers.length, 0, 'une passe sur corner est exemptée du hors-jeu');
+match.setPiece = 'goalkick';
+match.pass(passer, receiver, false);
+assert.equal(match.passInfo.offsidePlayers.length, 0, 'une passe sur six mètres est exemptée du hors-jeu');
+
 
 console.log('OFFSIDE OK — ligne défensive, ballon, changement de côté et exceptions sur corner');

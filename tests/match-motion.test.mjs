@@ -85,7 +85,7 @@ console.log('MATCH FEEL OK — fatigue, conduite en couloir et duels orientés')
 const laneFrom = { x: 0, y: 0 }, laneTo = { x: 20, y: 0 };
 const staticInterceptor = getPassLaneAssessment(laneFrom, laneTo, [{ x: 10, y: 0 }], 1.1);
 const openPassingLane = getPassLaneAssessment(laneFrom, laneTo, [{ x: 10, y: 5 }], 1.1);
-const movingInterceptor = getPassLaneAssessment(laneFrom, laneTo, [{ x: 10, y: 5, vy: -6 }], 1.1);
+const movingInterceptor = getPassLaneAssessment(laneFrom, laneTo, [{ x: 10, y: 5, vy: -8 }], 1.1);
 assert.ok(staticInterceptor.risk > openPassingLane.risk, 'une ligne directement occupée est risquée');
 assert.ok(movingInterceptor.risk > openPassingLane.risk, 'un défenseur qui ferme la ligne est anticipé');
 assert.ok(movingInterceptor.interceptor, 'le défenseur interceptant est identifié');

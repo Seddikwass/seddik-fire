@@ -6,6 +6,12 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.7.0 — plongeons des gardiens et réactions aux tirs
+- Les plongeons distinguent les frappes basses, les tirs à mi-hauteur et les ballons vers les lucarnes.
+- L'extension des bras et la durée de l'animation varient selon la distance latérale, la vitesse du tir, le temps de réaction et la note du gardien.
+- Les replays conservent la hauteur et l'extension du plongeon pour éviter une animation différente au ralenti.
+- Tests de non-régression sur les plongeons gauche/droite, bas/haut et les réactions tardives.
+
 ## Version 2.6.0 — appels offensifs et soutien collectif
 - Le porteur dispose de trois solutions coordonnées : appel en profondeur, soutien extérieur et appui court.
 - Les appels de profondeur sont plafonnés derrière le deuxième dernier adversaire pour éviter les courses artificiellement hors-jeu.

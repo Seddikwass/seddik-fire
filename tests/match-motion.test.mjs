@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -169,3 +169,15 @@ const mirroredPlan = getAttackingSupportPlan(mirroredPlayers, mirroredPlayers[0]
 assert.deepEqual(mirroredPlan.map(x => x.role), ['forward-run', 'wide-support', 'short-option']);
 assert.ok(mirroredPlan.every(x => x.x * -1 > -52.5 && x.y * -1 > -34), 'les cibles restent valides dans le sens d attaque inverse');
 console.log('ATTACK SUPPORT OK — appels dans le jeu, largeur, appui court et hors-jeu');
+
+
+// Les gardiens adaptent leur plongeon à la hauteur, à la portée et au temps de réaction.
+const lowDive = getKeeperDiveProfile({ keeperY: 0, shotY: -2.6, shotZ: 0.25, shotSpeed: 25, crossingTime: 0.3, rating: 55 });
+const highDive = getKeeperDiveProfile({ keeperY: 0, shotY: 2.7, shotZ: 2.25, shotSpeed: 27, crossingTime: 0.24, rating: 88 });
+const lateDive = getKeeperDiveProfile({ keeperY: 0, shotY: 3.1, shotZ: 1.3, shotSpeed: 31, crossingTime: 0.18, rating: 42 });
+assert.ok(lowDive.height < 0, 'un tir bas déclenche une extension descendante');
+assert.ok(highDive.height > 0, 'une frappe en hauteur déclenche une extension ascendante');
+assert.ok(lowDive.direction < 0 && highDive.direction > 0, 'le plongeon suit le côté du tir');
+assert.ok(lateDive.duration > highDive.duration, 'un gardien moins réactif conserve une animation de plongeon plus longue');
+assert.ok(lateDive.stretch >= 0.2 && lateDive.stretch <= 0.9, 'l extension est bornée pour rester visuellement stable');
+console.log('KEEPER DIVE OK — extension latérale, prise basse/haute et réaction');

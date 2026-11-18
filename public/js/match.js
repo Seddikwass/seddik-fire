@@ -364,6 +364,23 @@ export function getShotAccuracy({ shooting = 50, technique = 50, pressure = 99, 
   return { spread: clamp(spread, 0.2, 4.5), verticalSpread: clamp(verticalSpread, 0.08, 1.25), pressureLoad, balanceLoad };
 }
 
+// Profil de plongeon du gardien : extension latérale, hauteur de prise et durée
+// dépendent du tir reçu, du temps disponible et de la qualité du gardien.
+export function getKeeperDiveProfile({ keeperY = 0, shotY = 0, shotZ = 0.8, shotSpeed = 20, crossingTime = 0.5, rating = 50 } = {}) {
+  const skill = clamp(Number.isFinite(rating) ? rating : 50, 0, 100);
+  const lateralGap = (Number.isFinite(shotY) ? shotY : 0) - (Number.isFinite(keeperY) ? keeperY : 0);
+  const timing = clamp(Number.isFinite(crossingTime) ? crossingTime : 0.5, 0.02, 1.5);
+  const speed = Math.max(0, Number.isFinite(shotSpeed) ? shotSpeed : 20);
+  const urgency = clamp((0.98 - timing) / 0.78, 0, 1);
+  const lateralDemand = clamp(Math.abs(lateralGap) / (GOAL_W + 0.55), 0, 1);
+  // -1 : ballon bas, 0 : hauteur du buste, +1 : ballon haut / lucarne.
+  const height = clamp(((Number.isFinite(shotZ) ? shotZ : 0.8) - 1.2) / 1.05, -1, 1);
+  const speedDemand = clamp((speed - 18) / 18, 0, 1);
+  const stretch = clamp(0.24 + lateralDemand * 0.48 + urgency * 0.09 + speedDemand * 0.08 - (skill - 50) * 0.0011, 0.2, 0.9);
+  const duration = clamp(0.41 + lateralDemand * 0.055 + urgency * 0.07 + (50 - skill) * 0.00075, 0.38, 0.58);
+  return { direction: Math.sign(lateralGap) || 1, height, stretch, duration, urgency, lateralDemand };
+}
+
 // Recherche la zone opposée au gardien ; une visée tactile explicite reste prioritaire.
 // Probabilité d'arrêt : distance latérale, hauteur, vitesse et temps de réaction du gardien.
 export function getKeeperSaveAssessment({ rating = 50, keeperY = 0, shotY = 0, shotZ = 0.8, shotSpeed = 20, crossingTime = 0.5, difficulty = 0 } = {}) {
@@ -464,7 +481,7 @@ export class Match {
     const form = FORMATIONS[t.formation] || FORMATIONS['4-3-3'];
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
-      isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, anim: Math.random() * 6,
+      isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, diveHeight: 0, diveStretch: 0, anim: Math.random() * 6,
       stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
@@ -978,10 +995,18 @@ export class Match {
         if (Math.abs(cy) < GOAL_W + 1.2 && cz > -0.25 && cz < GOAL_H + 1.2) {
           const targetY = clamp(cy, -GOAL_W + 0.32, GOAL_W - 0.32);
           const gap = targetY - p.y;
-          if (tcross < 0.9 && Math.abs(gap) > 0.38 && p.keeperReactShot !== shot) {
+          const needsDive = Math.abs(gap) > 0.38 || cz > GOAL_H * 0.76 || cz < 0.42;
+          if (tcross < 0.9 && needsDive && p.keeperReactShot !== shot) {
+            const dive = getKeeperDiveProfile({
+              keeperY: p.y, shotY: targetY, shotZ: cz,
+              shotSpeed: Math.hypot(b.vx, b.vy), crossingTime: tcross,
+              rating: p.a?.gk ?? 50,
+            });
             p.keeperReactShot = shot;
-            p.diveDir = Math.sign(gap) || 1;
-            p.diveT = Math.max(p.diveT || 0, 0.48);
+            p.diveDir = dive.direction;
+            p.diveHeight = dive.height;
+            p.diveStretch = dive.stretch;
+            p.diveT = Math.max(p.diveT || 0, dive.duration);
           }
           this.moveTo(p, gx + d * 1.25, targetY, dt, 1.18, true, true);
           return;
@@ -1542,7 +1567,8 @@ export class Match {
       p.x, p.y, p.face, p.anim, p.vx, p.vy, p.jumpT || 0, p.diveT || 0,
       p.slideT || 0, p.kickT || 0, p.headerT || 0, p.firstTouchT || 0,
       p.stumbleT || 0, p.keeperCatchT || 0, p.keeperPunchT || 0, p.headerDir || p.face,
-      p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1
+      p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1,
+      p.diveHeight || 0, p.diveStretch || 0
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }
@@ -2042,6 +2068,8 @@ export class Match {
     const keeperDive = p.isGK ? Math.max(0, Math.min(1, action(7, 'diveT') / 0.5)) : 0;
     const keeperSave = !fp && p.isGK ? Math.max(0, Math.min(1, (p.saveT || 0) / 0.75)) : 0;
     const diveSide = fp ? (fp[16] || 1) : (p.diveDir || 1);
+    const diveHeight = fp ? (fp[21] || 0) : (p.diveHeight || 0);
+    const diveStretch = fp ? (fp[22] || 0) : (p.diveStretch || 0);
     const slideSide = fp ? (fp[17] || 1) : (p.slideDir || 1);
     const kickDir = fp ? (fp[18] || face) : (p.kickDir || face);
     const firstTouchDir = fp ? (fp[19] || 1) : (p.firstTouchDir || 1);
@@ -2057,7 +2085,7 @@ export class Match {
     const divePoint = this.proj(x, y + diveSide * 0.72, 0);
     const g = [
       ground[0] + slidePulse * (p.face || 1) * 0.22 * s + (divePoint[0] - ground[0]) * keeperDive * 0.72,
-      ground[1] - Math.sin(jump * Math.PI) * 0.62 * s - keeperDive * 0.12 * s + slidePulse * 0.14 * s + (divePoint[1] - ground[1]) * keeperDive * 0.72,
+      ground[1] - Math.sin(jump * Math.PI) * 0.62 * s - keeperDive * (0.12 + diveHeight * 0.26) * s + slidePulse * 0.14 * s + (divePoint[1] - ground[1]) * keeperDive * 0.72,
       ground[2], ground[3]
     ];
     const hgt = 1.8 * s, w = 0.5 * s;
@@ -2082,7 +2110,7 @@ export class Match {
       if (this.input.shooting) { const pw = this.input.shootHold; c.fillStyle = '#0008'; c.fillRect(g[0] - 0.6 * s, g[1] - hgt - 0.95 * s, 1.2 * s, 0.18 * s); c.fillStyle = pw > 0.85 ? '#ff4d4d' : '#ffe14a'; c.fillRect(g[0] - 0.6 * s, g[1] - hgt - 0.95 * s, 1.2 * s * pw, 0.18 * s); }
     }
     const sp = Math.hypot(vx, vy), gait = Math.min(1, sp / 4), phase = anim * 2.15, sw = Math.sin(phase) * gait * 0.58;
-    const diveReach = keeperDive * (0.38 + keeperSave * 0.35);
+    const diveReach = keeperDive * (0.38 + keeperSave * 0.35 + diveStretch * 0.18);
     const armSwing = Math.sin(phase + Math.PI) * gait * 0.34;
     const kickProgress = clamp(1 - action(9, 'kickT') / 0.34, 0, 1);
     const kickPulse = Math.sin(kickProgress * Math.PI);
@@ -2214,7 +2242,7 @@ export class Match {
         (!p.isGK ? slidePulse * face * 0.3 * s : 0) +
         celebration * k * 0.62 * s + (p.isGK ? 0 : headerPulse * k * 0.28 * s);
       const ey = tY + tH * 0.85 + Math.abs(armSwing) * 0.12 * s -
-        (p.isGK ? (0.1 + diveReach * 0.72 + keeperCatchPulse * 0.48 + keeperPunchPulse * 0.28) * s : 0) +
+        (p.isGK ? (0.1 + diveReach * 0.72 + keeperCatchPulse * 0.48 + keeperPunchPulse * 0.28 + keeperDive * diveHeight * 0.24) * s : 0) +
         (!p.isGK ? slidePulse * 0.16 * s : 0) - celebration * 0.98 * s -
         (p.isGK ? 0 : headerPulse * 0.45 * s);
       const shoulderY = tY + 0.08 * s;

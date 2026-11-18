@@ -51,6 +51,25 @@ const LINES = {
 };
 LINES.en = LINES.fr;
 
+export function getMatchHudLayout(width, dpr = 1) {
+  const scale = Number.isFinite(dpr) && dpr > 0 ? dpr : 1;
+  const screenWidth = Number.isFinite(width) && width > 0 ? width : 800 * scale;
+  const compact = screenWidth < 760 * scale;
+  const teamWidth = (compact ? 55 : 92) * scale;
+  const scoreWidth = (compact ? 64 : 82) * scale;
+  const clockWidth = (compact ? 42 : 54) * scale;
+  return {
+    compact,
+    teamWidth,
+    scoreWidth,
+    clockWidth,
+    scoreHeight: (compact ? 38 : 44) * scale,
+    panelWidth: (teamWidth * 2 + scoreWidth + clockWidth + 16 * scale),
+    statsWidth: compact ? 0 : Math.min(220 * scale, screenWidth * 0.32),
+    statsHeight: compact ? 0 : 76 * scale,
+  };
+}
+
 const v2len = (x, y) => Math.hypot(x, y);
 function segDist(px, py, ax, ay, bx, by) {
   const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy || 1;
@@ -78,6 +97,8 @@ export class Match {
     this.r = Math.random; this.acc = 0; this.last = 0; this.frameSkip = 0;
     this.subsLeft = [5, 5];
     this.crowdTex = null;
+    this.pitchPattern = null;
+    this.pitchPatternBuilt = false;
     this.halfLen = 45;
     this.secondsPerMinute = (this.settings.duration * 60) / 90;
     this.setupKickoff(0);
@@ -1378,12 +1399,49 @@ export class Match {
     // toit / projecteurs
     const top = this.proj(0, 38 + rows * 1.6, rows * 1.05);
     c.fillStyle = '#0a0c12'; c.fillRect(0, 0, this.W, Math.max(0, top[1]));
-    for (const lx of [-60, -20, 20, 60]) { const p = this.proj(lx, 70, 30); const gr = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], 60 * this.dpr); gr.addColorStop(0, '#fffbe6'); gr.addColorStop(0.2, '#fff6c855'); gr.addColorStop(1, '#0000'); c.fillStyle = gr; c.fillRect(p[0] - 60 * this.dpr, p[1] - 60 * this.dpr, 120 * this.dpr, 120 * this.dpr); }
+    for (const lx of [-60, -20, 20, 60]) {
+      const p = this.proj(lx, 70, 30), target = this.proj(lx * 0.72, 10, 0);
+      if (this.settings.quality !== 'low') {
+        const beam = c.createLinearGradient(p[0], p[1], target[0], target[1]);
+        beam.addColorStop(0, 'rgba(255,248,220,0.07)');
+        beam.addColorStop(0.55, 'rgba(255,244,205,0.035)');
+        beam.addColorStop(1, 'rgba(255,244,205,0)');
+        const l = this.proj(lx - 18, 17, 0), r = this.proj(lx + 18, 17, 0);
+        c.save(); this.poly([p, l, r], beam); c.restore();
+      }
+      const radius = 60 * this.dpr;
+      const gr = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], radius);
+      gr.addColorStop(0, '#fffbe6');
+      gr.addColorStop(0.18, '#fff6c877');
+      gr.addColorStop(0.52, '#fff2b51c');
+      gr.addColorStop(1, '#0000');
+      c.fillStyle = gr;
+      c.fillRect(p[0] - radius, p[1] - radius, radius * 2, radius * 2);
+    }
     // panneaux publicitaires
     const a = this.proj(-62, 36, 0), b = this.proj(-62, 36, 0.9), r = this.proj(62, 36, 0);
     c.drawImage(this.adTex, a[0], b[1], r[0] - a[0], a[1] - b[1]);
   }
   poly(pts, fill) { const c = this.c; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); c.fillStyle = fill; c.fill(); }
+  buildPitchPattern() {
+    this.pitchPatternBuilt = true;
+    if (this.settings.quality === 'low' || typeof document === 'undefined' || !this.c.createPattern) return;
+    const tile = document.createElement('canvas');
+    tile.width = 128; tile.height = 128;
+    const g = tile.getContext('2d');
+    if (!g || !g.beginPath || !g.stroke) return;
+    let seed = 0x26f2026;
+    const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    g.lineCap = 'round';
+    for (let i = 0; i < 520; i++) {
+      const x = random() * tile.width, y = random() * tile.height;
+      const length = 2 + random() * 5;
+      g.strokeStyle = random() > 0.48 ? 'rgba(225,255,220,0.16)' : 'rgba(5,34,12,0.16)';
+      g.lineWidth = 0.45 + random() * 0.7;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + (random() - 0.5) * 1.4, y - length); g.stroke();
+    }
+    this.pitchPattern = this.c.createPattern(tile, 'repeat');
+  }
   drawPitch() {
     const c = this.c;
     // gazon autour
@@ -1393,10 +1451,38 @@ export class Match {
       const x0 = -HL + i * sw, x1 = x0 + sw;
       this.poly([this.proj(x0, -HW, 0), this.proj(x1, -HW, 0), this.proj(x1, HW, 0), this.proj(x0, HW, 0)], i % 2 ? '#3d8f37' : '#357f31');
     }
+    if (!this.pitchPatternBuilt) this.buildPitchPattern();
+    if (this.pitchPattern) {
+      const corners = [[-HL, -HW], [HL, -HW], [HL, HW], [-HL, HW]].map(([x, y]) => this.proj(x, y, 0));
+      const xs = corners.map(p => p[0]), ys = corners.map(p => p[1]);
+      c.save();
+      c.beginPath(); corners.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]));
+      c.closePath(); c.clip();
+      c.globalAlpha = this.settings.quality === 'high' ? 0.19 : 0.12;
+      c.fillStyle = this.pitchPattern;
+      c.fillRect(Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+      c.restore();
+    }
+    if (this.settings.quality !== 'low') {
+      for (const lx of [-42, -14, 14, 42]) {
+        const p = this.proj(lx, 0, 0), radius = (this.settings.quality === 'high' ? 112 : 86) * this.dpr;
+        const light = c.createRadialGradient(p[0], p[1], 0, p[0], p[1], radius);
+        light.addColorStop(0, 'rgba(255,248,218,0.13)');
+        light.addColorStop(0.48, 'rgba(255,244,205,0.055)');
+        light.addColorStop(1, 'rgba(255,244,205,0)');
+        c.fillStyle = light;
+        c.fillRect(p[0] - radius, p[1] - radius, radius * 2, radius * 2);
+      }
+    }
     c.save();
     c.strokeStyle = 'rgba(245,250,241,0.92)'; c.lineWidth = Math.max(1, 2 * this.dpr);
     c.shadowColor = 'rgba(226,255,219,0.24)'; c.shadowBlur = this.settings.quality === 'low' ? 0 : 4 * this.dpr;
     const line = pts => { c.beginPath(); pts.forEach((p, i) => { const q = this.proj(p[0], p[1], 0); i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]); }); c.stroke(); };
+    c.save();
+    c.strokeStyle = 'rgba(0,0,0,0.24)'; c.lineWidth = Math.max(2, 4 * this.dpr);
+    line([[-HL, -HW], [HL, -HW], [HL, HW], [-HL, HW], [-HL, -HW]]);
+    c.restore();
+    c.strokeStyle = 'rgba(248,251,245,0.96)'; c.lineWidth = Math.max(1.2, 2 * this.dpr);
     line([[-HL, -HW], [HL, -HW], [HL, HW], [-HL, HW], [-HL, -HW]]);
     line([[0, -HW], [0, HW]]);
     const circ = (cx, cy, r, a0 = 0, a1 = Math.PI * 2) => { const pts = []; for (let i = 0; i <= 40; i++) { const a = a0 + (a1 - a0) * i / 40; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); } line(pts); };
@@ -1418,7 +1504,20 @@ export class Match {
           arc.push([sx * (HL - 0.9 + Math.cos(a) * 0.9), sy * (HW - 0.9 + Math.sin(a) * 0.9)]);
         }
         line(arc);
+        // Corner flags and slim poles make the pitch scale feel more tangible.
+        const fx = sx * (HL - 0.35), fy = sy * (HW - 0.35);
+        const base = this.proj(fx, fy, 0), top = this.proj(fx, fy, 1.35);
+        c.strokeStyle = '#f2f4f7'; c.lineWidth = Math.max(1, 1.2 * this.dpr);
+        c.beginPath(); c.moveTo(base[0], base[1]); c.lineTo(top[0], top[1]); c.stroke();
+        c.fillStyle = sx === sy ? '#e31b32' : '#f2d05b';
+        c.beginPath(); c.moveTo(top[0], top[1]); c.lineTo(top[0] + sx * 0.42 * this.dpr, top[1] + 0.14 * this.dpr); c.lineTo(top[0], top[1] + 0.33 * this.dpr); c.closePath(); c.fill();
       }
+    }
+    // Technical areas are marked outside both touchlines.
+    for (const side of [-1, 1]) {
+      const y = side * (HW + 2.2);
+      line([[-10, y], [-10, y + side * 4.2], [10, y + side * 4.2], [10, y]]);
+      line([[-8, y], [8, y]]);
     }
     c.restore();
   }
@@ -1686,32 +1785,56 @@ export class Match {
   }
   drawHUD(isReplay, frame = null) {
     const c = this.c, d = this.dpr, T = this.teams;
-    // tableau des scores
-    const x0 = 12 * d, y0 = 10 * d, h = 30 * d;
-    c.font = `800 ${15 * d}px system-ui,Arial`; c.textBaseline = 'middle'; c.textAlign = 'left';
-    const min = Math.floor(this.minute), lab = `${T[0].short}  ${this.score[0]} - ${this.score[1]}  ${T[1].short}`;
-    const tw = c.measureText(lab).width;
-    c.fillStyle = '#0b0f1acc'; c.fillRect(x0, y0, tw + 92 * d, h);
-    c.fillStyle = T[0].kit.shirt; c.fillRect(x0, y0, 5 * d, h); c.fillStyle = T[1].kit.shirt; c.fillRect(x0 + tw + 26 * d, y0, 5 * d, h);
-    c.fillStyle = '#fff'; c.fillText(lab, x0 + 14 * d, y0 + h / 2);
-    c.fillStyle = '#e70013'; c.fillRect(x0 + tw + 34 * d, y0, 58 * d, h);
-    c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(`${String(min).padStart(2, '0')}'`, x0 + tw + 63 * d, y0 + h / 2);
-    // panneau de statistiques en direct, compact et lisible sur mobile
-    if (!isReplay) {
-      const sw = Math.min(220 * d, this.W * 0.45), sh = 76 * d;
-      const sx = this.W - sw - 12 * d, sy = 10 * d;
+    // Scoreboard broadcast : proportions calculées selon la largeur réelle du canvas.
+    const layout = getMatchHudLayout(this.W, d);
+    const x0 = 12 * d, y0 = 12 * d, h = layout.scoreHeight;
+    const min = Math.floor(this.minute);
+    const homeLabel = String(T[0].short || T[0].name).slice(0, layout.compact ? 5 : 9);
+    const awayLabel = String(T[1].short || T[1].name).slice(0, layout.compact ? 5 : 9);
+    const teamW = layout.teamWidth, scoreW = layout.scoreWidth, clockW = layout.clockWidth;
+    const scoreX = x0 + teamW, awayX = scoreX + scoreW, clockX = awayX + teamW;
+    c.save();
+    c.shadowColor = 'rgba(0,0,0,0.42)'; c.shadowBlur = 14 * d; c.shadowOffsetY = 3 * d;
+    const panel = c.createLinearGradient(x0, y0, x0, y0 + h);
+    panel.addColorStop(0, 'rgba(12,22,35,0.96)'); panel.addColorStop(1, 'rgba(4,10,18,0.94)');
+    this.rr(x0, y0, layout.panelWidth, h, 9 * d);
+    c.fillStyle = panel; c.fill();
+    c.shadowBlur = 0; c.shadowOffsetY = 0;
+    c.strokeStyle = 'rgba(255,255,255,0.2)'; c.lineWidth = Math.max(1, d);
+    this.rr(x0, y0, layout.panelWidth, h, 9 * d); c.stroke();
+    c.fillStyle = T[0].kit.shirt; c.fillRect(x0, y0 + 5 * d, 4 * d, h - 10 * d);
+    c.fillStyle = T[1].kit.shirt; c.fillRect(awayX + teamW - 4 * d, y0 + 5 * d, 4 * d, h - 10 * d);
+    c.textBaseline = 'middle'; c.textAlign = 'center';
+    c.fillStyle = '#f3f6fb'; c.font = `800 ${(layout.compact ? 9.5 : 11) * d}px system-ui,Arial`;
+    c.fillText(homeLabel, x0 + teamW / 2, y0 + h / 2);
+    c.fillText(awayLabel, awayX + teamW / 2, y0 + h / 2);
+    c.fillStyle = 'rgba(255,255,255,0.09)'; c.fillRect(scoreX + 2 * d, y0 + 5 * d, scoreW - 4 * d, h - 10 * d);
+    c.fillStyle = '#fff'; c.font = `900 ${(layout.compact ? 17 : 20) * d}px system-ui,Arial`;
+    c.fillText(`${this.score[0]}  –  ${this.score[1]}`, scoreX + scoreW / 2, y0 + h / 2);
+    const clockGrad = c.createLinearGradient(clockX, y0, clockX + clockW, y0 + h);
+    clockGrad.addColorStop(0, '#f13a45'); clockGrad.addColorStop(1, '#a90d1b');
+    c.fillStyle = clockGrad; c.fillRect(clockX, y0, clockW, h);
+    c.fillStyle = '#fff'; c.font = `900 ${(layout.compact ? 10 : 12) * d}px system-ui,Arial`;
+    c.fillText(`${String(min).padStart(2, '0')}'`, clockX + clockW / 2, y0 + h / 2);
+    c.restore();
+    // Live match centre remains on desktop; on narrow phones the pitch stays clear.
+    if (!isReplay && !layout.compact) {
+      const sw = layout.statsWidth, sh = layout.statsHeight, sx = this.W - sw - 12 * d, sy = 12 * d;
       const totalPoss = Math.max(0.01, this.stats.poss[0] + this.stats.poss[1]);
       const poss0 = Math.round(this.stats.poss[0] / totalPoss * 100), poss1 = 100 - poss0;
-      c.fillStyle = '#07111ddd'; c.fillRect(sx, sy, sw, sh);
-      c.fillStyle = '#ffffff'; c.font = `700 ${10 * d}px system-ui,Arial`;
-      c.textAlign = 'left'; c.fillText('STATISTIQUES', sx + 7 * d, sy + 12 * d);
-      c.fillStyle = T[0].kit.shirt; c.fillRect(sx + 7 * d, sy + 19 * d, sw * poss0 / 100 * 0.48, 4 * d);
-      c.fillStyle = T[1].kit.shirt; c.fillRect(sx + sw * 0.51, sy + 19 * d, sw * poss1 / 100 * 0.48, 4 * d);
+      c.save();
+      this.rr(sx, sy, sw, sh, 9 * d); c.fillStyle = 'rgba(5,14,24,0.86)'; c.fill();
+      c.strokeStyle = 'rgba(255,255,255,0.17)'; c.lineWidth = Math.max(1, d); this.rr(sx, sy, sw, sh, 9 * d); c.stroke();
+      c.fillStyle = '#e7c86b'; c.font = `800 ${10 * d}px system-ui,Arial`;
+      c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText('MATCH CENTER', sx + 9 * d, sy + 13 * d);
+      c.fillStyle = T[0].kit.shirt; c.fillRect(sx + 9 * d, sy + 23 * d, (sw - 18 * d) * poss0 / 100, 5 * d);
+      c.fillStyle = T[1].kit.shirt; c.fillRect(sx + 9 * d + (sw - 18 * d) * poss0 / 100, sy + 23 * d, (sw - 18 * d) * poss1 / 100, 5 * d);
       c.fillStyle = '#e9eef8'; c.font = `600 ${9 * d}px system-ui,Arial`;
-      c.fillText(`Poss. ${poss0}% - ${poss1}%`, sx + 7 * d, sy + 34 * d);
-      c.fillText(`Tirs ${this.stats.shots[0]}-${this.stats.shots[1]}  •  Cadrés ${this.stats.onTarget[0]}-${this.stats.onTarget[1]}`, sx + 7 * d, sy + 47 * d);
+      c.fillText(`Possession  ${poss0}% – ${poss1}%`, sx + 9 * d, sy + 41 * d);
+      c.fillText(`Tirs  ${this.stats.shots[0]}–${this.stats.shots[1]}   •   Cadrés  ${this.stats.onTarget[0]}–${this.stats.onTarget[1]}`, sx + 9 * d, sy + 56 * d);
       const passPct = [0, 1].map(i => this.stats.passes[i] ? Math.round(this.stats.passOk[i] / this.stats.passes[i] * 100) : 0);
-      c.fillText(`Passes réussies ${passPct[0]}%-${passPct[1]}%  •  Fautes ${this.stats.fouls[0]}-${this.stats.fouls[1]}`, sx + 7 * d, sy + 62 * d);
+      c.fillStyle = '#aebbd0'; c.fillText(`Précision passes  ${passPct[0]}%–${passPct[1]}%`, sx + 9 * d, sy + 69 * d);
+      c.restore();
     }
     // bandeau commentaire
     if (this.tickerT > 0 && this.ticker) {

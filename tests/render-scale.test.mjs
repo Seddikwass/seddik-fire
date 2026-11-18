@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getRenderDpr, getBallRotation } from '../public/js/match.js';
+import { getRenderDpr, getBallRotation, getMatchHudLayout } from '../public/js/match.js';
 
 assert.equal(getRenderDpr('low', { pixelRatio: 3 }), 1, 'qualité basse : ratio plafonné à 1');
 assert.equal(getRenderDpr('medium', { pixelRatio: 3 }), 1.5, 'qualité moyenne : ratio plafonné à 1,5');
@@ -17,3 +17,15 @@ assert.ok(Math.abs(getBallRotation(0.5, 0, 10) - 0.35) < 1e-12, 'la rotation se 
 assert.equal(getBallRotation(Number.NaN, Number.NaN, Number.NaN), 0, 'les valeurs invalides ne contaminent pas le rendu');
 
 console.log('REPLAY ROTATION OK — orientation déterministe et indépendante de l horloge système');
+
+const mobileHud = getMatchHudLayout(780, 2);
+assert.equal(mobileHud.compact, true, 'un téléphone paysage reste en tableau de score compact');
+assert.equal(mobileHud.statsWidth, 0, 'les statistiques ne recouvrent pas le terrain sur petit écran');
+assert.ok(mobileHud.panelWidth < 780, 'le panneau de score tient sur un écran mobile');
+const desktopHud = getMatchHudLayout(1600, 2);
+assert.equal(desktopHud.compact, false, 'un écran large affiche le centre de match');
+assert.ok(desktopHud.statsWidth > 0 && desktopHud.statsHeight > 0, 'les statistiques sont disponibles sur grand écran');
+assert.ok(desktopHud.panelWidth + desktopHud.statsWidth < 1600, 'score et statistiques ne se chevauchent pas sur grand écran');
+assert.equal(getMatchHudLayout(0, 0).compact, false, 'les paramètres invalides utilisent une mise en page sûre');
+
+console.log('BROADCAST HUD OK — scoreboard adaptatif et statistiques sans chevauchement');

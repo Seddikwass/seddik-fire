@@ -6,10 +6,16 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
-## Version 1.4.0 — fiabilité mobile et performances
-- Ratio de rendu Canvas adapté à la mémoire et au nombre de cœurs détectés, tout en respectant le niveau de qualité choisi.
-- Commandes tactiles sécurisées par capture du pointeur ; les touches virtuelles sont relâchées automatiquement en cas de perte de focus ou de passage en arrière-plan.
-- Tests de non-régression dédiés à la politique de résolution.
+## Version 1.6.0 — présentation stade et diffusion télévisée
+- Pelouse enrichie d'une texture procédurale déterministe, mise en cache une fois par match et désactivée en qualité basse.
+- Éclairage de stade renforcé : faisceaux des projecteurs et zones lumineuses douces sur le terrain.
+- Terrain complété avec drapeaux de corner, zones techniques et marquages plus nets.
+- Tableau de score type diffusion sportive, adapté à la largeur de l'écran ; le panneau statistiques ne masque plus le terrain sur les téléphones.
+- Marges de sécurité Android/iOS appliquées aux commandes, à la pause et au joystick.
+- Tests de géométrie du HUD sur mobile et ordinateur ajoutés à la suite de non-régression.
+
+## Versions antérieures
+La v1.5.0 a introduit la rotation de ballon déterministe en replay et les annonces d'état des commandes tactiles. La v1.4.0 a ajouté l'adaptation du rendu aux capacités matérielles.
 
 ## Démarrer en local
 ```bash

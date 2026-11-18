@@ -252,3 +252,28 @@ button:disabled,.btn:disabled{
 @media(prefers-reduced-motion:reduce){
   .mb,.joy,.joy .knob{transition:none!important}
 }
+
+
+/* FT26 v1.6 — mobile safe areas and final touch ergonomics */
+.match .joyzone{bottom:env(safe-area-inset-bottom,0px)}
+.match .btns{
+  right:max(12px,calc(env(safe-area-inset-right,0px) + 12px));
+  bottom:max(12px,calc(env(safe-area-inset-bottom,0px) + 12px));
+}
+.match .mpause{
+  right:max(12px,calc(env(safe-area-inset-right,0px) + 12px));
+  top:max(10px,calc(env(safe-area-inset-top,0px) + 8px));
+  width:48px;height:48px
+}
+.match.lefty .btns{
+  right:auto;
+  left:max(12px,calc(env(safe-area-inset-left,0px) + 12px))
+}
+@media(max-width:760px) and (orientation:landscape){
+  .match .btns{bottom:max(12px,calc(env(safe-area-inset-bottom,0px) + 12px))}
+  .match .mb{min-width:58px;min-height:58px}
+  .match .mb.shoot{min-width:92px;min-height:92px}
+}
+@media(prefers-reduced-motion:reduce){
+  .match .mb,.match .joy,.match .joy .knob{transition:none!important}
+}

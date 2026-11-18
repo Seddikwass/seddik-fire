@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -103,3 +103,12 @@ assert.ok(getShotTargetY(-1.5, 0) > 0, 'le choix de côté s inverse avec le gar
 assert.ok(getShotTargetY(0, 2) < 0, 'un gardien centré laisse le tireur viser de l autre côté de son couloir');
 assert.equal(getShotTargetY(1, 0, 99), 3.38, 'la visée tactile est bornée dans le but');
 console.log('PASSING + SHOOTING OK — anticipation des interceptions, précision contextualisée et visée opposée au gardien');
+
+// Les gardiens d'élite gagnent en portée, mais les tirs placés et puissants restent dangereux.
+const keeperElite = getKeeperSaveAssessment({ rating: 92, keeperY: 0, shotY: 0.2, shotZ: 0.8, shotSpeed: 18, crossingTime: 0.2 });
+const keeperAverage = getKeeperSaveAssessment({ rating: 52, keeperY: 0, shotY: 0.2, shotZ: 0.8, shotSpeed: 18, crossingTime: 0.2 });
+const keeperBeaten = getKeeperSaveAssessment({ rating: 52, keeperY: 0, shotY: 2.9, shotZ: 2.1, shotSpeed: 28, crossingTime: 0.78 });
+assert.ok(keeperElite.chance > keeperAverage.chance, 'la note du gardien augmente sa chance d arrêt');
+assert.ok(keeperBeaten.chance < keeperAverage.chance, 'un tir puissant dans la lucarne est nettement plus difficile');
+assert.ok(keeperElite.reach > keeperAverage.reach, 'la portée dépend de la qualité du gardien');
+console.log('GOALKEEPING OK — portée, placement, hauteur du tir et temps de réaction');

@@ -10,6 +10,7 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - Évaluation des lignes de passe sur la durée réelle du ballon : les trajectoires tiennent compte des adversaires qui se déplacent pour couper la passe, pas seulement de leur position au départ.
 - Choix du receveur enrichi par l'espace estimé à l'arrivée et la sécurité de la trajectoire.
 - Dispersion des frappes recalibrée selon la finition, la technique, la pression, l'équilibre et la puissance demandée ; une frappe puissante reste plus difficile à maîtriser.
+- Gardiens : portée et probabilité d'arrêt selon la note, le placement latéral, la hauteur, la vitesse du tir et le temps de réaction ; les frappes en lucarne gardent un avantage offensif.
 - Visée automatique vers le côté opposé au gardien, tout en conservant la visée manuelle du joueur et les limites physiques du but.
 - Tests dédiés aux interceptions statiques et anticipées, à la précision des tireurs et à la visée face au gardien.
 

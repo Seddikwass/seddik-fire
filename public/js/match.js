@@ -227,6 +227,22 @@ export function getShotAccuracy({ shooting = 50, technique = 50, pressure = 99, 
 }
 
 // Recherche la zone opposée au gardien ; une visée tactile explicite reste prioritaire.
+// Probabilité d'arrêt : distance latérale, hauteur, vitesse et temps de réaction du gardien.
+export function getKeeperSaveAssessment({ rating = 50, keeperY = 0, shotY = 0, shotZ = 0.8, shotSpeed = 20, crossingTime = 0.5, difficulty = 0 } = {}) {
+  const skill = clamp(Number(rating) || 50, 0, 100);
+  const lateralGap = (Number.isFinite(shotY) ? shotY : 0) - (Number.isFinite(keeperY) ? keeperY : 0);
+  const heightGap = Math.max(0, (Number.isFinite(shotZ) ? shotZ : 0.8) - 1.25);
+  const need = Math.hypot(lateralGap, heightGap * 0.58);
+  const timing = Number.isFinite(crossingTime) ? crossingTime : 0.5;
+  const reaction = clamp((1.05 - timing) / 0.72, 0, 1);
+  const reach = clamp(1.6 + skill / 100 * 1.6 + clamp(Number(difficulty) || 0, -0.3, 0.3), 1.25, 3.5);
+  const speed = Math.max(0, Number.isFinite(shotSpeed) ? shotSpeed : 20);
+  const chance = need < reach
+    ? 0.92 - (need / reach) * 0.55 - (speed - 20) * 0.012 + (skill - 70) / 200 + (reaction - 0.5) * 0.07
+    : 0.02;
+  return { reach, need, reaction, chance: clamp(chance, 0.02, 0.96) };
+}
+
 export function getShotTargetY(keeperY = 0, shooterY = 0, aimY = null) {
   const limit = GOAL_W - 0.28;
   if (Number.isFinite(aimY)) return clamp(aimY, -limit, limit);
@@ -1217,9 +1233,13 @@ export class Match {
         if (tcross > 0 && tcross < 1.05) {
           const yc = b.y + b.vy * tcross, zc = b.z + b.vz * tcross - 0.5 * G * tcross * tcross;
           if (Math.abs(yc) < GOAL_W + 0.3 && zc < GOAL_H + 0.3) {
-            const reach = 1.6 + gk.a.gk / 100 * 1.6 + (gk.team === this.userSide ? 0 : [-.3, 0, .15, .3][this.settings.difficulty] || 0);
-            const need = Math.abs(yc - gk.y);
-            const reaction = clamp((1.05 - tcross) / 0.72, 0, 1);
+            const sp = Math.hypot(b.vx, b.vy);
+            const difficulty = gk.team === this.userSide ? 0 : ([-.3, 0, .15, .3][this.settings.difficulty] || 0);
+            const assessment = getKeeperSaveAssessment({
+              rating: gk.a.gk, keeperY: gk.y, shotY: yc, shotZ: zc,
+              shotSpeed: sp, crossingTime: tcross, difficulty
+            });
+            const { reach, need, reaction } = assessment;
             gk.vy += clamp((yc - gk.y) * 10, -14, 14) * dt * (4.5 + reaction * 2);
             gk.dive = Math.sign(yc - gk.y) * Math.min(1, need / 2);
             if (need > 0.4 && tcross < 0.82) {
@@ -1229,8 +1249,7 @@ export class Match {
             }
             if (!shot.judged && tcross < 0.18) {
               shot.judged = true;
-              const sp = Math.hypot(b.vx, b.vy);
-              let pSave = need < reach ? 0.92 - (need / reach) * 0.55 - (sp - 20) * 0.012 + (gk.a.gk - 70) / 200 : 0.02;
+              let pSave = assessment.chance;
               if (Math.abs(yc) > GOAL_W - 0.5 && zc > GOAL_H - 0.6) pSave -= 0.25; // lucarne
               if (this.r() < clamp(pSave, 0.02, 0.95)) {
                 if (sp < 22 && this.r() < 0.55) {

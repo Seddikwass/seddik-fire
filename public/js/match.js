@@ -291,6 +291,34 @@ export function getAttackingSupportPlan(players = [], carrier = {}, opponents = 
   return assignments;
 }
 
+// Répartition des impacts corporels : physique, agilité et endurance déterminent
+// la résistance au choc et la part d'impulsion transmise à chaque joueur.
+export function getBodyContactAssessment(a = {}, b = {}, closingSpeed = 0) {
+  const profile = p => {
+    const attrs = p?.a || {};
+    const physical = clamp(Number(attrs.phy) || 50, 0, 100) / 100;
+    const agility = clamp(Number(attrs.dri) || 50, 0, 100) / 100;
+    const stamina = clamp(Number.isFinite(p?.stamina) ? p.stamina : 1, 0.3, 1);
+    return {
+      mass: 0.82 + physical * 0.42,
+      balance: clamp(0.42 + physical * 0.2 + agility * 0.16 + stamina * 0.18, 0.4, 0.96),
+    };
+  };
+  const pa = profile(a), pb = profile(b);
+  const speed = Math.max(0, Number.isFinite(closingSpeed) ? closingSpeed : 0);
+  const collision = clamp((speed - 1.0) / 7, 0, 1);
+  const impulse = clamp((speed - 0.8) * 0.22, 0, 2.4);
+  const staggerA = clamp(collision * (pb.mass / pa.mass) * (1.08 - pa.balance * 0.42), 0, 1);
+  const staggerB = clamp(collision * (pa.mass / pb.mass) * (1.08 - pb.balance * 0.42), 0, 1);
+  return {
+    collision,
+    impulseA: impulse * (2 * pb.mass / (pa.mass + pb.mass)),
+    impulseB: impulse * (2 * pa.mass / (pa.mass + pb.mass)),
+    staggerA,
+    staggerB,
+  };
+}
+
 export function getTackleAssessment(defender, carrier, distance, user = false, difficultyPenalty = 0) {
   const d = Math.max(0.01, Number(distance) || 0.01);
   const nx = (carrier.x - defender.x) / d, ny = (carrier.y - defender.y) / d;
@@ -404,7 +432,9 @@ export function getShotTargetY(keeperY = 0, shooterY = 0, aimY = null) {
   const keeper = Number.isFinite(keeperY) ? keeperY : 0;
   const shooter = Number.isFinite(shooterY) ? shooterY : 0;
   const side = Math.abs(keeper) > 0.3 ? -Math.sign(keeper) : (Math.abs(shooter) > 0.45 ? -Math.sign(shooter) : 1);
-  const depth = clamp(1.45 + Math.min(0.35, Math.abs(keeper) * 0.12), 1.2, limit);
+  // Cherche davantage le second poteau sans viser systématiquement le centre :
+  // le placement est ambitieux, mais la précision reste liée aux attributs du tireur.
+  const depth = clamp(2.25 + Math.min(0.38, Math.abs(keeper) * 0.16), 2.15, limit);
   return side * depth;
 }
 
@@ -788,14 +818,26 @@ export class Match {
         a.x -= nx * push; a.y -= ny * push; c.x += nx * push; c.y += ny * push;
         const closing = (a.vx - c.vx) * nx + (a.vy - c.vy) * ny;
         if (closing > 0.8) {
-          const impulse = Math.min(2.8, (closing - 0.8) * 0.2);
-          a.vx -= nx * impulse; a.vy -= ny * impulse; c.vx += nx * impulse; c.vy += ny * impulse;
-          if (a.team !== c.team && closing > 3.2) {
-            a.contactT = c.contactT = 0.22;
-            a.contactDir = -1; c.contactDir = 1;
-            a.stumbleT = Math.max(a.stumbleT || 0, 0.16);
-            c.stumbleT = Math.max(c.stumbleT || 0, 0.16);
-            a.stumbleDir = -1; c.stumbleDir = 1;
+          const impact = getBodyContactAssessment(a, c, closing);
+          a.vx -= nx * impact.impulseA; a.vy -= ny * impact.impulseA;
+          c.vx += nx * impact.impulseB; c.vy += ny * impact.impulseB;
+          if (a.team !== c.team && closing > 2.6) {
+            if (impact.staggerA > 0.22) {
+              a.contactT = Math.max(a.contactT || 0, 0.12 + impact.staggerA * 0.12);
+              a.contactDir = -1;
+            }
+            if (impact.staggerB > 0.22) {
+              c.contactT = Math.max(c.contactT || 0, 0.12 + impact.staggerB * 0.12);
+              c.contactDir = 1;
+            }
+            if (impact.staggerA > 0.38) {
+              a.stumbleT = Math.max(a.stumbleT || 0, 0.07 + impact.staggerA * 0.15);
+              a.stumbleDir = -1;
+            }
+            if (impact.staggerB > 0.38) {
+              c.stumbleT = Math.max(c.stumbleT || 0, 0.07 + impact.staggerB * 0.15);
+              c.stumbleDir = 1;
+            }
           }
         }
         // Garder les joueurs dans les limites du terrain après le choc.

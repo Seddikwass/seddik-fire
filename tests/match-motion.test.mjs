@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getBodyContactAssessment, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -99,6 +99,7 @@ assert.ok(getShotAccuracy({ shooting: 80, technique: 80, pressure: 8, power: 0.9
   getShotAccuracy({ shooting: 80, technique: 80, pressure: 8, power: 0.65 }).spread,
   'une frappe maximale coûte un peu de précision');
 assert.ok(getShotTargetY(1.5, 0) < 0, 'le tireur vise le côté opposé au gardien');
+assert.ok(Math.abs(getShotTargetY(0, 0)) > 2.1, 'la visée automatique cherche une zone latérale plus difficile à lire pour le gardien');
 assert.ok(getShotTargetY(-1.5, 0) > 0, 'le choix de côté s inverse avec le gardien');
 assert.ok(getShotTargetY(0, 2) < 0, 'un gardien centré laisse le tireur viser de l autre côté de son couloir');
 assert.equal(getShotTargetY(1, 0, 99), 3.38, 'la visée tactile est bornée dans le but');
@@ -181,3 +182,16 @@ assert.ok(lowDive.direction < 0 && highDive.direction > 0, 'le plongeon suit le 
 assert.ok(lateDive.duration > highDive.duration, 'un gardien moins réactif conserve une animation de plongeon plus longue');
 assert.ok(lateDive.stretch >= 0.2 && lateDive.stretch <= 0.9, 'l extension est bornée pour rester visuellement stable');
 console.log('KEEPER DIVE OK — extension latérale, prise basse/haute et réaction');
+
+
+// Les contacts corporels tiennent compte du physique, de l'agilité et de la fatigue.
+const powerfulFresh = { a: { phy: 92, dri: 84 }, stamina: 0.98, vx: 4, vy: 0 };
+const lightTired = { a: { phy: 48, dri: 44 }, stamina: 0.42, vx: -2, vy: 0 };
+const balancedContact = getBodyContactAssessment(powerfulFresh, lightTired, 6.2);
+const reversedContact = getBodyContactAssessment(lightTired, powerfulFresh, 6.2);
+assert.ok(balancedContact.staggerA < balancedContact.staggerB, 'le joueur plus puissant et frais résiste mieux au choc');
+assert.ok(reversedContact.staggerA > reversedContact.staggerB, 'l avantage physique s inverse avec l ordre des joueurs');
+assert.ok(balancedContact.impulseA < balancedContact.impulseB, 'le joueur plus lourd reçoit moins de variation de vitesse');
+assert.ok(balancedContact.collision > 0 && balancedContact.collision <= 1, 'la sévérité du contact reste bornée');
+assert.equal(getBodyContactAssessment(powerfulFresh, lightTired, 0).collision, 0, 'pas d impact sans vitesse de fermeture');
+console.log('BODY CONTACT OK — physique, équilibre, fatigue et impulsion différenciée');

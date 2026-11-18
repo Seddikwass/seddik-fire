@@ -6,6 +6,13 @@ Jeu de football tunisien : **matchs en 2.5D jouables** (caméra télé, 11 contr
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 2.8.0 — duels physiques et équilibre des frappes
+- Les impacts entre adversaires sont répartis selon le physique, l'agilité et l'endurance : un joueur robuste garde mieux son équilibre.
+- L'impulsion transmise à chaque joueur varie avec sa masse athlétique au lieu d'être parfaitement symétrique.
+- Les animations de contact et de déséquilibre sont déclenchées selon la sévérité réelle du choc.
+- La visée automatique cherche une zone latérale plus ambitieuse ; les qualités du tireur continuent de déterminer la précision.
+- Tests sur les contacts, l'avantage physique, la fatigue et la profondeur de visée.
+
 ## Version 2.7.0 — plongeons des gardiens et réactions aux tirs
 - Les plongeons distinguent les frappes basses, les tirs à mi-hauteur et les ballons vers les lucarnes.
 - L'extension des bras et la durée de l'animation varient selon la distance latérale, la vitesse du tir, le temps de réaction et la note du gardien.

@@ -6,6 +6,10 @@ on:
     paths: ['public/**', 'android-app/**', 'tests/**', 'package.json', '.github/workflows/ft26-android.yml']
   workflow_dispatch:
 
+concurrency:
+  group: ft26-android-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 

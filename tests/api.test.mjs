@@ -10,7 +10,7 @@ const start = () => new Promise(ok => { const p = spawn('node', ['server.js'], {
 const j = async (p, o = {}) => { const r = await fetch(BASE + p, { ...o, headers: { 'Content-Type': 'application/json', ...(o.headers || {}) }, body: o.body ? JSON.stringify(o.body) : undefined }); return { s: r.status, d: await r.json().catch(() => null) }; };
 let srv = await start();
 let r = await j('/api/health'); assert.equal(r.s, 200); 
-assert.equal(r.d.version, '3.3.0', 'version serveur publiée');
+assert.equal(r.d.version, '3.3.1', 'version serveur publiée');
 assert.equal((await fetch(BASE + '/api/health')).headers.get('x-content-type-options'), 'nosniff', 'en-tête anti-MIME sniffing présent');
 assert.match((await fetch(BASE + '/api/health')).headers.get('strict-transport-security') || '', /max-age=31536000/, 'HSTS activé');
 assert.equal((await fetch(BASE + '/api/health')).headers.get('cache-control'), 'no-store', 'API non mise en cache');

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { get3DQualityProfile, getPlayer3DPose } from '../public/js/renderer3d.js';
+import { get3DQualityProfile, getPlayer3DPose, get3DStadiumMeshStats } from '../public/js/renderer3d.js';
 
 const low = get3DQualityProfile('low');
 const medium = get3DQualityProfile('medium');
@@ -39,3 +39,16 @@ assert.equal(replayPose.speed, Math.hypot(-2, 6));
 assert.equal(replayPose.heading, -1.2, 'le ralenti conserve l orientation enregistrée');
 
 console.log('3D RENDERER CORE OK — profils mobiles, course, tacle, saut, plongeon et ralenti');
+
+
+const stadiumTeams = [
+  { kit: { shirt: '#d71920', trim: '#ffffff', shorts: '#111111' } },
+  { kit: { shirt: '#123d91', trim: '#f4d35e', shorts: '#111111' } },
+];
+const lowStadium = get3DStadiumMeshStats({ teams: stadiumTeams }, 'low');
+const highStadium = get3DStadiumMeshStats({ teams: stadiumTeams }, 'high');
+assert.ok(lowStadium.vertexCount > 5000, 'la scène 3D comprend terrain, buts, tribunes et équipements');
+assert.ok(highStadium.vertexCount > lowStadium.vertexCount, 'le stade haut détail ajoute de la géométrie de public');
+assert.equal(lowStadium.finite, true, 'les coordonnées du stade bas détail sont toutes finies');
+assert.equal(highStadium.finite, true, 'les coordonnées du stade haut détail sont toutes finies');
+console.log('3D STADIUM GEOMETRY OK — pelouse, tribunes, filets, projecteurs et coordonnées valides');

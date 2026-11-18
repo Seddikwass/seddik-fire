@@ -6,6 +6,11 @@ Jeu de football tunisien : **matchs 3D WebGL jouables** (caméra télé, 11 cont
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 3.3.1 — validation de la géométrie du stade 3D
+- Correction du calcul de la ligne d'arc devant les surfaces de réparation pour éviter l'arrêt de l'initialisation WebGL.
+- Test de construction réelle du maillage complet du stade, avec contrôle des coordonnées et des niveaux de détail bas/haut.
+- Le test valide la création de la pelouse, des tribunes, des buts, des filets et des équipements avant la compilation.
+
 ## Version 3.3.0 — premier moteur de match 3D WebGL
 - Passage du rendu de match à une scène WebGL en perspective 3D, avec caméra TV mobile qui suit le ballon.
 - Terrain dimensionné, bandes de pelouse, lignes, surface de réparation, arcs, buts, poteaux et filets rendus en volume.

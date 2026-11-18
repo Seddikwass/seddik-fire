@@ -244,7 +244,7 @@ export class MatchRenderer3D {
       const arcStart=s>0?Math.PI/2:Math.PI*1.5, arcEnd=s>0?Math.PI*1.5:Math.PI*2.5;
       for(let i=0;i<24;i++){
         const a=arcStart+(arcEnd-arcStart)*i/24,b=arcStart+(arcEnd-arcStart)*(i+1)/24;
-        line([s*(52.5-11)+Math.cos(a)*9.15,y,sin(a)*9.15],[s*(52.5-11)+Math.cos(b)*9.15,y,Math.sin(b)*9.15],0.06);
+        line([s*(52.5-11)+Math.cos(a)*9.15,y,Math.sin(a)*9.15],[s*(52.5-11)+Math.cos(b)*9.15,y,Math.sin(b)*9.15],0.06);
       }
       // Goal frame and realistic net grid.
       const postX=s*52.5, backX=s*55.2, halfGoal=3.66, gh=2.44;
@@ -476,4 +476,19 @@ export class MatchRenderer3D {
     }
     if(this.canvas&&this.canvas.parentNode)this.canvas.parentNode.removeChild(this.canvas);
   }
+}
+
+
+// Exécute la vraie construction de la géométrie du stade sans créer de contexte WebGL.
+// Utilisé en tests de régression pour contrôler les coordonnées avant le déploiement.
+export function get3DStadiumMeshStats(match, quality = 'high') {
+  if (!match || !Array.isArray(match.teams) || match.teams.length < 2) throw new Error('Deux équipes sont nécessaires pour construire le stade');
+  const builder = Object.create(MatchRenderer3D.prototype);
+  builder.quality = get3DQualityProfile(quality);
+  builder.staticGeometry = makeGeometry();
+  builder.buildStadium(match);
+  return {
+    vertexCount: builder.staticGeometry.length / 9,
+    finite: builder.staticGeometry.every(Number.isFinite),
+  };
 }

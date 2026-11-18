@@ -6,6 +6,16 @@ Jeu de football tunisien : **matchs 3D WebGL jouables** (caméra télé, 11 cont
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 3.4.0 — finition des joueurs et enrichissement du stade 3D
+- Modèles des joueurs enrichis selon les profils physiques et les teintes de peau déjà présentes dans les données.
+- Visages plus détaillés : yeux, pupilles, sourcils, nez et coiffures différenciées.
+- Maillots avec insigne, passepoils, coutures et numéros visibles à l'avant et au dos ; shorts, chaussettes et chaussures affinés.
+- Gants et poignets spécifiques pour les gardiens, avec des détails adaptés au niveau graphique.
+- Tribunes plus denses avec sièges colorés, allées, supporters supplémentaires, bras levés et écharpes.
+- Éclairage 3D enrichi par plusieurs directions de lumière et une composante spéculaire.
+- Adaptation automatique : le moteur 3D bascule en détail réduit si la cadence devient insuffisante, puis restaure le profil choisi.
+- Tests de maillage des joueurs et du stade en qualité basse et haute.
+
 ## Version 3.3.2 — correction du cercle central 3D
 - Correction de la dernière coordonnée trigonométrique du cercle central, qui bloquait la génération complète du stade.
 - Le test 3D construit le maillage réel en qualité basse et haute, vérifie le volume géométrique et rejette les coordonnées non finies.

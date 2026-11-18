@@ -1849,6 +1849,7 @@ export class Match {
     this.setCamera(follow.x, follow.y, !!frame, follow.zoom);
     if (this.renderer3d && !this.renderer3d.lost) {
       try {
+        this.renderer3d.setQuality(this.autoReduced ? 'low' : this.settings.quality);
         this.renderer3d.render(this, frame);
         c.clearRect(0, 0, W, H);
         this.drawHUD(!!frame, frame);

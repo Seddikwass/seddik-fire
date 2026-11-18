@@ -11,9 +11,9 @@ const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], 
 const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
 export function get3DQualityProfile(quality = 'high') {
-  if (quality === 'low') return { pixelRatio: 1, crowd: 44, sphereSegments: 6, detail: 0 };
-  if (quality === 'medium') return { pixelRatio: 1.35, crowd: 108, sphereSegments: 8, detail: 1 };
-  return { pixelRatio: 1.7, crowd: 184, sphereSegments: 10, detail: 2 };
+  if (quality === 'low') return { pixelRatio: 1, crowd: 72, sphereSegments: 6, detail: 0, seatRows: 2 };
+  if (quality === 'medium') return { pixelRatio: 1.3, crowd: 190, sphereSegments: 8, detail: 1, seatRows: 3 };
+  return { pixelRatio: 1.55, crowd: 360, sphereSegments: 10, detail: 2, seatRows: 4 };
 }
 
 export function getPlayer3DPose(player = {}, frame = null) {
@@ -156,9 +156,46 @@ function ring(out, x, y, z, radius, color, segments = 24, tubeRadius = 0.045) {
 function rect(out, x0, x1, z0, z1, y, color) {
   quad(out, [x0,y,z0], [x1,y,z0], [x1,y,z1], [x0,y,z1], color, [0,1,0]);
 }
+const DIGIT_SEGMENTS = {
+  '0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc',
+  '5': 'afgcd', '6': 'afgecd', '7': 'abc', '8': 'abcdefg', '9': 'abfgcd',
+};
+function addKitNumber(out, point, forward, centerY, number, color, scale = 1) {
+  const text = String(Math.max(0, Number(number) || 0)).slice(-2);
+  const width = 0.095 * scale, height = 0.155 * scale, gap = 0.025 * scale;
+  const total = text.length * width + (text.length - 1) * gap;
+  const segments = {
+    a: [-height/2, -width/2, -height/2, width/2],
+    b: [-height/2, width/2, 0, width/2],
+    c: [0, width/2, height/2, width/2],
+    d: [height/2, -width/2, height/2, width/2],
+    e: [0, -width/2, height/2, -width/2],
+    f: [-height/2, -width/2, 0, -width/2],
+    g: [0, -width/2, 0, width/2],
+  };
+  for (let digitIndex = 0; digitIndex < text.length; digitIndex++) {
+    const chars = DIGIT_SEGMENTS[text[digitIndex]] || DIGIT_SEGMENTS['0'];
+    const centerSide = -total/2 + width/2 + digitIndex*(width+gap);
+    for (const key of chars) {
+      const [y0,s0,y1,s1] = segments[key];
+      tube(out, point(forward, centerY+y0, centerSide+s0),
+        point(forward, centerY+y1, centerSide+s1), 0.012*scale, color, 5);
+    }
+  }
+}
+function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glove = false) {
+  cylinder(out, shoulder, elbow, 0.105, sleeve, 8, 0.075);
+  cylinder(out, elbow, hand, 0.064, skin, 7, 0.045);
+  if (detail > 0) {
+    sphere(out, elbow, [0.072,0.072,0.072], sleeve, 6, 4);
+    sphere(out, hand, glove ? [0.095,0.075,0.08] : [0.07,0.075,0.07], glove ? trim : skin, 7, 4);
+  } else {
+    sphere(out, hand, [0.07,0.075,0.07], glove ? trim : skin, 6, 4);
+  }
+}
 
 const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; uniform mat4 uViewProjection; varying vec3 vNormal; varying vec3 vColor; void main(){ vNormal=aNormal; vColor=aColor; gl_Position=uViewProjection*vec4(aPosition,1.0); }';
-const FS = 'precision mediump float; varying vec3 vNormal; varying vec3 vColor; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); float diffuse=max(dot(n,sun),0.0); float hemi=0.5+0.5*max(n.y,0.0); float light=0.60+0.34*diffuse+0.10*hemi; gl_FragColor=vec4(vColor*light,1.0); }';
+const FS = 'precision mediump float; varying vec3 vNormal; varying vec3 vColor; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),20.0)*0.13; float lighting=0.48+0.50*key+0.20*rim+0.12*fill+0.12*hemi; vec3 color=vColor*lighting+vec3(spec); gl_FragColor=vec4(color,1.0); }';
 
 function compile(gl, type, source) {
   const shader = gl.createShader(type);
@@ -181,7 +218,9 @@ function programFor(gl) {
 export class MatchRenderer3D {
   constructor(hostCanvas, match) {
     this.hostCanvas = hostCanvas;
-    this.quality = get3DQualityProfile(match.settings.quality);
+    this.qualityName = match.settings.quality || 'high';
+    this.quality = get3DQualityProfile(this.qualityName);
+    this.match = match;
     this.canvas = document.createElement('canvas');
     this.canvas.className = 'ft26-3d-canvas';
     this.canvas.setAttribute('aria-hidden', 'true');
@@ -294,20 +333,52 @@ export class MatchRenderer3D {
       box(g,[s*62,13.1,0],[18,0.8,86],roof);
       for(let z=-34;z<=34;z+=17) cylinder(g,[s*61,0,z],[s*61,13.2,z],0.24,concrete,7);
     }
-    // Animated-looking crowd baked as detailed static supporters; low mode uses fewer seats.
+    // Sièges numérotés visuellement par rangées, avec allées de circulation.
+    const seatPalette=[[0.53,0.055,0.09],[0.78,0.78,0.73],[0.08,0.19,0.34],[0.19,0.22,0.27]];
+    for(const side of [-1,1]) {
+      for(let row=0;row<profile.seatRows;row++) {
+        const seatY=4.02+row*3.05, seatZ=side*(38.55+row*1.5);
+        for(let index=0;index<38;index++) {
+          const x=-51+index*2.75;
+          const aisle=index===9||index===19||index===29;
+          if(!aisle) box(g,[x,seatY,seatZ],[0.72,0.42,0.62],seatPalette[(index+row*3+(side>0?1:0))%seatPalette.length]);
+        }
+      }
+    }
+    // Public en 3D : silhouettes, têtes, bras levés et écharpes aux couleurs des équipes.
     const count=profile.crowd;
     const fanColors=[parseColor(match.teams[0].kit.shirt),parseColor(match.teams[0].kit.trim),parseColor(match.teams[1].kit.shirt),[0.9,0.9,0.86],[0.72,0.07,0.1],[0.08,0.32,0.62]];
     for(let i=0;i<count;i++){
-      const x=-51+(i%92)/91*102, zSide=i%2?1:-1, row= i%3;
+      const x=-51+(i%92)/91*102, zSide=i%2?1:-1, row=Math.floor(i/(count/profile.seatRows))%profile.seatRows;
       const z=zSide*(39.1+row*1.55), yy=4.55+row*3.0, color=fanColors[(i*7+Math.floor(i/7))%fanColors.length];
       box(g,[x,yy,z],[0.32,0.5,0.25],color);
       sphere(g,[x,yy+0.38,z],[0.16,0.17,0.15],i%5===0?[0.32,0.2,0.14]:[0.66,0.43,0.28],5,4);
+      if(i%4===0) {
+        const armColor=i%8===0?[0.78,0.08,0.1]:[0.7,0.58,0.36];
+        tube(g,[x-0.13,yy+0.15,z],[x-0.28,yy+0.52,z],0.035,armColor,5);
+        tube(g,[x+0.13,yy+0.15,z],[x+0.28,yy+0.5,z],0.035,armColor,5);
+      }
+      if(i%7===0) box(g,[x,yy+0.1,z+zSide*0.15],[0.48,0.07,0.035],i%2?fanColors[1]:fanColors[4]);
+    }
+    // Supporters supplémentaires derrière les deux buts pour fermer l'enceinte.
+    const endCount=Math.round(count*0.38);
+    for(let i=0;i<endCount;i++){
+      const endSide=i%2?1:-1, row=Math.floor(i/72)%profile.seatRows;
+      const z=-33+(i%72)/71*66, x=endSide*(59+row*1.1), ySeat=4.45+row*3.0;
+      const color=fanColors[(i*5+3)%fanColors.length];
+      box(g,[x,ySeat,z],[0.26,0.48,0.32],color);
+      sphere(g,[x,ySeat+0.36,z],[0.14,0.16,0.14],i%6===0?[0.34,0.22,0.16]:[0.68,0.46,0.31],5,4);
+      if(i%5===0) {
+        tube(g,[x,ySeat+0.12,z-0.1],[x,ySeat+0.42,z-0.31],0.03,color,5);
+        tube(g,[x,ySeat+0.12,z+0.1],[x,ySeat+0.42,z+0.31],0.03,color,5);
+      }
     }
     // Stadium lighting towers, lamp banks and a broadcast gantry.
     for(const x of [-53,53]) for(const z of [-42,42]){
       cylinder(g,[x,0,z],[x,27,z],0.36,[0.24,0.28,0.33],8,0.22);
       box(g,[x,26.7,z],[3.5,0.75,1.2],[0.3,0.34,0.39]);
-      for(let k=0;k<5;k++) sphere(g,[x-1.25+k*0.62,26.9,z-0.08],[0.18,0.11,0.1],[1,0.92,0.72],6,4);
+      for(let k=0;k<7;k++) sphere(g,[x-1.65+k*0.55,26.9,z-0.08],[0.19,0.12,0.1],[1.35,1.18,0.86],7,4);
+      box(g,[x,25.9,z-0.12],[4.7,0.12,0.1],[0.95,0.88,0.64]);
     }
     // Subtle technical area and benches outside the touchline.
     for(const s of [-1,1]){
@@ -318,6 +389,16 @@ export class MatchRenderer3D {
     box(g,[0,17.3,-54],[20,1.2,2.2],[0.06,0.08,0.12]);
     box(g,[0,21,-55.4],[18,4.8,0.55],[0.025,0.04,0.075]);
     box(g,[0,21.2,-55.05],[15.5,3.1,0.08],[0.52,0.045,0.08]);
+  }
+  setQuality(quality) {
+    const next = quality || 'high';
+    if (next === this.qualityName || this.lost) return;
+    this.qualityName = next;
+    this.quality = get3DQualityProfile(next);
+    this.staticGeometry = makeGeometry();
+    this.buildStadium(this.match);
+    this.uploadStatic();
+    this.resize();
   }
   uploadStatic() {
     const gl=this.gl, data=new Float32Array(this.staticGeometry);
@@ -352,7 +433,11 @@ export class MatchRenderer3D {
     const kit=player.isGK?(side0.gkKit||side0.kit):side0.kit;
     const shirt=parseColor(kit?.shirt,[0.8,0.1,0.1]), trim=parseColor(kit?.trim,[0.95,0.88,0.72]);
     const shorts=parseColor(kit?.shorts||kit?.trim,[0.08,0.1,0.13]);
-    const skin=[0.59,0.36,0.23], dark=[0.035,0.045,0.06], sock=[0.86,0.88,0.83];
+    const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=[0.86,0.88,0.83];
+    const detail=this.quality.detail;
+    const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
+    const build=0.9+physique*0.2;
+    const hair=index%3===0?[0.045,0.035,0.03]:index%3===1?[0.12,0.075,0.045]:[0.025,0.03,0.04];
     const phase=pose.phase, lift=pose.jump, slide=pose.slide, dive=pose.dive;
     const low=clamp(slide*0.75+dive*0.45,0,0.82);
     const bodyY=1.22-low*0.43+lift;
@@ -371,11 +456,19 @@ export class MatchRenderer3D {
     const hipY=0.83-low*0.28+lift;
     const shoulderY=bodyY+0.22;
     const torsoCenter=point(lean*0.45,bodyY,0);
-    sphere(g,torsoCenter,[0.29,0.38-low*0.1,0.205],shirt,9,7);
-    sphere(g,point(lean*0.35,hipY,0),[0.235,0.17,0.205],shorts,8,5);
-    // Shirt collar and narrow trim bands.
-    cylinder(g,point(lean*0.4,bodyY+0.34,0),point(lean*0.4,bodyY+0.39,0),0.105,trim,8,0.11);
-    box(g,point(lean*0.55,bodyY+0.03,0),[0.045,0.38,0.36],trim);
+    sphere(g,torsoCenter,[0.29*build,0.38-low*0.1,0.205*build],shirt,detail===2?12:9,detail===2?9:7);
+    sphere(g,point(lean*0.35,hipY,0),[0.235*build,0.17,0.205*build],shorts,8,5);
+    // Col, bandes d'épaules, finitions de manches et coutures de short.
+    cylinder(g,point(lean*0.4,bodyY+0.34,0),point(lean*0.4,bodyY+0.39,0),0.105,trim,10,0.11);
+    tube(g,point(lean*0.5,bodyY+0.22,-0.2),point(lean*0.5,bodyY+0.22,0.2),0.018,trim,6);
+    for(const side of [-1,1]) {
+      tube(g,point(lean*0.45,bodyY+0.27,side*0.22),point(lean*0.15,bodyY+0.30,side*0.16),0.022,trim,5);
+      if(detail>0) tube(g,point(lean*0.25,hipY-0.04,side*0.18),point(lean*0.25,hipY-0.13,side*0.18),0.012,trim,5);
+    }
+    // Insigne de poitrine et numéros lisibles sur le maillot.
+    sphere(g,point(0.287,bodyY+0.19,-0.13),[0.026,0.04,0.026],trim,7,5);
+    addKitNumber(g,point,0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
+    addKitNumber(g,point,-0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
     const legSwing=Math.sin(phase)*0.42*(1-slide)*(1-dive);
     const legSwingB=Math.sin(phase+Math.PI)*0.42*(1-slide)*(1-dive);
     for(const [side,sw] of [[-1,legSwing],[1,legSwingB]]){
@@ -384,9 +477,18 @@ export class MatchRenderer3D {
       const ankle=point(sw*0.9,0.13+Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*0.1+lift*0.25,side*0.16);
       cylinder(g,hip,knee,0.105,shorts,8,0.085);
       sphere(g,knee,[0.09,0.09,0.09],shorts,6,4);
-      cylinder(g,knee,ankle,0.066,sock,7,0.052);
-      sphere(g,point(sw*0.95,ankle[1],side*0.16+0.06),[0.16,0.075,0.095],dark,7,4);
-      // Boot studs as tiny dark points below the sole.
+      cylinder(g,knee,ankle,0.066*build,sock,detail===2?10:7,0.052);
+      if(detail>0) {
+        ring(g,ankle[0],ankle[1]+0.09,ankle[2],0.071,[0.78,0.08,0.1],12,0.012);
+        ring(g,ankle[0],ankle[1]+0.15,ankle[2],0.072,trim,12,0.01);
+      }
+      const boot=point(sw*0.95,ankle[1],side*0.16+0.06);
+      sphere(g,boot,[0.16,0.075,0.095],dark,detail===2?10:7,detail===2?6:4);
+      if(detail>0) {
+        sphere(g,[boot[0]+0.045,boot[1]-0.052,boot[2]-0.035],[0.025,0.018,0.022],trim,5,3);
+        sphere(g,[boot[0]+0.045,boot[1]-0.052,boot[2]+0.035],[0.025,0.018,0.022],trim,5,3);
+      }
+      // Semelle et petits crampons visibles dans les gros plans.
     }
     const armSwing=Math.sin(phase+Math.PI)*0.32*(1-slide);
     for(const side of [-1,1]){
@@ -394,19 +496,30 @@ export class MatchRenderer3D {
       const shoulder=point(lean*0.35,shoulderY,side*0.25);
       const elbow=point(armSwing*side*0.75,bodyY-0.12+raise*0.4,side*0.42);
       const hand=point(armSwing*side+pose.kick*0.06,bodyY-0.48+raise,side*0.48);
-      cylinder(g,shoulder,elbow,0.105,shirt,8,0.075);
-      cylinder(g,elbow,hand,0.064,skin,7,0.045);
-      sphere(g,hand,[0.07,0.075,0.07],skin,6,4);
+      addArmPose(g,shoulder,elbow,hand,shirt,skin,trim,detail,!!player.isGK);
     }
     // Neck, head, hair and subtle ear details.
     cylinder(g,point(lean*0.4,bodyY+0.34,0),point(lean*0.4,bodyY+0.48,0),0.075,skin,8);
     const head=point(lean*0.43,bodyY+0.62,0);
-    sphere(g,head,[0.145,0.175,0.14],skin,10,7);
-    sphere(g,point(lean*0.43,bodyY+0.735,0),[0.147,0.07,0.142],dark,9,4);
+    sphere(g,head,[0.145,0.175,0.14],skin,detail===2?12:10,detail===2?9:7);
+    sphere(g,point(lean*0.43,bodyY+0.735,0),[0.147,0.07,0.142],hair,9,4);
     sphere(g,point(lean*0.43,bodyY+0.62,-0.142),[0.035,0.055,0.035],skin,6,4);
     sphere(g,point(lean*0.43,bodyY+0.62,0.142),[0.035,0.055,0.035],skin,6,4);
-    // Goalkeepers get gloves in their kit accent colour.
-    if(player.isGK) for(const side of [-1,1]) sphere(g,point(0,bodyY-0.47,side*0.49),[0.09,0.07,0.07],trim,6,4);
+    if(detail>0) {
+      // Yeux, pupilles, sourcils et nez orientés vers l'avant du joueur.
+      for(const side of [-1,1]) {
+        sphere(g,point(0.128,bodyY+0.665,side*0.052),[0.022,0.018,0.017],[0.94,0.92,0.84],6,4);
+        sphere(g,point(0.143,bodyY+0.665,side*0.052),[0.009,0.012,0.009],[0.035,0.03,0.025],5,3);
+        tube(g,point(0.125,bodyY+0.70,side*0.08),point(0.125,bodyY+0.70,side*0.026),0.012,hair,5);
+      }
+      sphere(g,point(0.16,bodyY+0.61,0),[0.03,0.035,0.035],skin,6,4);
+      tube(g,point(0.13,bodyY+0.555,-0.035),point(0.13,bodyY+0.555,0.035),0.009,[0.22,0.08,0.065],5);
+    }
+    // Gardien : gants renforcés et bandes de poignets.
+    if(player.isGK) for(const side of [-1,1]) {
+      sphere(g,point(0,bodyY-0.47,side*0.49),[0.09,0.07,0.07],trim,detail===2?9:6,4);
+      if(detail>0) tube(g,point(0,bodyY-0.41,side*0.47),point(0,bodyY-0.48,side*0.49),0.025,shirt,5);
+    }
   }
   buildDynamic(match, frame) {
     const g=this.dynamicGeometry;g.length=0;
@@ -491,4 +604,15 @@ export function get3DStadiumMeshStats(match, quality = 'high') {
     vertexCount: builder.staticGeometry.length / 9,
     finite: builder.staticGeometry.every(Number.isFinite),
   };
+}
+
+
+// Génère le maillage réel d'un joueur pour les tests de proportions et de détails.
+export function getPlayer3DModelStats(match, player, quality = 'high') {
+  if (!match || !Array.isArray(match.teams) || match.teams.length < 2 || !player) throw new Error('Match et joueur requis');
+  const renderer = Object.create(MatchRenderer3D.prototype);
+  renderer.quality = get3DQualityProfile(quality);
+  const geometry = makeGeometry();
+  renderer.addPlayer(geometry, match, player, null, Number(player.i) || 0);
+  return { vertexCount: geometry.length / 9, finite: geometry.every(Number.isFinite) };
 }

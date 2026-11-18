@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { get3DQualityProfile, getPlayer3DPose, get3DStadiumMeshStats } from '../public/js/renderer3d.js';
+import { get3DQualityProfile, getPlayer3DPose, get3DStadiumMeshStats, getPlayer3DModelStats } from '../public/js/renderer3d.js';
 
 const low = get3DQualityProfile('low');
 const medium = get3DQualityProfile('medium');
@@ -52,3 +52,26 @@ assert.ok(highStadium.vertexCount > lowStadium.vertexCount, 'le stade haut déta
 assert.equal(lowStadium.finite, true, 'les coordonnées du stade bas détail sont toutes finies');
 assert.equal(highStadium.finite, true, 'les coordonnées du stade haut détail sont toutes finies');
 console.log('3D STADIUM GEOMETRY OK — pelouse, tribunes, filets, projecteurs et coordonnées valides');
+
+
+const modelMatch = {
+  selected: null,
+  teams: [
+    { kit: { shirt: '#d71920', trim: '#ffffff', shorts: '#111111' }, gkKit: { shirt: '#42b96b', trim: '#ffffff', shorts: '#111111' } },
+    { kit: { shirt: '#123d91', trim: '#f4d35e', shorts: '#111111' }, gkKit: { shirt: '#f0a52b', trim: '#111111', shorts: '#111111' } },
+  ],
+};
+const modelPlayer = {
+  x: 3, y: -2, vx: 2, vy: 1, heading: 0.6, anim: 1.4, team: 0, i: 9,
+  num: 10, skin: '#c68642', isGK: false, slideT: 0, diveT: 0,
+  a: { phy: 78 }, stamina: 0.92,
+};
+const lowPlayerMesh = getPlayer3DModelStats(modelMatch, modelPlayer, 'low');
+const highPlayerMesh = getPlayer3DModelStats(modelMatch, modelPlayer, 'high');
+assert.ok(lowPlayerMesh.vertexCount > 500, 'un joueur dispose d un vrai maillage 3D articulé');
+assert.ok(highPlayerMesh.vertexCount > lowPlayerMesh.vertexCount, 'la qualité haute ajoute les détails du visage, du maillot et des chaussures');
+assert.equal(lowPlayerMesh.finite, true, 'le modèle bas détail a des coordonnées finies');
+assert.equal(highPlayerMesh.finite, true, 'le modèle haute qualité a des coordonnées finies');
+const keeperMesh = getPlayer3DModelStats(modelMatch, { ...modelPlayer, isGK: true }, 'high');
+assert.ok(keeperMesh.vertexCount > 0, 'le gardien possède un modèle 3D et ses gants');
+console.log('3D PLAYER MODELS OK — numéros de maillot, visage, peau, chaussures et profil gardien');

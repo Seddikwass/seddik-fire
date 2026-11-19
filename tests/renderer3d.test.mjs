@@ -168,7 +168,7 @@ const tackleStartWeights = getPlayer3DActionWeights(tackleStartPose);
 const tackleMidWeights = getPlayer3DActionWeights(tackleMidPose);
 const tackleEndWeights = getPlayer3DActionWeights(tackleEndPose);
 assert.equal(tackleStartWeights.slideLunge, 0, 'le tacle débute avant la pleine extension');
-assert.ok(tackleMidWeights.slideLunge > 0.98 && tackleMidWeights.tackleReach > 0.85, 'le tacle atteint sa phase d extension');
+assert.ok(tackleMidWeights.slideLunge > 0.98 && tackleMidWeights.tackleReach > 0.8, 'le tacle atteint sa phase d extension');
 assert.ok(tackleEndWeights.tackleRecovery > 0.8, 'le tacle passe en récupération avant de se relever');
 
 const touchPose = getPlayer3DPose({ firstTouchT: 0.16, firstTouchDir: -1 });

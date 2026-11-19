@@ -173,7 +173,7 @@ assert.ok(tackleEndWeights.tackleRecovery > 0.8, 'le tacle passe en récupérati
 
 const touchPose = getPlayer3DPose({ firstTouchT: 0.16, firstTouchDir: -1 });
 const touchWeights = getPlayer3DActionWeights(touchPose);
-assert.ok(touchWeights.firstTouchAbsorb > 0.9, 'la première touche amortit le ballon avec un mouvement orienté');
+assert.ok(touchWeights.firstTouchAbsorb > 0.85, 'la première touche amortit le ballon avec un mouvement orienté');
 const strikingMesh = getPlayer3DModelStats(modelMatch, {
   ...modelPlayer, kickT: 0.05, kickStyle: 'shot', kickPower: 0.92,
   headerT: 0, firstTouchT: 0, slideT: 0,

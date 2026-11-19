@@ -1,5 +1,14 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.20.0 — commandes de match aux standards actuels
+- Changement de joueur intelligent : priorité au défenseur placé entre le ballon et le but, plutôt qu'au plus proche déjà dépassé.
+- Changement automatique en défense (assistance activée) quand le joueur contrôlé est loin de l'action et que le joystick est relâché.
+- Défense assistée : le joueur contrôlé cadre le porteur côté but au lieu de rentrer en position.
+- Bouton PASSE contextuel : centre automatique dans la surface depuis le couloir près de la ligne de but adverse.
+- Tacles utilisateur moins souvent sifflés.
+- La difficulté règle l'intensité défensive de l'IA (engagement des tacles, lecture des passes) face au joueur humain : Facile nettement plus accessible, Légende plus exigeante.
+- Tests ajoutés dans tests/match-flow.test.mjs ; versions alignées sur 3.20.0.
+
 ## Version 3.19.0 — rythme de match réaliste
 - Le porteur du ballon conduit quand l'espace existe, passe sous pression réelle, cherche la passe qui fait progresser et ne garde plus le ballon indéfiniment.
 - Les défenseurs temporisent côté but à distance de tacle et choisissent le moment de l'intervention selon leur qualité défensive, au lieu de tacler en continu.

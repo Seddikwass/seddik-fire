@@ -211,6 +211,30 @@ export function getAITackleCommitChance(defender = {}, carrier = {}, distance = 
   return clamp(0.16 + def / 420 - dri / 900 + close * 0.12, 0.08, 0.5);
 }
 
+// Choix du joueur à contrôler en défense : temps d'arrivée sur le ballon,
+// avec priorité au joueur placé entre le ballon et son propre but.
+export function getSwitchCandidateScore(player = {}, ball = {}, direction = 1) {
+  const dir = direction < 0 ? -1 : 1;
+  const px = (Number(player.x) || 0) + (Number(player.vx) || 0) * 0.4;
+  const py = (Number(player.y) || 0) + (Number(player.vy) || 0) * 0.4;
+  const bx = Number(ball.x) || 0, by = Number(ball.y) || 0;
+  const distance = Math.hypot(px - bx, py - by);
+  // Positif quand le joueur est plus proche de son but que le ballon.
+  const goalSide = (bx - (Number(player.x) || 0)) * dir;
+  const beaten = goalSide < -1.5 ? Math.min(8, -goalSide * 0.6) : 0;
+  const cover = goalSide > 0 ? Math.min(3, goalSide * 0.25) : 0;
+  return distance + beaten - cover;
+}
+
+// Centre contextuel : bouton passe depuis le couloir, près de la ligne de but adverse.
+export function isCrossingZone(player = {}, direction = 1) {
+  const dir = direction < 0 ? -1 : 1;
+  const depth = HL - (Number(player.x) || 0) * dir;
+  return depth < 20 && depth > 0 && Math.abs(Number(player.y) || 0) > 14;
+}
+
+export const USER_FOUL_SCALE = 0.65;
+
 export function getPressingPlan(defenders = [], carrier = {}, direction = 1, intensity = 1) {
   if (!carrier || !Number.isFinite(carrier.x) || !Number.isFinite(carrier.y)) return [];
   const dir = direction < 0 ? -1 : 1;
@@ -1118,14 +1142,14 @@ export class Match {
     if (this.userSide == null) return;
     const T = this.teams[this.userSide], b = this.ball;
     let best = null, bd = 1e9;
-    for (const p of T.ps) { if (p.isGK || p.sentOff) continue; const d = Math.hypot(p.x - b.x, p.y - b.y); if (d < bd) { bd = d; best = p; } }
+    for (const p of T.ps) { if (p.isGK || p.sentOff) continue; const d = getSwitchCandidateScore(p, b, T.dir); if (d < bd) { bd = d; best = p; } }
     this.select(best);
   }
   switchPlayer() {
     if (this.userSide == null) return;
     const T = this.teams[this.userSide], b = this.ball;
     const cand = T.ps.filter(p => !p.isGK && !p.sentOff && p !== this.selected)
-      .sort((a, c) => Math.hypot(a.x + a.vx * 0.5 - b.x, a.y + a.vy * 0.5 - b.y) - Math.hypot(c.x + c.vx * 0.5 - b.x, c.y + c.vy * 0.5 - b.y));
+      .sort((a, c) => getSwitchCandidateScore(a, b, T.dir) - getSwitchCandidateScore(c, b, T.dir));
     if (cand[0]) this.select(cand[0]);
   }
 
@@ -1719,7 +1743,7 @@ export class Match {
     }
     const dist = Math.hypot(c.x - p.x, c.y - p.y);
     if (dist > (user ? 2.4 : 1.7)) { if (user) { p.tackleCd = 0.5; p.vx += (c.x - p.x) * 2.5; p.vy += (c.y - p.y) * 2.5; } return false; }
-    if (!user && this.r() > getAITackleCommitChance(p, c, dist)) {
+    if (!user && this.r() > getAITackleCommitChance(p, c, dist) * this.aiDefenseFactor(c.team)) {
       // Temporisation : le défenseur reste sur ses appuis et réévalue un peu plus tard.
       p.tackleCd = 0.35 + this.r() * 0.35;
       return false;
@@ -1750,7 +1774,7 @@ export class Match {
     // augmente sur une arrivée rapide ou par derrière.
     const missDuration = assessment.closingSpeed > 3.2 ? 0.22 : 0.14;
     p.slideT = Math.max(p.slideT || 0, missDuration); p.slideDuration = missDuration;
-    if (this.r() < assessment.foulChance * (user ? 1 : AI_FOUL_SCALE)) this.foul(p, c);
+    if (this.r() < assessment.foulChance * (user ? USER_FOUL_SCALE : AI_FOUL_SCALE)) this.foul(p, c);
     else if (dist < 2.8) { p.stumbleT = Math.max(p.stumbleT || 0, 0.13); p.stumbleDir = Math.sign(c.y - p.y) || 1; }
     return false;
   }
@@ -1795,6 +1819,19 @@ export class Match {
     const inp = this.input, b = this.ball;
     const mag = Math.hypot(inp.jx, inp.jy);
     const T = this.teams[this.userSide];
+    this.joyIdleT = mag > 0.15 ? 0 : (this.joyIdleT || 0) + dt;
+    this.autoSwitchCd = Math.max(0, (this.autoSwitchCd || 0) - dt);
+    // Changement automatique en défense : si le joueur contrôlé est loin de
+    // l'action et que le joystick est relâché, un défenseur mieux placé prend le relais.
+    if (this.settings.assist && b.owner && b.owner.team !== p.team && this.joyIdleT > 0.45 && this.autoSwitchCd <= 0) {
+      const currentScore = getSwitchCandidateScore(p, b, T.dir);
+      if (currentScore > 11) {
+        const better = T.ps.filter(q => q !== p && !q.isGK && !q.sentOff)
+          .map(q => ({ q, score: getSwitchCandidateScore(q, b, T.dir) }))
+          .sort((a, c) => a.score - c.score)[0];
+        if (better && better.score < currentScore - 4) { this.select(better.q); this.autoSwitchCd = 1.2; return; }
+      }
+    }
     if (b.owner === p) {
       if (mag > 0.15) { const s = this.speedOf(p, inp.sprint) * Math.min(1, mag); this.applyVel(p, inp.jx / mag * s, inp.jy / mag * s, dt); if (inp.sprint) p.stamina = Math.max(0.3, p.stamina - dt * 0.012); }
       else this.applyVel(p, 0, 0, dt);
@@ -1808,6 +1845,12 @@ export class Match {
       } else if (mag > 0.15) { const s = this.speedOf(p, inp.sprint) * Math.min(1, mag); this.applyVel(p, inp.jx / mag * s, inp.jy / mag * s, dt); if (inp.sprint) p.stamina = Math.max(0.3, p.stamina - dt * 0.012); }
       else if (this.settings.assist) { // assistance : se replace automatiquement
         const own = b.owner; const poss = own ? own.team === p.team : false;
+        // Défense assistée : cadrer le porteur côté but sans plonger dans le duel.
+        if (own && !poss && Math.hypot(own.x - p.x, own.y - p.y) < 13) {
+          const jp = getJockeyPoint(own, T.dir, 1.8);
+          this.moveTo(p, jp.x, jp.y, dt, 1, false, Math.hypot(jp.x - p.x, jp.y - p.y) > 5);
+          return;
+        }
         if (!own && this.passInfo && this.passInfo.to === p) { const tg = this.receivePoint(p, this.passInfo); this.moveTo(p, tg.x, tg.y, dt, 1, false, true); return; }
         if (!own) { const t = this.ballLanding(); if (this.closestTo(T, t.x, t.y) === p) { this.moveTo(p, t.x, t.y, dt, 1, false, true); return; } }
         const [tx, ty] = this.formationPos(p, poss); this.moveTo(p, tx, ty, dt, 0.9);
@@ -1820,6 +1863,12 @@ export class Match {
     if (!p || this.state !== 'play') return;
     if (b.owner !== p) { if (through) this.input.press = true; else this.switchPlayer(); return; }
     const mag = Math.hypot(this.input.jx, this.input.jy);
+    const T = this.teams[p.team];
+    if (!through && !this.setPiece && isCrossingZone(p, T.dir)) {
+      // Joystick relâché ou orienté vers l'axe : centre dans la surface.
+      const towardBox = mag < 0.2 || this.input.jy * -Math.sign(p.y) > 0.25;
+      if (towardBox) { this.cross(p); return; }
+    }
     const dir = mag > 0.2 ? [this.input.jx / mag, this.input.jy / mag] : [p.face, 0];
     const opt = this.bestPass(p, dir, through) || this.bestPass(p, null, through);
     if (opt) this.pass(p, opt.p, through || opt.through, this.setPiece === 'corner');
@@ -2006,7 +2055,12 @@ export class Match {
     const speed = Math.hypot(b.vx, b.vy);
     if (speed < 7) return true;
     if (p.claimPass !== pi) { p.claimPass = pi; p.claimRoll = this.r(); }
-    return getMovingBallInterceptChance(distance, speed, p.a?.def) > p.claimRoll;
+    return getMovingBallInterceptChance(distance, speed, p.a?.def) * this.aiDefenseFactor(pi.team) > p.claimRoll;
+  }
+  // Intensité défensive de l'IA face aux actions du joueur humain, selon la difficulté.
+  aiDefenseFactor(attackingTeam) {
+    if (this.userSide == null || attackingTeam !== this.userSide) return 1;
+    return [0.55, 0.85, 1, 1.15][this.settings.difficulty] ?? 1;
   }
   header(p) {
     const b = this.ball, T = this.teams[p.team], d = T.dir, gx = HL * d;

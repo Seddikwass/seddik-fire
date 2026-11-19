@@ -39,3 +39,17 @@ assert.equal(getCarrierPassDecision({ pressure: 6, laneClearance: 6, option, car
 assert.equal(getCarrierPassDecision({ pressure: 6, laneClearance: 6, option: { score: 3, tx: 8 }, carrierX: 10, carryTime: 4, roll: 0.9 }).reason, 'tempo');
 assert.equal(getCarrierPassDecision({ pressure: 0.5, option: null }).pass, false, 'aucune option : pas de passe');
 console.log('CARRIER DECISIONS OK — conduite, pression, progression et tempo');
+
+// Commandes : changement de joueur côté but, centre contextuel et fautes utilisateur atténuées.
+const { getSwitchCandidateScore, isCrossingZone, USER_FOUL_SCALE } = await import('../public/js/match.js');
+const ballAt = { x: 0, y: 0 };
+// Équipe qui attaque vers +x : son but est en -x, « côté but » = x plus petit que le ballon.
+const goalSidePlayer = { x: -6, y: 2, vx: 0, vy: 0 };
+const beatenPlayer = { x: 5, y: 1, vx: 0, vy: 0 };
+assert.ok(getSwitchCandidateScore(goalSidePlayer, ballAt, 1) < getSwitchCandidateScore(beatenPlayer, ballAt, 1), 'le défenseur placé côté but est prioritaire sur un joueur dépassé');
+assert.ok(getSwitchCandidateScore({ x: -3, y: 0 }, ballAt, 1) < getSwitchCandidateScore({ x: -20, y: 10 }, ballAt, 1), 'à position équivalente, le plus proche passe devant');
+assert.equal(isCrossingZone({ x: 40, y: 22 }, 1), true, 'couloir droit près de la ligne de but : centre');
+assert.equal(isCrossingZone({ x: 40, y: 5 }, 1), false, 'axe : pas de centre automatique');
+assert.equal(isCrossingZone({ x: -40, y: 22 }, -1), true, 'sens inverse respecté');
+assert.ok(USER_FOUL_SCALE > 0.3 && USER_FOUL_SCALE < 1, 'tacles utilisateur moins souvent sifflés');
+console.log('USER CONTROLS OK — changement de joueur côté but, centre contextuel et fautes');

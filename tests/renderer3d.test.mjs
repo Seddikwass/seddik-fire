@@ -148,6 +148,38 @@ assert.equal(actionWeights.kickPulse, 1, 'la frappe produit une impulsion au mil
 assert.equal(actionWeights.firstTouchPulse, 1, 'la première touche produit une impulsion au milieu de son animation');
 assert.equal(actionWeights.brace, 0.5, 'le corps prépare une réaction cohérente au contact');
 assert.ok(Object.values(actionWeights).every(Number.isFinite), 'tous les poids d animation sont numériques et finis');
+
+const kickWindupPose = getPlayer3DPose({ x: 0, y: 0, kickT: 0.34, kickStyle: 'shot', kickPower: 0.92 });
+const kickFollowPose = getPlayer3DPose({ x: 0, y: 0, kickT: 0.05, kickStyle: 'shot', kickPower: 0.92 });
+const kickWindupWeights = getPlayer3DActionWeights(kickWindupPose);
+const kickFollowWeights = getPlayer3DActionWeights(kickFollowPose);
+assert.ok(kickWindupWeights.kickWindup > kickFollowWeights.kickWindup, 'la jambe recule avant la frappe');
+assert.ok(kickFollowWeights.kickFollowThrough > kickWindupWeights.kickFollowThrough, 'la jambe traverse le ballon après la frappe');
+assert.ok(kickFollowWeights.kickPulse > 0, 'la phase de contact est visible');
+
+const headerPose = getPlayer3DPose({ headerT: 0.22 });
+const headerWeights = getPlayer3DActionWeights(headerPose);
+assert.ok(headerWeights.headerDrive > 0.98 && headerWeights.headerBrace > 0, 'le coup de tête engage le buste et ouvre les bras');
+
+const tackleStartPose = getPlayer3DPose({ slideT: 0.38, slideDuration: 0.38 });
+const tackleMidPose = getPlayer3DPose({ slideT: 0.19, slideDuration: 0.38 });
+const tackleEndPose = getPlayer3DPose({ slideT: 0.015, slideDuration: 0.38 });
+const tackleStartWeights = getPlayer3DActionWeights(tackleStartPose);
+const tackleMidWeights = getPlayer3DActionWeights(tackleMidPose);
+const tackleEndWeights = getPlayer3DActionWeights(tackleEndPose);
+assert.equal(tackleStartWeights.slideLunge, 0, 'le tacle débute avant la pleine extension');
+assert.ok(tackleMidWeights.slideLunge > 0.98 && tackleMidWeights.tackleReach > 0.85, 'le tacle atteint sa phase d extension');
+assert.ok(tackleEndWeights.tackleRecovery > 0.8, 'le tacle passe en récupération avant de se relever');
+
+const touchPose = getPlayer3DPose({ firstTouchT: 0.16, firstTouchDir: -1 });
+const touchWeights = getPlayer3DActionWeights(touchPose);
+assert.ok(touchWeights.firstTouchAbsorb > 0.9, 'la première touche amortit le ballon avec un mouvement orienté');
+const strikingMesh = getPlayer3DModelStats(modelMatch, {
+  ...modelPlayer, kickT: 0.05, kickStyle: 'shot', kickPower: 0.92,
+  headerT: 0, firstTouchT: 0, slideT: 0,
+}, 'high');
+assert.ok(strikingMesh.vertexCount > 500 && strikingMesh.finite, 'la pose de frappe conserve un maillage complet et valide');
+console.log('3D ACTION PHASES OK — préparation/frappe/suivi, contrôle orienté, tête et tacle articulé');
 console.log('3D ACTION POSES OK — première touche, contacts, frappes, prise et plongeon du gardien');
 
 

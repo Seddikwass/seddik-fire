@@ -554,7 +554,8 @@ export class MatchRenderer3D {
       const sw=baseSwing+(side===kickFootSide?action.kickPulse*0.78:-action.kickPulse*0.12);
       const hip=legPoint(0,hipY,side*0.13);
       const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55,side*0.145);
-      const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*0.1+ (side===kickFootSide?action.firstTouchPulse*0.075:0);\n      const ankle=legPoint(sw*0.9,0.13+toeLift+lift*0.25,side*0.16);
+      const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*0.1+ (side===kickFootSide?action.firstTouchPulse*0.075:0);
+      const ankle=legPoint(sw*0.9,0.13+toeLift+lift*0.25,side*0.16);
       cylinder(g,hip,knee,0.105,shorts,8,0.085);
       sphere(g,knee,[0.09,0.09,0.09],shorts,6,4);
       cylinder(g,knee,ankle,0.066*build,sock,detail===2?10:7,0.052);

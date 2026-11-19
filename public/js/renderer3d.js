@@ -184,7 +184,10 @@ export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   const targetZ = clamp(Number.isFinite(cam.y) ? -cam.y : 0, -28, 28);
   const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
   const ball = replay?.b ? replay.b : match.ball;
-  const ballHeight = clamp(Number.isFinite(ball?.z) ? ball.z : 0, 0, 12);
+  const rawBallHeight = Array.isArray(ball)
+    ? (Number.isFinite(ball[2]) ? ball[2] : 0)
+    : (Number.isFinite(ball?.z) ? ball.z : 0);
+  const ballHeight = clamp(rawBallHeight, 0, 12);
   // La caméra suit légèrement les centres et trajectoires hautes : les lobes,
   // têtes et frappes aériennes restent dans le champ au lieu de disparaître.
   const focusLift = clamp(ballHeight * 0.16, 0, 1.55);

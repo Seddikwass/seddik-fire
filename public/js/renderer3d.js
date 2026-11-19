@@ -11,9 +11,9 @@ const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], 
 const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
 export function get3DQualityProfile(quality = 'high') {
-  if (quality === 'low') return { pixelRatio: 1, crowd: 72, sphereSegments: 6, detail: 0, seatRows: 2 };
-  if (quality === 'medium') return { pixelRatio: 1.3, crowd: 190, sphereSegments: 8, detail: 1, seatRows: 3 };
-  return { pixelRatio: 1.55, crowd: 360, sphereSegments: 10, detail: 2, seatRows: 4 };
+  if (quality === 'low') return { pixelRatio: 1, crowd: 96, sphereSegments: 7, detail: 0, seatRows: 2, turfDetail: 28, crowdMotion: 0 };
+  if (quality === 'medium') return { pixelRatio: 1.3, crowd: 260, sphereSegments: 9, detail: 1, seatRows: 3, turfDetail: 92, crowdMotion: 16 };
+  return { pixelRatio: 1.55, crowd: 620, sphereSegments: 12, detail: 2, seatRows: 5, turfDetail: 224, crowdMotion: 36 };
 }
 
 export function get3DBallShadowProfile(height = 0) {
@@ -73,6 +73,9 @@ export function getPlayer3DPose(player = {}, frame = null) {
   return {
     x, y, vx, vy, speed, heading, phase: anim * 1.12,
     lean: clamp(speed * 0.022, 0, 0.19),
+    turnLean: clamp(-(Number.isFinite(player.turn) ? player.turn : 0) * speed * 0.022, -0.16, 0.16),
+    bodyBob: speed > 0.18 ? Math.abs(Math.sin(anim * 2.24)) * clamp(speed / 9, 0, 1) * 0.045 : 0,
+    sprint: clamp((speed - 6.2) / 3.8, 0, 1),
     slide: clamp(slide / Math.max(0.12, slideDuration), 0, 1),
     dive: clamp(dive / 0.52, 0, 1),
     jump: clamp(jump * 2.1, 0, 0.36),
@@ -156,7 +159,7 @@ export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   const targetX = clamp(Number.isFinite(cam.x) ? cam.x : 0, -48, 48);
   const targetZ = clamp(Number.isFinite(cam.y) ? -cam.y : 0, -28, 28);
   const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
-  const eye = [targetX - 6 / zoom, 58 / zoom, targetZ + 66 / zoom];
+  const eye = [targetX - 5.2 / zoom, 49 / zoom, targetZ + 57 / zoom];
   const target = [targetX, 0, targetZ];
   return {
     eye,
@@ -287,7 +290,7 @@ function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glov
 }
 
 const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; uniform mat4 uViewProjection; varying vec3 vNormal; varying vec3 vColor; void main(){ vNormal=aNormal; vColor=aColor; gl_Position=uViewProjection*vec4(aPosition,1.0); }';
-const FS = 'precision mediump float; varying vec3 vNormal; varying vec3 vColor; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),20.0)*0.13; float lighting=0.48+0.50*key+0.20*rim+0.12*fill+0.12*hemi; vec3 color=vColor*lighting+vec3(spec); gl_FragColor=vec4(color,1.0); }';
+const FS = 'precision mediump float; varying vec3 vNormal; varying vec3 vColor; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.16; float lighting=0.39+0.66*key+0.20*rim+0.12*fill+0.14*hemi; vec3 lit=vColor*lighting+vec3(spec); vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); gl_FragColor=vec4(color,1.0); }';
 
 function compile(gl, type, source) {
   const shader = gl.createShader(type);
@@ -351,6 +354,20 @@ export class MatchRenderer3D {
       const x0 = -52.5 + i * 6.56, x1 = Math.min(52.5, x0 + 6.56);
       rect(g, x0, x1, -34, 34, 0.005, i % 2 ? stripeA : stripeB);
     }
+    // Fine pelouse : micro-traits déterministes et zones d'usure subtiles près des buts.
+    for (let i = 0; i < profile.turfDetail; i++) {
+      const seed = i * 37.719 + 11.3;
+      const x = -51.2 + ((seed * 1.731) % 102.4);
+      const z = -32.6 + ((seed * 2.417) % 65.2);
+      const length = 0.08 + (i % 4) * 0.035;
+      const tone = i % 3 === 0 ? [0.12,0.38,0.17] : i % 3 === 1 ? [0.065,0.285,0.12] : [0.095,0.345,0.145];
+      rect(g, x, x + length, z, z + 0.018, 0.012, tone);
+    }
+    for (const side of [-1, 1]) {
+      const gx = side * 50.2;
+      rect(g, gx - 1.2, gx + 0.4, -5.6, 5.6, 0.014, [0.075,0.285,0.12]);
+      rect(g, gx - 1.2, gx + 0.4, -3.2, 3.2, 0.016, [0.085,0.305,0.13]);
+    }
     // Touchlines, halfway line, centre circle, penalty areas and goal areas.
     const white = [0.91,0.94,0.88], softWhite = [0.76,0.82,0.76];
     const line = (a,b,r=0.075,c=white) => tube(g,a,b,r,c,6);
@@ -383,15 +400,21 @@ export class MatchRenderer3D {
       line([postX,gh,-halfGoal],[postX,gh,halfGoal],0.12,[0.94,0.95,0.9]);
       for(const zz of [-halfGoal,halfGoal]) line([postX,0,zz],[backX,0,zz],0.07,softWhite);
       line([backX,0,-halfGoal],[backX,0,halfGoal],0.065,softWhite);
-      for(let j=0;j<=8;j++){
-        const zz=-halfGoal+j*(halfGoal*2/8);
-        line([postX,0,zz],[backX,gh*0.75,zz],0.025,softWhite);
-        line([postX,gh,zz],[backX,gh*0.75,zz],0.025,softWhite);
+      for(let j=0;j<=12;j++){
+        const zz=-halfGoal+j*(halfGoal*2/12);
+        line([postX,0,zz],[backX,gh*0.75,zz],0.022,softWhite);
+        line([postX,gh,zz],[backX,gh*0.75,zz],0.022,softWhite);
+        line([backX,0,zz],[backX,gh*0.75,zz],0.018,softWhite);
       }
-      for(let j=1;j<=4;j++){
-        const yy=gh*j/5;
-        line([postX,yy,-halfGoal],[backX,yy,-halfGoal],0.022,softWhite);
-        line([postX,yy,halfGoal],[backX,yy,halfGoal],0.022,softWhite);
+      for(let j=1;j<=7;j++){
+        const yy=gh*j/8;
+        line([postX,yy,-halfGoal],[backX,yy,-halfGoal],0.019,softWhite);
+        line([postX,yy,halfGoal],[backX,yy,halfGoal],0.019,softWhite);
+        line([backX,yy,-halfGoal],[backX,yy,halfGoal],0.018,softWhite);
+      }
+      for(const zz of [-halfGoal,halfGoal]) for(let j=1;j<6;j++){
+        const yy=gh*j/6;
+        line([postX,yy,zz],[backX,yy*0.75,zz],0.018,softWhite);
       }
       // Corner flags.
       for(const side of [-1,1]){
@@ -412,18 +435,37 @@ export class MatchRenderer3D {
     }
     // Grandstands with concrete tiers, roof canopies and tunnel structures.
     const concrete=[0.16,0.19,0.23], seat=[0.26,0.29,0.34], roof=[0.075,0.095,0.13];
+    const steel=[0.105,0.13,0.17], fascia=[0.55,0.035,0.065];
     for(const s of [-1,1]){
       for(let tier=0;tier<3;tier++){
         box(g,[0,2.2+tier*3.05,s*(42.2+tier*1.5)],[111,4.2,13.2],concrete);
         box(g,[0,4.0+tier*3.05,s*(37.1+tier*1.5)],[110,0.25,1.0],seat);
       }
+      box(g,[0,3.55,s*35.8],[112,0.38,0.45],fascia);
+      box(g,[0,7.55,s*43.9],[112,0.28,0.48],steel);
       box(g,[0,13.1,s*48],[116,0.8,18],roof);
-      for(let x=-53;x<=53;x+=17) cylinder(g,[x,0,s*49],[x,13.3,s*49],0.25,concrete,7);
+      box(g,[0,13.55,s*40.7],[116,0.24,0.35],steel);
+      for(let x=-53;x<=53;x+=13.25) {
+        cylinder(g,[x,0,s*49],[x,13.3,s*49],0.22,concrete,7);
+        cylinder(g,[x,12.8,s*42.5],[x,13.5,s*47.2],0.11,steel,6);
+        cylinder(g,[x,13.5,s*47.2],[x+6.6,13.5,s*47.2],0.09,steel,6);
+      }
+      for(let x=-50;x<=50;x+=12.5) {
+        const board=boardColors[Math.abs(Math.floor(x/10))%boardColors.length];
+        box(g,[x,6.25,s*35.55],[10.8,0.62,0.17],board);
+      }
     }
     for(const s of [-1,1]){
-      for(let tier=0;tier<3;tier++) box(g,[s*(58.2+tier*1.1),2.3+tier*3.05,0],[13.2,4.3,77],concrete);
+      for(let tier=0;tier<3;tier++) {
+        box(g,[s*(58.2+tier*1.1),2.3+tier*3.05,0],[13.2,4.3,77],concrete);
+        box(g,[s*(53.2+tier*1.1),3.55+tier*3.05,0],[0.42,0.28,76],fascia);
+      }
       box(g,[s*62,13.1,0],[18,0.8,86],roof);
-      for(let z=-34;z<=34;z+=17) cylinder(g,[s*61,0,z],[s*61,13.2,z],0.24,concrete,7);
+      box(g,[s*54.5,13.55,0],[0.35,0.24,86],steel);
+      for(let z=-34;z<=34;z+=13.6) {
+        cylinder(g,[s*61,0,z],[s*61,13.2,z],0.22,concrete,7);
+        cylinder(g,[s*56,12.8,z],[s*61,13.5,z],0.11,steel,6);
+      }
     }
     // Sièges numérotés visuellement par rangées, avec allées de circulation.
     const seatPalette=[[0.53,0.055,0.09],[0.78,0.78,0.73],[0.08,0.19,0.34],[0.19,0.22,0.27]];
@@ -534,14 +576,14 @@ export class MatchRenderer3D {
     const action=getPlayer3DActionWeights(pose);
     const low=clamp(slide*0.78+dive*0.52,0,0.88);
     const keeperVertical=player.isGK?dive*clamp(pose.diveHeight,-1,1)*0.19:0;
-    const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical+pose.header*0.025;
+    const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical+pose.header*0.025+pose.bodyBob;
     const lean=pose.lean+pose.kick*0.06+pose.header*0.12+action.stumble*0.12+action.brace*0.035;
     // Le gardien accompagne le plongeon avec une translation du buste et des bras
     // dans le sens réel du tir ; les joueurs de champ amortissent les contacts.
     const diveSide=Math.sign(-pose.diveDir*Math.cos(yaw))||1;
     const bodySide=(player.isGK?diveSide*action.diveReach*0.42:0)+
       (pose.stumbleDir||1)*action.stumble*0.075+
-      (pose.contactDir||1)*pose.contact*0.045;
+      (pose.contactDir||1)*pose.contact*0.045+pose.turnLean*0.55;
     const bodyPoint=(f,h,side)=>point(f,h,side+bodySide);
     const legPoint=(f,h,side)=>point(f,h,side+bodySide*0.48);
     // Ground shadow and captain/user selection halo.
@@ -572,13 +614,15 @@ export class MatchRenderer3D {
     addKitNumber(g,bodyPoint,0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
     addKitNumber(g,bodyPoint,-0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
     const kickFootSide=(index%2===0)?-1:1;
-    const legSwing=Math.sin(phase)*0.42*action.gait;
-    const legSwingB=Math.sin(phase+Math.PI)*0.42*action.gait;
+    const stride=0.36+pose.sprint*0.13;
+    const legSwing=Math.sin(phase)*stride*action.gait;
+    const legSwingB=Math.sin(phase+Math.PI)*stride*action.gait;
     for(const [side,baseSwing] of [[-1,legSwing],[1,legSwingB]]){
       const sw=baseSwing+(side===kickFootSide?action.kickPulse*0.78:-action.kickPulse*0.12);
       const hip=legPoint(0,hipY,side*0.13);
-      const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55,side*0.145);
-      const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*0.1+ (side===kickFootSide?action.firstTouchPulse*0.075:0);
+      const kneeLift=Math.max(0,Math.sin(phase+(side>0?Math.PI:0)))*pose.sprint*0.13;
+      const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55+kneeLift,side*0.145);
+      const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*(0.08+pose.sprint*0.04)+ (side===kickFootSide?action.firstTouchPulse*0.075:0);
       const ankle=legPoint(sw*0.9,0.13+toeLift+lift*0.25,side*0.16);
       cylinder(g,hip,knee,0.105,shorts,8,0.085);
       sphere(g,knee,[0.09,0.09,0.09],shorts,6,4);
@@ -595,7 +639,7 @@ export class MatchRenderer3D {
       }
       // Semelle et petits crampons visibles dans les gros plans.
     }
-    const armSwing=Math.sin(phase+Math.PI)*0.32*action.gait;
+    const armSwing=Math.sin(phase+Math.PI)*(0.29+pose.sprint*0.12)*action.gait;
     const keeperReach=player.isGK?(action.diveReach*0.48+action.catchReach*0.31+action.punchReach*0.24):0;
     for(const side of [-1,1]){
       const raise=pose.celebrate*0.82+pose.header*0.38+(player.isGK?action.catchReach*0.24:0);
@@ -630,7 +674,7 @@ export class MatchRenderer3D {
   addCrowdMotion(g, match) {
     if (this.quality.detail <= 0) return;
     const total = this.quality.crowd;
-    const animated = this.quality.detail === 2 ? 24 : 10;
+    const animated = this.quality.crowdMotion || 0;
     const kits = [
       parseColor(match.teams[0]?.kit?.shirt, [0.72,0.07,0.1]),
       parseColor(match.teams[1]?.kit?.shirt, [0.08,0.2,0.48]),
@@ -683,10 +727,15 @@ export class MatchRenderer3D {
         shadowColor,[[0,1,0],[0,1,0],[0,1,0]]);
     }
     sphere(g,[ballX,ballY,ballZ],[0.22,0.22,0.22],[0.94,0.95,0.91],this.quality.sphereSegments,Math.max(4,this.quality.sphereSegments-2));
-    // Small black pentagonal-inspired panels around the ball surface.
-    for(let i=0;i<5;i++){
-      const a=i*Math.PI*2/5+(match.clock*0.7), px=ballX+Math.cos(a)*0.15, pz=ballZ+Math.sin(a)*0.15;
-      sphere(g,[px,ballY+0.11*Math.sin(a*2),pz],[0.045,0.035,0.045],[0.045,0.055,0.065],5,3);
+    // Panneaux sombres répartis sur deux couronnes : motif de ballon moins ponctuel.
+    for(let ringIndex=0;ringIndex<2;ringIndex++) for(let i=0;i<6;i++){
+      const a=i*Math.PI/3+(ringIndex?Math.PI/6:0)+match.clock*0.7;
+      const elevation=ringIndex?0.18:-0.18;
+      const radius=Math.sqrt(1-elevation*elevation);
+      const px=ballX+Math.cos(a)*0.164*radius;
+      const pz=ballZ+Math.sin(a)*0.164*radius;
+      const py=ballY+elevation*0.164;
+      sphere(g,[px,py,pz],[0.038,0.024,0.038],[0.045,0.055,0.065],5,3);
     }
   }
   bindGeometry(buffer, geometry, usage) {

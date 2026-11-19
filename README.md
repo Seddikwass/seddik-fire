@@ -1,5 +1,11 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.13.0 — pied de frappe contextuel et ralentis cohérents
+- Le moteur calcule le côté du ballon par rapport à l'orientation du joueur et choisit le pied le mieux placé pour la frappe ou la passe.
+- Le choix du pied est conservé dans les données du ralenti afin que la jambe animée reste la même pendant la relecture.
+- Tests sur les deux côtés du joueur, l'enregistrement de replay et la transmission de la pose au renderer 3D.
+- Versions interface, API, Android et cache hors ligne alignées sur 3.13.0.
+
 ## Version 3.12.0 — gestes techniques et contacts 3D
 - Les frappes utilisent maintenant trois phases visibles : préparation de la jambe, contact puis suivi du geste, modulées par la puissance.
 - Le contrôle orienté déplace la jambe de réception selon le côté du premier toucher et amortit la pose au moment du contact.

@@ -845,7 +845,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, diveHeight: 0, diveStretch: 0, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, aiThink: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, kickFootSide: i % 2 === 0 ? -1 : 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, aiThink: 0, motionAccel: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, kickFootSide: i % 2 === 0 ? -1 : 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -1126,6 +1126,8 @@ export class Match {
     const braking = targetSpeed + 0.12 < currentSpeed ? 1.42 : 1;
     const acceleration = tuning.acceleration * braking * (1 - turnLoad * 0.16);
     const next = getVelocityStep(p.vx, p.vy, controlledWx, controlledWy, acceleration * Math.max(0, dt));
+    const nextSpeed = Math.hypot(next.vx, next.vy);
+    p.motionAccel = clamp((nextSpeed - currentSpeed) / Math.max(0.01, dt) / 12, -1, 1);
     p.vx = next.vx; p.vy = next.vy;
     // Le torse anticipe le virage, alors que la vitesse conserve son inertie.
     const turnRate = tuning.turnRate * (currentSpeed < 1 ? 1.2 : 1);
@@ -1137,6 +1139,7 @@ export class Match {
       if (p.sentOff) { p.x = 0; p.y = -HW - 6; continue; }
       p.x += p.vx * dt; p.y += p.vy * dt;
       p.x = clamp(p.x, -HL - 2, HL + 2); p.y = clamp(p.y, -HW - 2, HW + 2);
+      p.motionAccel = (Number.isFinite(p.motionAccel) ? p.motionAccel : 0) * Math.exp(-dt * 2.6);
       const sp = Math.hypot(p.vx, p.vy);
       if (sp > 0.18) p.anim += getRunningCadence(sp, p.a.pac) * dt;
       p.jumpT = Math.max(0, (p.jumpT || 0) - dt);
@@ -2001,7 +2004,7 @@ export class Match {
       p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1,
       p.diveHeight || 0, p.diveStretch || 0,
       p.contactT || 0, p.contactDir || 1, p.slideDuration || 0.38, p.heading || 0,
-      p.kickFootSide || 1
+      p.kickFootSide || 1, p.motionAccel || 0
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }

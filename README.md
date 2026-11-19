@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.17.0 — animation corporelle pilotée par l'accélération
+- Le moteur de simulation transmet au rendu 3D l'accélération et la décélération réelles des joueurs.
+- Les départs explosifs renforcent légèrement l'inclinaison du buste, la poussée des jambes et le contrebalancement des bras.
+- Le freinage prépare les appuis et raccourcit la foulée avant un arrêt ou une réorientation.
+- Le signal de mouvement est enregistré dans les images de ralenti pour préserver les mêmes gestes pendant la relecture.
+- Tests sur accélération, freinage, stabilité des valeurs et transmission vers les replays.
+- Versions interface, API, package Android et cache hors ligne alignées sur 3.17.0.
+
 ## Version 3.16.0 — défense, inertie et contacts plus naturels
 - Marquage défensif individuel : les attaquants dangereux sont distribués entre des défenseurs distincts selon leur menace, la proximité du ballon, leur vitesse et le temps d'approche.
 - Les défenseurs conservent une cible de marquage cohérente tout en gardant une pondération de leur position de bloc pour éviter les courses de poursuite exagérées.

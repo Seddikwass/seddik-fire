@@ -24,6 +24,9 @@ attacker.vy = 0;
 match.applyVel(attacker, 5, 3, 1 / 60);
 assert.ok(Number.isFinite(attacker.heading), 'le joueur doit conserver une orientation valide');
 assert.ok(attacker.vx > 0 && attacker.vy > 0, 'l accélération doit suivre la direction demandée');
+assert.ok(attacker.motionAccel > 0, 'une accélération augmente le signal de mouvement transmis au rendu');
+match.applyVel(attacker, 0, 0, 0.08);
+assert.ok(attacker.motionAccel < 0, 'un freinage produit un signal de décélération distinct');
 
 attacker.x = 40;
 attacker.y = 0;
@@ -46,6 +49,8 @@ match.record(); match.record();
 const recordedKickFrame = match.replayBuf.at(-1);
 const footTestIndex = [...match.teams[0].ps, ...match.teams[1].ps].indexOf(footTestPlayer);
 assert.equal(recordedKickFrame.p[footTestIndex][27], -1, 'le pied de frappe reste enregistré dans le ralenti');
+assert.ok(Number.isFinite(recordedKickFrame.p[footTestIndex][28]),
+  'le ralenti conserve une valeur d accélération valide pour le joueur');
 
 const keeper = match.teams[1].ps[0];
 keeper.y = 0;

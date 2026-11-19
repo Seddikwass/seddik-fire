@@ -46,6 +46,8 @@ export function getPlayer3DPose(player = {}, frame = null) {
   const vx = Number.isFinite(p[4]) ? p[4] : (Number.isFinite(player.vx) ? player.vx : 0);
   const vy = Number.isFinite(p[5]) ? p[5] : (Number.isFinite(player.vy) ? player.vy : 0);
   const speed = Math.hypot(vx, vy);
+  const acceleration = clamp(Number.isFinite(p[28]) ? p[28] :
+    (Number.isFinite(player.motionAccel) ? player.motionAccel : 0), -1, 1);
   const heading = Number.isFinite(p[26]) ? p[26] :
     (Number.isFinite(player.heading) ? player.heading : Math.atan2(vy, vx || player.face || 1));
   const anim = Number.isFinite(p[3]) ? p[3] : (Number.isFinite(player.anim) ? player.anim : 0);
@@ -81,8 +83,14 @@ export function getPlayer3DPose(player = {}, frame = null) {
     kickPower: clamp(Number(player.kickPower) || 0.5, 0, 1),
     kickFootSide: kickFootSide === -1 ? -1 : 1,
     lean: clamp(speed * 0.022, 0, 0.19),
+    acceleration,
+    accelerationLean: clamp(acceleration * 0.085, -0.075, 0.085),
+    driveBurst: clamp(acceleration / 0.78, 0, 1),
+    brakeBrace: clamp(-acceleration / 0.78, 0, 1),
     turnLean: clamp(-(Number.isFinite(player.turn) ? player.turn : 0) * speed * 0.022, -0.16, 0.16),
-    bodyBob: speed > 0.18 ? Math.abs(Math.sin(anim * 2.24)) * clamp(speed / 9, 0, 1) * 0.045 : 0,
+    bodyBob: speed > 0.18
+      ? Math.abs(Math.sin(anim * 2.24)) * clamp(speed / 9, 0, 1) * (0.045 + Math.max(0, acceleration) * 0.01)
+      : 0,
     sprint: clamp((speed - 6.2) / 3.8, 0, 1),
     slide: clamp(slide / Math.max(0.12, slideDuration), 0, 1),
     dive: clamp(dive / 0.52, 0, 1),
@@ -118,6 +126,8 @@ export function getPlayer3DActionWeights(pose = {}) {
   const keeperCatch = clamp(pose.keeperCatch || 0, 0, 1);
   const keeperPunch = clamp(pose.keeperPunch || 0, 0, 1);
   const diveStretch = clamp(pose.diveStretch || 0, 0, 1);
+  const driveBurst = clamp(pose.driveBurst || 0, 0, 1);
+  const brakeBrace = clamp(pose.brakeBrace || 0, 0, 1);
   const kickProgress = clamp(Number.isFinite(pose.kickProgress) ? pose.kickProgress : 1 - kick, 0, 1);
   const headerProgress = clamp(Number.isFinite(pose.headerProgress) ? pose.headerProgress : 1 - header, 0, 1);
   const touchProgress = clamp(Number.isFinite(pose.firstTouchProgress) ? pose.firstTouchProgress : 1 - firstTouch, 0, 1);
@@ -127,6 +137,8 @@ export function getPlayer3DActionWeights(pose = {}) {
   const tackleRecovery = clamp((slideProgress - 0.58) / 0.42, 0, 1);
   return {
     gait: clamp(1 - Math.max(slideLunge, dive * 0.92, stumble * 0.28), 0, 1),
+    driveBurst,
+    brakeBrace,
     diveReach: clamp(dive * (0.34 + diveStretch * 0.66), 0, 1),
     catchReach: clamp(Math.max(keeperCatch, dive * 0.78), 0, 1),
     punchReach: clamp(Math.max(keeperPunch, dive * 0.54), 0, 1),
@@ -622,7 +634,8 @@ export class MatchRenderer3D {
     const keeperVertical=player.isGK?dive*clamp(pose.diveHeight,-1,1)*0.19:0;
     const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical+action.headerDrive*0.035+pose.bodyBob;
     const kickLean=action.kickFollowThrough*(0.105+pose.kickPower*0.055)-action.kickWindup*0.045;
-    const lean=pose.lean+kickLean+action.headerDrive*0.19+action.stumble*0.12+action.brace*0.035;
+    const lean=pose.lean+pose.accelerationLean+kickLean+action.headerDrive*0.19+
+      action.stumble*0.12+action.brace*0.035;
     // Le gardien accompagne le plongeon avec une translation du buste et des bras
     // dans le sens réel du tir ; les joueurs de champ amortissent les contacts.
     const diveSide=Math.sign(-pose.diveDir*Math.cos(yaw))||1;
@@ -660,7 +673,7 @@ export class MatchRenderer3D {
     addKitNumber(g,bodyPoint,0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
     addKitNumber(g,bodyPoint,-0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
     const kickFootSide=pose.kickFootSide || ((index%2===0)?-1:1);
-    const stride=0.36+pose.sprint*0.13;
+    const stride=clamp(0.36+pose.sprint*0.13+action.driveBurst*0.055-action.brakeBrace*0.045,0.28,0.55);
     const legSwing=Math.sin(phase)*stride*action.gait;
     const legSwingB=Math.sin(phase+Math.PI)*stride*action.gait;
     for(const [side,baseSwing] of [[-1,legSwing],[1,legSwingB]]){
@@ -673,6 +686,7 @@ export class MatchRenderer3D {
       const sw=baseSwing+(isKickLeg?action.kickPulse*0.28:0)-kickBack+kickThrough+touchSweep+tackleSweep;
       const hip=legPoint(0,hipY,side*0.13);
       const kneeLift=Math.max(0,Math.sin(phase+(side>0?Math.PI:0)))*pose.sprint*0.13+
+        action.driveBurst*0.055+action.brakeBrace*0.016+
         (isKickLeg?action.kickPulse*0.11:0)+(isTouchLeg?action.firstTouchAbsorb*0.045:0);
       const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55+kneeLift-action.tackleReach*(isKickLeg?0.13:0),side*0.145);
       const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*(0.08+pose.sprint*0.04)+
@@ -693,7 +707,8 @@ export class MatchRenderer3D {
       }
       // Semelle et petits crampons visibles dans les gros plans.
     }
-    const armSwing=Math.sin(phase+Math.PI)*(0.29+pose.sprint*0.12)*action.gait;
+    const armSwing=Math.sin(phase+Math.PI)*(0.29+pose.sprint*0.12)*
+      (1+action.driveBurst*0.16+action.brakeBrace*0.08)*action.gait;
     const keeperReach=player.isGK?(action.diveReach*0.48+action.catchReach*0.31+action.punchReach*0.24):0;
     for(const side of [-1,1]){
       const reachSide=player.isGK?diveSide:side;

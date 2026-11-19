@@ -54,6 +54,14 @@ assert.ok(runner.turnLean < 0, 'le buste s incline dans le sens du virage');
 assert.ok(runner.bodyBob > 0, 'la course ajoute une oscillation verticale subtile');
 const sprintPose = getPlayer3DPose({ vx: 8.5, vy: 0, anim: 2, turn: 0.4 });
 assert.ok(sprintPose.sprint > 0.5 && sprintPose.turnLean < 0, 'le sprint amplifie l allonge et le contrepoids du virage');
+const accelerationPose = getPlayer3DPose({ vx: 6.8, vy: 0, motionAccel: 0.9, anim: 2 });
+const brakingPose = getPlayer3DPose({ vx: 6.8, vy: 0, motionAccel: -0.9, anim: 2 });
+assert.ok(accelerationPose.accelerationLean > 0 && accelerationPose.driveBurst > 0.9,
+  'une accélération franche incline le buste et renforce la foulée');
+assert.ok(brakingPose.accelerationLean < 0 && brakingPose.brakeBrace > 0.9,
+  'un freinage prépare le buste et les appuis');
+assert.ok(accelerationPose.bodyBob >= sprintPose.bodyBob * 0.9,
+  'la poussée accentue légèrement le rythme du corps');
 assert.equal(runner.slide, 0);
 assert.equal(runner.dive, 0);
 
@@ -71,6 +79,11 @@ assert.equal(replayPose.y, 5);
 assert.equal(replayPose.speed, Math.hypot(-2, 6));
 assert.equal(replayPose.heading, -1.2, 'le ralenti conserve l orientation enregistrée');
 assert.equal(replayPose.kickFootSide, -1, 'le replay conserve le pied ayant frappé le ballon');
+const accelerationReplayFrame = Array(29).fill(0);
+accelerationReplayFrame[4] = 6;
+accelerationReplayFrame[28] = 0.82;
+const accelerationReplayPose = getPlayer3DPose({}, accelerationReplayFrame);
+assert.equal(accelerationReplayPose.acceleration, 0.82, 'le replay conserve l accélération du joueur');
 
 console.log('3D RENDERER CORE OK — profils mobiles, course, tacle, saut, plongeon et ralenti');
 

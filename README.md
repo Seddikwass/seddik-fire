@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.16.0 — défense, inertie et contacts plus naturels
+- Marquage défensif individuel : les attaquants dangereux sont distribués entre des défenseurs distincts selon leur menace, la proximité du ballon, leur vitesse et le temps d'approche.
+- Les défenseurs conservent une cible de marquage cohérente tout en gardant une pondération de leur position de bloc pour éviter les courses de poursuite exagérées.
+- Les changements de direction réduisent progressivement la vitesse cible selon l'angle et la vitesse du joueur, avec une réponse commune aux commandes et à l'IA.
+- La physique sépare maintenant deux joueurs exactement superposés à l'aide d'une normale déterministe, au lieu de les laisser coincés au même point.
+- Tests sur les affectations uniques, les attaques dans les deux sens, les demi-tours et les collisions à distance nulle.
+- Versions interface, API, package Android et cache hors ligne alignées sur 3.16.0.
+
 ## Version 3.15.0 — décisions offensives plus réalistes
 - L'IA évalue la qualité d'une frappe selon la distance, l'angle, la pression défensive, la finition, la technique et la fatigue du tireur.
 - Le placement du gardien intervient dans l'évaluation de l'ouverture de tir ; une ligne de passe dégagée diminue la tendance aux frappes forcées.

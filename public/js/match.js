@@ -246,6 +246,55 @@ export function getDefensiveMarkTarget(defender = {}, attacker = {}, ball = {}, 
   };
 }
 
+// Affecte les attaquants dangereux à des défenseurs distincts : un marquage individuel
+// stable par menace, pondéré par le danger, le temps d'approche et la compatibilité de couloir.
+export function getDefensiveMarkAssignments(defenders = [], attackers = [], ball = {}, goalX = -HL, halfLength = HL, halfWidth = HW) {
+  const gx = Number.isFinite(goalX) ? goalX : -HL;
+  const length = Number.isFinite(halfLength) && halfLength > 10 ? halfLength : HL;
+  const width = Number.isFinite(halfWidth) && halfWidth > 10 ? halfWidth : HW;
+  const goalDirection = Math.sign(gx) || -1;
+  const teamDirection = -goalDirection;
+  const bx = Number.isFinite(ball?.x) ? ball.x : 0;
+  const by = Number.isFinite(ball?.y) ? ball.y : 0;
+  const available = defenders.filter(p => p && !p.isGK && !p.sentOff &&
+    (Number.isFinite(p.base?.[0]) && p.base[0] < -12 || p.instr === 'mark'));
+  const threats = attackers.filter(p => p && !p.isGK && !p.sentOff &&
+    Number.isFinite(p.x) && Number.isFinite(p.y)).map((p, index) => {
+      const progress = clamp((p.x * goalDirection + 18) / 44, 0, 1);
+      const ballProximity = 1 - clamp(Math.hypot(p.x - bx, p.y - by) / 32, 0, 1);
+      const centrality = 1 - clamp(Math.abs(p.y) / (width + 4), 0, 1);
+      const forwardSpeed = Math.max(0, (Number.isFinite(p.vx) ? p.vx : 0) * goalDirection);
+      const momentum = clamp(forwardSpeed / 7, 0, 1);
+      const threat = progress * 0.5 + ballProximity * 0.27 + centrality * 0.13 + momentum * 0.1;
+      return { player: p, threat, index };
+    }).sort((a, b) => b.threat - a.threat || a.index - b.index);
+  const remaining = new Set(available);
+  const assignments = [];
+  for (const entry of threats) {
+    let selected = null, selectedTarget = null, bestCost = Infinity;
+    for (const defender of remaining) {
+      const tightness = defender.instr === 'mark' ? 0.96 : 0.78;
+      const target = getDefensiveMarkTarget(defender, entry.player, { x: bx, y: by }, gx, tightness, length, width);
+      const pace = clamp(Number(defender.a?.pac) || 50, 0, 100);
+      const stamina = clamp(Number.isFinite(defender.stamina) ? defender.stamina : 1, 0.25, 1);
+      const speed = (5.4 + pace * 0.03) * (0.72 + stamina * 0.28);
+      const travelTime = Math.hypot(target.x - defender.x, target.y - defender.y) / speed;
+      const baseY = Number.isFinite(defender.base?.[1]) ? defender.base[1] * teamDirection : defender.y;
+      const laneMismatch = Math.min(2.2, Math.abs(baseY - entry.player.y) * 0.035);
+      const instructionBonus = defender.instr === 'mark' ? 0.16 : 0;
+      const continuityBonus = defender.markedOpponentId === entry.player.id ? 0.42 : 0;
+      const cost = travelTime + laneMismatch - instructionBonus - continuityBonus;
+      if (cost < bestCost) {
+        bestCost = cost; selected = defender; selectedTarget = target;
+      }
+    }
+    if (!selected) break;
+    remaining.delete(selected);
+    assignments.push({ player: selected, opponent: entry.player, x: selectedTarget.x, y: selectedTarget.y, threat: entry.threat });
+  }
+  return assignments;
+}
+
 // Organise les solutions autour du porteur : profondeur, largeur et appui court.
 // Les appels en profondeur restent derrière la ligne de hors-jeu estimée.
 export function getAttackingSupportPlan(players = [], carrier = {}, opponents = [], direction = 1, halfLength = HL, halfWidth = HW) {
@@ -430,6 +479,20 @@ export function getVelocityStep(vx, vy, targetX, targetY, maxChange) {
   return { vx: x + dx * scale, vy: y + dy * scale };
 }
 
+// Les changements de direction réduisent brièvement la vitesse cible :
+// les joueurs chargés en course doivent réorienter leurs appuis avant de repartir.
+export function getTurnSpeedFactor(heading = 0, targetX = 0, targetY = 0, currentSpeed = 0) {
+  const x = Number.isFinite(targetX) ? targetX : 0;
+  const y = Number.isFinite(targetY) ? targetY : 0;
+  if (Math.hypot(x, y) < 0.15) return 1;
+  const facing = Number.isFinite(heading) ? heading : 0;
+  const desired = Math.atan2(y, x);
+  const angle = Math.abs(Math.atan2(Math.sin(desired - facing), Math.cos(desired - facing)));
+  const turnLoad = clamp(angle / Math.PI, 0, 1);
+  const speedLoad = clamp((Number.isFinite(currentSpeed) ? Math.max(0, currentSpeed) : 0) / 8.5, 0, 1);
+  return clamp(1 - turnLoad * (0.08 + speedLoad * 0.2), 0.68, 1);
+}
+
 // Lisse les variations de consigne de l'IA sans retarder excessivement un changement tactique.
 export function getSmoothedTarget(x, y, targetX, targetY, dt, rate = 8) {
   const time = clamp(Number.isFinite(dt) ? dt : 0, 0, 0.1);
@@ -440,6 +503,21 @@ export function getSmoothedTarget(x, y, targetX, targetY, dt, rate = 8) {
   const toX = Number.isFinite(targetX) ? targetX : fromX;
   const toY = Number.isFinite(targetY) ? targetY : fromY;
   return { x: fromX + (toX - fromX) * alpha, y: fromY + (toY - fromY) * alpha };
+}
+
+// Direction de séparation déterministe, même lorsque deux joueurs occupent exactement le même point.
+export function getPlayerContactNormal(a = {}, b = {}, seed = 0) {
+  const ax = Number.isFinite(a.x) ? a.x : 0, ay = Number.isFinite(a.y) ? a.y : 0;
+  const bx = Number.isFinite(b.x) ? b.x : 0, by = Number.isFinite(b.y) ? b.y : 0;
+  const dx = bx - ax, dy = by - ay, distance = Math.hypot(dx, dy);
+  if (distance > 1e-4) return { x: dx / distance, y: dy / distance, distance };
+  const identity = (Number.isFinite(a.team) ? a.team * 101 : 0) +
+    (Number.isFinite(a.i) ? a.i * 17 : 0) +
+    (Number.isFinite(b.team) ? b.team * 211 : 0) +
+    (Number.isFinite(b.i) ? b.i * 31 : 0) +
+    (Number.isFinite(seed) ? seed : 0);
+  const angle = identity * 2.399963229728653;
+  return { x: Math.cos(angle), y: Math.sin(angle), distance: 0 };
 }
 
 // Évite les regroupements entre coéquipiers sans provoquer de changements de direction brusques.
@@ -1033,10 +1111,13 @@ export class Match {
   }
   applyVel(p, wx, wy, dt) {
     const currentSpeed = Math.hypot(p.vx, p.vy);
-    const targetSpeed = Math.hypot(wx, wy);
+    const requestedSpeed = Math.hypot(wx, wy);
     const currentHeading = Number.isFinite(p.heading) ? p.heading :
       (currentSpeed > 0.2 ? Math.atan2(p.vy, p.vx) : Math.atan2(wy || 0, wx || 1));
-    const targetHeading = targetSpeed > 0.15 ? Math.atan2(wy, wx) : currentHeading;
+    const turnFactor = getTurnSpeedFactor(currentHeading, wx, wy, currentSpeed);
+    const controlledWx = wx * turnFactor, controlledWy = wy * turnFactor;
+    const targetSpeed = Math.hypot(controlledWx, controlledWy);
+    const targetHeading = requestedSpeed > 0.15 ? Math.atan2(wy, wx) : currentHeading;
     const delta = Math.atan2(Math.sin(targetHeading - currentHeading), Math.cos(targetHeading - currentHeading));
     p.turn = clamp(delta / Math.PI, -1, 1);
     const tuning = getMovementTuning(p.a, p.stamina);
@@ -1044,7 +1125,7 @@ export class Match {
     const turnLoad = clamp(Math.abs(delta) / Math.PI, 0, 1);
     const braking = targetSpeed + 0.12 < currentSpeed ? 1.42 : 1;
     const acceleration = tuning.acceleration * braking * (1 - turnLoad * 0.16);
-    const next = getVelocityStep(p.vx, p.vy, wx, wy, acceleration * Math.max(0, dt));
+    const next = getVelocityStep(p.vx, p.vy, controlledWx, controlledWy, acceleration * Math.max(0, dt));
     p.vx = next.vx; p.vy = next.vy;
     // Le torse anticipe le virage, alors que la vitesse conserve son inertie.
     const turnRate = tuning.turnRate * (currentSpeed < 1 ? 1.2 : 1);
@@ -1079,9 +1160,10 @@ export class Match {
     const all = this.teams[0].ps.concat(this.teams[1].ps);
     for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
       const a = all[i], c = all[j]; if (a.sentOff || c.sentOff) continue;
-      const dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy);
-      if (d > 0 && d < 1.02) {
-        const nx = dx / d, ny = dy / d, overlap = 1.02 - d;
+      const contact = getPlayerContactNormal(a, c, i * 23 + j);
+      const nx = contact.x, ny = contact.y, d = contact.distance;
+      if (d < 1.02) {
+        const overlap = 1.02 - d;
         const push = overlap * 0.48;
         a.x -= nx * push; a.y -= ny * push; c.x += nx * push; c.y += ny * push;
         const closing = (a.vx - c.vx) * nx + (a.vy - c.vy) * ny;
@@ -1183,7 +1265,7 @@ export class Match {
         : [];
       const supportByPlayer = new Map(attackingPlan.map(entry => [entry.player, entry]));
       // presseurs
-      let pressers = [], pressingPlan = [];
+      let pressers = [], pressingPlan = [], markingPlan = [];
       let interceptor = null, interceptPoint = null;
       if (!inPoss) {
         const cand = T.ps.filter(p => !p.isGK && !p.sentOff).map(p => ({ p, d: Math.hypot(p.x - b.x, p.y - b.y) })).sort((a, c) => a.d - c.d);
@@ -1206,7 +1288,13 @@ export class Match {
             if (score < bestScore) { bestScore = score; interceptor = p; interceptPoint = { x: ix, y: iy }; }
           }
         }
+        const markingCandidates = T.ps.filter(p => !pressers.includes(p) && p !== interceptor &&
+          !(p === this.selected && this.userSide === T.side));
+        markingPlan = getDefensiveMarkAssignments(
+          markingCandidates, this.teams[1 - T.side].ps, b, -HL * T.dir
+        );
       }
+      const markingByPlayer = new Map(markingPlan.map(entry => [entry.player, entry]));
       for (const p of T.ps) {
         if (p.sentOff) continue;
         if (p === this.selected && this.userSide === T.side) continue; // contrôlé par l'utilisateur
@@ -1258,15 +1346,12 @@ export class Match {
             ty = lerp(ty, support.y, weight);
           }
         }
-        if (!inPoss) { // marquage
-          const opp = this.teams[1 - T.side].ps;
-          let mk = null, md = 9;
-          for (const o of opp) { if (o.sentOff || o.isGK) continue; const d = Math.hypot(o.x - tx, o.y - ty); if (d < md) { md = d; mk = o; } }
-          if (mk && (p.base[0] < -12 || p.instr === 'mark')) {
-            const gx = -HL * T.dir;
-            const mark = getDefensiveMarkTarget(p, mk, b, gx, p.instr === 'mark' ? 0.96 : 0.78);
-            const weight = p.instr === 'mark' ? 0.88 : 0.72;
-            // Le défenseur garde son but dans le dos de l'attaquant et ferme légèrement la passe.
+        if (!inPoss) {
+          const mark = markingByPlayer.get(p);
+          if (mark) {
+            p.markedOpponentId = mark.opponent.id;
+            const weight = p.instr === 'mark' ? 0.9 : 0.66;
+            // Chaque défenseur suit sa menace propre, sans abandonner sa zone de départ.
             tx = lerp(tx, mark.x, weight);
             ty = lerp(ty, mark.y, weight);
           }

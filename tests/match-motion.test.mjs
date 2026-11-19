@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getTeammateAvoidance, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan, getDefensiveMarkTarget, getKeeperPositioning, getAIShootingQuality } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getTeammateAvoidance, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan, getDefensiveMarkTarget, getKeeperPositioning, getAIShootingQuality, getDefensiveMarkAssignments, getTurnSpeedFactor, getPlayerContactNormal } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -169,6 +169,45 @@ assert.equal(new Set(pressThree.map(x => x.player.id)).size, 3, 'chaque rôle es
 assert.ok(pressThree.every(x => x.player.id !== 'keeper' && x.player.id !== 'sent-off'), 'gardien et joueur expulsé exclus');
 assert.ok(pressThree.every(x => Number.isFinite(x.x) && Number.isFinite(x.y)), 'les cibles du pressing restent valides');
 console.log('PRESSING SHAPE OK — pressing du porteur et couvertures intérieure/extérieure');
+
+// Le marquage défensif distribue les attaquants dangereux entre des défenseurs distincts.
+const markDefenders = [
+  { id: 'left-centre-back', x: -26, y: -7, base: [-32, -7], a: { pac: 68, def: 86 }, stamina: 0.9 },
+  { id: 'right-centre-back', x: -24, y: 6, base: [-32, 7], a: { pac: 72, def: 90 }, stamina: 0.95 },
+  { id: 'right-back', x: -19, y: 17, base: [-25, 18], a: { pac: 84, def: 78 }, stamina: 1 },
+  { id: 'keeper', x: -50, y: 0, base: [-50, 0], isGK: true, a: { pac: 50 } },
+  { id: 'sent-off', x: -20, y: -18, base: [-25, -18], sentOff: true, a: { pac: 90 } },
+];
+const markAttackers = [
+  { id: 'striker', x: -31, y: 1, vx: -3.5, vy: 0, a: { pac: 84 } },
+  { id: 'left-winger', x: -18, y: -22, vx: -2.2, vy: -1, a: { pac: 91 } },
+  { id: 'right-winger', x: -16, y: 21, vx: -2.8, vy: 0.4, a: { pac: 88 } },
+  { id: 'deep-midfielder', x: 8, y: -5, vx: -0.5, vy: 0, a: { pac: 70 } },
+];
+const defensiveAssignments = getDefensiveMarkAssignments(
+  markDefenders, markAttackers, { x: -27, y: 0 }, -52.5
+);
+assert.equal(defensiveAssignments.length, 3, 'trois défenseurs disponibles marquent trois menaces distinctes');
+assert.equal(new Set(defensiveAssignments.map(x => x.player.id)).size, 3, 'un défenseur ne reçoit qu une seule cible');
+assert.equal(new Set(defensiveAssignments.map(x => x.opponent.id)).size, 3, 'un attaquant n attire pas plusieurs marquages');
+assert.ok(defensiveAssignments.every(x => x.player.id !== 'keeper' && x.player.id !== 'sent-off'),
+  'gardien et expulsé sont exclus du marquage');
+assert.ok(defensiveAssignments.every(x => x.x < x.opponent.x),
+  'les défenseurs se replacent entre les attaquants et leur but');
+assert.ok(defensiveAssignments.some(x => x.opponent.id === 'striker'),
+  'la menace axiale proche du but reçoit un marquage');
+
+const mirroredMarkDefenders = markDefenders.slice(0, 3).map(p => ({ ...p, x: -p.x, y: -p.y }));
+const mirroredMarkAttackers = markAttackers.slice(0, 3).map(p => ({
+  ...p, x: -p.x, y: -p.y, vx: -p.vx, vy: -p.vy,
+}));
+const mirroredAssignments = getDefensiveMarkAssignments(
+  mirroredMarkDefenders, mirroredMarkAttackers, { x: 27, y: 0 }, 52.5
+);
+assert.equal(mirroredAssignments.length, 3, 'le marquage fonctionne dans le sens opposé');
+assert.ok(mirroredAssignments.every(x => x.x > x.opponent.x),
+  'le placement miroir protège le but situé à droite');
+console.log('DEFENSIVE MATCHUPS OK — menaces uniques, priorisation et orientation miroir');
 
 
 // Les appels offensifs créent quatre solutions complémentaires et respectent la ligne de hors-jeu.
@@ -367,6 +406,23 @@ assert.deepEqual(farSpacing, { x: 0, y: 0, strength: 0 }, 'un joueur éloigné n
 const balancedSpacing = getTeammateAvoidance(spacingPlayer, [
   { x: -1, y: 0 }, { x: 1, y: 0 },
 ], 2.8);
+
+const straightTurn = getTurnSpeedFactor(0, 1, 0, 8.2);
+const quarterTurn = getTurnSpeedFactor(0, 0, 1, 8.2);
+const reverseTurn = getTurnSpeedFactor(0, -1, 0, 8.2);
+assert.equal(straightTurn, 1, 'une course dans l axe ne subit pas de freinage');
+assert.ok(quarterTurn < straightTurn && reverseTurn < quarterTurn,
+  'les virages serrés et demi-tours réduisent davantage la vitesse cible');
+assert.equal(getTurnSpeedFactor(0, 0, 0, 8), 1, 'un arrêt ne crée pas de freinage directionnel artificiel');
+
+const coincidentContactA = { x: 0, y: 0, team: 0, i: 4 };
+const coincidentContactB = { x: 0, y: 0, team: 1, i: 7 };
+const coincidentNormal = getPlayerContactNormal(coincidentContactA, coincidentContactB, 12);
+const repeatedNormal = getPlayerContactNormal(coincidentContactA, coincidentContactB, 12);
+assert.deepEqual(coincidentNormal, repeatedNormal, 'la séparation de deux joueurs superposés est déterministe');
+assert.equal(coincidentNormal.distance, 0, 'la superposition exacte est détectée');
+assert.ok(Math.abs(Math.hypot(coincidentNormal.x, coincidentNormal.y) - 1) < 1e-9,
+  'la normale de séparation exacte est normalisée');
 assert.equal(balancedSpacing.strength, 0, 'deux pressions symétriques ne créent pas de dérive latérale');
 const overlapSpacing = getTeammateAvoidance(spacingPlayer, [
   { x: 0, y: 0 },

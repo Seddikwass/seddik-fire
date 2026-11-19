@@ -1,5 +1,12 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.15.0 — décisions offensives plus réalistes
+- L'IA évalue la qualité d'une frappe selon la distance, l'angle, la pression défensive, la finition, la technique et la fatigue du tireur.
+- Le placement du gardien intervient dans l'évaluation de l'ouverture de tir ; une ligne de passe dégagée diminue la tendance aux frappes forcées.
+- Le délai de réflexion appartient désormais à chaque joueur porteur du ballon, pour éviter qu'un changement de possession hérite du délai d'un autre joueur.
+- Tests sur les tirs proches, lointains, sous pression et depuis un angle fermé.
+- Versions interface, API, package Android et cache hors ligne alignées sur 3.15.0.
+
 ## Version 3.14.0 — caméra sportive et suivi des ballons aériens
 - La caméra 3D relève progressivement son point de visée lorsque le ballon monte pour garder les centres, têtes, dégagements et frappes hautes visibles.
 - Les ralentis utilisent la même information de hauteur de balle afin d'éviter les cadrages qui perdent le ballon dans les actions aériennes.

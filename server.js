@@ -159,3 +159,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => log('info', `serveur à l'écoute`, { port: PORT }));
 const stop = () => { log('info', 'arrêt'); server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 5000).unref(); };
 process.on('SIGTERM', stop); process.on('SIGINT', stop);
+
+// Render deployment refresh marker — Football Tunisia 2026 v3.14.0 (2026-11-19)

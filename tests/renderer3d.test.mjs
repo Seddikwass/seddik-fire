@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { get3DQualityProfile, getPlayer3DPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats } from '../public/js/renderer3d.js';
+import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats } from '../public/js/renderer3d.js';
 
 const low = get3DQualityProfile('low');
 const medium = get3DQualityProfile('medium');
@@ -89,3 +89,54 @@ assert.equal(highPlayerMesh.finite, true, 'le modèle haute qualité a des coord
 const keeperMesh = getPlayer3DModelStats(modelMatch, { ...modelPlayer, isGK: true }, 'high');
 assert.ok(keeperMesh.vertexCount > 0, 'le gardien possède un modèle 3D et ses gants');
 console.log('3D PLAYER MODELS OK — numéros de maillot, visage, peau, chaussures et profil gardien');
+
+
+// Les gestes déjà simulés doivent aussi être transmis au modèle 3D, y compris en replay.
+const actionFrame = Array(27).fill(0);
+actionFrame[3] = 1.7;
+actionFrame[4] = 2.4;
+actionFrame[5] = -0.8;
+actionFrame[7] = 0.26;  // plongeon : 0,52 s
+actionFrame[8] = 0.19;  // tacle : 0,38 s
+actionFrame[9] = 0.17;  // frappe : 0,34 s
+actionFrame[10] = 0.22; // tête : 0,44 s
+actionFrame[11] = 0.16; // première touche : 0,32 s
+actionFrame[12] = 0.12; // déséquilibre : 0,24 s
+actionFrame[13] = 0.24; // prise du gardien : 0,48 s
+actionFrame[14] = 0.21; // dégagement du poing : 0,42 s
+actionFrame[15] = -1;
+actionFrame[16] = -1;
+actionFrame[17] = 1;
+actionFrame[18] = -1;
+actionFrame[19] = 1;
+actionFrame[20] = -1;
+actionFrame[21] = 0.7;
+actionFrame[22] = 0.8;
+actionFrame[23] = 0.11;
+actionFrame[24] = -1;
+actionFrame[25] = 0.38;
+actionFrame[26] = 0.42;
+const actionPose = getPlayer3DPose({}, actionFrame);
+assert.equal(actionPose.firstTouch, 0.5, 'la première touche est transmise à la pose 3D');
+assert.equal(actionPose.stumble, 0.5, 'le déséquilibre est transmis à la pose 3D');
+assert.equal(actionPose.keeperCatch, 0.5, 'la prise du gardien est transmise à la pose 3D');
+assert.equal(actionPose.keeperPunch, 0.5, 'le dégagement du poing est transmis à la pose 3D');
+assert.equal(actionPose.contact, 0.5, 'le contact physique est transmis à la pose 3D');
+assert.equal(actionPose.diveHeight, 0.7, 'la hauteur du plongeon est conservée');
+assert.equal(actionPose.diveStretch, 0.8, 'l extension du plongeon est conservée');
+assert.equal(actionPose.headerDir, -1);
+assert.equal(actionPose.firstTouchDir, 1);
+assert.equal(actionPose.stumbleDir, -1);
+assert.equal(actionPose.contactDir, -1);
+assert.equal(actionPose.heading, 0.42, 'le replay conserve l orientation du joueur');
+
+const actionWeights = getPlayer3DActionWeights(actionPose);
+assert.ok(actionWeights.gait >= 0 && actionWeights.gait <= 1, 'la foulée reste bornée pendant les gestes');
+assert.ok(actionWeights.diveReach > 0.4, 'le plongeon utilise son extension réelle');
+assert.equal(actionWeights.catchReach, 0.5, 'la portée de prise suit la phase du gardien');
+assert.equal(actionWeights.punchReach, 0.5, 'la portée de dégagement suit la phase du gardien');
+assert.equal(actionWeights.kickPulse, 1, 'la frappe produit une impulsion au milieu de son animation');
+assert.equal(actionWeights.firstTouchPulse, 1, 'la première touche produit une impulsion au milieu de son animation');
+assert.equal(actionWeights.brace, 0.5, 'le corps prépare une réaction cohérente au contact');
+assert.ok(Object.values(actionWeights).every(Number.isFinite), 'tous les poids d animation sont numériques et finis');
+console.log('3D ACTION POSES OK — première touche, contacts, frappes, prise et plongeon du gardien');

@@ -1,5 +1,16 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.22.0 — tirs au but jouables
+- Séance de tirs au but jouable à la fin d'un match à élimination directe à égalité : Coupe de Tunisie, Supercoupe, et matchs retour CAF à égalité au cumul.
+- Règles IFAB : tirage au sort, alternance stricte, 5 tirs chacun, fin anticipée dès qu'une équipe ne peut plus revenir, puis mort subite ; tous les joueurs tirent avant qu'un même joueur tire deux fois, gardien en dernier.
+- Au tir : joystick pour viser (haut/bas, vers l'arrière pour lever), maintenir TIR pour la puissance ; cible dans le but et jauge de puissance ; trop de puissance = risque au-dessus.
+- Dans les buts : joystick haut/bas au moment de la frappe pour plonger.
+- Modèle calibré sur les statistiques réelles : environ 72 % de réussite, 18 % d'arrêts, 10 % à côté ou sur le poteau.
+- Tableau de séance (pastilles vertes/rouges), horloge « TAB », boutons adaptés, résultat enregistré dans la carrière (score t.a.b. réel au lieu d'un tirage au hasard).
+- « Simuler la fin » ou quitter : la séance est résolue avec le même modèle.
+- Match rapide : option « Tirs au but en cas d'égalité ».
+- Nouveau module public/js/shootout.js et tests tests/shootout.test.mjs.
+
 ## Version 3.21.0 — coups de pied arrêtés aux normes
 - Correction majeure : pendant les arrêts de jeu, les joueurs se replacent réellement (ils restaient figés et le ballon se téléportait vers le tireur).
 - Le tireur ne peut plus partir balle au pied sur une touche, un engagement, un coup franc, un corner ou un penalty ; le ballon reste au point de remise en jeu jusqu'à la frappe.

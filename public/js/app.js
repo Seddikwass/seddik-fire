@@ -7,7 +7,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.21.0';
+export const APP_VERSION = '3.22.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -97,6 +97,7 @@ VIEWS.quick = () => {
    <div class="vs"><div>${crest(h, 56)}<select id="qh">${opt(h)}</select></div><b>VS</b><div>${crest(a, 56)}<select id="qa">${opt(a)}</select></div></div>
    <label>Vous contrôlez<select id="qside"><option value="0">Domicile</option><option value="1">Extérieur</option><option value="-1">Personne (spectateur)</option></select></label>
    <label>${t('Durée du match')}<select id="qdur">${[3, 5, 8, 10, 15].map(m => `<option ${m === settings.duration ? 'selected' : ''} value="${m}">${m} min</option>`).join('')}</select></label>
+   <label class="check"><input type="checkbox" id="qko"> Tirs au but en cas d'égalité (match de coupe)</label>
    <button class="btn big primary" data-a="quickPlay">⚽ ${t('Jouer')}</button></div>`;
 };
 
@@ -433,7 +434,7 @@ VIEWS.account = () => `<div class="page narrow"><div class="ph"><button class="b
 function startMatchView() {
   const cv = $('#cv'); const ctx = args;
   const m = new Match({
-    canvas: cv, home: ctx.home, away: ctx.away, userSide: ctx.userSide,
+    canvas: cv, home: ctx.home, away: ctx.away, userSide: ctx.userSide, knockout: ctx.knockout || null,
     settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: settings.quality, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), replays: settings.replays },
     onEnd: res => onMatchEnd(res), onPause: () => pauseMenu(),
   });
@@ -509,7 +510,7 @@ function bindControls(m) {
   };
   // libellés contextuels (attaque / défense)
   m._lbl = setInterval(() => {
-    const att = m.ball.owner && m.selected && m.ball.owner === m.selected;
+    const att = m.state === 'shootout' || (m.ball.owner && m.selected && m.ball.owner === m.selected);
     $('#bShoot') && ($('#bShoot').textContent = att ? t('Tir') : t('Tacle'));
     $('#bPass') && ($('#bPass').textContent = att ? t('Passe') : t('Changer'));
     $('#bThru') && ($('#bThru').textContent = att ? t('Profondeur') : t('Pressing'));
@@ -550,7 +551,7 @@ function onMatchEnd(res) {
   if (ctx.career) {
     const f = st.fixtures.find(x => x.id === ctx.fixtureId);
     const full = res;
-    const userRes = { hg: full.hg, ag: full.ag, events: full.events, stats: full.stats, players: full.players };
+    const userRes = { hg: full.hg, ag: full.ag, pens: full.pens, events: full.events, stats: full.stats, players: full.players };
     const rep = C.advance(st, userRes);
     save();
     go('postmatch', { f: f.id, res: full, userSide: ctx.userSide });
@@ -563,13 +564,13 @@ VIEWS.postmatch = () => {
 VIEWS.postmatchQuick = () => `<div class="page">${postHTML(args.home.name, args.away.name, args.res.hg, args.res.ag, args.res)}<div class="row center"><button class="btn primary big" data-a="nav" data-v="quick">Rejouer</button><button class="btn big" data-a="nav" data-v="home">${t('Accueil')}</button></div></div>`;
 function postHTML(hn, an, hg, ag, res, f = null) {
   const s = res.stats;
-  const ev = (res.events || []).filter(e => ['goal', 'yellow', 'red', 'injury', 'sub'].includes(e.type)).sort((a, b) => a.min - b.min);
+  const ev = (res.events || []).filter(e => ['goal', 'yellow', 'red', 'injury', 'sub', 'shootout'].includes(e.type)).sort((a, b) => a.min - b.min);
   const players = [...(res.players || [])].sort((a, b) => (b.rating || 0) - (a.rating || 0) || (b.goals || 0) - (a.goals || 0));
   const mvp = players[0];
   const teamName = side => side === 0 ? hn : an;
-  return `<div class="card center post"><small>${t('Fin du match')}</small><div class="score">${esc(hn)} <b>${hg} - ${ag}</b> ${esc(an)}</div>${f && f.pens ? `<p>Tirs au but : ${f.pens[0]}-${f.pens[1]}</p>` : ''}${f && f.agg ? `<p>Cumul : ${f.agg[0]}-${f.agg[1]}</p>` : ''}${f && f.attendance ? `<p class="hint">${f.attendance.toLocaleString('fr-FR')} spectateurs</p>` : ''}
+  return `<div class="card center post"><small>${t('Fin du match')}</small><div class="score">${esc(hn)} <b>${hg} - ${ag}</b> ${esc(an)}</div>${f && f.pens ? `<p>Tirs au but : ${f.pens[0]}-${f.pens[1]}</p>` : (!f && res.pens ? `<p>Tirs au but : ${res.pens[0]}-${res.pens[1]}</p>` : '')}${f && f.agg ? `<p>Cumul : ${f.agg[0]}-${f.agg[1]}</p>` : ''}${f && f.attendance ? `<p class="hint">${f.attendance.toLocaleString('fr-FR')} spectateurs</p>` : ''}
    ${mvp ? `<section class="mvp-card"><small>🏆 JOUEUR DU MATCH</small><h3>${esc(mvp.name || 'Joueur')}</h3><b>${Number(mvp.rating || 0).toFixed(1)}/10</b><p>${esc(teamName(mvp.team))} · ${mvp.goals || 0} but(s) · ${mvp.assists || 0} passe(s) décisive(s)</p></section>` : ''}
-   <ul class="events">${ev.map(e => `<li class="${e.team ? 'r' : 'l'}">${e.min}' ${{ goal: '⚽', yellow: '🟨', red: '🟥', injury: '🩹', sub: '🔁' }[e.type]} ${esc(e.name)}${e.assist ? ` <small>(passe ${esc(e.assist)})</small>` : ''}${e.outName ? ` <small>↔ ${esc(e.outName)}</small>` : ''}</li>`).join('')}</ul>
+   <ul class="events">${ev.map(e => `<li class="${e.team ? 'r' : 'l'}">${e.min}' ${{ goal: '⚽', yellow: '🟨', red: '🟥', injury: '🩹', sub: '🔁', shootout: '🎯' }[e.type]} ${esc(e.name)}${e.assist ? ` <small>(passe ${esc(e.assist)})</small>` : ''}${e.outName ? ` <small>↔ ${esc(e.outName)}</small>` : ''}</li>`).join('')}</ul>
    ${s ? `<table class="tbl stats"><tbody>${[['Possession', s.possPct[0] + ' %', s.possPct[1] + ' %'], ['Tirs', s.shots[0], s.shots[1]], ['Cadrés', s.onTarget[0], s.onTarget[1]], ['Passes réussies', `${s.passOk[0]}/${s.passes[0]}`, `${s.passOk[1]}/${s.passes[1]}`], ['Corners', s.corners[0], s.corners[1]], ['Fautes', s.fouls[0], s.fouls[1]], ['Cartons', s.yellows[0] + s.reds[0], s.yellows[1] + s.reds[1]]].map(([l, a, b]) => `<tr><td>${a}</td><th>${l}</th><td>${b}</td></tr>`).join('')}</tbody></table>` : ''}
    ${players.length ? `<h3 class="section-title">Notes des joueurs</h3><table class="tbl player-ratings"><thead><tr><th>Joueur</th><th>Équipe</th><th>Min.</th><th>B</th><th>P.D.</th><th>Note</th></tr></thead><tbody>${players.slice(0, 12).map(p => `<tr><td>${esc(p.name || 'Joueur')}${p.red ? ' 🟥' : ''}${p.yellow ? ' 🟨' : ''}</td><td>${esc(teamName(p.team))}</td><td>${p.minutes || 0}</td><td>${p.goals || 0}</td><td>${p.assists || 0}</td><td><b>${Number(p.rating || 0).toFixed(1)}</b></td></tr>`).join('')}</tbody></table>` : ''}</div>`;
 }
@@ -603,7 +604,7 @@ const ACT = {
     const side = Number($('#qside').value);
     const home = C.matchTeam(fake, h, false), away = C.matchTeam(fake, a, true);
     if (home.kit.shirt === away.kit.shirt) away.kit = { shirt: '#f4f4f4', trim: '#222', shorts: '#222' };
-    go('match', { home, away, userSide: side < 0 ? null : side, duration: Number($('#qdur').value), strH: C.teamStrength(fake, h, false), strA: C.teamStrength(fake, a, false) });
+    go('match', { home, away, knockout: $('#qko')?.checked ? { aggBefore: [0, 0] } : null, userSide: side < 0 ? null : side, duration: Number($('#qdur').value), strH: C.teamStrength(fake, h, false), strA: C.teamStrength(fake, a, false) });
   },
   advance: () => {
     if (C.userFixture(st)) return go('prematch');
@@ -620,7 +621,10 @@ const ACT = {
     const home = C.matchTeam(st, f.h, false), away = C.matchTeam(st, f.a, true);
     if (home.kit.shirt.toLowerCase() === away.kit.shirt.toLowerCase()) { away.kit = { shirt: away.colors[1] !== home.kit.shirt ? away.colors[1] : '#f4f4f4', trim: '#222', shorts: '#222' }; }
     save();
-    go('match', { career: true, fixtureId: f.id, home, away, userSide: f.h === st.userClub ? 0 : 1, strH: C.teamStrength(st, f.h, false), strA: C.teamStrength(st, f.a, false) });
+    // Élimination directe : match unique (coupe, supercoupe) ou retour CAF avec cumul de l'aller.
+    const leg1 = f.leg1 ? st.fixtures.find(x => x.id === f.leg1) : null;
+    const knockout = f.ko ? { aggBefore: [0, 0] } : (leg1 && /2$/.test(f.koStage || '') && leg1.played) ? { aggBefore: [leg1.ag, leg1.hg] } : null;
+    go('match', { career: true, fixtureId: f.id, home, away, knockout, userSide: f.h === st.userClub ? 0 : 1, strH: C.teamStrength(st, f.h, false), strA: C.teamStrength(st, f.a, false) });
   },
   simMatch: () => { const f = C.userFixture(st); const r = C.advance(st); save(); if (r.user) go('postmatch', { f: r.user.id, res: { hg: r.user.hg, ag: r.user.ag, events: r.user.events || [] } }); else render(); void f; },
   player: el => playerModal(el.dataset.id),

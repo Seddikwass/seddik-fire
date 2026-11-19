@@ -3,6 +3,7 @@ import { clamp, lerp } from './util.js';
 import { FORMATIONS } from './data.js';
 import * as A from './audio.js';
 import { MatchRenderer3D } from './renderer3d.js';
+import { getShootoutStatus, getNextKicker, getShootoutOrder, getAIPenaltyChoice, getPenaltyStrike, getAIKeeperDive, getPenaltyOutcome } from './shootout.js';
 
 const HL = 52.5, HW = 34, GOAL_W = 3.66, GOAL_H = 2.44, G = 9.81;
 const DT = 1 / 60;
@@ -923,6 +924,8 @@ export class Match {
     this.canvas = opts.canvas; this.c = this.canvas.getContext('2d');
     this.settings = Object.assign({ duration: 5, difficulty: 1, assist: true, quality: 'high', fps: 60, voice: true, lang: 'fr' }, opts.settings || {});
     this.userSide = opts.userSide; // 0, 1 ou null (spectateur)
+    // Match à élimination directe : buts déjà acquis au cumul (aller) ; tirs au but si égalité.
+    this.knockout = opts.knockout ? { aggBefore: opts.knockout.aggBefore || [0, 0] } : null;
     this.teams = [this.makeTeam(opts.home, 0), this.makeTeam(opts.away, 1)];
     this.ball = { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, owner: null, last: null, lastTeam: 0, prevOwnerT: -1 };
     this.score = [0, 0]; this.minute = 0; this.half = 1; this.clock = 0;
@@ -1127,7 +1130,8 @@ export class Match {
       return;
     }
     if (this.state === 'halftime') { this.stateT -= dt; if (this.stateT <= 0) { this.half = 2; for (const T of this.teams) T.dir *= -1; this.setupKickoff(1); } return; }
-    if (this.state === 'fulltime') { this.stateT -= dt; if (this.stateT <= 0 && !this.ended) this.finish(); return; }
+    if (this.state === 'shootout') return this.stepShootout(dt);
+    if (this.state === 'fulltime') { this.stateT -= dt; if (this.stateT <= 0 && !this.ended) { if (this.needsShootout()) this.startShootout(); else this.finish(); } return; }
     // horloge
     this.clock += dt;
     const gm = this.clock / this.secondsPerMinute + (this.half === 2 ? 45 : 0);
@@ -1988,8 +1992,9 @@ export class Match {
     const opt = this.bestPass(p, dir, through) || this.bestPass(p, null, through);
     if (opt) this.pass(p, opt.p, through || opt.through, this.setPiece === 'corner');
   }
-  btnShootDown() { const p = this.selected; if (p && this.ball.owner === p) { this.input.shooting = true; this.input.shootHold = 0.15; } }
+  btnShootDown() { if (this.state === 'shootout') { this.shootoutPress(true); return; } const p = this.selected; if (p && this.ball.owner === p) { this.input.shooting = true; this.input.shootHold = 0.15; } }
   btnShootUp() {
+    if (this.state === 'shootout') { this.shootoutPress(false); return; }
     const p = this.selected, inp = this.input;
     if (!p || this.state !== 'play') { inp.shooting = false; return; }
     if (this.ball.owner === p && inp.shooting) {
@@ -2281,11 +2286,189 @@ export class Match {
     this.destroy();
     this.o.onEnd && this.o.onEnd(res);
   }
+  needsShootout() {
+    if (!this.knockout || this.shootout) return false;
+    const agg = this.knockout.aggBefore;
+    return this.score[0] + agg[0] === this.score[1] + agg[1];
+  }
+  startShootout() {
+    const first = this.r() < 0.5 ? 0 : 1; // tirage au sort
+    this.shootout = {
+      first, kicks: [[], []], order: this.teams.map(T => getShootoutOrder(T.ps)), next: [0, 0],
+      phase: 'walk', t: 1.6, kick: null, status: getShootoutStatus([[], []]),
+    };
+    this.state = 'shootout'; this.replay = null; this.passInfo = null; this.wall = null; this.setPiece = null;
+    this.banner('TIRS AU BUT', 2.2); A.whistle(true); A.crowd(0.6);
+    this.prepareShootoutKick();
+  }
+  prepareShootoutKick() {
+    const so = this.shootout, team = getNextKicker(so.kicks, so.first);
+    const list = so.order[team];
+    const shooter = list[so.next[team] % list.length]; so.next[team]++;
+    const keeper = this.teams[1 - team].ps.find(p => p.isGK && !p.sentOff) || this.teams[1 - team].ps[0];
+    so.kick = { team, shooter, keeper, strike: null, outcome: null, dive: 0, flightT: 0, userDive: null };
+    so.phase = 'walk'; so.t = so.kicks[0].length + so.kicks[1].length === 0 ? 2.2 : 1.4;
+    this.input.shooting = false; this.input.shootHold = 0;
+    if (this.userSide === team) this.select(shooter); else if (this.userSide != null) this.select(keeper);
+  }
+  // Position des joueurs : tireur au point, gardien sur sa ligne, autres dans le rond central.
+  placeShootout(dt) {
+    const so = this.shootout, k = so.kick;
+    let a = 0;
+    for (const T of this.teams) for (const p of T.ps) {
+      if (p.sentOff) continue;
+      let tx, ty;
+      if (p === k.shooter) { tx = so.phase === 'walk' ? HL - 12.6 : HL - 11.7; ty = so.phase === 'walk' ? -0.5 : -0.25; }
+      else if (p === k.keeper) { tx = HL - 0.35; ty = so.phase === 'flight' || so.phase === 'result' ? p.y : 0; }
+      else { const ang = (a++ / 21) * Math.PI * 2; tx = Math.cos(ang) * 6 + (T.side ? 2 : -2); ty = Math.sin(ang) * 5; }
+      if (!(p === k.keeper && (so.phase === 'flight' || so.phase === 'result'))) this.moveTo(p, tx, ty, dt, 1, true);
+    }
+    this.moveAll(dt);
+  }
+  shootoutPress(down) {
+    const so = this.shootout; if (!so || so.phase !== 'aim') return;
+    const k = so.kick; if (this.userSide !== k.team) return;
+    if (down) { this.input.shooting = true; this.input.shootHold = 0.15; return; }
+    if (!this.input.shooting) return;
+    const inp = this.input, mag = Math.hypot(inp.jx, inp.jy);
+    const aimY = mag > 0.25 ? clamp(inp.jy / Math.max(mag, 0.001), -1, 1) * 3.25 : 0;
+    const power = clamp(inp.shootHold, 0.2, 1);
+    inp.shooting = false; inp.shootHold = 0;
+    this.takeShootoutKick({ aimY, power, lift: 0.35 + power * 1.1 + (inp.jx < -0.4 ? 0.5 : 0) });
+  }
+  takeShootoutKick(choice) {
+    const so = this.shootout, k = so.kick, sh = k.shooter;
+    k.strike = getPenaltyStrike({ ...choice, shooting: sh.a.sho, technique: sh.a.tec, roll: this.r });
+    k.dive = this.userSide === 1 - k.team ? null : getAIKeeperDive(k.strike.y, k.keeper.a.gk, this.r);
+    so.phase = 'flight'; k.flightT = 0; k.duration = 11.2 / k.strike.speed;
+    sh.kickT = 0.34; sh.kickStyle = 'shot'; sh.kickPower = choice.power; sh.heading = 0; sh.face = 1;
+    A.kick(choice.power);
+  }
+  stepShootout(dt) {
+    const so = this.shootout, k = so.kick, b = this.ball, inp = this.input;
+    if (this.tickerT > 0) this.tickerT -= dt;
+    if (this.msgT > 0) this.msgT -= dt;
+    this.placeShootout(dt);
+    if (so.phase === 'walk') {
+      b.x = HL - 11; b.y = 0; b.z = 0.11; b.vx = b.vy = b.vz = 0; b.owner = null;
+      so.t -= dt;
+      const sh = k.shooter, ready = Math.hypot(sh.x - (HL - 12.6), sh.y + 0.5) < 0.8 && Math.hypot(k.keeper.x - (HL - 0.35), k.keeper.y) < 1;
+      if (so.t <= 0 && (ready || so.t < -4)) { so.phase = 'aim'; so.t = this.userSide === k.team ? 12 : 0.9 + this.r() * 0.5; A.whistle(); }
+      return;
+    }
+    if (so.phase === 'aim') {
+      if (inp.shooting) inp.shootHold = Math.min(1, inp.shootHold + dt * 1.1);
+      so.t -= dt;
+      if (so.t <= 0) {
+        if (this.userSide === k.team) { inp.shooting = true; inp.shootHold = Math.max(inp.shootHold, 0.6); this.shootoutPress(false); }
+        else this.takeShootoutKick(getAIPenaltyChoice(k.shooter, this.r));
+      }
+      return;
+    }
+    if (so.phase === 'flight') {
+      k.flightT += dt;
+      // Gardien humain : le joystick haut/bas au moment de la frappe décide du plongeon.
+      if (k.dive == null && k.flightT >= 0.12) {
+        const jy = inp.jy; k.dive = Math.abs(jy) > 0.35 ? Math.sign(jy) : 0;
+      }
+      if (k.dive != null && !k.outcome) {
+        k.outcome = getPenaltyOutcome({ ...k.strike, dive: k.dive, keeperRating: k.keeper.a.gk, roll: this.r });
+        if (k.dive) { k.keeper.diveT = 0.62; k.diveDuration = 0.62; k.keeper.diveDir = k.dive; k.keeper.dive = k.dive; }
+      }
+      const gk = k.keeper;
+      if (k.outcome) gk.y += clamp(k.outcome.keeperY - gk.y, -dt * 7, dt * 7);
+      const u = Math.min(1, k.flightT / k.duration);
+      const endY = k.outcome?.result === 'saved' ? lerp(k.strike.y, k.outcome.keeperY, 0.5) : k.strike.y;
+      b.x = lerp(HL - 11, HL - (k.outcome?.result === 'saved' ? 0.6 : -0.2), u);
+      b.y = lerp(0, endY, u); b.z = lerp(0.11, k.strike.z, u) + Math.sin(u * Math.PI) * 0.25;
+      if (u >= 1 && k.outcome) this.resolveShootoutKick();
+      return;
+    }
+    if (so.phase === 'result') {
+      // Ballon dans les filets, repoussé par le gardien ou sorti.
+      const r = k.outcome.result;
+      if (r === 'goal') { b.x = Math.min(HL + 1.4, b.x + dt * 8); b.z = Math.max(0.11, b.z - dt * 2); }
+      else if (r === 'saved') { b.x -= dt * 9; b.y += Math.sign(b.y || 1) * dt * 4; b.z = Math.max(0.11, b.z - dt * 3); }
+      else { b.x = Math.min(HL + 4, b.x + dt * 10); }
+      so.t -= dt;
+      if (so.t <= 0) {
+        if (so.status.decided) { this.state = 'fulltime'; this.stateT = 0; this.finish(); }
+        else this.prepareShootoutKick();
+      }
+    }
+  }
+  resolveShootoutKick() {
+    const so = this.shootout, k = so.kick, scored = k.outcome.result === 'goal';
+    so.kicks[k.team].push(scored);
+    so.status = getShootoutStatus(so.kicks);
+    so.phase = 'result'; so.t = so.status.decided ? 3.2 : 1.8;
+    if (scored) { this.banner('BUT !', 1.6); A.crowd(1); k.shooter.celebrateT = 1.4; }
+    else if (k.outcome.result === 'saved') { this.banner('ARRÊT !', 1.6); A.saveSound(); k.keeper.saveT = 0.75; }
+    else this.banner(k.outcome.result === 'post' ? 'SUR LE POTEAU !' : 'À CÔTÉ !', 1.6);
+    if (so.status.decided) {
+      const w = this.teams[so.status.winner];
+      this.banner(`${w.short || w.name} QUALIFIÉ !`, 3);
+      this.events.push({ type: 'shootout', min: 120, team: so.status.winner, name: `${so.status.goals[0]}-${so.status.goals[1]} t.a.b.` });
+    }
+  }
+  drawShootoutPanel() {
+    const so = this.shootout; if (!so) return;
+    const c = this.c, d = this.dpr, T = this.teams;
+    const w = 250 * d, h = 58 * d, x = (this.W - w) / 2, y = this.H - h - 14 * d;
+    c.save(); c.fillStyle = 'rgba(6,12,22,0.86)'; this.rr(x, y, w, h, 10 * d); c.fill();
+    c.font = `800 ${11 * d}px system-ui,Arial`; c.textBaseline = 'middle';
+    for (let side = 0; side < 2; side++) {
+      const ry = y + (side ? 39 : 19) * d;
+      c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(String(T[side].short || T[side].name).slice(0, 6), x + 10 * d, ry);
+      const n = Math.max(5, so.kicks[0].length, so.kicks[1].length);
+      for (let i = 0; i < n; i++) {
+        const v = so.kicks[side][i], cx = x + (70 + i * 19) * d;
+        c.beginPath(); c.arc(cx, ry, 6.5 * d, 0, Math.PI * 2);
+        c.fillStyle = v === true ? '#2fd36b' : v === false ? '#ff4d4d' : 'rgba(255,255,255,0.18)'; c.fill();
+      }
+      c.textAlign = 'right'; c.fillStyle = '#ffe14a'; c.fillText(String(so.status.goals[side]), x + w - 10 * d, ry);
+    }
+    // Aide contextuelle pour le joueur humain.
+    const k = so.kick;
+    if (this.userSide != null && k && so.phase === 'aim' && this.userSide === k.team) this.drawShootoutHint('Joystick : viser haut/bas · maintenir TIR : puissance');
+    else if (this.userSide != null && k && (so.phase === 'aim' || so.phase === 'walk') && this.userSide !== k.team) this.drawShootoutHint('Gardien : joystick haut/bas au moment de la frappe pour plonger');
+    c.restore();
+  }
+  // Jauge de puissance et cible dans le but pendant la visée du joueur humain.
+  drawShootoutAim() {
+    const so = this.shootout, k = so?.kick; if (!k || so.phase !== 'aim' || this.userSide !== k.team) return;
+    const c = this.c, d = this.dpr, inp = this.input;
+    const mag = Math.hypot(inp.jx, inp.jy);
+    const aimY = mag > 0.25 ? clamp(inp.jy / mag, -1, 1) * 3.25 : 0;
+    const lift = 0.35 + clamp(inp.shootHold || 0.4, 0.2, 1) * 1.1 + (inp.jx < -0.4 ? 0.5 : 0);
+    const target = this.screenPoint(HL, aimY, Math.min(2.6, lift));
+    if (target) {
+      c.save(); c.strokeStyle = '#ff5a5f'; c.lineWidth = 2.5 * d;
+      c.beginPath(); c.arc(target[0], target[1], 9 * d, 0, Math.PI * 2); c.stroke();
+      c.beginPath(); c.moveTo(target[0] - 13 * d, target[1]); c.lineTo(target[0] + 13 * d, target[1]); c.moveTo(target[0], target[1] - 13 * d); c.lineTo(target[0], target[1] + 13 * d); c.stroke();
+      c.restore();
+    }
+    const head = this.screenPoint(k.shooter.x, k.shooter.y, 2.35);
+    if (inp.shooting && head) {
+      const w = 46 * d, h = 7 * d, pw = clamp(inp.shootHold, 0, 1);
+      c.save(); c.fillStyle = 'rgba(0,0,0,0.55)'; this.rr(head[0] - w / 2, head[1] - h, w, h, 3 * d); c.fill();
+      c.fillStyle = pw > 0.82 ? '#ff4d4d' : pw > 0.55 ? '#ffb020' : '#ffe14a';
+      this.rr(head[0] - w / 2, head[1] - h, Math.max(h, w * pw), h, 3 * d); c.fill(); c.restore();
+    }
+  }
+  drawShootoutHint(text) {
+    const c = this.c, d = this.dpr;
+    c.save(); c.font = `700 ${11 * d}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    const w = c.measureText(text).width + 22 * d, x = this.W / 2, y = this.H - 92 * d;
+    c.fillStyle = 'rgba(0,0,0,0.6)'; this.rr(x - w / 2, y - 11 * d, w, 22 * d, 11 * d); c.fill();
+    c.fillStyle = '#fff'; c.fillText(text, x, y); c.restore();
+  }
   result() {
     const players = [];
     for (const T of this.teams) for (const p of T.ps) players.push({ id: p.id, name: p.name, num: p.num, pos: p.pos, team: T.side, minutes: Math.round(p.minutes), goals: p.goals, assists: p.assists, rating: clamp(Math.round(p.rating * 10) / 10, 3, 10), stamina: p.stamina, injured: p.injured, yellow: p.yellow, red: p.sentOff });
     const tp = this.stats.poss[0] + this.stats.poss[1] || 1;
-    return { hg: this.score[0], ag: this.score[1], events: this.events, stats: { ...this.stats, possPct: [Math.round(this.stats.poss[0] / tp * 100), Math.round(this.stats.poss[1] / tp * 100)] }, players, played: true };
+    const pens = this.shootout?.status?.decided ? this.shootout.status.goals.slice() : undefined;
+    return { hg: this.score[0], ag: this.score[1], pens, events: this.events, stats: { ...this.stats, possPct: [Math.round(this.stats.poss[0] / tp * 100), Math.round(this.stats.poss[1] / tp * 100)] }, players, played: true };
   }
   // termine le match en simulation rapide (minutes restantes)
   simulateRest(strengthH, strengthA) {
@@ -2297,7 +2480,26 @@ export class Match {
       const T = this.teams[s], c = T.ps.filter(p => !p.sentOff && !p.isGK); const sc = c[Math.floor(Math.random() * c.length)];
       this.score[s]++; sc.goals++; this.events.push({ type: 'goal', min: Math.round(this.minute + Math.random() * (90 - this.minute)), team: s, pid: sc.id, name: sc.name });
     }
-    this.minute = 90; this.finish();
+    this.minute = 90;
+    this.resolveShootoutInstantly();
+    this.finish();
+  }
+  // Tirs au but restants simulés sans animation (fin simulée ou abandon).
+  resolveShootoutInstantly() {
+    if (!this.shootout && !this.needsShootout()) return;
+    if (!this.shootout) this.startShootout();
+    const so = this.shootout;
+    let guard = 0;
+    while (!so.status.decided && guard++ < 60) {
+      if (so.phase !== 'walk' && so.phase !== 'aim') { this.prepareShootoutKick(); }
+      const k = so.kick;
+      k.strike = getPenaltyStrike({ ...getAIPenaltyChoice(k.shooter, this.r), shooting: k.shooter.a.sho, technique: k.shooter.a.tec, roll: this.r });
+      k.outcome = getPenaltyOutcome({ ...k.strike, dive: getAIKeeperDive(k.strike.y, k.keeper.a.gk, this.r), keeperRating: k.keeper.a.gk, roll: this.r });
+      so.kicks[k.team].push(k.outcome.result === 'goal');
+      so.status = getShootoutStatus(so.kicks);
+      so.phase = 'result';
+    }
+    if (so.status.decided && !this.events.some(e => e.type === 'shootout')) this.events.push({ type: 'shootout', min: 120, team: so.status.winner, name: `${so.status.goals[0]}-${so.status.goals[1]} t.a.b.` });
   }
   substitute(side, outIdx, benchIdx) {
     const T = this.teams[side];
@@ -3135,7 +3337,7 @@ export class Match {
     clockGrad.addColorStop(0, '#f13a45'); clockGrad.addColorStop(1, '#a90d1b');
     c.fillStyle = clockGrad; c.fillRect(clockX, y0, clockW, h);
     c.fillStyle = '#fff'; c.font = `900 ${(layout.compact ? 10 : 12) * d}px system-ui,Arial`;
-    c.fillText(`${String(min).padStart(2, '0')}'`, clockX + clockW / 2, y0 + h / 2);
+    c.fillText(this.state === 'shootout' ? 'TAB' : `${String(min).padStart(2, '0')}'`, clockX + clockW / 2, y0 + h / 2);
     c.restore();
     // Live match centre remains on desktop; on narrow phones the pitch stays clear.
     if (!isReplay && !layout.compact) {
@@ -3178,6 +3380,8 @@ export class Match {
       c.fillStyle = '#fff'; c.font = `700 ${10 * d}px system-ui,Arial`;
       c.fillText('Touchez pour passer', this.W / 2, ry + 48 * d);
     }
+    // Tirs au but : tableau de séance à la place du radar.
+    if (this.state === 'shootout') { this.drawShootoutPanel(); this.drawShootoutAim(); c.textBaseline = 'alphabetic'; return; }
     // radar
     const mw = 120 * d, mh = 78 * d, mx = this.W / 2 - mw / 2, my = this.H - mh - 8 * d;
     c.fillStyle = '#0a3d0fcc'; c.fillRect(mx, my, mw, mh); c.strokeStyle = '#ffffff88'; c.lineWidth = 1; c.strokeRect(mx, my, mw, mh);

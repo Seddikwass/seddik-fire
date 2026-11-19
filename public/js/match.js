@@ -308,7 +308,7 @@ export function getAttackingSupportPlan(players = [], carrier = {}, opponents = 
     add(winger, 'wide-support', targetX, targetY);
   }
 
-  // 3. Un milieu se rend disponible derrière ou à côté du ballon pour une passe de sécurité.
+  // 3. Un milieu décroche pour proposer une passe de sécurité sous pression.
   const option = choose([...remaining].filter(p => {
     const baseX = Number.isFinite(p.base?.[0]) ? p.base[0] : p.x * dir;
     return baseX >= -32 && baseX <= 16;
@@ -322,6 +322,39 @@ export function getAttackingSupportPlan(players = [], carrier = {}, opponents = 
     const pos = local(option);
     const side = Math.sign(pos.y - carrierY || (Number(option.base?.[1]) || 1));
     add(option, 'short-option', carrierX - 4.2, clamp(carrierY + side * 4.2, -width + 3, width - 3));
+  }
+
+  // 4. Un troisième joueur attaque le demi-espace en diagonale : l'équipe
+  // dispose ainsi d'une solution de progression supplémentaire sans s'entasser.
+  const diagonalX = Math.min(carrierX + 5.4 + advance * 2.1, offsideLimit - 1.4, length - 4);
+  if (diagonalX >= carrierX + 2.2) {
+    const occupied = assignments.map(entry => ({ x: entry.x * dir, y: entry.y * dir }));
+    const diagonalRunner = choose([...remaining].filter(p => {
+      const baseX = Number.isFinite(p.base?.[0]) ? p.base[0] : p.x * dir;
+      return baseX >= carrierX - 24 && baseX <= carrierX + 10 && p.x * dir <= offsideLimit + 1.2;
+    }), p => {
+      const pos = local(p);
+      const baseY = Number.isFinite(p.base?.[1]) ? p.base[1] * dir : pos.y;
+      const pace = clamp(Number(p.a?.pac) || 50, 0, 100);
+      const finish = clamp(Number(p.a?.sho) || 50, 0, 100);
+      const technique = clamp(Number(p.a?.tec) || 50, 0, 100);
+      const laneSide = Math.sign(pos.y - carrierY || baseY || 1);
+      const targetY = clamp(pos.y * 0.58 + carrierY * 0.42 + laneSide * (1.2 + advance * 1.5), -width + 3, width - 3);
+      const separation = occupied.length
+        ? Math.min(...occupied.map(point => Math.hypot(diagonalX - point.x, targetY - point.y)))
+        : 10;
+      const halfSpaceFit = Math.abs(Math.abs(baseY) - 8);
+      return -Math.abs(pos.x - (carrierX - 2)) * 0.22 +
+        pace * 0.035 + finish * 0.025 + technique * 0.02 -
+        halfSpaceFit * 0.14 - pressure(p) * 0.65 + Math.min(separation, 14) * 0.18;
+    });
+    if (diagonalRunner) {
+      const pos = local(diagonalRunner);
+      const baseY = Number.isFinite(diagonalRunner.base?.[1]) ? diagonalRunner.base[1] * dir : pos.y;
+      const laneSide = Math.sign(pos.y - carrierY || baseY || 1);
+      const targetY = clamp(pos.y * 0.58 + carrierY * 0.42 + laneSide * (1.2 + advance * 1.5), -width + 3, width - 3);
+      add(diagonalRunner, 'diagonal-run', diagonalX, targetY);
+    }
   }
   return assignments;
 }
@@ -1143,7 +1176,7 @@ export class Match {
           }
           const support = supportByPlayer.get(p);
           if (support) {
-            const weight = support.role === 'forward-run' ? 0.8 : support.role === 'wide-support' ? 0.72 : 0.64;
+            const weight = support.role === 'forward-run' ? 0.82 : support.role === 'diagonal-run' ? 0.78 : support.role === 'wide-support' ? 0.72 : 0.64;
             tx = lerp(tx, support.x, weight);
             ty = lerp(ty, support.y, weight);
           }

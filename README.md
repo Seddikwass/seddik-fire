@@ -1,5 +1,15 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.19.0 — rythme de match réaliste
+- Le porteur du ballon conduit quand l'espace existe, passe sous pression réelle, cherche la passe qui fait progresser et ne garde plus le ballon indéfiniment.
+- Les défenseurs temporisent côté but à distance de tacle et choisissent le moment de l'intervention selon leur qualité défensive, au lieu de tacler en continu.
+- Interceptions réalistes : un adversaire ne capte plus automatiquement une passe rapide qui passe à un mètre ; la distance à la trajectoire, la vitesse du ballon et la lecture défensive décident.
+- Les lignes de passe tiennent compte du défenseur collé au passeur ; l'IA ne sert plus un partenaire déjà hors-jeu.
+- Temps de contrôle à la réception lié à la qualité de la première touche.
+- Résultat mesuré sur un match IA contre IA de 5 minutes : environ 10 tirs (≈ 48 % cadrés) au lieu de 2, ≈ 73 % de passes réussies au lieu de 62 %, 1 à 2 fautes au lieu de 20, hors-jeu rares au lieu de 13, jeu effectif beaucoup moins haché.
+- Nouveau fichier de tests tests/match-flow.test.mjs.
+- Version de l'application, API, paquet Android et cache hors ligne alignés sur 3.19.0.
+
 ## Version 3.18.0 — plongeons des gardiens et tacles plus naturels
 - Les plongeons 3D distinguent maintenant l'impulsion, la phase de vol et l'atterrissage.
 - Le bras le plus proche du ballon s'étend davantage, tandis que l'autre sert de contrepoids pour une posture de gardien plus crédible.

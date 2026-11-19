@@ -189,6 +189,28 @@ export function getDribbleLaneTarget(player, opponents = [], direction = 1, half
 
 // Lecture d'un duel : orientation, vitesse d'arrivée et position par rapport au porteur.
 // Organise le pressing : un défenseur sur le porteur, les autres ferment les lignes.
+// Point de temporisation : entre le porteur et le but défendu, à distance de tacle.
+export function getJockeyPoint(carrier = {}, direction = 1, standoff = 1.7) {
+  const dir = direction < 0 ? -1 : 1;
+  const cx = (Number(carrier.x) || 0) + (Number(carrier.vx) || 0) * 0.22;
+  const cy = (Number(carrier.y) || 0) + (Number(carrier.vy) || 0) * 0.22;
+  const gx = -HL * dir, gy = clamp(cy * 0.15, -GOAL_W, GOAL_W);
+  const len = Math.hypot(gx - cx, gy - cy) || 1;
+  return {
+    x: clamp(cx + (gx - cx) / len * standoff, -HL + 1, HL - 1),
+    y: clamp(cy + (gy - cy) / len * standoff, -HW + 1, HW - 1),
+  };
+}
+
+// Engagement du tacle par l'IA : un bon défenseur choisit son moment ; un
+// porteur lancé vers le but ou dos au jeu déclenche plus souvent l'intervention.
+export function getAITackleCommitChance(defender = {}, carrier = {}, distance = 1.5) {
+  const def = clamp(Number(defender.a?.def) || 50, 0, 100);
+  const dri = clamp(Number(carrier.a?.dri) || 50, 0, 100);
+  const close = clamp((1.8 - (Number(distance) || 1.8)) / 1.2, 0, 1);
+  return clamp(0.16 + def / 420 - dri / 900 + close * 0.12, 0.08, 0.5);
+}
+
 export function getPressingPlan(defenders = [], carrier = {}, direction = 1, intensity = 1) {
   if (!carrier || !Number.isFinite(carrier.x) || !Number.isFinite(carrier.y)) return [];
   const dir = direction < 0 ? -1 : 1;
@@ -207,11 +229,9 @@ export function getPressingPlan(defenders = [], carrier = {}, direction = 1, int
     }
     if (best) { remaining.delete(best); assignments.push({ player: best, role, x: target.x, y: target.y }); }
   };
-  // Le premier défenseur ferme directement le porteur en anticipant sa vitesse.
-  addNearest('press', {
-    x: clamp(carrier.x + (carrier.vx || 0) * 0.28, -HL + 2, HL - 2),
-    y: clamp(carrier.y + (carrier.vy || 0) * 0.28, -HW + 2, HW - 2),
-  });
+  // Le premier défenseur temporise côté but : il ferme le chemin du but à
+  // courte distance au lieu de foncer dans le porteur.
+  addNearest('press', getJockeyPoint(carrier, dir));
   if (count >= 2) addNearest('cover-inside', {
     x: clamp(carrier.x + dir * 3.4, -HL + 2, HL - 2),
     y: clamp(carrier.y * 0.48, -HW + 4, HW - 4),
@@ -575,6 +595,27 @@ export function getTackleAnimationProfile(remaining = 0, duration = 0.38) {
   return { progress, lunge, reach, recovery };
 }
 
+// Les tacles de l'IA restent engagés mais provoquent beaucoup moins d'arrêts de jeu.
+export const AI_FOUL_SCALE = 0.32;
+
+// Décision de passe du porteur IA : conduire quand l'espace existe, passer sous
+// pression réelle, chercher la passe qui fait progresser et ne pas garder le ballon trop longtemps.
+export function getCarrierPassDecision({
+  pressure = 99, laneClearance = 12, option = null, carrierX = 0,
+  direction = 1, carryTime = 0, vision = 50, roll = 0.5,
+} = {}) {
+  if (!option) return { pass: false, reason: 'no-option' };
+  const score = Number(option.score) || 0;
+  const progress = ((Number(option.tx) || 0) - (Number(carrierX) || 0)) * (direction < 0 ? -1 : 1);
+  const visionBoost = clamp(((Number(vision) || 50) - 50) / 200, -0.1, 0.2);
+  if (pressure < 1.15 && score > -8) return { pass: true, reason: 'pressed' };
+  if (laneClearance < 1.25 && pressure < 2.4 && score > -3) return { pass: true, reason: 'blocked' };
+  if (progress > 7 && score > 9 && roll < 0.42 + visionBoost) return { pass: true, reason: 'progressive' };
+  if (carryTime > 3.4 && score > 0) return { pass: true, reason: 'tempo' };
+  if (score > 6 && roll < 0.05) return { pass: true, reason: 'recycle' };
+  return { pass: false, reason: 'carry' };
+}
+
 export function getTackleAssessment(defender, carrier, distance, user = false, difficultyPenalty = 0) {
   const d = Math.max(0.01, Number(distance) || 0.01);
   const nx = (carrier.x - defender.x) / d, ny = (carrier.y - defender.y) / d;
@@ -596,6 +637,20 @@ export function getTackleAssessment(defender, carrier, distance, user = false, d
 // Hors-jeu à l'instant où le ballon est joué : deuxième dernier adversaire,
 // ligne du ballon et moitié de terrain adverse sont tous pris en compte.
 // Évalue une ligne de passe avec anticipation des déplacements adverses sur le temps de trajet.
+const PASS_LANE_PHASES = [0.06, 0.14, 0.24, 0.4, 0.6, 0.8, 1];
+
+// Interception d'un ballon en mouvement par un joueur qui n'est pas le destinataire :
+// contre quasi certain s'il est sur la trajectoire, de plus en plus difficile
+// à mesure que le ballon passe loin du corps et vite.
+export function getMovingBallInterceptChance(distance = 1, ballSpeed = 10, defending = 50) {
+  const d = Math.max(0, Number(distance) || 0);
+  if (d < 0.4) return 1;
+  const reach = clamp((1.12 - d) / 0.72, 0, 1);
+  const speedLoad = clamp(((Number(ballSpeed) || 0) - 7) / 15, 0, 0.7);
+  const skill = 0.72 + clamp(Number(defending) || 50, 0, 100) / 360;
+  return clamp(reach * reach * (1 - speedLoad) * skill, 0, 0.95);
+}
+
 export function getPassLaneAssessment(from = {}, to = {}, opponents = [], flightTime = 0.8) {
   const sx = Number.isFinite(from.x) ? from.x : 0;
   const sy = Number.isFinite(from.y) ? from.y : 0;
@@ -611,8 +666,7 @@ export function getPassLaneAssessment(from = {}, to = {}, opponents = [], flight
     const ovy = Number.isFinite(opponent.vy) ? opponent.vy : 0;
     let nearest = Infinity, nearestAt = 1;
     // Un défenseur qui ferme la ligne est détecté même s'il n'est pas dessus au départ.
-    for (let step = 1; step <= 5; step++) {
-      const phase = step / 5;
+    for (const phase of PASS_LANE_PHASES) {
       const ballX = sx + dx * phase, ballY = sy + dy * phase;
       const time = duration * phase;
       const defenderX = ox + ovx * time * 0.82;
@@ -1483,8 +1537,9 @@ export class Match {
     const carryPace = clamp(1.01 + (skill - 0.5) * 0.1 - pressure * (0.16 - skill * 0.075), 0.82, 1.08);
     const canSprint = nd > 5.2 && lane.clearance > 3.1 && p.stamina > 0.38;
     this.moveTo(p, tx, clamp(ty, -HW + 2, HW - 2), dt, carryPace, false, canSprint);
+    p.carryT = (p.carryT || 0) + dt;
     if (p.aiThink > 0) return;
-    p.aiThink = 0.25 + this.r() * 0.2;
+    p.aiThink = 0.3 + this.r() * 0.25;
     const angleOK = Math.abs(p.y) < 19 && (gx - p.x) * d > 0;
     const opt = this.bestPass(p, null, false);
     const keeper = this.teams[1 - p.team].ps[0];
@@ -1496,14 +1551,17 @@ export class Match {
     // Une solution de passe réellement ouverte réduit les tirs forcés.
     const passAdvantage = opt ? clamp((opt.score - 2) / 26, 0, 1) : 0;
     const urgency = Math.max(0, Number(T.liveMentality) || 0);
-    const shootP = clamp((shotQuality.score - 0.56) * 1.8 + urgency * 0.055, 0, 0.78) *
+    const shootP = clamp((shotQuality.score - 0.52) * 2.0 + urgency * 0.055, 0, 0.8) *
       (1 - passAdvantage * 0.26);
     if (angleOK && this.r() < shootP) { this.shoot(p, clamp(0.5 + (distG / 45), 0.4, 0.95)); return; }
     // centre depuis le couloir
     if ((gx - p.x) * d < 18 && Math.abs(p.y) > 15 && this.r() < 0.45) { this.cross(p); return; }
-    if (press < 3 && opt && opt.score > -6) { this.pass(p, opt.p, opt.through); return; }
-    if (opt && opt.score > 10 && this.r() < 0.3) { this.pass(p, opt.p, opt.through); return; }
-    if (this.r() < 0.03 && opt) this.pass(p, opt.p, false);
+    const decision = getCarrierPassDecision({
+      pressure: press, laneClearance: lane.clearance, option: opt,
+      carrierX: p.x, direction: d, carryTime: p.carryT,
+      vision: p.a.pas, roll: this.r(),
+    });
+    if (decision.pass && opt) { this.pass(p, opt.p, opt.through); return; }
   }
   bestPass(p, dir, through) {
     const T = this.teams[p.team], d = T.dir, opp = this.teams[1 - p.team].ps;
@@ -1525,6 +1583,8 @@ export class Match {
       if (th && dx * d > 5) score += Math.min(12, Math.max(0, open - 2) * 1.4) + Math.min(7, dx * d * 0.12);
       if (t.run > 0) score += 4;
       if (t.isGK) score -= 12;
+      // Un partenaire déjà hors-jeu n'est pas une option : passe annulée par l'arbitre.
+      if (getOffsideDecision(t, this.ball, opp, d).offside) score -= 40;
       if (!best || score > best.score) best = { p: t, score, through: th, tx, ty };
     }
     return best;
@@ -1533,6 +1593,7 @@ export class Match {
   // ---------------- actions ----------------
   kickBall(p, vx, vy, vz, power = 0.5) {
     const b = this.ball;
+    p.carryT = 0;
     // Choisir le pied le plus proche du ballon dans le repère local du joueur,
     // avant de réorienter le corps vers la trajectoire de frappe.
     const headingBeforeKick = Number.isFinite(p.heading) ? p.heading : Math.atan2(p.vy || 0, p.vx || p.face || 1);
@@ -1658,7 +1719,12 @@ export class Match {
     }
     const dist = Math.hypot(c.x - p.x, c.y - p.y);
     if (dist > (user ? 2.4 : 1.7)) { if (user) { p.tackleCd = 0.5; p.vx += (c.x - p.x) * 2.5; p.vy += (c.y - p.y) * 2.5; } return false; }
-    p.tackleCd = user ? 0.7 : 0.9 + this.r() * 0.6;
+    if (!user && this.r() > getAITackleCommitChance(p, c, dist)) {
+      // Temporisation : le défenseur reste sur ses appuis et réévalue un peu plus tard.
+      p.tackleCd = 0.35 + this.r() * 0.35;
+      return false;
+    }
+    p.tackleCd = user ? 0.7 : 1.3 + this.r() * 0.8;
     const diff = this.settings.difficulty;
     const difficultyPenalty = c.team === this.userSide ? ([0.12, 0.05, 0, -0.04][diff] || 0) : 0;
     const assessment = getTackleAssessment(p, c, dist, user, difficultyPenalty);
@@ -1684,7 +1750,7 @@ export class Match {
     // augmente sur une arrivée rapide ou par derrière.
     const missDuration = assessment.closingSpeed > 3.2 ? 0.22 : 0.14;
     p.slideT = Math.max(p.slideT || 0, missDuration); p.slideDuration = missDuration;
-    if (this.r() < assessment.foulChance) this.foul(p, c);
+    if (this.r() < assessment.foulChance * (user ? 1 : AI_FOUL_SCALE)) this.foul(p, c);
     else if (dist < 2.8) { p.stumbleT = Math.max(p.stumbleT || 0, 0.13); p.stumbleDir = Math.sign(c.y - p.y) || 1; }
     return false;
   }
@@ -1881,7 +1947,7 @@ export class Match {
       const activeOffside = this.passInfo && this.passInfo.t < 3 &&
         this.passInfo.offsidePlayers?.includes(p) && d < Math.max(1.1, rad);
       if (activeOffside) { this.callOffside(p); return; }
-      if (d < rad && b.z < reachZ && d < bd) { bd = d; best = p; }
+      if (d < rad && b.z < reachZ && d < bd && this.canClaimMovingBall(p, d)) { bd = d; best = p; }
       // Tête : le saut aide à atteindre le ballon, mais un ballon bas peut
       // également être dévié de la tête sans saut complet.
       if (!p.isGK && d < 1.1 && b.z >= 1.1 && b.z < 2.4 && p.cd <= 0 && ((p.jumpT || 0) > 0.04 || b.z < 1.72)) this.header(p);
@@ -1910,6 +1976,10 @@ export class Match {
         0.2, 0.82
       );
       best.firstTouchT = 0.32;
+      // Temps de contrôle avant la décision suivante : une première touche propre
+      // permet d'enchaîner plus vite, un contrôle difficile demande un temps d'ajustement.
+      best.aiThink = Math.max(best.aiThink || 0, 0.12 + (1 - firstTouch) * 0.32);
+      best.carryT = 0;
       const firstTouchAngle = Math.atan2(b.vy - best.vy, (b.vx - best.vx) || best.face || 1);
       best.heading = Math.atan2(b.vy || best.vy, b.vx || best.vx || best.face);
       best.firstTouchDir = Math.cos(firstTouchAngle - best.heading) >= 0 ? 1 : -1;
@@ -1929,6 +1999,14 @@ export class Match {
       if (this.userSide != null && best.team === this.userSide) this.select(best);
       else if (this.userSide != null && prevTeam === this.userSide && best.team !== this.userSide && this.settings.assist) this.autoSelectDefender();
     }
+  }
+  canClaimMovingBall(p, distance) {
+    const b = this.ball, pi = this.passInfo;
+    if (!pi || pi.team === p.team || p.isGK) return true;
+    const speed = Math.hypot(b.vx, b.vy);
+    if (speed < 7) return true;
+    if (p.claimPass !== pi) { p.claimPass = pi; p.claimRoll = this.r(); }
+    return getMovingBallInterceptChance(distance, speed, p.a?.def) > p.claimRoll;
   }
   header(p) {
     const b = this.ball, T = this.teams[p.team], d = T.dir, gx = HL * d;

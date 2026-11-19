@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.18.0 — plongeons des gardiens et tacles plus naturels
+- Les plongeons 3D distinguent maintenant l'impulsion, la phase de vol et l'atterrissage.
+- Le bras le plus proche du ballon s'étend davantage, tandis que l'autre sert de contrepoids pour une posture de gardien plus crédible.
+- Les tacles glissés ouvrent les bras pour stabiliser le corps et accompagner la récupération.
+- Correction d'une extension de jambe parasite : un joueur qui ne tacle pas ne conserve plus une pose de tacle en arrière-plan.
+- Tests dédiés aux phases du plongeon, à la dissymétrie des bras et à la neutralité des poses au repos.
+- Version de l'application, API, paquet Android et cache hors ligne alignés sur 3.18.0.
+
 ## Version 3.17.0 — animation corporelle pilotée par l'accélération
 - Le moteur de simulation transmet au rendu 3D l'accélération et la décélération réelles des joueurs.
 - Les départs explosifs renforcent légèrement l'inclinaison du buste, la poussée des jambes et le contrebalancement des bras.

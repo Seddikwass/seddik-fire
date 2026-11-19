@@ -166,6 +166,9 @@ assert.equal(actionPose.heading, 0.42, 'le replay conserve l orientation du joue
 const actionWeights = getPlayer3DActionWeights(actionPose);
 assert.ok(actionWeights.gait >= 0 && actionWeights.gait <= 1, 'la foulée reste bornée pendant les gestes');
 assert.ok(actionWeights.diveReach > 0.4, 'le plongeon utilise son extension réelle');
+assert.ok(actionWeights.diveFlight > 0.98, 'le gardien passe par une phase de vol au milieu du plongeon');
+assert.ok(actionWeights.keeperLeadReach > actionWeights.keeperBalanceReach,
+  'le bras du côté du ballon s étend davantage que le bras de contrepoids');
 assert.equal(actionWeights.catchReach, 0.5, 'la portée de prise suit la phase du gardien');
 assert.equal(actionWeights.punchReach, 0.5, 'la portée de dégagement suit la phase du gardien');
 assert.equal(actionWeights.kickPulse, 1, 'la frappe produit une impulsion au milieu de son animation');
@@ -193,7 +196,13 @@ const tackleMidWeights = getPlayer3DActionWeights(tackleMidPose);
 const tackleEndWeights = getPlayer3DActionWeights(tackleEndPose);
 assert.equal(tackleStartWeights.slideLunge, 0, 'le tacle débute avant la pleine extension');
 assert.ok(tackleMidWeights.slideLunge > 0.98 && tackleMidWeights.tackleReach > 0.8, 'le tacle atteint sa phase d extension');
+assert.ok(tackleMidWeights.tackleArmSpread > 0.4, 'les bras s ouvrent pour stabiliser le tacle glissé');
 assert.ok(tackleEndWeights.tackleRecovery > 0.8, 'le tacle passe en récupération avant de se relever');
+const idleWeights=getPlayer3DActionWeights(getPlayer3DPose({ x:0, y:0, slideT:0 }));
+assert.equal(idleWeights.tackleReach, 0, 'un joueur au repos ne garde aucune extension de tacle');
+assert.equal(idleWeights.tackleArmSpread, 0, 'les bras ne restent pas écartés hors du tacle');
+const diveStartWeights=getPlayer3DActionWeights(getPlayer3DPose({ isGK:true, x:0, y:0, diveT:0.52, diveDir:-1 }));
+assert.ok(diveStartWeights.diveLaunch > 0.98, 'le plongeon commence par une impulsion lisible');
 
 const touchPose = getPlayer3DPose({ firstTouchT: 0.16, firstTouchDir: -1 });
 const touchWeights = getPlayer3DActionWeights(touchPose);

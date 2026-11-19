@@ -183,15 +183,31 @@ export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   const targetX = clamp(Number.isFinite(cam.x) ? cam.x : 0, -48, 48);
   const targetZ = clamp(Number.isFinite(cam.y) ? -cam.y : 0, -28, 28);
   const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
-  const eye = [targetX - 5.2 / zoom, 49 / zoom, targetZ + 57 / zoom];
-  const target = [targetX, 0, targetZ];
+  const ball = replay?.b ? replay.b : match.ball;
+  const ballHeight = clamp(Number.isFinite(ball?.z) ? ball.z : 0, 0, 12);
+  // La caméra suit légèrement les centres et trajectoires hautes : les lobes,
+  // têtes et frappes aériennes restent dans le champ au lieu de disparaître.
+  const focusLift = clamp(ballHeight * 0.16, 0, 1.55);
+  // Sur écran étroit, on recule modérément pour garder les appels et les lignes
+  // latérales visibles sans rendre les joueurs minuscules.
+  const portrait = clamp((1.25 - safeAspect) / 0.7, 0, 1);
+  const distanceScale = 1 + portrait * 0.16;
+  const eye = [
+    targetX - 4.8 / zoom * distanceScale,
+    44 / zoom * distanceScale + focusLift * 0.42,
+    targetZ + 50 / zoom * distanceScale,
+  ];
+  const target = [targetX, focusLift, targetZ];
   return {
     eye,
     target,
     zoom,
     aspect: safeAspect,
-    fovy: safeAspect < 1.15 ? 0.86 : 0.78,
-    distance: Math.hypot(eye[0] - targetX, eye[1], eye[2] - targetZ),
+    ballHeight,
+    focusLift,
+    portrait,
+    fovy: safeAspect < 1.15 ? 0.92 : 0.76,
+    distance: Math.hypot(eye[0] - targetX, eye[1] - target[1], eye[2] - targetZ),
   };
 }
 function parseColor(value, fallback = [0.8, 0.8, 0.8]) {

@@ -223,6 +223,29 @@ export function getPressingPlan(defenders = [], carrier = {}, direction = 1, int
   return assignments;
 }
 
+// Défenseur côté but : protège le chemin direct vers le but tout en gardant
+// un léger décalage vers la ligne de passe afin de fermer le centre ou la remise.
+export function getDefensiveMarkTarget(defender = {}, attacker = {}, ball = {}, goalX = -HL, tightness = 0.82, halfLength = HL, halfWidth = HW) {
+  if (!Number.isFinite(attacker.x) || !Number.isFinite(attacker.y)) return { x: 0, y: 0, depth: 0, shade: 0 };
+  const gx = Number.isFinite(goalX) ? goalX : -HL;
+  const length = Number.isFinite(halfLength) && halfLength > 10 ? halfLength : HL;
+  const width = Number.isFinite(halfWidth) && halfWidth > 10 ? halfWidth : HW;
+  const pressure = clamp(Number.isFinite(tightness) ? tightness : 0.82, 0, 1);
+  const dx = gx - attacker.x, dy = -attacker.y;
+  const distance = Math.hypot(dx, dy) || 1;
+  const defensiveSkill = clamp((Number(defender.a?.def) || 50) / 100, 0, 1);
+  const depth = clamp(0.72 + pressure * 0.42 + (defensiveSkill - 0.5) * 0.18, 0.62, 1.34);
+  const ballY = Number.isFinite(ball.y) ? ball.y : attacker.y;
+  const ballSide = clamp((ballY - attacker.y) / 12, -1, 1);
+  const shade = ballSide * (0.12 + pressure * 0.16);
+  return {
+    x: clamp(attacker.x + dx / distance * depth, -length + 2, length - 2),
+    y: clamp(attacker.y + dy / distance * depth + shade, -width + 2, width - 2),
+    depth,
+    shade,
+  };
+}
+
 // Organise les solutions autour du porteur : profondeur, largeur et appui court.
 // Les appels en profondeur restent derrière la ligne de hors-jeu estimée.
 export function getAttackingSupportPlan(players = [], carrier = {}, opponents = [], direction = 1, halfLength = HL, halfWidth = HW) {
@@ -572,6 +595,32 @@ export function getKeeperFootworkPace(rating = 50, crossingTime = 0.5) {
   const timing = clamp(Number.isFinite(crossingTime) ? crossingTime : 0.5, 0.02, 1.5);
   const urgency = clamp((1.1 - timing) / 0.95, 0, 1);
   return clamp(0.96 + skill * 0.22 + urgency * 0.08, 0.96, 1.26);
+}
+
+// Placement du gardien sur la bissectrice du ballon, avec une courte
+// anticipation de trajectoire et une profondeur modulée par son niveau.
+export function getKeeperPositioning({ goalX = -HL, ballX = 0, ballY = 0, ballVx = 0, ballVy = 0, rating = 50 } = {}) {
+  const gx = Number.isFinite(goalX) ? goalX : -HL;
+  const bx = Number.isFinite(ballX) ? ballX : 0;
+  const by = Number.isFinite(ballY) ? ballY : 0;
+  const vx = Number.isFinite(ballVx) ? ballVx : 0;
+  const vy = Number.isFinite(ballVy) ? ballVy : 0;
+  const skill = clamp(Number.isFinite(rating) ? rating : 50, 0, 100) / 100;
+  const leadTime = clamp(0.14 + Math.hypot(vx, vy) * 0.006, 0.14, 0.3);
+  const predictedX = bx + vx * leadTime;
+  const predictedY = by + vy * leadTime;
+  const dx = predictedX - gx, dy = predictedY;
+  const distance = Math.hypot(dx, dy) || 1;
+  const anticipation = 0.9 + skill * 0.14;
+  const depth = clamp((0.62 + Math.min(distance, 38) * 0.068) * anticipation, 0.58, 4.05);
+  return {
+    x: clamp(gx + dx / distance * depth, -HL + 0.35, HL - 0.35),
+    y: clamp(dy / distance * depth, -GOAL_W + 0.38, GOAL_W - 0.38),
+    depth,
+    predictedX,
+    predictedY,
+    leadTime,
+  };
 }
 
 // Un tir est cadré uniquement si son point de passage coupe réellement le cadre du but.
@@ -1186,10 +1235,12 @@ export class Match {
           let mk = null, md = 9;
           for (const o of opp) { if (o.sentOff || o.isGK) continue; const d = Math.hypot(o.x - tx, o.y - ty); if (d < md) { md = d; mk = o; } }
           if (mk && (p.base[0] < -12 || p.instr === 'mark')) {
-            const gx = -HL * T.dir, k = p.instr === 'mark' ? 0.05 : 0.12;
-            // Marquage côté but : rester entre le porteur et la cage plutôt que courir derrière.
-            tx = lerp(mk.x, gx, k);
-            ty = lerp(mk.y, clamp(b.y * 0.18, -HW * 0.55, HW * 0.55), k);
+            const gx = -HL * T.dir;
+            const mark = getDefensiveMarkTarget(p, mk, b, gx, p.instr === 'mark' ? 0.96 : 0.78);
+            const weight = p.instr === 'mark' ? 0.88 : 0.72;
+            // Le défenseur garde son but dans le dos de l'attaquant et ferme légèrement la passe.
+            tx = lerp(tx, mark.x, weight);
+            ty = lerp(ty, mark.y, weight);
           }
         }
         this.moveTo(p, tx, ty, dt, 1, false, Math.hypot(tx - p.x, ty - p.y) > 12);
@@ -1251,11 +1302,13 @@ export class Match {
     if (!b.owner && inBox && Math.hypot(b.x - p.x, b.y - p.y) < 9 && b.z < 2 && !b.inFlightShot) {
       this.moveTo(p, b.x, b.y, dt, 1.1, true, true); return;
     }
-    // Position de base : réduire l'angle offert au tireur.
-    const ang = Math.atan2(b.y, b.x - gx);
-    const r = clamp(Math.hypot(b.x - gx, b.y) * 0.08, 0.6, 3.5);
-    const ax = gx + Math.cos(ang) * r, ay = clamp(Math.sin(ang) * r, -GOAL_W + 0.4, GOAL_W - 0.4);
-    this.moveTo(p, b.inFlightShot ? p.x : ax, ay, dt, 1.1, true, true);
+    // Placement de base anticipé : rester sur l'angle du ballon et ajuster
+    // la profondeur selon la vitesse du jeu et la qualité des appuis du gardien.
+    const position = getKeeperPositioning({
+      goalX: gx, ballX: b.x, ballY: b.y, ballVx: b.vx, ballVy: b.vy,
+      rating: p.a?.gk ?? 50,
+    });
+    this.moveTo(p, b.inFlightShot ? p.x : position.x, position.y, dt, 1.1, true, true);
   }
   aiCarrier(p, dt) {
     const T = this.teams[p.team], d = T.dir, gx = HL * d;

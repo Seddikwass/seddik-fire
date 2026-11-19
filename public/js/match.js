@@ -386,6 +386,35 @@ export function getSmoothedTarget(x, y, targetX, targetY, dt, rate = 8) {
   return { x: fromX + (toX - fromX) * alpha, y: fromY + (toY - fromY) * alpha };
 }
 
+// Évite les regroupements entre coéquipiers sans provoquer de changements de direction brusques.
+export function getTeammateAvoidance(player = {}, teammates = [], radius = 2.6) {
+  if (!Number.isFinite(player.x) || !Number.isFinite(player.y)) return { x: 0, y: 0, strength: 0 };
+  const range = clamp(Number.isFinite(radius) ? radius : 2.6, 0.5, 6);
+  let sx = 0, sy = 0, count = 0;
+  for (const mate of teammates) {
+    if (!mate || mate === player || mate.sentOff ||
+        !Number.isFinite(mate.x) || !Number.isFinite(mate.y)) continue;
+    let dx = player.x - mate.x, dy = player.y - mate.y;
+    let distance = Math.hypot(dx, dy);
+    if (distance >= range) continue;
+    if (distance < 1e-4) {
+      const seed = (Number.isFinite(player.i) ? player.i : 0) * 2.399963229728653;
+      dx = Math.cos(seed); dy = Math.sin(seed); distance = 1;
+    }
+    const pressure = ((range - distance) / range) ** 2;
+    sx += dx / distance * pressure;
+    sy += dy / distance * pressure;
+    count++;
+  }
+  const magnitude = Math.hypot(sx, sy);
+  if (!count || magnitude < 1e-8) return { x: 0, y: 0, strength: 0 };
+  return {
+    x: sx / magnitude,
+    y: sy / magnitude,
+    strength: clamp(magnitude, 0, 1),
+  };
+}
+
 // Matrice de projection du joueur : axe local X = direction de course,
 // axe local Y = verticale du corps. La perspective tourne réellement la silhouette.
 export function getPlayerBodyTransform(forwardX, forwardY, minimumWidth = 0.64) {
@@ -867,10 +896,19 @@ export class Match {
     return s;
   }
   moveTo(p, tx, ty, dt, mult = 1, nostam = false, sprint = false) {
+    // Les coéquipiers proches créent une légère zone de séparation : les joueurs
+    // ne se superposent plus en soutien, en pressing ou au point de réception.
+    const carrier = this.ball.owner === p;
+    const avoidance = getTeammateAvoidance(
+      p, this.teams[p.team]?.ps || [], carrier ? 1.9 : 2.8
+    );
+    const avoidDistance = avoidance.strength * (carrier ? 0.48 : 1.3);
+    const adjustedX = clamp(tx + avoidance.x * avoidDistance, -HL - 1, HL + 1);
+    const adjustedY = clamp(ty + avoidance.y * avoidDistance, -HW - 1, HW + 1);
     // Les consignes tactiques sont lissées pour éviter qu'un joueur hésite
     // lorsque la balle, le porteur ou son rôle change légèrement à chaque image.
     const target = getSmoothedTarget(
-      p.moveTargetX, p.moveTargetY, tx, ty, dt, sprint ? 13 : 8
+      p.moveTargetX, p.moveTargetY, adjustedX, adjustedY, dt, sprint ? 13 : 8
     );
     p.moveTargetX = target.x; p.moveTargetY = target.y;
     const dx = target.x - p.x, dy = target.y - p.y, d = Math.hypot(dx, dy);

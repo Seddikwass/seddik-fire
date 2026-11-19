@@ -436,19 +436,20 @@ export class MatchRenderer3D {
     // Grandstands with concrete tiers, roof canopies and tunnel structures.
     const concrete=[0.16,0.19,0.23], seat=[0.26,0.29,0.34], roof=[0.075,0.095,0.13];
     const steel=[0.105,0.13,0.17], fascia=[0.55,0.035,0.065];
+    const roofY=4.05+profile.seatRows*3.05+0.8;
     for(const s of [-1,1]){
-      for(let tier=0;tier<3;tier++){
+      for(let tier=0;tier<profile.seatRows;tier++){
         box(g,[0,2.2+tier*3.05,s*(42.2+tier*1.5)],[111,4.2,13.2],concrete);
         box(g,[0,4.0+tier*3.05,s*(37.1+tier*1.5)],[110,0.25,1.0],seat);
       }
       box(g,[0,3.55,s*35.8],[112,0.38,0.45],fascia);
       box(g,[0,7.55,s*43.9],[112,0.28,0.48],steel);
-      box(g,[0,13.1,s*48],[116,0.8,18],roof);
-      box(g,[0,13.55,s*40.7],[116,0.24,0.35],steel);
+      box(g,[0,roofY,s*48],[116,0.8,18],roof);
+      box(g,[0,roofY+0.45,s*40.7],[116,0.24,0.35],steel);
       for(let x=-53;x<=53;x+=13.25) {
-        cylinder(g,[x,0,s*49],[x,13.3,s*49],0.22,concrete,7);
-        cylinder(g,[x,12.8,s*42.5],[x,13.5,s*47.2],0.11,steel,6);
-        cylinder(g,[x,13.5,s*47.2],[x+6.6,13.5,s*47.2],0.09,steel,6);
+        cylinder(g,[x,0,s*49],[x,roofY+0.2,s*49],0.22,concrete,7);
+        cylinder(g,[x,roofY-0.35,s*42.5],[x,roofY+0.4,s*47.2],0.11,steel,6);
+        cylinder(g,[x,roofY+0.4,s*47.2],[x+6.6,roofY+0.4,s*47.2],0.09,steel,6);
       }
       for(let x=-50;x<=50;x+=12.5) {
         const board=boardColors[Math.abs(Math.floor(x/10))%boardColors.length];
@@ -456,15 +457,15 @@ export class MatchRenderer3D {
       }
     }
     for(const s of [-1,1]){
-      for(let tier=0;tier<3;tier++) {
+      for(let tier=0;tier<profile.seatRows;tier++) {
         box(g,[s*(58.2+tier*1.1),2.3+tier*3.05,0],[13.2,4.3,77],concrete);
         box(g,[s*(53.2+tier*1.1),3.55+tier*3.05,0],[0.42,0.28,76],fascia);
       }
-      box(g,[s*62,13.1,0],[18,0.8,86],roof);
-      box(g,[s*54.5,13.55,0],[0.35,0.24,86],steel);
+      box(g,[s*62,roofY,0],[18,0.8,86],roof);
+      box(g,[s*54.5,roofY+0.45,0],[0.35,0.24,86],steel);
       for(let z=-34;z<=34;z+=13.6) {
-        cylinder(g,[s*61,0,z],[s*61,13.2,z],0.22,concrete,7);
-        cylinder(g,[s*56,12.8,z],[s*61,13.5,z],0.11,steel,6);
+        cylinder(g,[s*61,0,z],[s*61,roofY+0.2,z],0.22,concrete,7);
+        cylinder(g,[s*56,roofY-0.35,z],[s*61,roofY+0.4,z],0.11,steel,6);
       }
     }
     // Sièges numérotés visuellement par rangées, avec allées de circulation.

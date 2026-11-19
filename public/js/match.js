@@ -570,6 +570,34 @@ export function getShotAccuracy({ shooting = 50, technique = 50, pressure = 99, 
   return { spread: clamp(spread, 0.2, 4.5), verticalSpread: clamp(verticalSpread, 0.08, 1.25), pressureLoad, balanceLoad };
 }
 
+// Évalue une occasion de tir de l'IA avant de déclencher la frappe :
+// distance, angle, pression, qualités du tireur, fatigue et ouverture face au gardien.
+export function getAIShootingQuality({
+  distance = 30, shooterY = 0, pressure = 99, shooting = 50,
+  technique = 50, stamina = 1, keeperY = 0,
+} = {}) {
+  const shotDistance = Number.isFinite(distance) ? Math.max(0, distance) : 36;
+  const lateral = Math.abs(Number.isFinite(shooterY) ? shooterY : 0);
+  const pressureDistance = Number.isFinite(pressure) ? Math.max(0, pressure) : 99;
+  const shotSkill = clamp(Number.isFinite(shooting) ? shooting : 50, 0, 100) / 100;
+  const techSkill = clamp(Number.isFinite(technique) ? technique : 50, 0, 100) / 100;
+  const energy = clamp(Number.isFinite(stamina) ? stamina : 1, 0.25, 1);
+  const keeper = Number.isFinite(keeperY) ? keeperY : 0;
+  const range = clamp((36 - shotDistance) / 28, 0, 1);
+  const angle = clamp(1 - Math.max(0, lateral - 6) / 24, 0.18, 1);
+  const pressureControl = clamp((pressureDistance - 0.7) / 5.3, 0, 1);
+  const skill = shotSkill * 0.65 + techSkill * 0.35;
+  const staminaControl = 0.58 + energy * 0.42;
+  const targetY = getShotTargetY(keeper, shooterY);
+  const keeperOpening = clamp(Math.abs(targetY - keeper) / GOAL_W, 0, 1);
+  const score = clamp(
+    range * 0.48 + angle * 0.20 + skill * 0.15 +
+    pressureControl * 0.11 + staminaControl * 0.04 + keeperOpening * 0.02,
+    0, 1
+  );
+  return { score, range, angle, pressure: pressureControl, skill, stamina: staminaControl, keeperOpening };
+}
+
 // Profil de plongeon du gardien : extension latérale, hauteur de prise et durée
 // dépendent du tir reçu, du temps disponible et de la qualité du gardien.
 export function getKeeperDiveProfile({ keeperY = 0, shotY = 0, shotZ = 0.8, shotSpeed = 20, crossingTime = 0.5, rating = 50 } = {}) {
@@ -739,7 +767,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, diveHeight: 0, diveStretch: 0, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, kickFootSide: i % 2 === 0 ? -1 : 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, aiThink: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, kickFootSide: i % 2 === 0 ? -1 : 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -949,7 +977,7 @@ export class Match {
       b.owner = R.taker; b.last = R.taker; b.lastTeam = R.team; R.taker.cd = 0;
       this.state = 'play'; this.setPiece = R.type; this.setPieceT = 0;
       if (R.type !== 'throw' && R.type !== 'goalkick') A.whistle();
-      if (this.userSide !== R.team || R.type === 'goalkick') this.aiThink = 0.35;
+      if (R.taker && (this.userSide !== R.team || R.type === 'goalkick')) R.taker.aiThink = 0.35;
     }
   }
 
@@ -1312,16 +1340,16 @@ export class Match {
   }
   aiCarrier(p, dt) {
     const T = this.teams[p.team], d = T.dir, gx = HL * d;
-    if (this.aiThink == null) this.aiThink = 0;
-    this.aiThink -= dt;
+    if (p.aiThink == null) p.aiThink = 0;
+    p.aiThink = Math.max(0, p.aiThink - dt);
     const distG = Math.hypot(gx - p.x, p.y), opp = this.teams[1 - p.team].ps;
     let press = 99; for (const o of opp) if (!o.sentOff) press = Math.min(press, Math.hypot(o.x - p.x, o.y - p.y));
     if (p.isGK) { // dégagement / relance
       this.moveTo(p, p.x, p.y, dt);
-      if (this.aiThink <= 0) { const opt = this.bestPass(p, null, false); if (opt && opt.score > -5 && this.r() < 0.6) this.pass(p, opt.p, false); else this.clearance(p); }
+      if (p.aiThink <= 0) { const opt = this.bestPass(p, null, false); if (opt && opt.score > -5 && this.r() < 0.6) this.pass(p, opt.p, false); else this.clearance(p); }
       return;
     }
-    if (this.setPiece === 'corner' && this.aiThink <= 0) {
+    if (this.setPiece === 'corner' && p.aiThink <= 0) {
       // Corner : privilégier un centre vers un partenaire placé dans la zone dangereuse.
       const boxTargets = T.ps.filter(t => !t.sentOff && !t.isGK && t !== p && (gx - t.x) * d > -15 && (gx - t.x) * d < 22 && Math.abs(t.y) < 15);
       boxTargets.sort((a, c) => {
@@ -1331,14 +1359,14 @@ export class Match {
       if (boxTargets[0]) this.pass(p, boxTargets[0], false, true); else this.cross(p);
       return;
     }
-    if (this.setPiece === 'penalty' && this.aiThink <= 0) {
+    if (this.setPiece === 'penalty' && p.aiThink <= 0) {
       const keeper = this.teams[1 - p.team].ps[0];
       const side = keeper.y >= 0 ? -1 : 1;
       const aim = side * (2.1 + this.r() * 1.1);
       this.shoot(p, 0.76 + this.r() * 0.18, aim);
       return;
     }
-    if (this.setPiece === 'freekick' && this.aiThink <= 0) {
+    if (this.setPiece === 'freekick' && p.aiThink <= 0) {
       const freeDist = Math.hypot(gx - p.x, p.y);
       const central = Math.abs(p.y) < 17;
       // Frappe directe dans une zone favorable, sinon combinaison ou centre.
@@ -1367,14 +1395,24 @@ export class Match {
     const carryPace = clamp(1.01 + (skill - 0.5) * 0.1 - pressure * (0.16 - skill * 0.075), 0.82, 1.08);
     const canSprint = nd > 5.2 && lane.clearance > 3.1 && p.stamina > 0.38;
     this.moveTo(p, tx, clamp(ty, -HW + 2, HW - 2), dt, carryPace, false, canSprint);
-    if (this.aiThink > 0) return;
-    this.aiThink = 0.25 + this.r() * 0.2;
+    if (p.aiThink > 0) return;
+    p.aiThink = 0.25 + this.r() * 0.2;
     const angleOK = Math.abs(p.y) < 19 && (gx - p.x) * d > 0;
-    const shootP = (distG < 12 ? 0.65 : distG < 18 ? 0.38 : distG < 24 ? 0.16 : distG < 30 ? 0.05 : 0) * (press < 2 ? 1.3 : 1);
+    const opt = this.bestPass(p, null, false);
+    const keeper = this.teams[1 - p.team].ps[0];
+    const shotQuality = getAIShootingQuality({
+      distance: distG, shooterY: p.y, pressure: press,
+      shooting: p.a.sho, technique: p.a.tec, stamina: p.stamina,
+      keeperY: keeper?.y ?? 0,
+    });
+    // Une solution de passe réellement ouverte réduit les tirs forcés.
+    const passAdvantage = opt ? clamp((opt.score - 2) / 26, 0, 1) : 0;
+    const urgency = Math.max(0, Number(T.liveMentality) || 0);
+    const shootP = clamp((shotQuality.score - 0.56) * 1.8 + urgency * 0.055, 0, 0.78) *
+      (1 - passAdvantage * 0.26);
     if (angleOK && this.r() < shootP) { this.shoot(p, clamp(0.5 + (distG / 45), 0.4, 0.95)); return; }
     // centre depuis le couloir
     if ((gx - p.x) * d < 18 && Math.abs(p.y) > 15 && this.r() < 0.45) { this.cross(p); return; }
-    const opt = this.bestPass(p, null, false);
     if (press < 3 && opt && opt.score > -6) { this.pass(p, opt.p, opt.through); return; }
     if (opt && opt.score > 10 && this.r() < 0.3) { this.pass(p, opt.p, opt.through); return; }
     if (this.r() < 0.03 && opt) this.pass(p, opt.p, false);

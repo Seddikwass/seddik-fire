@@ -204,9 +204,9 @@ console.log('DEFENSIVE MARKING OK — couverture côté but, fermeture de ligne 
 // Le gardien anticipe une trajectoire en mouvement sans sortir de sa zone latérale.
 const keeperStatic = getKeeperPositioning({ goalX: -52.5, ballX: -25, ballY: 8, rating: 50 });
 const keeperFast = getKeeperPositioning({ goalX: -52.5, ballX: -25, ballY: 8, ballVx: 0, ballVy: -18, rating: 90 });
-const keeperElite = getKeeperPositioning({ goalX: -52.5, ballX: -12, ballY: -25, rating: 95 });
+const keeperPositionElite = getKeeperPositioning({ goalX: -52.5, ballX: -12, ballY: -25, rating: 95 });
 assert.ok(keeperFast.predictedY < keeperStatic.predictedY, 'le gardien lit le déplacement latéral du ballon');
-assert.ok(keeperElite.depth > keeperStatic.depth, 'un gardien plus anticipatif prend un léger mètre de profondeur supplémentaire');
+assert.ok(keeperPositionElite.depth > keeperStatic.depth, 'un gardien plus anticipatif prend un léger mètre de profondeur supplémentaire');
 assert.ok([keeperStatic, keeperFast, keeperElite].every(k =>
   Number.isFinite(k.x) && Number.isFinite(k.y) && k.y >= -3.28 && k.y <= 3.28 && k.depth >= 0.58 && k.depth <= 4.05),
   'la position du gardien reste finie et dans la largeur du but');

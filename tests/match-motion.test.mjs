@@ -33,6 +33,20 @@ match.shoot(attacker, 0.28, 2.7);
 assert.equal(match.ball.shotType, 'driven', 'une pression courte doit produire une frappe rasante');
 assert.ok(match.ball.inFlightShot && match.ball.vx > 0, 'la frappe doit partir vers le but');
 
+// Le pied de frappe suit le côté réel du ballon dans le repère local du joueur.
+const footTestPlayer = match.teams[0].ps.find(p => !p.isGK);
+footTestPlayer.x = 0; footTestPlayer.y = 0; footTestPlayer.heading = 0;
+match.ball.x = 0; match.ball.y = -0.3;
+match.kickBall(footTestPlayer, 14, 0, 0.8, 0.86);
+assert.equal(footTestPlayer.kickFootSide, 1, 'un ballon placé à droite dans le repère du joueur choisit le pied droit');
+match.ball.x = 0; match.ball.y = 0.3;
+match.kickBall(footTestPlayer, 14, 0, 0.8, 0.86);
+assert.equal(footTestPlayer.kickFootSide, -1, 'un ballon placé à gauche dans le repère du joueur choisit le pied gauche');
+match.record(); match.record();
+const recordedKickFrame = match.replayBuf.at(-1);
+const footTestIndex = [...match.teams[0].ps, ...match.teams[1].ps].indexOf(footTestPlayer);
+assert.equal(recordedKickFrame.p[footTestIndex][27], -1, 'le pied de frappe reste enregistré dans le ralenti');
+
 const keeper = match.teams[1].ps[0];
 keeper.y = 0;
 // Scénario déterministe : tir cadré qui traverse la ligne dans moins d'une seconde,

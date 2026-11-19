@@ -66,6 +66,7 @@ export function getPlayer3DPose(player = {}, frame = null) {
   const stumbleDir = Number.isFinite(p[20]) ? p[20] : player.stumbleDir;
   const diveHeight = Number.isFinite(p[21]) ? p[21] : player.diveHeight;
   const diveStretch = Number.isFinite(p[22]) ? p[22] : player.diveStretch;
+  const kickFootSide = Number.isFinite(p[27]) ? p[27] : player.kickFootSide;
   const contact = Number.isFinite(p[23]) ? p[23] : (Number.isFinite(player.contactT) ? player.contactT : 0);
   const contactDir = Number.isFinite(p[24]) ? p[24] : player.contactDir;
   const slideDuration = Number.isFinite(p[25]) && p[25] > 0 ? p[25] : (player.slideDuration || 0.38);
@@ -78,6 +79,7 @@ export function getPlayer3DPose(player = {}, frame = null) {
     slideProgress: 1 - clamp(slide / Math.max(0.12, slideDuration), 0, 1),
     kickStyle: player.kickStyle || 'pass',
     kickPower: clamp(Number(player.kickPower) || 0.5, 0, 1),
+    kickFootSide: kickFootSide === -1 ? -1 : 1,
     lean: clamp(speed * 0.022, 0, 0.19),
     turnLean: clamp(-(Number.isFinite(player.turn) ? player.turn : 0) * speed * 0.022, -0.16, 0.16),
     bodyBob: speed > 0.18 ? Math.abs(Math.sin(anim * 2.24)) * clamp(speed / 9, 0, 1) * 0.045 : 0,
@@ -638,7 +640,7 @@ export class MatchRenderer3D {
     sphere(g,bodyPoint(0.287,bodyY+0.19,-0.13),[0.026,0.04,0.026],trim,7,5);
     addKitNumber(g,bodyPoint,0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
     addKitNumber(g,bodyPoint,-0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
-    const kickFootSide=(index%2===0)?-1:1;
+    const kickFootSide=pose.kickFootSide || ((index%2===0)?-1:1);
     const stride=0.36+pose.sprint*0.13;
     const legSwing=Math.sin(phase)*stride*action.gait;
     const legSwingB=Math.sin(phase+Math.PI)*stride*action.gait;

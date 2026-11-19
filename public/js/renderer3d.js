@@ -615,6 +615,14 @@ export class MatchRenderer3D {
     this.staticCount=data.length/9;
     this.staticGeometry.length=0;
   }
+  // Projection d'un point du terrain (x, y, hauteur) vers l'écran de la couche d'interface.
+  project(x, y, z, width, height) {
+    const m=this.lastVP; if(!m) return null;
+    const v=[x,z,-y,1], out=[0,0,0,0];
+    for(let r=0;r<4;r++) out[r]=m[r]*v[0]+m[4+r]*v[1]+m[8+r]*v[2]+m[12+r]*v[3];
+    if(out[3]<=0.01) return null;
+    return [(out[0]/out[3]+1)/2*width, (1-out[1]/out[3])/2*height];
+  }
   resize() {
     if(this.lost) return;
     const rect=this.hostCanvas.getBoundingClientRect();
@@ -858,6 +866,7 @@ export class MatchRenderer3D {
     const aspect=this.width/Math.max(1,this.height);
     const camera=get3DCameraPose(match,frame,aspect);
     const vp=multiply4(perspective(camera.fovy,aspect,0.25,220),lookAt(camera.eye,camera.target,[0,1,0]));
+    this.lastVP=vp;
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.useProgram(this.program);
     gl.uniformMatrix4fv(this.matrixLoc,false,vp);

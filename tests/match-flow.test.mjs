@@ -53,3 +53,44 @@ assert.equal(isCrossingZone({ x: 40, y: 5 }, 1), false, 'axe : pas de centre aut
 assert.equal(isCrossingZone({ x: -40, y: 22 }, -1), true, 'sens inverse respecté');
 assert.ok(USER_FOUL_SCALE > 0.3 && USER_FOUL_SCALE < 1, 'tacles utilisateur moins souvent sifflés');
 console.log('USER CONTROLS OK — changement de joueur côté but, centre contextuel et fautes');
+
+// Coups de pied arrêtés : mur à 9,15 m, position du tireur, profil de frappe et verrouillage.
+const { getFreeKickWall, getFreeKickShotProfile, getRestartTakerSpot, Match } = await import('../public/js/match.js');
+const wallPlan = getFreeKickWall({ x: 32, y: 3 }, 1);
+assert.ok(wallPlan.count >= 3, 'coup franc axial à ~21 m : mur de 3 ou 4 joueurs');
+for (const slot of wallPlan.slots) assert.ok(Math.abs(Math.hypot(slot.x - 32, slot.y - 3) - 9.15) < 1.4, 'chaque joueur du mur est à environ 9,15 m');
+assert.equal(getFreeKickWall({ x: -10, y: 0 }, 1).count, 0, 'coup franc dans son propre camp : pas de mur');
+assert.equal(getFreeKickWall({ x: 45, y: 30 }, 1).count, 0, 'coup franc excentré au bord du terrain : pas de mur');
+const fkSoft = getFreeKickShotProfile(0.4, 80, 80), fkHard = getFreeKickShotProfile(1, 80, 80);
+assert.ok(fkHard.speed > fkSoft.speed && fkSoft.targetHeight > fkHard.targetHeight, 'frappe dosée plus lente et plus haute, frappe puissante plus tendue');
+const spotThrow = getRestartTakerSpot({ type: 'throw', x: 10, y: 34 }, 1);
+assert.ok(spotThrow.y > 34, 'le joueur effectue la touche hors du terrain');
+const spotFk = getRestartTakerSpot({ type: 'freekick', x: 30, y: 0 }, 1);
+assert.ok(spotFk.x < 30, 'le tireur se place derrière le ballon face au but');
+
+{
+  const C = await import('../public/js/career.js');
+  const st = C.newCareer({ clubId: 'est', seed: 3 });
+  const canvas = { clientWidth: 800, clientHeight: 400, getContext: () => new Proxy({}, { get: () => () => ({ addColorStop() {} }) }) };
+  let seed = 99; const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 0x100000000; };
+  const m = new Match({ canvas, home: C.matchTeam(st, 'est'), away: C.matchTeam(st, 'ca', true), userSide: 0, settings: { duration: 5, voice: false, replays: false, assist: true, difficulty: 1 }, random });
+  for (let i = 0; i < 900 && m.state !== 'play'; i++) m.step(1 / 60);
+  const dir = m.teams[0].dir;
+  m.setRestart('freekick', 0, dir * 31, 2);
+  for (let i = 0; i < 600 && m.state !== 'play'; i++) m.step(1 / 60);
+  assert.equal(m.state, 'play', 'le coup franc est sifflé');
+  const taker = m.ball.owner;
+  assert.ok(taker && taker === m.selected, 'le tireur contrôlé par le joueur a le ballon');
+  assert.ok(Math.hypot(m.ball.x - dir * 31, m.ball.y - 2) < 1.2, 'le ballon reste au point du coup franc');
+  assert.ok(m.wall && m.wall.length >= 3, 'un mur est formé');
+  const x0 = taker.x, y0 = taker.y;
+  m.input.jx = dir; m.input.jy = 0.4;
+  for (let i = 0; i < 60; i++) m.step(1 / 60);
+  assert.ok(Math.hypot(taker.x - x0, taker.y - y0) < 0.4, 'le tireur ne peut pas partir balle au pied');
+  for (const w of m.wall) assert.ok(Math.hypot(w.p.x - w.x, w.p.y - w.y) < 1.5, 'le mur tient sa position');
+  m.btnShootDown(); for (let i = 0; i < 25; i++) m.step(1 / 60); m.btnShootUp();
+  assert.ok(m.ball.inFlightShot, 'la frappe part');
+  assert.ok(m.wall.some(w => w.p.jumpT > 0), 'le mur saute au moment de la frappe');
+  assert.equal(m.isSetPieceLocked(), false, 'le jeu reprend normalement après la frappe');
+}
+console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroulée et saut du mur');

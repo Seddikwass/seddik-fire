@@ -1,5 +1,17 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.21.0 — coups de pied arrêtés aux normes
+- Correction majeure : pendant les arrêts de jeu, les joueurs se replacent réellement (ils restaient figés et le ballon se téléportait vers le tireur).
+- Le tireur ne peut plus partir balle au pied sur une touche, un engagement, un coup franc, un corner ou un penalty ; le ballon reste au point de remise en jeu jusqu'à la frappe.
+- Aucun tacle possible avant que le ballon soit joué ; défenseurs à 9,15 m sur coups francs, corners et engagements.
+- Mur sur coup franc (1 à 4 joueurs selon la distance) à 9,15 m, côté premier poteau ; l'arbitre attend qu'il soit formé ; le mur saute à la frappe.
+- Frappe de coup franc brossée : le ballon passe au-dessus du mur puis plonge sous la barre ; dosage de la puissance et de l'effet selon la technique.
+- Repère de visée en pointillés (frappe en rouge, passe en blanc) sur les coups de pied arrêtés, orientable au joystick.
+- La jauge de puissance de tir s'affiche aussi en mode 3D.
+- Corners : plus de temps pour que les joueurs montent dans la surface.
+- Mesure : environ 9 % de buts sur coups francs directs à 21 m (taux réel 6 à 10 %).
+- Tests ajoutés (mur, position du tireur, verrouillage, scénario complet de coup franc joueur).
+
 ## Version 3.20.0 — commandes de match aux standards actuels
 - Changement de joueur intelligent : priorité au défenseur placé entre le ballon et le but, plutôt qu'au plus proche déjà dépassé.
 - Changement automatique en défense (assistance activée) quand le joueur contrôlé est loin de l'action et que le joystick est relâché.

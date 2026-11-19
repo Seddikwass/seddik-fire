@@ -235,6 +235,50 @@ export function isCrossingZone(player = {}, direction = 1) {
 
 export const USER_FOUL_SCALE = 0.65;
 
+// Mur sur coup franc : nombre de joueurs selon la distance et l'angle, placé à 9,15 m
+// sur la ligne ballon / centre du but, perpendiculairement à cette ligne.
+// Position du tireur au moment de la remise en jeu.
+export function getRestartTakerSpot(restart = {}, direction = 1) {
+  const d = direction < 0 ? -1 : 1, x = Number(restart.x) || 0, y = Number(restart.y) || 0;
+  if (restart.type === 'kickoff') return { x: -0.6 * d, y: 0 };
+  if (restart.type === 'throw') return { x, y: y + (Math.sign(y) || 1) * 0.6 };
+  const ang = Math.atan2(0 - y, d * HL - x);
+  return { x: x - Math.cos(ang) * 0.7, y: y - Math.sin(ang) * 0.7 };
+}
+
+export function getFreeKickWall(ball = {}, attackDir = 1) {
+  const dir = attackDir < 0 ? -1 : 1;
+  const gx = HL * dir, bx = Number(ball.x) || 0, by = Number(ball.y) || 0;
+  const dist = Math.hypot(gx - bx, by);
+  if ((gx - bx) * dir <= 0 || Math.abs(by) > 24 || dist > 34) return { count: 0, slots: [] };
+  const count = dist < 21 ? 4 : dist < 26 ? 3 : dist < 31 ? 2 : 1;
+  const ux = (gx - bx) / dist, uy = -by / dist;
+  const cx = bx + ux * 9.15, cy = by + uy * 9.15;
+  // Le mur couvre le côté du but le plus proche du ballon, le gardien l'autre.
+  const nearPost = by >= 0 ? 1 : -1;
+  const spacing = 1.05;
+  const shift = nearPost * spacing * 0.45 * (count - 1);
+  const slots = [];
+  for (let i = 0; i < count; i++) {
+    const off = (i - (count - 1) / 2) * spacing + shift;
+    slots.push({ x: cx - uy * off, y: cy + ux * off });
+  }
+  return { count, slots, distance: dist };
+}
+
+// Tir sur coup franc : trajectoire enroulée qui passe au-dessus du mur.
+export function getFreeKickShotProfile(power = 0.7, shooting = 50, technique = 50) {
+  const skill = clamp(Number(shooting) || 50, 0, 100) / 100;
+  const tech = clamp(Number(technique) || 50, 0, 100) / 100;
+  return {
+    speed: 19 + clamp(power, 0, 1) * 5 + skill * 1.5,
+    targetHeight: 1.35 + (1 - clamp(power, 0, 1)) * 0.5,
+    spinBoost: 1.35 + tech * 0.6,
+    // Effet brossé : le ballon plonge après le mur (accélération verticale supplémentaire).
+    dip: 6.5 + tech * 3,
+  };
+}
+
 export function getPressingPlan(defenders = [], carrier = {}, direction = 1, intensity = 1) {
   if (!carrier || !Number.isFinite(carrier.x) || !Number.isFinite(carrier.y)) return [];
   const dir = direction < 0 ? -1 : 1;
@@ -1048,7 +1092,16 @@ export class Match {
     if (designated && (type === 'penalty' || Math.hypot(designated.x - x, designated.y - y) < 40)) taker = designated;
     const b = this.ball; b.x = x; b.y = y; b.z = 0; b.vx = b.vy = b.vz = 0; b.owner = null;
     this.restart = { type, team, taker, x, y };
-    this.state = 'restart'; this.stateT = type === 'penalty' ? 2.2 : type === 'throw' ? 0.9 : 1.3;
+    this.wall = null;
+    if (type === 'freekick') {
+      const plan = getFreeKickWall({ x, y }, T.dir);
+      if (plan.count) {
+        const defenders = this.teams[1 - team].ps.filter(p => !p.sentOff && !p.isGK)
+          .sort((a, c) => Math.hypot(a.x - plan.slots[0].x, a.y - plan.slots[0].y) - Math.hypot(c.x - plan.slots[0].x, c.y - plan.slots[0].y));
+        this.wall = plan.slots.map((slot, i) => ({ p: defenders[i], x: slot.x, y: slot.y })).filter(w => w.p);
+      }
+    }
+    this.state = 'restart'; this.stateT = type === 'penalty' ? 2.2 : type === 'throw' ? 0.9 : type === 'corner' ? 2.1 : 1.3;
     if (type === 'corner') this.stats.corners[team]++;
     if (this.userSide === team) this.select(taker);
     else if (this.userSide != null) this.autoSelectDefender();
@@ -1109,10 +1162,7 @@ export class Match {
       if (p.sentOff) continue;
       let tx, ty;
       if (p === R.taker) {
-        const d = T.dir;
-        if (R.type === 'kickoff') { tx = -0.6 * d; ty = 0; }
-        else if (R.type === 'throw') { tx = R.x; ty = R.y + Math.sign(R.y) * 0.6; }
-        else { const gx = d * HL, ang = Math.atan2(0 - R.y, gx - R.x); tx = R.x - Math.cos(ang) * 0.7; ty = R.y - Math.sin(ang) * 0.7; }
+        const spot = getRestartTakerSpot(R, T.dir); tx = spot.x; ty = spot.y;
       } else if (R.type === 'penalty') {
         if (p.isGK && p.team !== R.team) { tx = this.teams[p.team].dir * -HL + this.teams[p.team].dir * 0.3; ty = 0; }
         else { const d = this.teams[R.team].dir; tx = d * 30 + (p.i % 5) * d * 1.2; ty = (p.i - 5) * 2.2; }
@@ -1124,12 +1174,33 @@ export class Match {
         else if (atk && p.base[0] > -30) { tx = d * (HL - 7 - (p.i % 3) * 3); ty = ((p.i % 5) - 2) * 3.5; }
         else if (!atk) { tx = d * (HL - 5 - (p.i % 4) * 2.5); ty = ((p.i % 6) - 2.5) * 3; }
         else { const fp = this.formationPos(p, true); tx = fp[0]; ty = fp[1]; }
-      } else { const fp = this.formationPos(p, p.team === R.team); tx = fp[0]; ty = fp[1]; }
+      } else {
+        const slot = this.wall?.find(w => w.p === p);
+        if (slot) { tx = slot.x; ty = slot.y; }
+        else { const fp = this.formationPos(p, p.team === R.team); tx = fp[0]; ty = fp[1]; }
+      }
+      // Règle des 9,15 m : les adversaires reculent sur les coups de pied arrêtés.
+      if (p !== R.taker && p.team !== R.team && !p.isGK && ['freekick', 'corner'].includes(R.type) && !this.wall?.some(w => w.p === p)) {
+        const gap = Math.hypot(tx - R.x, ty - R.y);
+        if (gap < 9.15) {
+          const ux = gap > 0.01 ? (tx - R.x) / gap : -this.teams[R.team].dir, uy = gap > 0.01 ? (ty - R.y) / gap : 0;
+          tx = clamp(R.x + ux * 9.4, -HL + 1, HL - 1); ty = clamp(R.y + uy * 9.4, -HW + 1, HW - 1);
+        }
+      }
       this.moveTo(p, tx, ty, dt, 1.4, true);
     }
-    b.x = R.x; b.y = R.y; b.z = 0; b.vx = b.vy = b.vz = 0;
+    // Les placements de remise en jeu sont réellement exécutés (course vers la position).
+    this.moveAll(dt);
+    b.x = R.x; b.y = R.y; b.z = 0; b.vx = b.vy = b.vz = 0; b.owner = null;
+    // Le coup de sifflet attend que le tireur et le mur soient en place (3 s max),
+    // puis il est calé derrière le ballon : le ballon ne se téléporte jamais vers lui.
+    const spot = getRestartTakerSpot(R, this.teams[R.team].dir);
+    const wallReady = !this.wall || this.wall.every(w => Math.hypot(w.p.x - w.x, w.p.y - w.y) < 0.9);
+    if (this.stateT <= 0 && (Math.hypot(R.taker.x - spot.x, R.taker.y - spot.y) > 1.2 || !wallReady) && (R.wait || 0) < 3) {
+      R.wait = (R.wait || 0) + dt; return;
+    }
     if (this.stateT <= 0) {
-      R.taker.x = R.type === 'kickoff' ? -0.6 * this.teams[R.team].dir : R.taker.x;
+      R.taker.x = spot.x; R.taker.y = spot.y; R.taker.vx = 0; R.taker.vy = 0;
       b.owner = R.taker; b.last = R.taker; b.lastTeam = R.team; R.taker.cd = 0;
       this.state = 'play'; this.setPiece = R.type; this.setPieceT = 0;
       if (R.type !== 'throw' && R.type !== 'goalkick') A.whistle();
@@ -1138,6 +1209,10 @@ export class Match {
   }
 
   select(p) { if (p && !p.sentOff) this.selected = p; }
+  // Le tireur d'un coup de pied arrêté ne peut pas partir balle au pied.
+  isSetPieceLocked() {
+    return !!(this.setPiece && this.restart && this.ball.owner && this.ball.owner === this.restart.taker);
+  }
   autoSelectDefender() {
     if (this.userSide == null) return;
     const T = this.teams[this.userSide], b = this.ball;
@@ -1165,7 +1240,8 @@ export class Match {
     // Les coéquipiers proches créent une légère zone de séparation : les joueurs
     // ne se superposent plus en soutien, en pressing ou au point de réception.
     const carrier = this.ball.owner === p;
-    const avoidance = getTeammateAvoidance(
+    const inWall = !!this.wall && (this.state === 'restart' || this.isSetPieceLocked()) && this.wall.some(w => w.p === p);
+    const avoidance = inWall ? { x: 0, y: 0, strength: 0 } : getTeammateAvoidance(
       p, this.teams[p.team]?.ps || [], carrier ? 1.9 : 2.8
     );
     const avoidDistance = avoidance.strength * (carrier ? 0.48 : 1.3);
@@ -1381,6 +1457,17 @@ export class Match {
         if (p === this.selected && this.userSide === T.side) continue; // contrôlé par l'utilisateur
         if (p === own) { this.aiCarrier(p, dt); continue; }
         if (p.isGK) { this.aiKeeper(p, dt); continue; }
+        const locked = this.isSetPieceLocked();
+        const wallSlot = locked && this.wall?.find(w => w.p === p);
+        if (wallSlot) { this.moveTo(p, wallSlot.x, wallSlot.y, dt, 1, true); continue; }
+        if (locked && !inPoss && ['freekick', 'corner', 'kickoff'].includes(this.setPiece)) {
+          // Défenseurs à distance réglementaire jusqu'à ce que le ballon soit joué.
+          let [fx, fy] = this.formationPos(p, false);
+          const gap = Math.hypot(fx - b.x, fy - b.y), minGap = this.setPiece === 'kickoff' ? 9.15 : 9.4;
+          if (gap < minGap) { const ux = gap > 0.01 ? (fx - b.x) / gap : -T.dir, uy = gap > 0.01 ? (fy - b.y) / gap : 0; fx = b.x + ux * minGap; fy = b.y + uy * minGap; }
+          this.moveTo(p, clamp(fx, -HL + 1, HL - 1), clamp(fy, -HW + 1, HW - 1), dt, 1, true);
+          continue;
+        }
         // receveur désigné : va au-devant du ballon
         const pi = this.passInfo;
         if (!own && pi && pi.to === p && pi.t < 3) { const tgt = this.receivePoint(p, pi); this.moveTo(p, tgt.x, tgt.y, dt, 1, false, true); continue; }
@@ -1514,6 +1601,19 @@ export class Match {
       this.moveTo(p, p.x, p.y, dt);
       if (p.aiThink <= 0) { const opt = this.bestPass(p, null, false); if (opt && opt.score > -5 && this.r() < 0.6) this.pass(p, opt.p, false); else this.clearance(p); }
       return;
+    }
+    if (this.isSetPieceLocked()) {
+      this.applyVel(p, 0, 0, dt);
+      if (p.aiThink > 0) return;
+      if (this.setPiece === 'throw' || this.setPiece === 'kickoff') {
+        const opt = this.bestPass(p, null, false);
+        const near = T.ps.filter(t => t !== p && !t.sentOff && !t.isGK)
+          .sort((a, c) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(c.x - p.x, c.y - p.y))[0];
+        const target = opt && Math.hypot(opt.tx - p.x, opt.ty - p.y) < (this.setPiece === 'throw' ? 24 : 40) ? opt.p : near;
+        if (target) this.pass(p, target, false, this.setPiece === 'throw' && Math.hypot(target.x - p.x, target.y - p.y) > 14);
+        else this.clearance(p);
+        return;
+      }
     }
     if (this.setPiece === 'corner' && p.aiThink <= 0) {
       // Corner : privilégier un centre vers un partenaire placé dans la zone dangereuse.
@@ -1716,16 +1816,23 @@ export class Match {
     let ty = targetY + (this.r() - 0.5) * 2 * accuracy.spread * distanceFactor;
     let tz = driven ? 0.18 + this.r() * 0.22 : powerShot ? 1.35 + this.r() * 0.75 : 0.52 + this.r() * 0.62;
     tz += (this.r() - 0.5) * 2 * accuracy.verticalSpread + Math.max(0, power - 0.88) * 0.28;
+    const freeKick = this.setPiece === 'freekick' ? getFreeKickShotProfile(power, p.a.sho, p.a.tec) : null;
+    if (freeKick) {
+      tz = freeKick.targetHeight + (this.r() - 0.5) * 2 * accuracy.verticalSpread * 0.7;
+      for (const w of this.wall || []) if (w.p && !w.p.sentOff) w.p.jumpT = 0.46;
+    }
     const dist = Math.hypot(gx - p.x, ty - p.y);
-    const speed = 17 + power * 15 + skill * 4 + Math.min(2, movingSpeed * 0.18);
+    const speed = freeKick ? freeKick.speed : 17 + power * 15 + skill * 4 + Math.min(2, movingSpeed * 0.18);
     const t = dist / speed;
-    const vz = clamp((tz - 0.12 + 0.5 * G * t * t) / t, 0.5, 12);
+    const gravity = G + (freeKick ? freeKick.dip : 0);
+    const vz = clamp((tz - 0.12 + 0.5 * gravity * t * t) / t, 0.5, 14);
     const ang = Math.atan2(ty - p.y, gx - p.x);
     const vx = Math.cos(ang) * speed + p.vx * 0.1;
     const vy = Math.sin(ang) * speed + p.vy * 0.1;
     this.kickBall(p, vx, vy, vz, 0.6 + power * 0.4);
+    this.ball.dip = freeKick ? freeKick.dip : 0;
     // Enroulé plus lisible : la technique du joueur module la courbe du ballon.
-    this.ball.spin = clamp(((ty - p.y) / Math.max(8, dist)) * (0.5 + power * 0.65) * skill * (0.65 + (p.a.tec || 50) / 220), -0.95, 0.95);
+    this.ball.spin = clamp(((ty - p.y) / Math.max(8, dist)) * (0.5 + power * 0.65) * skill * (0.65 + (p.a.tec || 50) / 220) * (freeKick ? freeKick.spinBoost : 1), -0.95, 0.95);
     this.ball.shotType = driven ? 'driven' : powerShot ? 'power' : 'placed';
     this.ball.inFlightShot = { team: p.team, shooter: p, t: 0, type: this.ball.shotType };
     this.stats.shots[p.team]++;
@@ -1734,6 +1841,7 @@ export class Match {
   tryTackle(p, user) {
     const b = this.ball, c = b.owner;
     if (p.tackleCd > 0) return false;
+    if (this.isSetPieceLocked()) return false; // ballon pas encore en jeu
     if (!c || c.team === p.team) {
       if (user && !c && Math.hypot(b.x - p.x, b.y - p.y) < 2.2 && b.z < 1) {
         p.vx += (b.x - p.x) * 3; p.vy += (b.y - p.y) * 3; p.tackleCd = 0.6;
@@ -1832,6 +1940,13 @@ export class Match {
         if (better && better.score < currentScore - 4) { this.select(better.q); this.autoSwitchCd = 1.2; return; }
       }
     }
+    if (b.owner === p && this.isSetPieceLocked()) {
+      // Coup de pied arrêté : le joystick oriente la visée, le tireur reste sur place.
+      this.applyVel(p, 0, 0, dt);
+      if (mag > 0.15) { p.heading = Math.atan2(inp.jy, inp.jx); p.face = Math.cos(p.heading) >= 0 ? 1 : -1; }
+      if (inp.shooting) inp.shootHold = Math.min(1, inp.shootHold + dt * 1.25);
+      return;
+    }
     if (b.owner === p) {
       if (mag > 0.15) { const s = this.speedOf(p, inp.sprint) * Math.min(1, mag); this.applyVel(p, inp.jx / mag * s, inp.jy / mag * s, dt); if (inp.sprint) p.stamina = Math.max(0.3, p.stamina - dt * 0.012); }
       else this.applyVel(p, 0, 0, dt);
@@ -1889,6 +2004,11 @@ export class Match {
   // ---------------- physique ----------------
   physics(dt) {
     const b = this.ball;
+    if (this.isSetPieceLocked()) {
+      // Ballon posé (ou tenu à deux mains sur une touche) au point de remise en jeu.
+      b.x = this.restart.x; b.y = this.restart.y; b.z = 0; b.vx = b.vy = b.vz = 0;
+      return;
+    }
     if (b.owner) {
       const p = b.owner, sp = Math.hypot(p.vx, p.vy);
       const heading = Number.isFinite(p.heading) ? p.heading : Math.atan2(p.vy || 0, p.vx || p.face || 1);
@@ -1915,8 +2035,9 @@ export class Match {
       if (Math.abs(b.spin) < 0.015) b.spin = 0;
     }
     b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
-    if (b.z > 0) { b.vz -= G * dt; b.vx *= 1 - 0.08 * dt; b.vy *= 1 - 0.08 * dt; }
+    if (b.z > 0) { b.vz -= (G + (b.dip || 0)) * dt; b.vx *= 1 - 0.08 * dt; b.vy *= 1 - 0.08 * dt; }
     if (b.z <= 0) {
+      b.dip = 0;
       b.z = 0;
       if (b.vz < -1.5) { b.vz = -b.vz * 0.5; } else { b.vz = 0; }
       const f = 1 - 1.1 * dt; b.vx *= f; b.vy *= f;
@@ -2936,8 +3057,54 @@ export class Match {
     c.strokeStyle = 'rgba(20,27,34,0.55)'; c.lineWidth = Math.max(0.55, r * 0.035); c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.stroke();
     c.restore();
   }
+  screenPoint(x, y, z = 0) {
+    if (this.renderer3d && !this.renderer3d.lost && this.renderer3d.lastVP) return this.renderer3d.project(x, y, z, this.W, this.H);
+    const q = this.proj(x, y, z); return q && q[3] > 0.1 ? [q[0], q[1]] : null;
+  }
+  // Visée des coups de pied arrêtés et jauge de puissance du joueur contrôlé.
+  drawAimGuide() {
+    if (this.userSide == null || this.state !== 'play') return;
+    const p = this.selected, b = this.ball, c = this.c, d = this.dpr;
+    if (!p || b.owner !== p) return;
+    const inp = this.input, locked = this.isSetPieceLocked();
+    const head = this.screenPoint(p.x, p.y, 2.35);
+    if (inp.shooting && head) {
+      const w = 46 * d, h = 7 * d, pw = clamp(inp.shootHold, 0, 1);
+      c.save(); c.fillStyle = 'rgba(0,0,0,0.55)'; this.rr(head[0] - w / 2, head[1] - h, w, h, 3 * d); c.fill();
+      c.fillStyle = pw > 0.85 ? '#ff4d4d' : pw > 0.55 ? '#ffb020' : '#ffe14a';
+      this.rr(head[0] - w / 2, head[1] - h, Math.max(h, w * pw), h, 3 * d); c.fill(); c.restore();
+    }
+    if (!locked) return;
+    const T = this.teams[p.team], dir = T.dir, gx = HL * dir;
+    const mag = Math.hypot(inp.jx, inp.jy);
+    const drawPath = (tx, ty, peak, color, ring) => {
+      c.save(); c.strokeStyle = color; c.lineWidth = 2.4 * d; c.setLineDash([6 * d, 5 * d]); c.beginPath();
+      let started = false;
+      for (let i = 0; i <= 16; i++) {
+        const t = i / 16, q = this.screenPoint(b.x + (tx - b.x) * t, b.y + (ty - b.y) * t, 0.12 + peak * 4 * t * (1 - t) + (ring === 'goal' ? t * 1.0 : 0));
+        if (!q) continue;
+        if (!started) { c.moveTo(q[0], q[1]); started = true; } else c.lineTo(q[0], q[1]);
+      }
+      c.stroke(); c.setLineDash([]);
+      const end = this.screenPoint(tx, ty, ring === 'goal' ? 1.1 : 0);
+      if (end) { c.fillStyle = color; c.globalAlpha = 0.85; c.beginPath(); c.arc(end[0], end[1], 6 * d, 0, Math.PI * 2); c.fill(); }
+      c.restore();
+    };
+    const near = Math.hypot(gx - b.x, b.y) < 36;
+    if ((this.setPiece === 'freekick' && near) || this.setPiece === 'penalty') {
+      const keeper = this.teams[1 - p.team].ps[0];
+      const aimY = mag > 0.3 ? clamp(inp.jy / mag * 3.2, -3.3, 3.3) : null;
+      drawPath(gx, getShotTargetY(keeper?.y ?? 0, p.y, aimY), this.setPiece === 'penalty' ? 0.3 : 1.2, '#ff5a5f', 'goal');
+    }
+    if (this.setPiece !== 'penalty') {
+      const aim = mag > 0.2 ? [inp.jx / mag, inp.jy / mag] : null;
+      const opt = (aim && this.bestPass(p, aim, false)) || this.bestPass(p, null, false);
+      if (opt) drawPath(opt.tx, opt.ty, this.setPiece === 'corner' || Math.hypot(opt.tx - b.x, opt.ty - b.y) > 32 ? 2 : 0.15, '#ffffff', 'pass');
+    }
+  }
   drawHUD(isReplay, frame = null) {
     const c = this.c, d = this.dpr, T = this.teams;
+    if (!isReplay) this.drawAimGuide();
     // Scoreboard broadcast : proportions calculées selon la largeur réelle du canvas.
     const layout = getMatchHudLayout(this.W, d);
     const x0 = 12 * d, y0 = 12 * d, h = layout.scoreHeight;

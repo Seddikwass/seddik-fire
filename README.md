@@ -1,5 +1,12 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.10.0 — défense plus intelligente et gardien anticipatif
+- Les défenseurs se placent davantage entre l'attaquant et leur but, avec un léger décalage pour fermer la ligne de passe ou de centre.
+- Le marquage tient compte de la qualité défensive et de la position du ballon, sans imposer de course brutale.
+- Le gardien anticipe brièvement la trajectoire du ballon et ajuste sa profondeur sur la bissectrice du tir.
+- Tests de régression sur le marquage côté but, le sens de jeu inverse, les limites de déplacement et l'anticipation du gardien.
+- Version de l'interface, API, package Android et cache hors ligne alignés sur 3.10.0.
+
 ## Version 3.9.0 — appels diagonaux et solutions offensives
 - Ajout d'un appel en diagonale dans le demi-espace pour offrir une quatrième option au porteur : profondeur, largeur, appui court et course diagonale.
 - Sélection du coureur selon la vitesse, la finition, la technique, la pression adverse et l'espace déjà occupé par les autres appels.

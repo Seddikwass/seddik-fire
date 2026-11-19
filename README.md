@@ -6,6 +6,13 @@ Jeu de football tunisien : **matchs 3D WebGL jouables** (caméra télé, 11 cont
 - **Android** : `android-app/` (Capacitor 8) — APK de test + AAB compilés par GitHub Actions.
 - **Données** : `public/js/data.js` (sources et date de vérification en tête du fichier) — modifiables sans code via `/admin.html`.
 
+## Version 3.8.0 — déplacements collectifs et prévention des regroupements
+- Écartement progressif entre coéquipiers proches pendant le replacement, le pressing et les appels offensifs.
+- Évitement atténué pour le porteur afin de préserver le contrôle rapproché du ballon.
+- Lissage des cibles conservé pour éviter les changements de direction brusques lorsque les joueurs se réorganisent.
+- Tests de non-régression sur l'évitement, les distances de sécurité, les configurations symétriques et les joueurs superposés.
+- Version de l'application, API et cache hors ligne alignés sur 3.8.0.
+
 ## Version 3.7.0 — tribunes vivantes, ombre du ballon et poses d'action
 - Animation légère et déterministe des bras de supporters dans les tribunes, avec une réaction plus énergique pendant les buts.
 - Ombre 3D du ballon élargie et adoucie progressivement selon sa hauteur au-dessus de la pelouse.

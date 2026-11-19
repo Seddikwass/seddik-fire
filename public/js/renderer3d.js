@@ -31,18 +31,67 @@ export function getPlayer3DPose(player = {}, frame = null) {
   const jump = Number.isFinite(p[6]) ? p[6] : (Number.isFinite(player.jumpT) ? player.jumpT : 0);
   const kick = Number.isFinite(p[9]) ? p[9] : (Number.isFinite(player.kickT) ? player.kickT : 0);
   const header = Number.isFinite(p[10]) ? p[10] : (Number.isFinite(player.headerT) ? player.headerT : 0);
+  const firstTouch = Number.isFinite(p[11]) ? p[11] : (Number.isFinite(player.firstTouchT) ? player.firstTouchT : 0);
+  const stumble = Number.isFinite(p[12]) ? p[12] : (Number.isFinite(player.stumbleT) ? player.stumbleT : 0);
+  const keeperCatch = Number.isFinite(p[13]) ? p[13] : (Number.isFinite(player.keeperCatchT) ? player.keeperCatchT : 0);
+  const keeperPunch = Number.isFinite(p[14]) ? p[14] : (Number.isFinite(player.keeperPunchT) ? player.keeperPunchT : 0);
+  const headerDir = Number.isFinite(p[15]) ? p[15] : player.headerDir;
+  const diveDir = Number.isFinite(p[16]) ? p[16] : player.diveDir;
+  const slideDir = Number.isFinite(p[17]) ? p[17] : player.slideDir;
+  const kickDir = Number.isFinite(p[18]) ? p[18] : player.kickDir;
+  const firstTouchDir = Number.isFinite(p[19]) ? p[19] : player.firstTouchDir;
+  const stumbleDir = Number.isFinite(p[20]) ? p[20] : player.stumbleDir;
+  const diveHeight = Number.isFinite(p[21]) ? p[21] : player.diveHeight;
+  const diveStretch = Number.isFinite(p[22]) ? p[22] : player.diveStretch;
+  const contact = Number.isFinite(p[23]) ? p[23] : (Number.isFinite(player.contactT) ? player.contactT : 0);
+  const contactDir = Number.isFinite(p[24]) ? p[24] : player.contactDir;
+  const slideDuration = Number.isFinite(p[25]) && p[25] > 0 ? p[25] : (player.slideDuration || 0.38);
   const celebrate = Number.isFinite(player.celebrateT) ? player.celebrateT : 0;
   return {
     x, y, vx, vy, speed, heading, phase: anim * 1.12,
     lean: clamp(speed * 0.022, 0, 0.19),
-    slide: clamp(slide / Math.max(0.12, player.slideDuration || 0.38), 0, 1),
+    slide: clamp(slide / Math.max(0.12, slideDuration), 0, 1),
     dive: clamp(dive / 0.52, 0, 1),
     jump: clamp(jump * 2.1, 0, 0.36),
     kick: clamp(kick / 0.34, 0, 1),
     header: clamp(header / 0.44, 0, 1),
+    firstTouch: clamp(firstTouch / 0.32, 0, 1),
+    stumble: clamp(stumble / 0.24, 0, 1),
+    keeperCatch: clamp(keeperCatch / 0.48, 0, 1),
+    keeperPunch: clamp(keeperPunch / 0.42, 0, 1),
+    contact: clamp(contact / 0.22, 0, 1),
     celebrate: clamp(celebrate / 2.2, 0, 1),
-    diveDir: (Number.isFinite(p[16]) ? p[16] : player.diveDir) || 1,
-    slideDir: (Number.isFinite(p[17]) ? p[17] : player.slideDir) || 1,
+    diveDir: diveDir || 1,
+    slideDir: slideDir || 1,
+    kickDir: kickDir || 1,
+    headerDir: headerDir || 1,
+    firstTouchDir: firstTouchDir || 1,
+    stumbleDir: stumbleDir || 1,
+    contactDir: contactDir || 1,
+    diveHeight: clamp(Number.isFinite(diveHeight) ? diveHeight : 0, -1, 1),
+    diveStretch: clamp(Number.isFinite(diveStretch) ? diveStretch : 0, 0, 1),
+  };
+}
+
+export function getPlayer3DActionWeights(pose = {}) {
+  const slide = clamp(pose.slide || 0, 0, 1);
+  const dive = clamp(pose.dive || 0, 0, 1);
+  const kick = clamp(pose.kick || 0, 0, 1);
+  const firstTouch = clamp(pose.firstTouch || 0, 0, 1);
+  const stumble = clamp(pose.stumble || 0, 0, 1);
+  const contact = clamp(pose.contact || 0, 0, 1);
+  const keeperCatch = clamp(pose.keeperCatch || 0, 0, 1);
+  const keeperPunch = clamp(pose.keeperPunch || 0, 0, 1);
+  const diveStretch = clamp(pose.diveStretch || 0, 0, 1);
+  return {
+    gait: clamp(1 - Math.max(slide, dive * 0.92, stumble * 0.28), 0, 1),
+    diveReach: clamp(dive * (0.34 + diveStretch * 0.66), 0, 1),
+    catchReach: clamp(Math.max(keeperCatch, dive * 0.78), 0, 1),
+    punchReach: clamp(Math.max(keeperPunch, dive * 0.54), 0, 1),
+    kickPulse: clamp(Math.sin(kick * Math.PI), 0, 1),
+    firstTouchPulse: clamp(Math.sin(firstTouch * Math.PI), 0, 1),
+    brace: clamp(Math.max(contact, stumble * 0.82), 0, 1),
+    stumble,
   };
 }
 
@@ -459,9 +508,18 @@ export class MatchRenderer3D {
     const build=0.9+physique*0.2;
     const hair=index%3===0?[0.045,0.035,0.03]:index%3===1?[0.12,0.075,0.045]:[0.025,0.03,0.04];
     const phase=pose.phase, lift=pose.jump, slide=pose.slide, dive=pose.dive;
-    const low=clamp(slide*0.75+dive*0.45,0,0.82);
-    const bodyY=1.22-low*0.43+lift;
-    const lean=pose.lean+pose.kick*0.06;
+    const action=getPlayer3DActionWeights(pose);
+    const low=clamp(slide*0.78+dive*0.52,0,0.88);
+    const bodyY=1.22-low*0.43+lift-action.stumble*0.065;
+    const lean=pose.lean+pose.kick*0.06+action.stumble*0.12+action.brace*0.035;
+    // Le gardien accompagne le plongeon avec une translation du buste et des bras
+    // dans le sens réel du tir ; les joueurs de champ amortissent les contacts.
+    const diveSide=Math.sign(-pose.diveDir*Math.cos(yaw))||1;
+    const bodySide=(player.isGK?diveSide*action.diveReach*0.42:0)+
+      (pose.stumbleDir||1)*action.stumble*0.075+
+      (pose.contactDir||1)*pose.contact*0.045;
+    const bodyPoint=(f,h,side)=>point(f,h,side+bodySide);
+    const legPoint=(f,h,side)=>point(f,h,side+bodySide*0.48);
     // Ground shadow and captain/user selection halo.
     const sh=[0.035,0.055,0.045];
     const shadowY=0.045;
@@ -475,26 +533,28 @@ export class MatchRenderer3D {
     }
     const hipY=0.83-low*0.28+lift;
     const shoulderY=bodyY+0.22;
-    const torsoCenter=point(lean*0.45,bodyY,0);
+    const torsoCenter=bodyPoint(lean*0.45,bodyY,0);
     sphere(g,torsoCenter,[0.29*build,0.38-low*0.1,0.205*build],shirt,detail===2?12:9,detail===2?9:7);
-    sphere(g,point(lean*0.35,hipY,0),[0.235*build,0.17,0.205*build],shorts,8,5);
+    sphere(g,bodyPoint(lean*0.35,hipY,0),[0.235*build,0.17,0.205*build],shorts,8,5);
     // Col, bandes d'épaules, finitions de manches et coutures de short.
-    cylinder(g,point(lean*0.4,bodyY+0.34,0),point(lean*0.4,bodyY+0.39,0),0.105,trim,10,0.11);
-    tube(g,point(lean*0.5,bodyY+0.22,-0.2),point(lean*0.5,bodyY+0.22,0.2),0.018,trim,6);
+    cylinder(g,bodyPoint(lean*0.4,bodyY+0.34,0),bodyPoint(lean*0.4,bodyY+0.39,0),0.105,trim,10,0.11);
+    tube(g,bodyPoint(lean*0.5,bodyY+0.22,-0.2),bodyPoint(lean*0.5,bodyY+0.22,0.2),0.018,trim,6);
     for(const side of [-1,1]) {
-      tube(g,point(lean*0.45,bodyY+0.27,side*0.22),point(lean*0.15,bodyY+0.30,side*0.16),0.022,trim,5);
-      if(detail>0) tube(g,point(lean*0.25,hipY-0.04,side*0.18),point(lean*0.25,hipY-0.13,side*0.18),0.012,trim,5);
+      tube(g,bodyPoint(lean*0.45,bodyY+0.27,side*0.22),bodyPoint(lean*0.15,bodyY+0.30,side*0.16),0.022,trim,5);
+      if(detail>0) tube(g,bodyPoint(lean*0.25,hipY-0.04,side*0.18),bodyPoint(lean*0.25,hipY-0.13,side*0.18),0.012,trim,5);
     }
     // Insigne de poitrine et numéros lisibles sur le maillot.
-    sphere(g,point(0.287,bodyY+0.19,-0.13),[0.026,0.04,0.026],trim,7,5);
-    addKitNumber(g,point,0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
-    addKitNumber(g,point,-0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
-    const legSwing=Math.sin(phase)*0.42*(1-slide)*(1-dive);
-    const legSwingB=Math.sin(phase+Math.PI)*0.42*(1-slide)*(1-dive);
-    for(const [side,sw] of [[-1,legSwing],[1,legSwingB]]){
-      const hip=point(0,hipY,side*0.13);
-      const knee=point(sw*0.55,0.46-low*0.15+lift*0.55,side*0.145);
-      const ankle=point(sw*0.9,0.13+Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*0.1+lift*0.25,side*0.16);
+    sphere(g,bodyPoint(0.287,bodyY+0.19,-0.13),[0.026,0.04,0.026],trim,7,5);
+    addKitNumber(g,bodyPoint,0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
+    addKitNumber(g,bodyPoint,-0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
+    const kickFootSide=(index%2===0)?-1:1;
+    const legSwing=Math.sin(phase)*0.42*action.gait;
+    const legSwingB=Math.sin(phase+Math.PI)*0.42*action.gait;
+    for(const [side,baseSwing] of [[-1,legSwing],[1,legSwingB]]){
+      const sw=baseSwing+(side===kickFootSide?action.kickPulse*0.78:-action.kickPulse*0.12);
+      const hip=legPoint(0,hipY,side*0.13);
+      const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55,side*0.145);
+      const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*0.1+ (side===kickFootSide?action.firstTouchPulse*0.075:0);\n      const ankle=legPoint(sw*0.9,0.13+toeLift+lift*0.25,side*0.16);
       cylinder(g,hip,knee,0.105,shorts,8,0.085);
       sphere(g,knee,[0.09,0.09,0.09],shorts,6,4);
       cylinder(g,knee,ankle,0.066*build,sock,detail===2?10:7,0.052);
@@ -502,7 +562,7 @@ export class MatchRenderer3D {
         ring(g,ankle[0],ankle[1]+0.09,ankle[2],0.071,[0.78,0.08,0.1],12,0.012);
         ring(g,ankle[0],ankle[1]+0.15,ankle[2],0.072,trim,12,0.01);
       }
-      const boot=point(sw*0.95,ankle[1],side*0.16+0.06);
+      const boot=legPoint(sw*0.95,ankle[1],side*0.16+0.06);
       sphere(g,boot,[0.16,0.075,0.095],dark,detail===2?10:7,detail===2?6:4);
       if(detail>0) {
         sphere(g,[boot[0]+0.045,boot[1]-0.052,boot[2]-0.035],[0.025,0.018,0.022],trim,5,3);
@@ -510,21 +570,22 @@ export class MatchRenderer3D {
       }
       // Semelle et petits crampons visibles dans les gros plans.
     }
-    const armSwing=Math.sin(phase+Math.PI)*0.32*(1-slide);
+    const armSwing=Math.sin(phase+Math.PI)*0.32*action.gait;
+    const keeperReach=player.isGK?(action.diveReach*0.48+action.catchReach*0.31+action.punchReach*0.24):0;
     for(const side of [-1,1]){
-      const raise=pose.celebrate*0.82+pose.header*0.38;
-      const shoulder=point(lean*0.35,shoulderY,side*0.25);
-      const elbow=point(armSwing*side*0.75,bodyY-0.12+raise*0.4,side*0.42);
-      const hand=point(armSwing*side+pose.kick*0.06,bodyY-0.48+raise,side*0.48);
+      const raise=pose.celebrate*0.82+pose.header*0.38+(player.isGK?action.catchReach*0.24:0);
+      const shoulder=bodyPoint(lean*0.35,shoulderY,side*0.25);
+      const elbow=bodyPoint(armSwing*side*0.75+pose.contactDir*action.brace*0.075,bodyY-0.12+raise*0.4+(player.isGK?action.diveReach*0.12:0),side*0.42+diveSide*keeperReach*0.52);
+      const hand=bodyPoint(armSwing*side+pose.kick*0.06+pose.firstTouchDir*action.firstTouchPulse*0.045,bodyY-0.48+raise+(player.isGK?action.punchReach*0.2:0),side*0.48+diveSide*keeperReach);
       addArmPose(g,shoulder,elbow,hand,shirt,skin,trim,detail,!!player.isGK);
     }
     // Neck, head, hair and subtle ear details.
-    cylinder(g,point(lean*0.4,bodyY+0.34,0),point(lean*0.4,bodyY+0.48,0),0.075,skin,8);
-    const head=point(lean*0.43,bodyY+0.62,0);
+    cylinder(g,bodyPoint(lean*0.4,bodyY+0.34,0),bodyPoint(lean*0.4,bodyY+0.48,0),0.075,skin,8);
+    const head=bodyPoint(lean*0.43,bodyY+0.62,0);
     sphere(g,head,[0.145,0.175,0.14],skin,detail===2?12:10,detail===2?9:7);
-    sphere(g,point(lean*0.43,bodyY+0.735,0),[0.147,0.07,0.142],hair,9,4);
-    sphere(g,point(lean*0.43,bodyY+0.62,-0.142),[0.035,0.055,0.035],skin,6,4);
-    sphere(g,point(lean*0.43,bodyY+0.62,0.142),[0.035,0.055,0.035],skin,6,4);
+    sphere(g,bodyPoint(lean*0.43,bodyY+0.735,0),[0.147,0.07,0.142],hair,9,4);
+    sphere(g,bodyPoint(lean*0.43,bodyY+0.62,-0.142),[0.035,0.055,0.035],skin,6,4);
+    sphere(g,bodyPoint(lean*0.43,bodyY+0.62,0.142),[0.035,0.055,0.035],skin,6,4);
     if(detail>0) {
       // Yeux, pupilles, sourcils et nez orientés vers l'avant du joueur.
       for(const side of [-1,1]) {
@@ -537,8 +598,8 @@ export class MatchRenderer3D {
     }
     // Gardien : gants renforcés et bandes de poignets.
     if(player.isGK) for(const side of [-1,1]) {
-      sphere(g,point(0,bodyY-0.47,side*0.49),[0.09,0.07,0.07],trim,detail===2?9:6,4);
-      if(detail>0) tube(g,point(0,bodyY-0.41,side*0.47),point(0,bodyY-0.48,side*0.49),0.025,shirt,5);
+      sphere(g,bodyPoint(0,bodyY-0.47,side*0.49),[0.09,0.07,0.07],trim,detail===2?9:6,4);
+      if(detail>0) tube(g,bodyPoint(0,bodyY-0.41,side*0.47),bodyPoint(0,bodyY-0.48,side*0.49),0.025,shirt,5);
     }
   }
   buildDynamic(match, frame) {

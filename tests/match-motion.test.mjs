@@ -207,7 +207,7 @@ const keeperFast = getKeeperPositioning({ goalX: -52.5, ballX: -25, ballY: 8, ba
 const keeperPositionElite = getKeeperPositioning({ goalX: -52.5, ballX: -12, ballY: -25, rating: 95 });
 assert.ok(keeperFast.predictedY < keeperStatic.predictedY, 'le gardien lit le déplacement latéral du ballon');
 assert.ok(keeperPositionElite.depth > keeperStatic.depth, 'un gardien plus anticipatif prend un léger mètre de profondeur supplémentaire');
-assert.ok([keeperStatic, keeperFast, keeperElite].every(k =>
+assert.ok([keeperStatic, keeperFast, keeperPositionElite].every(k =>
   Number.isFinite(k.x) && Number.isFinite(k.y) && k.y >= -3.28 && k.y <= 3.28 && k.depth >= 0.58 && k.depth <= 4.05),
   'la position du gardien reste finie et dans la largeur du but');
 console.log('KEEPER POSITIONING OK — bissectrice, anticipation et profondeur adaptée');

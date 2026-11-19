@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.12.0 — gestes techniques et contacts 3D
+- Les frappes utilisent maintenant trois phases visibles : préparation de la jambe, contact puis suivi du geste, modulées par la puissance.
+- Le contrôle orienté déplace la jambe de réception selon le côté du premier toucher et amortit la pose au moment du contact.
+- Les têtes engagent davantage le buste et la tête, avec une ouverture des bras pour l'équilibre aérien.
+- Les tacles glissés suivent une séquence d'engagement, d'extension puis de récupération au lieu d'abaisser le corps de façon constante.
+- Tests de non-régression sur les phases de frappe, contrôle, tête et tacle, ainsi que sur la validité du maillage 3D.
+- Versions de l'interface, de l'API, du package Android et du cache hors ligne alignées sur 3.12.0.
+
 ## Version 3.11.0 — grand chantier réalisme 3D
 - Pelouse enrichie de micro-variations déterministes et de zones d'usure légères devant les buts.
 - Filets de but maillés plus finement et architecture du stade enrichie : coursives, bandeaux de tribunes, charpente et supports de toiture.

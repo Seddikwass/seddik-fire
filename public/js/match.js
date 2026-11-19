@@ -739,7 +739,7 @@ export class Match {
     const ps = t.players.slice(0, 11).map((p, i) => ({
       id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, diveHeight: 0, diveStretch: 0, anim: Math.random() * 6,
-      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
+      stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, kickFootSide: i % 2 === 0 ? -1 : 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
@@ -1407,6 +1407,13 @@ export class Match {
   // ---------------- actions ----------------
   kickBall(p, vx, vy, vz, power = 0.5) {
     const b = this.ball;
+    // Choisir le pied le plus proche du ballon dans le repère local du joueur,
+    // avant de réorienter le corps vers la trajectoire de frappe.
+    const headingBeforeKick = Number.isFinite(p.heading) ? p.heading : Math.atan2(p.vy || 0, p.vx || p.face || 1);
+    const ballDx = b.x - p.x, ballDy = b.y - p.y;
+    const lateralBallOffset = ballDx * Math.sin(headingBeforeKick) - ballDy * Math.cos(headingBeforeKick);
+    if (Math.abs(lateralBallOffset) > 0.055) p.kickFootSide = Math.sign(lateralBallOffset);
+    else if (!Number.isFinite(p.kickFootSide) || p.kickFootSide === 0) p.kickFootSide = p.i % 2 === 0 ? -1 : 1;
     b.owner = null; b.vx = vx; b.vy = vy; b.vz = vz; b.z = Math.max(b.z, 0.12); b.last = p; b.lastTeam = p.team;
     p.kickT = 0.34; p.kickStyle = power >= 0.65 ? 'shot' : 'pass'; p.kickPower = power;
     if (Math.hypot(vx, vy) > 0.1) p.heading = Math.atan2(vy, vx);
@@ -1870,7 +1877,8 @@ export class Match {
       p.stumbleT || 0, p.keeperCatchT || 0, p.keeperPunchT || 0, p.headerDir || p.face,
       p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1,
       p.diveHeight || 0, p.diveStretch || 0,
-      p.contactT || 0, p.contactDir || 1, p.slideDuration || 0.38, p.heading || 0
+      p.contactT || 0, p.contactDir || 1, p.slideDuration || 0.38, p.heading || 0,
+      p.kickFootSide || 1
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }

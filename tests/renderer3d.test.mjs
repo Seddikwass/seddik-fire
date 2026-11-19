@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats } from '../public/js/renderer3d.js';
+import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats } from '../public/js/renderer3d.js';
 
 const low = get3DQualityProfile('low');
 const medium = get3DQualityProfile('medium');
@@ -140,3 +140,54 @@ assert.equal(actionWeights.firstTouchPulse, 1, 'la première touche produit une 
 assert.equal(actionWeights.brace, 0.5, 'le corps prépare une réaction cohérente au contact');
 assert.ok(Object.values(actionWeights).every(Number.isFinite), 'tous les poids d animation sont numériques et finis');
 console.log('3D ACTION POSES OK — première touche, contacts, frappes, prise et plongeon du gardien');
+
+
+// L'ombre du ballon doit s'élargir et perdre en intensité avec la hauteur.
+const groundShadow = get3DBallShadowProfile(0);
+const aerialShadow = get3DBallShadowProfile(8);
+assert.equal(groundShadow.radiusX, 0.27);
+assert.equal(groundShadow.radiusZ, 0.16);
+assert.ok(aerialShadow.radiusX > groundShadow.radiusX, 'l ombre s élargit quand le ballon monte');
+assert.ok(aerialShadow.radiusZ > groundShadow.radiusZ, 'l ombre s étale sur la pelouse');
+assert.ok(aerialShadow.opacity < groundShadow.opacity, 'l ombre devient moins dense en hauteur');
+assert.ok([groundShadow, aerialShadow].every(p => Object.values(p).every(Number.isFinite)), 'le profil d ombre reste fini');
+
+// Une partie du public anime ses bras ; le mouvement est déterministe et borné.
+const crowdStill = get3DCrowdMotionPose(0, 3, 1);
+const crowdLater = get3DCrowdMotionPose(0.7, 3, 1);
+const crowdGoal = get3DCrowdMotionPose(0.7, 3, 1.28);
+assert.notEqual(crowdStill.armLift, crowdLater.armLift, 'les bras évoluent pendant le match');
+assert.ok(crowdGoal.armLift >= crowdLater.armLift || crowdGoal.armLift === 0.88, 'un but accentue la réaction des supporters');
+assert.ok([crowdStill, crowdLater, crowdGoal].every(p =>
+  p.armLift >= 0.12 && p.armLift <= 0.88 &&
+  Math.abs(p.armSwing) <= 0.18 && Math.abs(p.sway) <= 0.09 &&
+  Object.values(p).every(Number.isFinite)), 'les gestes du public restent bornés et finis');
+assert.deepEqual(get3DCrowdMotionPose(0.7, 3, 1), crowdLater, 'les animations du public sont reproductibles');
+console.log('BALL SHADOW + CROWD OK — ombre aérienne progressive et supporters animés');
+
+// Le maillage reste valide pendant une première touche, une tête et un contact.
+const actionPlayer = {
+  ...modelPlayer,
+  firstTouchT: 0.16,
+  firstTouchDir: -1,
+  headerT: 0.22,
+  headerDir: 1,
+  contactT: 0.16,
+  contactDir: -1,
+  stumbleT: 0.1,
+  stumbleDir: 1,
+};
+const actionPlayerMesh = getPlayer3DModelStats(modelMatch, actionPlayer, 'high');
+assert.ok(actionPlayerMesh.vertexCount > 500, 'les poses d action gardent un maillage complet');
+assert.equal(actionPlayerMesh.finite, true, 'les poses d action ne génèrent aucune coordonnée invalide');
+const divingKeeperMesh = getPlayer3DModelStats(modelMatch, {
+  ...modelPlayer,
+  isGK: true,
+  diveT: 0.26,
+  diveDir: -1,
+  diveHeight: 0.72,
+  diveStretch: 0.84,
+  keeperCatchT: 0.24,
+}, 'high');
+assert.equal(divingKeeperMesh.finite, true, 'le plongeon du gardien garde un maillage fini');
+console.log('3D ACTION MESH OK — corps orienté sur première touche, tête, contact et plongeon gardien');

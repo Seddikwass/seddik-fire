@@ -1,5 +1,12 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.14.0 — caméra sportive et suivi des ballons aériens
+- La caméra 3D relève progressivement son point de visée lorsque le ballon monte pour garder les centres, têtes, dégagements et frappes hautes visibles.
+- Les ralentis utilisent la même information de hauteur de balle afin d'éviter les cadrages qui perdent le ballon dans les actions aériennes.
+- Le cadrage recule modérément sur les écrans étroits pour conserver davantage de largeur de terrain et les appels des joueurs.
+- Tests sur caméra au sol, trajectoire aérienne, ralenti et adaptation portrait.
+- Versions interface, API, package Android et cache hors ligne alignées sur 3.14.0.
+
 ## Version 3.13.0 — pied de frappe contextuel et ralentis cohérents
 - Le moteur calcule le côté du ballon par rapport à l'orientation du joueur et choisit le pied le mieux placé pour la frappe ou la passe.
 - Le choix du pied est conservé dans les données du ralenti afin que la jambe animée reste la même pendant la relecture.

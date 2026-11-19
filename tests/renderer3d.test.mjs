@@ -27,8 +27,18 @@ const actionCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1.09 } }
 assert.ok(actionCamera.distance < closeCamera.distance, 'le zoom d action rapproche progressivement la caméra');
 const replayCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1.09 } }, true);
 assert.equal(replayCamera.zoom, 1.02, 'le ralenti conserve un cadrage stable');
-assert.equal(get3DCameraPose({}, null, 0.8).fovy, 0.86,
+assert.equal(get3DCameraPose({}, null, 0.8).fovy, 0.92,
   'le cadrage vertical s adapte aux écrans étroits');
+const groundCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1 }, ball: { z: 0 } });
+const aerialCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1 }, ball: { z: 8 } });
+assert.ok(aerialCamera.focusLift > groundCamera.focusLift, 'la caméra relève le centre d image quand le ballon monte');
+assert.ok(aerialCamera.target[1] > groundCamera.target[1], 'les ballons aériens restent dans le champ de la caméra');
+const portraitCamera = get3DCameraPose({ cam: { x: 0, y: 0 } }, null, 0.72);
+const landscapeCamera = get3DCameraPose({ cam: { x: 0, y: 0 } }, null, 16 / 9);
+assert.ok(portraitCamera.distance > landscapeCamera.distance, 'le cadrage mobile étroit recule légèrement pour préserver la largeur de jeu');
+const replayAerialCamera = get3DCameraPose({}, { b: [0, 0, 6] }, 16 / 9);
+assert.ok(replayAerialCamera.focusLift > 0, 'le ralenti suit aussi la hauteur du ballon');
+
 console.log('3D CAMERA OK — cadrage rapproché, suivi du ballon, zoom d action et adaptation mobile');
 
 const runner = getPlayer3DPose({

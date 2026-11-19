@@ -136,13 +136,14 @@ assert.ok(pressThree.every(x => Number.isFinite(x.x) && Number.isFinite(x.y)), '
 console.log('PRESSING SHAPE OK — pressing du porteur et couvertures intérieure/extérieure');
 
 
-// Les appels offensifs créent trois solutions distinctes et respectent la ligne de hors-jeu.
+// Les appels offensifs créent quatre solutions complémentaires et respectent la ligne de hors-jeu.
 const attackCarrier = { id: 'carrier', x: 12, y: 1 };
 const attackingPlayers = [
   attackCarrier,
   { id: 'runner', x: 18, y: 4, base: [23, 3], a: { pac: 91, sho: 88, phy: 78 } },
   { id: 'winger', x: 10, y: 15, base: [7, 18], a: { pac: 84, pas: 72 } },
   { id: 'midfielder', x: 6, y: -4, base: [0, -5], a: { pas: 90, tec: 85 } },
+  { id: 'inside-runner', x: 9, y: -9, base: [9, -9], a: { pac: 82, sho: 78, tec: 76, pas: 58 } },
   { id: 'keeper', x: -48, y: 0, base: [-50, 0], isGK: true, a: { pac: 99 } },
   { id: 'sent-off', x: 20, y: -8, base: [20, -8], sentOff: true, a: { pac: 99, sho: 99 } },
 ];
@@ -150,8 +151,8 @@ const attackDefenders = [
   { x: 45, y: 0 }, { x: 36, y: -3 }, { x: 28, y: 10 }, { x: 22, y: -12 },
 ];
 const attackPlan = getAttackingSupportPlan(attackingPlayers, attackCarrier, attackDefenders, 1);
-assert.deepEqual(attackPlan.map(x => x.role), ['forward-run', 'wide-support', 'short-option']);
-assert.equal(new Set(attackPlan.map(x => x.player.id)).size, 3, 'les solutions offensives utilisent trois joueurs différents');
+assert.deepEqual(attackPlan.map(x => x.role), ['forward-run', 'wide-support', 'short-option', 'diagonal-run']);
+assert.equal(new Set(attackPlan.map(x => x.player.id)).size, 4, 'les solutions offensives utilisent quatre joueurs différents');
 assert.ok(attackPlan.every(x => x.player.id !== 'keeper' && x.player.id !== 'sent-off'), 'gardien et joueur expulsé exclus des appels');
 const lastDefender = attackDefenders.map(p => p.x).sort((a, b) => b - a)[1];
 const forwardRun = attackPlan.find(x => x.role === 'forward-run');
@@ -159,15 +160,18 @@ assert.ok(forwardRun.x <= lastDefender - 1.1 + 1e-9, 'l appel en profondeur rest
 assert.ok(Math.abs(attackPlan.find(x => x.role === 'wide-support').y) >= 12, 'le soutien extérieur conserve la largeur');
 assert.ok(attackPlan.find(x => x.role === 'short-option').x < attackCarrier.x, 'l appui court reste disponible derrière le porteur');
 assert.ok(attackPlan.every(x => Math.abs(x.x) < 52.5 && Math.abs(x.y) < 34), 'toutes les cibles restent dans le terrain');
+const diagonalRun = attackPlan.find(x => x.role === 'diagonal-run');
+assert.ok(diagonalRun.x > attackCarrier.x && diagonalRun.x <= lastDefender - 1.1 - 1.4 + 1e-9, 'l appel diagonal attaque le demi-espace sans franchir la ligne défensive');
+assert.ok(Math.abs(diagonalRun.y - forwardRun.y) > 1, 'l appel diagonal propose un angle différent de la course axiale');
 
 const tightLine = [{ x: 16, y: 0 }, { x: 15, y: 2 }, { x: 12, y: -2 }, { x: 8, y: 6 }];
 const blockedRun = getAttackingSupportPlan(attackingPlayers, attackCarrier, tightLine, 1);
-assert.ok(!blockedRun.some(x => x.role === 'forward-run'), 'aucun appel en profondeur forcé quand la ligne défensive bloque l espace');
+assert.ok(!blockedRun.some(x => x.role === 'forward-run' || x.role === 'diagonal-run'), 'aucun appel en profondeur ou diagonal forcé quand la ligne défensive bloque l espace');
 
 const mirroredPlayers = attackingPlayers.map(p => ({ ...p, x: -p.x, y: -p.y }));
 const mirroredDefenders = attackDefenders.map(p => ({ x: -p.x, y: -p.y }));
 const mirroredPlan = getAttackingSupportPlan(mirroredPlayers, mirroredPlayers[0], mirroredDefenders, -1);
-assert.deepEqual(mirroredPlan.map(x => x.role), ['forward-run', 'wide-support', 'short-option']);
+assert.deepEqual(mirroredPlan.map(x => x.role), ['forward-run', 'wide-support', 'short-option', 'diagonal-run']);
 assert.ok(mirroredPlan.every(x => x.x * -1 > -52.5 && x.y * -1 > -34), 'les cibles restent valides dans le sens d attaque inverse');
 console.log('ATTACK SUPPORT OK — appels dans le jeu, largeur, appui court et hors-jeu');
 

@@ -72,6 +72,12 @@ export function getPlayer3DPose(player = {}, frame = null) {
   const celebrate = Number.isFinite(player.celebrateT) ? player.celebrateT : 0;
   return {
     x, y, vx, vy, speed, heading, phase: anim * 1.12,
+    kickProgress: 1 - clamp(kick / 0.34, 0, 1),
+    headerProgress: 1 - clamp(header / 0.44, 0, 1),
+    firstTouchProgress: 1 - clamp(firstTouch / 0.32, 0, 1),
+    slideProgress: 1 - clamp(slide / Math.max(0.12, slideDuration), 0, 1),
+    kickStyle: player.kickStyle || 'pass',
+    kickPower: clamp(Number(player.kickPower) || 0.5, 0, 1),
     lean: clamp(speed * 0.022, 0, 0.19),
     turnLean: clamp(-(Number.isFinite(player.turn) ? player.turn : 0) * speed * 0.022, -0.16, 0.16),
     bodyBob: speed > 0.18 ? Math.abs(Math.sin(anim * 2.24)) * clamp(speed / 9, 0, 1) * 0.045 : 0,
@@ -104,19 +110,35 @@ export function getPlayer3DActionWeights(pose = {}) {
   const dive = clamp(pose.dive || 0, 0, 1);
   const kick = clamp(pose.kick || 0, 0, 1);
   const firstTouch = clamp(pose.firstTouch || 0, 0, 1);
+  const header = clamp(pose.header || 0, 0, 1);
   const stumble = clamp(pose.stumble || 0, 0, 1);
   const contact = clamp(pose.contact || 0, 0, 1);
   const keeperCatch = clamp(pose.keeperCatch || 0, 0, 1);
   const keeperPunch = clamp(pose.keeperPunch || 0, 0, 1);
   const diveStretch = clamp(pose.diveStretch || 0, 0, 1);
+  const kickProgress = clamp(Number.isFinite(pose.kickProgress) ? pose.kickProgress : 1 - kick, 0, 1);
+  const headerProgress = clamp(Number.isFinite(pose.headerProgress) ? pose.headerProgress : 1 - header, 0, 1);
+  const touchProgress = clamp(Number.isFinite(pose.firstTouchProgress) ? pose.firstTouchProgress : 1 - firstTouch, 0, 1);
+  const slideProgress = clamp(Number.isFinite(pose.slideProgress) ? pose.slideProgress : 1 - slide, 0, 1);
+  const slideLunge = Math.sin(slideProgress * Math.PI);
+  const tackleReach = Math.sin(clamp(slideProgress / 0.68, 0, 1) * Math.PI / 2) * (1 - slideProgress * 0.22);
+  const tackleRecovery = clamp((slideProgress - 0.58) / 0.42, 0, 1);
   return {
-    gait: clamp(1 - Math.max(slide, dive * 0.92, stumble * 0.28), 0, 1),
+    gait: clamp(1 - Math.max(slideLunge, dive * 0.92, stumble * 0.28), 0, 1),
     diveReach: clamp(dive * (0.34 + diveStretch * 0.66), 0, 1),
     catchReach: clamp(Math.max(keeperCatch, dive * 0.78), 0, 1),
     punchReach: clamp(Math.max(keeperPunch, dive * 0.54), 0, 1),
-    kickPulse: clamp(Math.sin(kick * Math.PI), 0, 1),
-    firstTouchPulse: clamp(Math.sin(firstTouch * Math.PI), 0, 1),
-    brace: clamp(Math.max(contact, stumble * 0.82), 0, 1),
+    kickPulse: clamp(Math.sin(kickProgress * Math.PI), 0, 1),
+    kickWindup: clamp((kick - 0.58) / 0.42, 0, 1),
+    kickFollowThrough: clamp((0.78 - kick) / 0.78, 0, 1),
+    firstTouchPulse: clamp(Math.sin(touchProgress * Math.PI), 0, 1),
+    firstTouchAbsorb: clamp(Math.sin(touchProgress * Math.PI) * (1 - touchProgress * 0.24), 0, 1),
+    headerDrive: clamp(Math.sin(headerProgress * Math.PI), 0, 1),
+    headerBrace: clamp(1 - Math.abs(headerProgress - 0.32) / 0.5, 0, 1) * header,
+    slideLunge: clamp(slideLunge, 0, 1),
+    tackleReach: clamp(tackleReach, 0, 1),
+    tackleRecovery,
+    brace: clamp(Math.max(contact, stumble * 0.82, header * 0.45), 0, 1),
     stumble,
   };
 }
@@ -575,16 +597,18 @@ export class MatchRenderer3D {
     const hair=index%3===0?[0.045,0.035,0.03]:index%3===1?[0.12,0.075,0.045]:[0.025,0.03,0.04];
     const phase=pose.phase, lift=pose.jump, slide=pose.slide, dive=pose.dive;
     const action=getPlayer3DActionWeights(pose);
-    const low=clamp(slide*0.78+dive*0.52,0,0.88);
+    const low=clamp(action.slideLunge*0.78+dive*0.52,0,0.88);
     const keeperVertical=player.isGK?dive*clamp(pose.diveHeight,-1,1)*0.19:0;
-    const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical+pose.header*0.025+pose.bodyBob;
-    const lean=pose.lean+pose.kick*0.06+pose.header*0.12+action.stumble*0.12+action.brace*0.035;
+    const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical+action.headerDrive*0.035+pose.bodyBob;
+    const kickLean=action.kickFollowThrough*(0.105+pose.kickPower*0.055)-action.kickWindup*0.045;
+    const lean=pose.lean+kickLean+action.headerDrive*0.19+action.stumble*0.12+action.brace*0.035;
     // Le gardien accompagne le plongeon avec une translation du buste et des bras
     // dans le sens réel du tir ; les joueurs de champ amortissent les contacts.
     const diveSide=Math.sign(-pose.diveDir*Math.cos(yaw))||1;
     const bodySide=(player.isGK?diveSide*action.diveReach*0.42:0)+
       (pose.stumbleDir||1)*action.stumble*0.075+
-      (pose.contactDir||1)*pose.contact*0.045+pose.turnLean*0.55;
+      (pose.contactDir||1)*pose.contact*0.045+
+      (pose.slideDir||1)*action.tackleReach*0.13+pose.turnLean*0.55;
     const bodyPoint=(f,h,side)=>point(f,h,side+bodySide);
     const legPoint=(f,h,side)=>point(f,h,side+bodySide*0.48);
     // Ground shadow and captain/user selection halo.
@@ -598,7 +622,7 @@ export class MatchRenderer3D {
       ring(g,x,0.085,z,0.58,[0.94,0.78,0.24],22,0.045);
       sphere(g,[x,0.13,z],[0.08,0.025,0.08],[1,0.9,0.3],6,3);
     }
-    const hipY=0.83-low*0.28+lift;
+    const hipY=0.83-low*0.28+lift-action.headerDrive*0.035;
     const shoulderY=bodyY+0.22;
     const torsoCenter=bodyPoint(lean*0.45,bodyY,0);
     sphere(g,torsoCenter,[0.29*build,0.38-low*0.1,0.205*build],shirt,detail===2?12:9,detail===2?9:7);
@@ -619,12 +643,20 @@ export class MatchRenderer3D {
     const legSwing=Math.sin(phase)*stride*action.gait;
     const legSwingB=Math.sin(phase+Math.PI)*stride*action.gait;
     for(const [side,baseSwing] of [[-1,legSwing],[1,legSwingB]]){
-      const sw=baseSwing+(side===kickFootSide?action.kickPulse*0.78:-action.kickPulse*0.12);
+      const isKickLeg=side===kickFootSide;
+      const isTouchLeg=side===(pose.firstTouchDir>=0?kickFootSide:-kickFootSide);
+      const kickBack=isKickLeg?action.kickWindup*0.34:0;
+      const kickThrough=isKickLeg?action.kickFollowThrough*(0.58+pose.kickPower*0.38):0;
+      const touchSweep=isTouchLeg?action.firstTouchAbsorb*pose.firstTouchDir*0.23:0;
+      const tackleSweep=isKickLeg?action.tackleReach*0.55:0;
+      const sw=baseSwing+(isKickLeg?action.kickPulse*0.28:0)-kickBack+kickThrough+touchSweep+tackleSweep;
       const hip=legPoint(0,hipY,side*0.13);
-      const kneeLift=Math.max(0,Math.sin(phase+(side>0?Math.PI:0)))*pose.sprint*0.13;
-      const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55+kneeLift,side*0.145);
-      const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*(0.08+pose.sprint*0.04)+ (side===kickFootSide?action.firstTouchPulse*0.075:0);
-      const ankle=legPoint(sw*0.9,0.13+toeLift+lift*0.25,side*0.16);
+      const kneeLift=Math.max(0,Math.sin(phase+(side>0?Math.PI:0)))*pose.sprint*0.13+
+        (isKickLeg?action.kickPulse*0.11:0)+(isTouchLeg?action.firstTouchAbsorb*0.045:0);
+      const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55+kneeLift-action.tackleReach*(isKickLeg?0.13:0),side*0.145);
+      const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*(0.08+pose.sprint*0.04)+
+        (isKickLeg?action.kickFollowThrough*0.12:0)+(isTouchLeg?action.firstTouchAbsorb*0.065:0);
+      const ankle=legPoint(sw*0.9+kickThrough*0.18,0.13+toeLift+lift*0.25,side*0.16);
       cylinder(g,hip,knee,0.105,shorts,8,0.085);
       sphere(g,knee,[0.09,0.09,0.09],shorts,6,4);
       cylinder(g,knee,ankle,0.066*build,sock,detail===2?10:7,0.052);
@@ -632,7 +664,7 @@ export class MatchRenderer3D {
         ring(g,ankle[0],ankle[1]+0.09,ankle[2],0.071,[0.78,0.08,0.1],12,0.012);
         ring(g,ankle[0],ankle[1]+0.15,ankle[2],0.072,trim,12,0.01);
       }
-      const boot=legPoint(sw*0.95,ankle[1],side*0.16+0.06);
+      const boot=legPoint(sw*0.95+kickThrough*0.2,ankle[1],side*0.16+0.06);
       sphere(g,boot,[0.16,0.075,0.095],dark,detail===2?10:7,detail===2?6:4);
       if(detail>0) {
         sphere(g,[boot[0]+0.045,boot[1]-0.052,boot[2]-0.035],[0.025,0.018,0.022],trim,5,3);
@@ -643,15 +675,22 @@ export class MatchRenderer3D {
     const armSwing=Math.sin(phase+Math.PI)*(0.29+pose.sprint*0.12)*action.gait;
     const keeperReach=player.isGK?(action.diveReach*0.48+action.catchReach*0.31+action.punchReach*0.24):0;
     for(const side of [-1,1]){
-      const raise=pose.celebrate*0.82+pose.header*0.38+(player.isGK?action.catchReach*0.24:0);
+      const reachSide=player.isGK?diveSide:side;
+      const raise=pose.celebrate*0.82+action.headerDrive*0.22+(player.isGK?action.catchReach*0.24:0);
+      const headerOpen=action.headerBrace*0.16;
+      const tackleBalance=action.tackleReach*0.14;
       const shoulder=bodyPoint(lean*0.35,shoulderY,side*0.25);
-      const elbow=bodyPoint(armSwing*side*0.75+pose.contactDir*action.brace*0.075,bodyY-0.12+raise*0.4+(player.isGK?action.diveReach*0.12:0),side*0.42+diveSide*keeperReach*0.52);
-      const hand=bodyPoint(armSwing*side+pose.kick*0.06+pose.firstTouchDir*action.firstTouchPulse*0.045,bodyY-0.48+raise+(player.isGK?action.punchReach*0.2:0),side*0.48+diveSide*keeperReach);
+      const elbow=bodyPoint(armSwing*side*0.75+pose.contactDir*action.brace*0.075,
+        bodyY-0.12+raise*0.4+(player.isGK?action.diveReach*0.12:0)+action.headerDrive*0.04,
+        side*(0.42+headerOpen+tackleBalance)+reachSide*keeperReach*0.52);
+      const hand=bodyPoint(armSwing*side+pose.kickDir*action.kickFollowThrough*0.07+pose.firstTouchDir*action.firstTouchPulse*0.045,
+        bodyY-0.48+raise+(player.isGK?action.punchReach*0.2:0)+action.headerDrive*0.075,
+        side*(0.48+headerOpen*1.5+tackleBalance*1.4)+reachSide*keeperReach);
       addArmPose(g,shoulder,elbow,hand,shirt,skin,trim,detail,!!player.isGK);
     }
     // Neck, head, hair and subtle ear details.
     cylinder(g,bodyPoint(lean*0.4,bodyY+0.34,0),bodyPoint(lean*0.4,bodyY+0.48,0),0.075,skin,8);
-    const head=bodyPoint(lean*0.43+pose.header*0.11,bodyY+0.62-pose.header*0.045,0);
+    const head=bodyPoint(lean*0.43+action.headerDrive*0.19,bodyY+0.62+action.headerDrive*0.045,0);
     sphere(g,head,[0.145,0.175,0.14],skin,detail===2?12:10,detail===2?9:7);
     sphere(g,bodyPoint(lean*0.43,bodyY+0.735,0),[0.147,0.07,0.142],hair,9,4);
     sphere(g,bodyPoint(lean*0.43,bodyY+0.62,-0.142),[0.035,0.055,0.035],skin,6,4);

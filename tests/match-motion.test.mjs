@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getTeammateAvoidance, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -288,3 +288,25 @@ assert.ok(urgentKeeperFootwork > relaxedKeeperFootwork, 'le gardien accélère s
 assert.ok([averageKeeperFootwork, eliteKeeperFootwork, urgentKeeperFootwork, relaxedKeeperFootwork]
   .every(v => Number.isFinite(v) && v >= 0.96 && v <= 1.26), 'la réponse latérale reste bornée');
 console.log('SHOT ACCOUNTING + KEEPER FOOTWORK OK — cadre réel, anti-double comptage et appuis contextualisés');
+
+
+// Les coéquipiers proches se séparent doucement au lieu de courir dans la même zone.
+const spacingPlayer = { id: 'spacer', i: 4, x: 0, y: 0 };
+const teammateAhead = { id: 'nearby', x: 1, y: 0 };
+const spacing = getTeammateAvoidance(spacingPlayer, [spacingPlayer, teammateAhead], 2.8);
+assert.ok(spacing.x < 0, 'un joueur s écarte d un coéquipier placé devant lui');
+assert.ok(Math.abs(spacing.y) < 1e-9, 'la séparation reste stable sur un axe dégagé');
+assert.ok(spacing.strength > 0 && spacing.strength <= 1, 'la pression de séparation est bornée');
+const farSpacing = getTeammateAvoidance(spacingPlayer, [{ x: 5, y: 0 }], 2.8);
+assert.deepEqual(farSpacing, { x: 0, y: 0, strength: 0 }, 'un joueur éloigné ne perturbe pas le déplacement');
+const balancedSpacing = getTeammateAvoidance(spacingPlayer, [
+  { x: -1, y: 0 }, { x: 1, y: 0 },
+], 2.8);
+assert.equal(balancedSpacing.strength, 0, 'deux pressions symétriques ne créent pas de dérive latérale');
+const overlapSpacing = getTeammateAvoidance(spacingPlayer, [
+  { x: 0, y: 0 },
+], 2.8);
+assert.ok([overlapSpacing.x, overlapSpacing.y, overlapSpacing.strength].every(Number.isFinite),
+  'des positions presque confondues ne provoquent pas de NaN');
+assert.ok(overlapSpacing.strength > 0, 'une superposition exacte reçoit une direction de dégagement déterministe');
+console.log('TEAMMATE SPACING OK — séparation douce, stabilité et positions superposées');

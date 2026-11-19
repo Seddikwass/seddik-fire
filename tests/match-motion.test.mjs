@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getTeammateAvoidance, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getTeammateAvoidance, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan, getDefensiveMarkTarget, getKeeperPositioning } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -186,6 +186,32 @@ assert.ok(lowDive.direction < 0 && highDive.direction > 0, 'le plongeon suit le 
 assert.ok(lateDive.duration > highDive.duration, 'un gardien moins réactif conserve une animation de plongeon plus longue');
 assert.ok(lateDive.stretch >= 0.2 && lateDive.stretch <= 0.9, 'l extension est bornée pour rester visuellement stable');
 console.log('KEEPER DIVE OK — extension latérale, prise basse/haute et réaction');
+
+// Le défenseur doit rester côté but et orienter légèrement sa couverture vers la ligne du ballon.
+const markDefender = { x: 24, y: 7, a: { def: 88 } };
+const markedAttacker = { x: 28, y: 9 };
+const markTarget = getDefensiveMarkTarget(markDefender, markedAttacker, { x: 35, y: -1 }, 0);
+const goalDistanceBefore = Math.hypot(markedAttacker.x, markedAttacker.y);
+const goalDistanceAfter = Math.hypot(markTarget.x, markTarget.y);
+assert.ok(goalDistanceAfter < goalDistanceBefore, 'le point de couverture se place entre l attaquant et son but');
+assert.ok(markTarget.x < markedAttacker.x, 'le défenseur reste du côté du but');
+assert.ok(markTarget.y < markedAttacker.y, 'la couverture se décale vers le ballon pour fermer la passe');
+assert.ok(markTarget.depth >= 0.62 && markTarget.depth <= 1.34, 'la distance de couverture reste bornée');
+const reverseMark = getDefensiveMarkTarget({ a: { def: 70 } }, { x: -28, y: -9 }, { x: -35, y: 1 }, 0);
+assert.ok(reverseMark.x > -28 && reverseMark.y > -9, 'le placement côté but fonctionne dans le sens d attaque inverse');
+console.log('DEFENSIVE MARKING OK — couverture côté but, fermeture de ligne et repères bornés');
+
+// Le gardien anticipe une trajectoire en mouvement sans sortir de sa zone latérale.
+const keeperStatic = getKeeperPositioning({ goalX: -52.5, ballX: -25, ballY: 8, rating: 50 });
+const keeperFast = getKeeperPositioning({ goalX: -52.5, ballX: -25, ballY: 8, ballVx: 0, ballVy: -18, rating: 90 });
+const keeperElite = getKeeperPositioning({ goalX: -52.5, ballX: -12, ballY: -25, rating: 95 });
+assert.ok(keeperFast.predictedY < keeperStatic.predictedY, 'le gardien lit le déplacement latéral du ballon');
+assert.ok(keeperElite.depth > keeperStatic.depth, 'un gardien plus anticipatif prend un léger mètre de profondeur supplémentaire');
+assert.ok([keeperStatic, keeperFast, keeperElite].every(k =>
+  Number.isFinite(k.x) && Number.isFinite(k.y) && k.y >= -3.28 && k.y <= 3.28 && k.depth >= 0.58 && k.depth <= 4.05),
+  'la position du gardien reste finie et dans la largeur du but');
+console.log('KEEPER POSITIONING OK — bissectrice, anticipation et profondeur adaptée');
+
 
 
 // Les contacts corporels tiennent compte du physique, de l'agilité et de la fatigue.

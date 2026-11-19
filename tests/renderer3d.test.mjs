@@ -54,12 +54,13 @@ assert.ok(sliding.jump > 0, 'le saut est transmis au modèle 3D');
 
 const replayFrame = Array(27).fill(0);
 replayFrame[0] = -8; replayFrame[1] = 5; replayFrame[3] = 7;
-replayFrame[4] = -2; replayFrame[5] = 6; replayFrame[26] = -1.2;
+replayFrame[4] = -2; replayFrame[5] = 6; replayFrame[26] = -1.2; replayFrame[27] = -1;
 const replayPose = getPlayer3DPose({ x: 100, y: 100 }, replayFrame);
 assert.equal(replayPose.x, -8, 'le modèle 3D lit la position du ralenti');
 assert.equal(replayPose.y, 5);
 assert.equal(replayPose.speed, Math.hypot(-2, 6));
 assert.equal(replayPose.heading, -1.2, 'le ralenti conserve l orientation enregistrée');
+assert.equal(replayPose.kickFootSide, -1, 'le replay conserve le pied ayant frappé le ballon');
 
 console.log('3D RENDERER CORE OK — profils mobiles, course, tacle, saut, plongeon et ralenti');
 

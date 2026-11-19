@@ -1,5 +1,15 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.11.0 — grand chantier réalisme 3D
+- Pelouse enrichie de micro-variations déterministes et de zones d'usure légères devant les buts.
+- Filets de but maillés plus finement et architecture du stade enrichie : coursives, bandeaux de tribunes, charpente et supports de toiture.
+- Densité des supporters, rangées de sièges, détails de terrain et animation de foule adaptés au profil graphique de l'appareil.
+- Modèles joueurs avec oscillation verticale de course, inclinaison en virage, foulée plus longue au sprint et coordination bras/jambes affinée.
+- Ballon avec panneaux noirs distribués plus naturellement et éclairage 3D avec contraste, modelé et reflet renforcés.
+- Caméra rapprochée pour mieux lire les joueurs et les duels, tout en conservant le suivi du jeu.
+- Tests de régression sur les profils graphiques, la géométrie de stade, la course, le sprint et les virages.
+- Version interface, API, package Android et cache hors ligne alignés sur 3.11.0.
+
 ## Version 3.10.0 — défense plus intelligente et gardien anticipatif
 - Les défenseurs se placent davantage entre l'attaquant et leur but, avec un léger décalage pour fermer la ligne de passe ou de centre.
 - Le marquage tient compte de la qualité défensive et de la position du ballon, sans imposer de course brutale.

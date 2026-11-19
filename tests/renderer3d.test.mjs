@@ -10,6 +10,11 @@ assert.ok(low.crowd < medium.crowd && medium.crowd < high.crowd,
   'la densité du public s adapte au niveau graphique');
 assert.ok(low.sphereSegments < medium.sphereSegments && medium.sphereSegments < high.sphereSegments,
   'les détails géométriques suivent la qualité');
+assert.ok(low.turfDetail < medium.turfDetail && medium.turfDetail < high.turfDetail,
+  'les détails de pelouse augmentent avec la qualité');
+assert.ok(low.crowdMotion < medium.crowdMotion && medium.crowdMotion < high.crowdMotion,
+  'la foule animée s adapte à la puissance du terminal');
+assert.ok(high.crowd > 600 && high.seatRows >= 5, 'le stade haut de gamme comprend plusieurs rangées de supporters');
 assert.equal(get3DQualityProfile('unknown').detail, 2, 'le profil par défaut reste haut');
 
 const closeCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1 } });
@@ -27,7 +32,7 @@ assert.equal(get3DCameraPose({}, null, 0.8).fovy, 0.86,
 console.log('3D CAMERA OK — cadrage rapproché, suivi du ballon, zoom d action et adaptation mobile');
 
 const runner = getPlayer3DPose({
-  x: 12, y: -4, vx: 3, vy: 4, heading: 0.93, anim: 2,
+  x: 12, y: -4, vx: 3, vy: 4, heading: 0.93, anim: 2, turn: 0.8,
   slideT: 0, diveT: 0, jumpT: 0, kickT: 0, headerT: 0,
 });
 assert.equal(runner.x, 12);
@@ -35,6 +40,10 @@ assert.equal(runner.y, -4);
 assert.equal(runner.speed, 5, 'la vitesse est calculée dans le plan du terrain');
 assert.equal(runner.heading, 0.93, 'l orientation du modèle suit celle du moteur');
 assert.ok(runner.lean > 0, 'la course crée une légère inclinaison du buste');
+assert.ok(runner.turnLean < 0, 'le buste s incline dans le sens du virage');
+assert.ok(runner.bodyBob > 0, 'la course ajoute une oscillation verticale subtile');
+const sprintPose = getPlayer3DPose({ vx: 8.5, vy: 0, anim: 2, turn: 0.4 });
+assert.ok(sprintPose.sprint > 0.5 && sprintPose.turnLean < 0, 'le sprint amplifie l allonge et le contrepoids du virage');
 assert.equal(runner.slide, 0);
 assert.equal(runner.dive, 0);
 

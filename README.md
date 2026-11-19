@@ -1,5 +1,12 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.9.0 — appels diagonaux et solutions offensives
+- Ajout d'un appel en diagonale dans le demi-espace pour offrir une quatrième option au porteur : profondeur, largeur, appui court et course diagonale.
+- Sélection du coureur selon la vitesse, la finition, la technique, la pression adverse et l'espace déjà occupé par les autres appels.
+- Les courses axiales et diagonales restent bornées par la ligne défensive estimée pour éviter les appels artificiellement hors-jeu.
+- Tests de non-régression sur les quatre rôles, l'espacement, les situations de ligne défensive compacte et les attaques dans les deux sens.
+- Version de l'interface, API, package Android et cache hors ligne alignés sur 3.9.0.
+
 Jeu de football tunisien : **matchs 3D WebGL jouables** (caméra télé, 11 contre 11, IA, commandes tactiles) et **carrière de président** (Ligue 1 2026-27, Coupe de Tunisie, Ligue des Champions et Coupe de la Confédération CAF, élections, staff, transferts, médical, finances, infrastructures, supporters).
 
 - **Web** : `server.js` (Node 20+, sans framework) sert le jeu et l'API (`/api`). Déployé sur Render.

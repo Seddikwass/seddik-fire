@@ -16,6 +16,29 @@ export function get3DQualityProfile(quality = 'high') {
   return { pixelRatio: 1.55, crowd: 360, sphereSegments: 10, detail: 2, seatRows: 4 };
 }
 
+export function get3DBallShadowProfile(height = 0) {
+  const h = clamp(height, 0, 12);
+  const spread = 1 + h * 0.075;
+  return {
+    radiusX: 0.27 * spread,
+    radiusZ: 0.16 * spread,
+    opacity: clamp(0.72 / (1 + h * 0.28), 0.16, 0.72),
+  };
+}
+
+export function get3DCrowdMotionPose(clockSeconds = 0, index = 0, intensity = 1) {
+  const time = Number.isFinite(clockSeconds) ? clockSeconds : 0;
+  const seed = Number.isFinite(index) ? index : 0;
+  const energy = clamp(intensity, 0, 1.5);
+  const phase = time * 3.6 + seed * 1.73;
+  const wave = Math.sin(phase);
+  return {
+    armLift: clamp((0.42 + wave * 0.34) * energy, 0.12, 0.88),
+    armSwing: Math.sin(phase * 0.72 + 0.8) * 0.12 * energy,
+    sway: Math.sin(phase * 0.5 + 1.1) * 0.055 * energy,
+  };
+}
+
 export function getPlayer3DPose(player = {}, frame = null) {
   const p = frame || [];
   const x = Number.isFinite(p[0]) ? p[0] : (Number.isFinite(player.x) ? player.x : 0);
@@ -510,8 +533,9 @@ export class MatchRenderer3D {
     const phase=pose.phase, lift=pose.jump, slide=pose.slide, dive=pose.dive;
     const action=getPlayer3DActionWeights(pose);
     const low=clamp(slide*0.78+dive*0.52,0,0.88);
-    const bodyY=1.22-low*0.43+lift-action.stumble*0.065;
-    const lean=pose.lean+pose.kick*0.06+action.stumble*0.12+action.brace*0.035;
+    const keeperVertical=player.isGK?dive*clamp(pose.diveHeight,-1,1)*0.19:0;
+    const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical+pose.header*0.025;
+    const lean=pose.lean+pose.kick*0.06+pose.header*0.12+action.stumble*0.12+action.brace*0.035;
     // Le gardien accompagne le plongeon avec une translation du buste et des bras
     // dans le sens réel du tir ; les joueurs de champ amortissent les contacts.
     const diveSide=Math.sign(-pose.diveDir*Math.cos(yaw))||1;
@@ -582,7 +606,7 @@ export class MatchRenderer3D {
     }
     // Neck, head, hair and subtle ear details.
     cylinder(g,bodyPoint(lean*0.4,bodyY+0.34,0),bodyPoint(lean*0.4,bodyY+0.48,0),0.075,skin,8);
-    const head=bodyPoint(lean*0.43,bodyY+0.62,0);
+    const head=bodyPoint(lean*0.43+pose.header*0.11,bodyY+0.62-pose.header*0.045,0);
     sphere(g,head,[0.145,0.175,0.14],skin,detail===2?12:10,detail===2?9:7);
     sphere(g,bodyPoint(lean*0.43,bodyY+0.735,0),[0.147,0.07,0.142],hair,9,4);
     sphere(g,bodyPoint(lean*0.43,bodyY+0.62,-0.142),[0.035,0.055,0.035],skin,6,4);
@@ -590,17 +614,47 @@ export class MatchRenderer3D {
     if(detail>0) {
       // Yeux, pupilles, sourcils et nez orientés vers l'avant du joueur.
       for(const side of [-1,1]) {
-        sphere(g,point(0.128,bodyY+0.665,side*0.052),[0.022,0.018,0.017],[0.94,0.92,0.84],6,4);
-        sphere(g,point(0.143,bodyY+0.665,side*0.052),[0.009,0.012,0.009],[0.035,0.03,0.025],5,3);
-        tube(g,point(0.125,bodyY+0.70,side*0.08),point(0.125,bodyY+0.70,side*0.026),0.012,hair,5);
+         sphere(g,bodyPoint(0.128+pose.header*0.11,bodyY+0.665-pose.header*0.045,side*0.052),[0.022,0.018,0.017],[0.94,0.92,0.84],6,4);
+        sphere(g,bodyPoint(0.143+pose.header*0.11,bodyY+0.665-pose.header*0.045,side*0.052),[0.009,0.012,0.009],[0.035,0.03,0.025],5,3);
+        tube(g,bodyPoint(0.125+pose.header*0.11,bodyY+0.70-pose.header*0.045,side*0.08),bodyPoint(0.125+pose.header*0.11,bodyY+0.70-pose.header*0.045,side*0.026),0.012,hair,5);
       }
-      sphere(g,point(0.16,bodyY+0.61,0),[0.03,0.035,0.035],skin,6,4);
-      tube(g,point(0.13,bodyY+0.555,-0.035),point(0.13,bodyY+0.555,0.035),0.009,[0.22,0.08,0.065],5);
+      sphere(g,bodyPoint(0.16+pose.header*0.11,bodyY+0.61-pose.header*0.045,0),[0.03,0.035,0.035],skin,6,4);
+      tube(g,bodyPoint(0.13+pose.header*0.11,bodyY+0.555-pose.header*0.045,-0.035),bodyPoint(0.13+pose.header*0.11,bodyY+0.555-pose.header*0.045,0.035),0.009,[0.22,0.08,0.065],5);
     }
     // Gardien : gants renforcés et bandes de poignets.
     if(player.isGK) for(const side of [-1,1]) {
       sphere(g,bodyPoint(0,bodyY-0.47,side*0.49),[0.09,0.07,0.07],trim,detail===2?9:6,4);
       if(detail>0) tube(g,bodyPoint(0,bodyY-0.41,side*0.47),bodyPoint(0,bodyY-0.48,side*0.49),0.025,shirt,5);
+    }
+  }
+  addCrowdMotion(g, match) {
+    if (this.quality.detail <= 0) return;
+    const total = this.quality.crowd;
+    const animated = this.quality.detail === 2 ? 24 : 10;
+    const kits = [
+      parseColor(match.teams[0]?.kit?.shirt, [0.72,0.07,0.1]),
+      parseColor(match.teams[1]?.kit?.shirt, [0.08,0.2,0.48]),
+      [0.88,0.88,0.82],
+      [0.72,0.07,0.1],
+    ];
+    const intensity = match.goalCrowdT > 0 ? 1.28 : 1;
+    for (let n = 0; n < animated; n++) {
+      const i = Math.floor((n + 0.5) * total / animated);
+      const x = -51 + (i % 92) / 91 * 102;
+      const zSide = i % 2 ? 1 : -1;
+      const row = Math.floor(i / (total / this.quality.seatRows)) % this.quality.seatRows;
+      const z = zSide * (39.1 + row * 1.55);
+      const y = 4.55 + row * 3.0;
+      const motion = get3DCrowdMotionPose(match.clock, i, intensity);
+      const color = kits[(i * 7 + Math.floor(i / 7)) % kits.length];
+      for (const side of [-1, 1]) {
+        const shoulder = [x + side * 0.13 + motion.sway, y + 0.16, z];
+        const elbow = [x + side * (0.19 + motion.armSwing), y + 0.29 + motion.armLift * 0.24, z];
+        const hand = [x + side * (0.25 + motion.armSwing * 1.35), y + 0.34 + motion.armLift * 0.62, z + zSide * 0.015];
+        tube(g, shoulder, elbow, 0.032, color, 5);
+        tube(g, elbow, hand, 0.027, color, 5);
+        sphere(g, hand, [0.045,0.05,0.045], [0.62,0.4,0.27], 5, 3);
+      }
     }
   }
   buildDynamic(match, frame) {
@@ -611,15 +665,22 @@ export class MatchRenderer3D {
       if(player.sentOff&&!frame)continue;
       this.addPlayer(g,match,player,playerFrame,index);
     }
+    this.addCrowdMotion(g,match);
     const bx=frame?frame.b[0]:match.ball.x,by=frame?frame.b[1]:match.ball.y,bz=frame?frame.b[2]:match.ball.z;
-    // Ball shadow, white leather and dark panel details.
+    // L'ombre s'élargit et s'éclaircit à mesure que le ballon prend de la hauteur.
     const ballX=bx,ballZ=-by,ballY=Math.max(0.24,bz+0.24);
+    const shadow=get3DBallShadowProfile(bz);
+    const shadowColor=[
+      0.08-0.045*shadow.opacity,
+      0.34-0.295*shadow.opacity,
+      0.14-0.10*shadow.opacity,
+    ];
     for(let i=0;i<18;i++){
       const a=i/18*Math.PI*2,b=(i+1)/18*Math.PI*2;
       triangle(g,[ballX,0.06,ballZ],
-        [ballX+Math.cos(a)*0.27,0.06,ballZ+Math.sin(a)*0.16],
-        [ballX+Math.cos(b)*0.27,0.06,ballZ+Math.sin(b)*0.16],
-        [0.035,0.045,0.04],[[0,1,0],[0,1,0],[0,1,0]]);
+        [ballX+Math.cos(a)*shadow.radiusX,0.06,ballZ+Math.sin(a)*shadow.radiusZ],
+        [ballX+Math.cos(b)*shadow.radiusX,0.06,ballZ+Math.sin(b)*shadow.radiusZ],
+        shadowColor,[[0,1,0],[0,1,0],[0,1,0]]);
     }
     sphere(g,[ballX,ballY,ballZ],[0.22,0.22,0.22],[0.94,0.95,0.91],this.quality.sphereSegments,Math.max(4,this.quality.sphereSegments-2));
     // Small black pentagonal-inspired panels around the ball surface.

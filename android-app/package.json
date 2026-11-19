@@ -1,6 +1,6 @@
 {
   "name": "football-tunisia-2026-android",
-  "version": "3.12.0",
+  "version": "3.13.0",
   "private": true,
   "description": "Football Tunisia 2026 — application Android (Capacitor + AdMob + synthèse vocale native)",
   "dependencies": {

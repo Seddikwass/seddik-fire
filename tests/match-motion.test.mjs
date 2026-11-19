@@ -6,7 +6,7 @@ globalThis.devicePixelRatio = 1;
 globalThis.innerWidth = 800;
 globalThis.innerHeight = 450;
 
-const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getTeammateAvoidance, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan, getDefensiveMarkTarget, getKeeperPositioning } = await import('../public/js/match.js');
+const { Match, getMovementTuning, getDribbleLaneTarget, getTackleAssessment, getPassLaneAssessment, getShotAccuracy, getShotTargetY, getKeeperSaveAssessment, getKeeperDiveProfile, getKeeperFootworkPace, isShotOnTargetAtGoalLine, getBodyContactAssessment, getTackleAnimationProfile, getArriveSpeed, getVelocityStep, getSmoothedTarget, getTeammateAvoidance, getPlayerBodyTransform, getRunningCadence, getCarryBallOffset, getPressingPlan, getAttackingSupportPlan, getDefensiveMarkTarget, getKeeperPositioning, getAIShootingQuality } = await import('../public/js/match.js');
 const C = await import('../public/js/career.js');
 const career = C.newCareer({ clubId: 'est', seed: 17 });
 const canvas = { clientWidth: 800, clientHeight: 450, getContext: () => ({}) };
@@ -106,6 +106,27 @@ assert.ok(movingInterceptor.interceptor, 'le défenseur interceptant est identif
 
 // Les tireurs techniques gardent une meilleure précision ; pression et puissance élevée dégradent le geste.
 const composedShot = getShotAccuracy({ shooting: 92, technique: 94, pressure: 8, movingSpeed: 1, power: 0.68, assist: 1 });
+
+// La décision de frappe de l'IA privilégie les occasions nettes et évite les angles fermés.
+const cleanAiChance = getAIShootingQuality({
+  distance: 14, shooterY: 0, pressure: 8, shooting: 90, technique: 92, stamina: 0.94, keeperY: 1.2,
+});
+const longAiChance = getAIShootingQuality({
+  distance: 29, shooterY: 0, pressure: 8, shooting: 90, technique: 92, stamina: 0.94, keeperY: 1.2,
+});
+const pressuredAiChance = getAIShootingQuality({
+  distance: 14, shooterY: 0, pressure: 1.1, shooting: 90, technique: 92, stamina: 0.94, keeperY: 1.2,
+});
+const wideAiChance = getAIShootingQuality({
+  distance: 14, shooterY: 24, pressure: 8, shooting: 90, technique: 92, stamina: 0.94, keeperY: 1.2,
+});
+assert.ok(cleanAiChance.score > longAiChance.score, 'une position proche du but est mieux évaluée qu une frappe lointaine');
+assert.ok(cleanAiChance.score > pressuredAiChance.score, 'une forte pression réduit la qualité de décision du tir');
+assert.ok(cleanAiChance.score > wideAiChance.score, 'un angle fermé réduit la qualité de décision du tir');
+assert.ok([cleanAiChance, longAiChance, pressuredAiChance, wideAiChance].every(v =>
+  Number.isFinite(v.score) && v.score >= 0 && v.score <= 1),
+  'les évaluations de tirs IA restent finies et bornées');
+
 const pressuredShot = getShotAccuracy({ shooting: 52, technique: 48, pressure: 1, movingSpeed: 12, power: 0.98, assist: 1 });
 assert.ok(composedShot.spread < pressuredShot.spread, 'le tir élite et équilibré est moins dispersé');
 assert.ok(composedShot.verticalSpread < pressuredShot.verticalSpread, 'la technique limite aussi l erreur verticale');

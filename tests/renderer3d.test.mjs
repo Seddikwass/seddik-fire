@@ -305,3 +305,14 @@ console.log('3D ACTION MESH OK — corps orienté sur première touche, tête, c
   }
   console.log('REPLAY TV OK — 3 angles (principale, derrière le but, rapprochée)');
 }
+
+{
+  const { getOfficialTargets } = await import('../public/js/renderer3d.js');
+  const mk = (xs, dir) => ({ dir, ps: xs.map(x => ({ x, y: 0 })) });
+  const m = { ball: { x: 20, y: 10 }, teams: [mk([-50, -30, -20, -10], 1), mk([48, 30, 18, 25], -1)] };
+  const t = getOfficialTargets(m);
+  assert.equal(t.ar1.x, 30, 'le juge de ligne suit l avant-dernier défenseur de sa moitié');
+  assert.ok(t.ar1.y < -34 && t.ar2.y > 34, 'juges de ligne hors du terrain, un de chaque côté');
+  assert.ok(Math.hypot(t.ref.x - 20, t.ref.y - 10) > 8, 'l arbitre garde ses distances avec le ballon');
+  console.log('OFFICIALS OK — arbitre en diagonale, juges de ligne sur la ligne de hors-jeu');
+}

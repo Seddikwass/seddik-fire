@@ -1,5 +1,14 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.35.0 — arbitres sur le terrain, éclairage de match nocturne
+- Arbitre central en tenue noire et jaune, qui suit le jeu en diagonale à distance du ballon et regarde l'action.
+- Deux juges de ligne sur les touches (un par moitié de terrain), alignés en permanence sur l'avant-dernier défenseur, comme pour juger le hors-jeu.
+- Gestes officiels : carton jaune ou rouge brandi bras tendu au-dessus de la tête près du fautif, bras tendu dans la direction du coup franc, désignation du point de penalty, retour au rond central après un but, drapeau levé par le juge de ligne concerné sur un hors-jeu.
+- Éclairage nocturne réaliste : chaque joueur projette quatre ombres douces étirées à l'opposé des quatre pylônes, plus un noyau d'ombre au pied ; la teinte est prise sur la bande de tonte (fini les taches noires) et l'ombre suit le corps lors d'un plongeon.
+- Correction : la face lumineuse des panneaux LED était cachée derrière leur caisson (panneaux noirs) ; ils s'affichent désormais en couleurs autour de la pelouse.
+- Les arbitres sont purement visuels : aucune influence sur le moteur ni sur les matchs en ligne.
+- Tests : placement de l'arbitre et des juges de ligne.
+
 ## Version 3.34.0 — gardiens spectaculaires et dribbles visibles
 - Rotation du corps entier autour d'un pivot : le gardien plonge vraiment à l'horizontale, les bras tendus au-dessus de la tête vers le ballon, avec trois hauteurs (ras du sol, mi-hauteur, lucarne) et un déplacement latéral selon l'extension ; son ombre suit le plongeon.
 - Gardien : posture d'attente fléchie (genoux pliés, buste en avant, mains ouvertes devant), prise à deux mains contre la poitrine, sortie aux poings bras tendus vers le ciel.

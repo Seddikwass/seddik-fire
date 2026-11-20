@@ -39,6 +39,25 @@ export function get3DCrowdMotionPose(clockSeconds = 0, index = 0, intensity = 1)
   };
 }
 
+// Placement des arbitres (visuel) : diagonale de l'arbitre central à distance du ballon,
+// juges de ligne alignés sur l'avant-dernier défenseur de leur moitié de terrain.
+export function getOfficialTargets(match = {}) {
+  const ball = match.ball || {}, bx = Number(ball.x) || 0, by = Number(ball.y) || 0;
+  const HLm = 52.5, HWm = 34;
+  const side = bx >= 0 ? 1 : -1;
+  const ref = { x: clamp(bx - side * 9, -40, 40), y: clamp(by + (by > 0 ? -11 : 11), -24, 24) };
+  const line = (half) => {
+    let defLine = 0;
+    for (const T of match.teams || []) {
+      const ownGoal = -(T.dir || 1) * HLm;
+      if (Math.sign(ownGoal) !== half) continue;
+      const xs = (T.ps || []).filter(p => !p.sentOff).map(p => p.x * half).sort((a, b) => b - a);
+      defLine = Math.max(0, xs[1] ?? 0, bx * half);
+    }
+    return clamp(defLine, 0, HLm - 1) * half;
+  };
+  return { ref, ar1: { x: line(1), y: -HWm - 1.1 }, ar2: { x: line(-1), y: HWm + 1.1 } };
+}
 export function getPlayer3DPose(player = {}, frame = null) {
   const p = frame || [];
   const x = Number.isFinite(p[0]) ? p[0] : (Number.isFinite(player.x) ? player.x : 0);
@@ -629,10 +648,10 @@ export class MatchRenderer3D {
       const bright = c => c.map(v => Math.min(1.35, v * 1.35 + 0.08));
       if (along === 'x') {
         box(g, [cx, 0.55, cz + facing * 0.12], [len, 0.95, 0.22], [0.04,0.05,0.06]);
-        currentAnim = -1; for (let k = 0; k < 4; k++) { const x0 = cx - len / 2 + k * len / 4; rectV(g, x0 + 0.05, x0 + len / 4 - 0.05, 0.12, 0.98, cz - facing * 0.01, k % 2 ? bright(c2) : bright(c1), facing); }
+        currentAnim = -1; for (let k = 0; k < 4; k++) { const x0 = cx - len / 2 + k * len / 4; rectV(g, x0 + 0.05, x0 + len / 4 - 0.05, 0.12, 0.98, cz + facing * 0.245, k % 2 ? bright(c2) : bright(c1), facing); }
       } else {
         box(g, [cx + facing * 0.12, 0.55, cz], [0.22, 0.95, len], [0.04,0.05,0.06]);
-        currentAnim = -1; for (let k = 0; k < 4; k++) { const z0 = cz - len / 2 + k * len / 4; rectVZ(g, cx - facing * 0.01, z0 + 0.05, z0 + len / 4 - 0.05, 0.12, 0.98, k % 2 ? bright(c2) : bright(c1), facing); }
+        currentAnim = -1; for (let k = 0; k < 4; k++) { const z0 = cz - len / 2 + k * len / 4; rectVZ(g, cx + facing * 0.245, z0 + 0.05, z0 + len / 4 - 0.05, 0.12, 0.98, k % 2 ? bright(c2) : bright(c1), facing); }
       }
       currentAnim = 0;
     };
@@ -791,10 +810,10 @@ export class MatchRenderer3D {
       if(BR){ const r=rotV([f,h-BR.ph,side]); f=r[0]+BR.fo; h=r[1]+BR.ph+BR.ho; side=r[2]+BR.so; }
       return [x+cos*f-sin*side,h,-pose.y+sin*f+cos*side]; };
     const side0=player.team===0?match.teams[0]:match.teams[1];
-    const kit=player.isGK?(side0.gkKit||side0.kit):side0.kit;
+    const kit=player.kitOverride||(player.isGK?(side0.gkKit||side0.kit):side0.kit);
     const shirt=parseColor(kit?.shirt,[0.8,0.1,0.1]), trim=parseColor(kit?.trim,[0.95,0.88,0.72]);
     const shorts=parseColor(kit?.shorts||kit?.trim,[0.08,0.1,0.13]);
-    const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=[0.86,0.88,0.83];
+    const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=player.sockColor||[0.86,0.88,0.83];
     const detail=this.quality.detail;
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
     const build=0.98+physique*0.18;
@@ -862,10 +881,21 @@ export class MatchRenderer3D {
     };
     // Ombre douce : noyau sombre sous les pieds, halo plus clair étiré vers l'arrière (projecteurs).
     const up=[[0,1,0],[0,1,0],[0,1,0]];
-    const shadowLayers=[[0.5,0.32,[0.09,0.2,0.1],0.042,0.1],[0.32,0.2,[0.05,0.11,0.06],0.046,0.04]];
-    for(const [rx,rz,col,sy,off] of shadowLayers) for(let i=0;i<14;i++){
-      const so2=(BR?BR.so:0)+bodySide, a=i/14*Math.PI*2,b=(i+1)/14*Math.PI*2, cx=x+off-sin*so2, cz=z-off*0.6+cos*so2;
-      triangle(g,[cx,sy,cz],[cx+Math.cos(a)*rx,sy,cz+Math.sin(a)*rz],[cx+Math.cos(b)*rx,sy,cz+Math.sin(b)*rz],col,up);
+    // Ombres de match en nocturne : une ombre étirée par pylône d'éclairage (4 coins) + noyau sombre au pied.
+    {
+      const so2=(BR?BR.so:0)+bodySide, px=x-sin*so2, pz=z+cos*so2;
+      const lift0=clamp(1-((BR?BR.ho:0)+pose.jump*1.5)*0.6,0.35,1);
+      const ellipse=(cx,cz,ux,uz,ra,rb,col,yy,seg)=>{ for(let i=0;i<seg;i++){ const a=i/seg*Math.PI*2,b=(i+1)/seg*Math.PI*2;
+        const P=t=>[cx+ux*Math.cos(t)*ra-uz*Math.sin(t)*rb,yy,cz+uz*Math.cos(t)*ra+ux*Math.sin(t)*rb];
+        triangle(g,[cx,yy,cz],P(a),P(b),col,up);} };
+      // Teinte prise sur la bande de tonte sous le joueur : ombre douce, jamais de tache noire.
+      const band=(Math.floor((px+52.5)/5.25)%2+2)%2?1.06:0.955, grass=[0.125*band,0.375*band,0.15*band];
+      const shade=k=>[grass[0]*k,grass[1]*k,grass[2]*k];
+      if(detail>0||player===match.selected) for(const [tx,tz] of [[-53,-42],[53,-42],[-53,42],[53,42]]){
+        let ux=px-tx,uz=pz-tz; const L=Math.hypot(ux,uz)||1; ux/=L; uz/=L;
+        ellipse(px+ux*0.55,pz+uz*0.55,ux,uz,0.6*lift0,0.13,shade(0.8),0.04,8);
+      }
+      ellipse(px,pz,1,0,0.33*lift0,0.23*lift0,shade(0.52),0.046,12);
     }
     if(player===match.selected){
       ring(g,x,0.085,z,0.58,[0.94,0.78,0.24],22,0.045);
@@ -888,8 +918,8 @@ export class MatchRenderer3D {
       ell(bodyPoint(torsoF+0.128*build+tilt*0.06,bodyY+0.17,-0.09),0.012,0.034,0.028,trim,6,4,tilt);
     }
     // Numéros : petit devant, grand dans le dos (lisible quand le joueur s'éloigne).
-    addKitNumber(g,bodyPoint,torsoF+0.142*build+tilt*0.02,bodyY+0.05,player.num,trim,detail===0?0.6:0.72,-1);
-    addKitNumber(g,bodyPoint,torsoF-0.142*build-tilt*0.02,bodyY+0.06,player.num,trim,detail===0?1:1.25,1);
+    if(!player.isOfficial) addKitNumber(g,bodyPoint,torsoF+0.142*build+tilt*0.02,bodyY+0.05,player.num,trim,detail===0?0.6:0.72,-1);
+    if(!player.isOfficial) addKitNumber(g,bodyPoint,torsoF-0.142*build-tilt*0.02,bodyY+0.06,player.num,trim,detail===0?1:1.25,1);
     // ---- Jambes : squelette cuisse/tibia (cinématique directe) ----
     const kickFootSide=pose.kickFootSide||((index%2===0)?-1:1);
     const touchSide=pose.firstTouchDir>=0?kickFootSide:-kickFootSide;
@@ -979,6 +1009,11 @@ export class MatchRenderer3D {
       if(rollAmt>0){ al+=(3.0-al)*rollAmt; be+=(0.08-be)*rollAmt; ab+=(0.12-ab)*rollAmt; }
       if(slideAmt>0){ const back=side===(pose.slideDir>=0?-kickFootSide:kickFootSide); al+=((back?-0.9:0.35)-al)*slideAmt; be+=(0.2-be)*slideAmt; ab+=((back?0.55:0.65)-ab)*slideAmt; }
       if(skillOn){ const a=Math.sin(skillP*Math.PI); ab+=0.35*a; al+=(side===pose.skillDir?-0.3:0.4)*a; }
+      const sig=player.signal, sigArm=side===1;
+      if(sig&&sigArm){
+        if(sig==='yellow'||sig==='red'||sig==='flag'){ al=2.95; be=0.05; ab=0.12; }
+        else if(sig==='foul'||sig==='penalty'||sig==='goal'){ al=1.55; be=0.02; ab=sig==='goal'?0.1:0.5; }
+      }
       const leadingKeeperArm=player.isGK&&side===diveSide;
       const keeperArmReach=player.isGK?(leadingKeeperArm?action.keeperLeadReach:action.keeperBalanceReach):0;
       const keeperArmOffset=(player.isGK?(leadingKeeperArm?diveSide*keeperArmReach*0.48:-diveSide*keeperArmReach*0.16):0)*(1-rollAmt);
@@ -994,6 +1029,16 @@ export class MatchRenderer3D {
       const hand=bodyPoint(hF,hU+gkRaise+(player.isGK?keeperArmReach*0.12+gkU*1.1:0),hS+side*spread*1.5+keeperArmOffset*1.25);
       sphere(g,shoulder,[0.085,0.08,0.085],shirt,7,5);
       addArmPose(g,shoulder,elbow,hand,shirt,skin,trim,detail,!!player.isGK);
+      // Carton brandi ou drapeau du juge de ligne.
+      if(sigArm&&(sig==='yellow'||sig==='red')) box(g,[hand[0],hand[1]+0.13,hand[2]],[0.09,0.13,0.09],sig==='red'?[1.1,0.08,0.08]:[1.25,1.05,0.1]);
+      if(player.isOfficial&&player.role==='ar'&&sigArm){
+        const flagUp=sig==='flag';
+        const tip=flagUp?[hand[0],hand[1]+0.62,hand[2]]:bodyPoint(hF+0.32,hU-0.3,hS);
+        tube(g,hand,tip,0.012,[0.85,0.85,0.85],5);
+        const fc=[1.15,0.95,0.1], fc2=[1.0,0.12,0.1];
+        const p1=tip, p2=[tip[0],tip[1]-0.28,tip[2]], p3=[tip[0]+0.3*Math.cos(yaw+1.57),tip[1]-0.14,tip[2]+0.3*Math.sin(yaw+1.57)];
+        triangle(g,p1,p2,p3,fc); triangle(g,p1,p3,p2,fc2);
+      }
     }
     // ---- Cou, tête, coiffure, visage ----
     const neckF=torsoF+tilt*0.2;
@@ -1054,6 +1099,36 @@ export class MatchRenderer3D {
       }
     }
   }
+  updateOfficials(match) {
+    const now=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
+    const dt=clamp(now-(this._offT||now),0,0.1); this._offT=now;
+    const kit={ shirt:'#15171c', trim:'#f2d21b', shorts:'#101114' };
+    if(!this.officials) this.officials=[0,1,2].map(k=>({ k, isOfficial:true, role:k?'ar':'ref', x:0, y:k===0?8:(k===1?-35.1:35.1), vx:0, vy:0, anim:0, heading:0,
+      team:0, num:0, name:'Arbitre '+k, skin:['#8d5a3b','#c98d64','#5e3a26'][k], kitOverride:kit, sockColor:[0.08,0.08,0.09], a:{phy:55} }));
+    const targets=getOfficialTargets(match);
+    const call=match.refCall, age=call?(Number(match.clock)||0)-call.t:99;
+    const live=call&&age>=0&&age<2.6;
+    for(const o of this.officials){
+      let t=o.k===0?targets.ref:o.k===1?targets.ar1:targets.ar2;
+      if(o.k===0&&live&&call.type!=='offside'&&call.type!=='goal') t={x:clamp(call.x-2.4,-50,50),y:clamp(call.y+(call.y>0?-2:2),-32,32)};
+      const dx=t.x-o.x, dy=t.y-o.y, d=Math.hypot(dx,dy);
+      const vmax=o.k===0?7.2:6.5, want=d>0.4?Math.min(vmax,d*1.4):0;
+      const tvx=d>0.01?dx/d*want:0, tvy=d>0.01?dy/d*want:0;
+      o.vx+=(tvx-o.vx)*Math.min(1,dt*3); o.vy+=(tvy-o.vy)*Math.min(1,dt*3);
+      if(o.k>0) o.vy*=0.2;
+      o.x+=o.vx*dt; o.y+=o.vy*dt;
+      const sp=Math.hypot(o.vx,o.vy); o.anim+=sp*1.55*dt;
+      // L'arbitre regarde le jeu ; les juges de ligne courent latéralement face au terrain.
+      const look=o.k===0?Math.atan2((Number(match.ball?.y)||0)-o.y,(Number(match.ball?.x)||0)-o.x):(o.k===1?Math.PI/2:-Math.PI/2);
+      o.heading+=Math.atan2(Math.sin(look-o.heading),Math.cos(look-o.heading))*Math.min(1,dt*5);
+      o.signal=null;
+      if(live){
+        if(o.k===0&&(call.type==='yellow'||call.type==='red')) o.signal=call.type;
+        else if(o.k===0&&(call.type==='foul'||call.type==='penalty'||call.type==='goal')) o.signal=call.type;
+        else if(o.k>0&&call.type==='offside'&&Math.sign(call.x||1)===(o.k===1?1:-1)) o.signal='flag';
+      }
+    }
+  }
   buildDynamic(match, frame) {
     const g=this.dynamicGeometry;g.length=0;
     let index=0;
@@ -1062,6 +1137,8 @@ export class MatchRenderer3D {
       if(player.sentOff&&!frame)continue;
       this.addPlayer(g,match,player,playerFrame,index);
     }
+    if(!frame) this.updateOfficials(match);
+    if(this.officials) for(const o of this.officials) this.addPlayer(g,match,o,null,90+o.k);
     const bx=frame?frame.b[0]:match.ball.x,by=frame?frame.b[1]:match.ball.y,bz=frame?frame.b[2]:match.ball.z;
     // L'ombre s'élargit et s'éclaircit à mesure que le ballon prend de la hauteur.
     const ballX=bx,ballZ=-by,ballY=Math.max(0.24,bz+0.24);

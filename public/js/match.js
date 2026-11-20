@@ -1979,7 +1979,7 @@ export class Match {
       clamp(p.x, -HL + 1, HL - 1), clamp(p.y, -HW + 1, HW - 1));
   }
   foul(p, victim) {
-    this.stats.fouls[p.team]++; p.rating -= 0.2;
+    this.stats.fouls[p.team]++; p.rating -= 0.2; this.refSignal('foul', victim);
     A.whistle();
     const T = this.teams[victim.team], d = T.dir;
     const inBox = victim.x * d > HL - 16.5 && Math.abs(victim.y) < 20.16;
@@ -1989,7 +1989,7 @@ export class Match {
     else this.say('foul', { p: p.name });
     this.crowdReact(card < 0.22 || (inBox && card < 0.4) ? 'card' : 'foul', p.team);
     if (this.r() < 0.03) { victim.injured = true; this.addEvent('injury', victim); this.say('injury', { p: victim.name }, true); }
-    if (inBox) { this.banner('PENALTY !', 1.8); this.say('penalty', { t: T.short }, true); this.setRestart('penalty', victim.team, d * (HL - 11), 0); }
+    if (inBox) { if (this.refCall?.type === 'foul') this.refSignal('penalty', victim); this.banner('PENALTY !', 1.8); this.say('penalty', { t: T.short }, true); this.setRestart('penalty', victim.team, d * (HL - 11), 0); }
     else this.setRestart('freekick', victim.team, clamp(victim.x, -HL + 1, HL - 1), clamp(victim.y, -HW + 1, HW - 1));
   }
   sendOff(p, why) {
@@ -2001,7 +2001,9 @@ export class Match {
       if (rep) { rep.isGK = true; T.ps[0] = rep; T.ps[rep.i] = p; [rep.i, p.i] = [0, rep.i]; [rep.base, p.base] = [p.base, rep.base]; }
     }
   }
-  addEvent(type, p, extra = {}) { this.events.push({ type, min: Math.max(1, Math.round(this.minute)), team: p.team, pid: p.id, name: p.name, ...extra }); }
+  refSignal(type, p) { this.refCall = { type, t: this.clock, x: p ? p.x : this.ball.x, y: p ? p.y : this.ball.y, team: p ? p.team : null, pid: p ? p.id : null }; }
+  addEvent(type, p, extra = {}) {
+    if (type === 'yellow' || type === 'red' || type === 'offside') this.refSignal(type, p); this.events.push({ type, min: Math.max(1, Math.round(this.minute)), team: p.team, pid: p.id, name: p.name, ...extra }); }
 
   // ---------------- utilisateur ----------------
   userControl(dt) {
@@ -2314,7 +2316,7 @@ export class Match {
     const b = this.ball, scorer = b.last && b.last.team === team ? b.last : null;
     const shotInfo = b.inFlightShot?.team === team ? b.inFlightShot : null;
     if (b.inFlightShot?.team === team) this.recordShotOnTarget(b.inFlightShot, b.y, b.z);
-    this.score[team]++;
+    this.score[team]++; this.refSignal('goal', null);
     const T = this.teams[team];
     let name = scorer ? scorer.name : 'c.s.c.';
     if (scorer) { scorer.goals++; scorer.rating += 1; if (scorer.lastPasser) { scorer.lastPasser.assists++; scorer.lastPasser.rating += 0.5; } }

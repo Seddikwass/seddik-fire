@@ -825,6 +825,10 @@ canvas{image-rendering:auto}
 #lobby #maps .map-ville .map-art{background:linear-gradient(120deg,rgba(5,12,22,.05),rgba(5,12,22,.55)),linear-gradient(135deg,#8297a9,#303e57)}
 #lobby #maps .map-foret .map-art{background:linear-gradient(120deg,rgba(5,18,5,.05),rgba(5,18,5,.55)),linear-gradient(135deg,#79975a,#263d2c)}
 #lobby #maps .map-hautes .map-art{background:linear-gradient(120deg,rgba(15,18,10,.05),rgba(15,18,10,.55)),linear-gradient(135deg,#a5a58b,#4b5c4d)}
+#lobby #maps .map-sidibou .map-art{background:linear-gradient(120deg,rgba(5,15,20,.05),rgba(5,15,20,.5)),linear-gradient(135deg,#f4f1ea 0%,#f4f1ea 38%,#2a6fb8 39%,#1d4f8f)}
+#lobby #maps .map-hammamet .map-art,#lobby #maps .map-mahdia .map-art{background:linear-gradient(120deg,rgba(5,15,20,.05),rgba(5,15,20,.5)),linear-gradient(135deg,#e6d2a0,#3fb5c4)}
+#lobby #maps .map-kerkennah .map-art{background:linear-gradient(120deg,rgba(5,15,20,.05),rgba(5,15,20,.5)),linear-gradient(135deg,#d9c893,#4bc6c4 60%,#2aa2b4)}
+#lobby #maps .map-galite .map-art{background:linear-gradient(120deg,rgba(5,15,20,.05),rgba(5,15,20,.55)),linear-gradient(135deg,#8a8068,#2a7f96)}
 #lobby #maps .map-djerba .map-art,#lobby #maps .map-capbon .map-art{background:linear-gradient(120deg,rgba(5,15,20,.05),rgba(5,15,20,.55)),linear-gradient(135deg,#6cb8a6,#23586b)}
 @media(max-width:420px){#lobby #maps{gap:7px}#lobby #maps .map-card{min-height:104px}#lobby #maps .map-art{height:58px}}
 @media(prefers-reduced-motion:reduce){#lobby #maps .map-card{transition:none}}
@@ -1049,9 +1053,9 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <label class="rg"><span>Taille joueurs</span><input id="oPsize" type="range" min=".8" max="1.8" step=".05"><em id="oPsizeV"></em></label>
       <label class="rg"><span>Zoom caméra</span><input id="oCam" type="range" min=".75" max="1.25" step=".05"><em id="oCamV"></em></label>
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
-      <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
+      <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.26</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.27</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1532,6 +1536,11 @@ MAPS.capbon={n:'Cap Bon & Kélibia',d:'Péninsule du Cap Bon : Nabeul, Hammamet,
  MAPS.tozeur=T('sahara',{n:'Tozeur & Nefta',d:'Palmeraies du Jérid, chott el-Jérid, oasis de montagne de Chebika et Tamerza.',poi:['Palmeraie de Tozeur','Nefta','Chott el-Jérid','Chebika','Tamerza','Midès','Degache','Ong Jemel'],seed:20261207,base:'#e3c891',lt:'rgba(252,236,190,.4)',gr:'rgba(120,140,70,.12)',v:[30,20,70,90,80],wx:'sand'});
  MAPS.tataouine=T('sahara',{n:'Tataouine & Ksour',d:'Le Grand Sud : ksour fortifiés, villages berbères perchés et pistes de sable rouge.',poi:['Ksar Ouled Soltane','Chenini','Douiret','Ghomrassen','Ksar Hadada','Béni Khedache','Remada','Médenine'],seed:20261208,base:'#d9a872',lt:'rgba(246,212,160,.36)',dk:'rgba(170,100,52,.26)',fa:'#bf9460',fb:'#cf9d68',wx:'sand'});
  MAPS.kef=T('hautes',{n:'Le Kef & Jugurtha',d:'Hauts plateaux du Nord-Ouest : kasbah du Kef, Table de Jugurtha et ruines de Dougga.',poi:['Kasbah du Kef','Table de Jugurtha','Dougga','Thibar','Nebeur','Sakiet Sidi Youssef','Tajerouine','Kalaat Senan'],seed:20261209,base:'#b2a979',gr:'rgba(92,128,60,.32)',wx:'fog'});
+ MAPS.sidibou=T('cote',{n:'Sidi Bou Saïd & Carthage',d:'Village blanc et bleu sur la falaise, ruines puniques et romaines de Carthage, La Marsa et Gammarth.',poi:['Sidi Bou Saïd','Café des Délices','Thermes d’Antonin','Colline de Byrsa','La Marsa','Gammarth','Port de plaisance','Amilcar'],seed:20261212,base:'#d2c495',gr:'rgba(96,150,70,.28)',sea:['#2fb3c9','#1a8db3','#126592'],tunK:'village',wx:'breeze'});
+ MAPS.hammamet=T('cote',{n:'Hammamet & Nabeul',d:'Médina fortifiée au bord de la mer, plages de Yasmine, souk de la poterie de Nabeul et orangeraies du Cap Bon.',poi:['Médina de Hammamet','Yasmine Hammamet','Fort de Hammamet','Nabeul','Souk de la poterie','Béni Khiar','Bir Bouregba','Korba'],seed:20261213,base:'#d8c898',gr:'rgba(104,150,72,.26)',sea:['#34b8c6','#1f93b3','#15688f'],tunK:'medina',wx:'breeze'});
+ MAPS.mahdia=T('cote',{n:'Mahdia',d:'Presqu’île fatimide : Skifa Kahla, Borj El Kebir, cimetière marin, port de pêche et plages de sable fin.',poi:['Skifa Kahla','Borj El Kebir','Cimetière marin','Port de pêche','Place du Caire','Hiboun','Ksour Essef','Salakta'],seed:20261214,base:'#dccb98',lt:'rgba(250,238,200,.36)',gr:'rgba(110,146,70,.2)',sea:['#3dc0cc','#2299b6','#166c92'],shore:'#f4e6bf',tunK:'medina',wx:'breeze'});
+ MAPS.kerkennah=T('seddik',{n:'Îles Kerkennah',d:'Archipel plat de palmiers et de sebkhas, pêche traditionnelle à la charfia et villages de pêcheurs.',poi:['Remla','Sidi Youssef','Ouled Kacem','El Attaya','Mellita','Kraten','Borj El Hsar','Ouled Yaneg'],seed:20261215,base:'#d9c893',lt:'rgba(246,234,196,.36)',gr:'rgba(108,140,64,.2)',sea:['#4bc6c4','#2aa2b4','#1a7590'],shore:'#efe2b8',tunK:'island',charfia:1,wx:'breeze'});
+ MAPS.galite=T('seddik',{n:'Île de La Galite',d:'Île volcanique sauvage au large de Tabarka : falaises, criques, phare et grottes.',poi:['Le Port','Le Phare','Les Falaises','La Crique','Galiton','La Grotte','Le Plateau','La Pointe'],seed:20261216,base:'#a99a76',lt:'rgba(220,206,170,.3)',dk:'rgba(90,80,60,.26)',gr:'rgba(90,120,60,.28)',fa:'#8a9a58',sea:['#2a9fb4','#1a7c9e','#125878'],shore:'#cfc29e',tunK:'wild',wx:'fog'});
  MAPS.gafsa=T('hautes',{n:'Gafsa & Bassin minier',d:'Collines arides, mines de phosphate de Métlaoui et gorges de Selja.',poi:['Gafsa','Métlaoui','Redeyef','Moularès','Oum Larayes','Gorges de Selja','El Guettar','Sened'],seed:20261210,base:'#c9ad80',lt:'rgba(236,214,170,.32)',dk:'rgba(140,100,62,.24)',gr:'rgba(118,120,66,.14)',fa:'#a99a62',fb:'#b99c6a',wx:'sand'});
 }
 for(const k in MAPS){MAPS[k].id=k;MAPS[k].st=MAPS[k].like||k}
@@ -2292,7 +2301,7 @@ function startMatch(){
   if(MDcur.sk)for(const e of ents)if(e.bot)e.skill*=MDcur.sk;
   {const dm=[.7,1,1.3][stats.diff===0||stats.diff===2?stats.diff:1];if(dm!==1)for(const e of ents)if(e.bot)e.skill*=dm}
   for(const e of ents){if(MDcur.bare){e.cur=-1;continue}const t=e.bot?pick(SIDEARMS):stats.sidearm,W=WEAP[t];e.slots[0]={type:t,mag:W.mag};e.cur=0;e.ammo[W.am]=e.bot?W.mag:W.mag*2}
-  cupGear();radioReset();AUTORUN=null;
+  cupGear();radioReset();AUTORUN=null;WAYPT=null;
   for(const e of ents)if(e.sk&&e.sk.sp&&!e.mel)e.mel='gladius';
   for(const B of blds)B._dn=0;
   setupPlane();
@@ -2302,7 +2311,7 @@ function startMatch(){
   for(const k in sticks){const s=sticks[k];s.id=null;s.mag=0;s.dx=s.dy=0}
   mouse.down=false;
   cam.x=plane.x;cam.y=plane.y;cam.z=baseZoom()*.36;
-  game.mode='play';bigOpen=false;$('#bigmap').hidden=true;
+  game.mode='play';bigOpen=false;$('#bigmap').hidden=true;setTimeout(applyLefty,50);
   $('#lobby').hidden=true;$('#end').hidden=true;$('#pause').hidden=true;$('#hud').hidden=false;
   for(const k in cache)delete cache[k];
   showHint(null);
@@ -2586,7 +2595,7 @@ cv.addEventListener('pointerdown',ev=>{initAudio();
   if(ev.pointerType==='mouse'){setDesk(true);mouse.active=true;mouse.sx=ev.clientX;mouse.sy=ev.clientY;if(ev.button===0)mouse.down=true;return}
   ev.preventDefault();setDesk(false);if(game.mode!=='play')return;
   if(ev.isPrimary)resetSticks();
-  let s=ev.clientX<VW/2?sticks.move:sticks.aim;if(s.id!==null){const o=s===sticks.move?sticks.aim:sticks.move;if(o.id===null&&Math.abs(ev.clientX-VW/2)<VW*.18)s=o;else return}
+  let s=(ev.clientX<VW/2)!==!!stats.lefty?sticks.move:sticks.aim;if(s.id!==null){const o=s===sticks.move?sticks.aim:sticks.move;if(o.id===null&&Math.abs(ev.clientX-VW/2)<VW*.18)s=o;else return}
   s.id=ev.pointerId;s.ox=s.x=s.sx=ev.clientX;s.oy=s.y=s.sy=ev.clientY;s.dx=s.dy=s.mag=0;s.t0=performance.now();s.arm=false;if(s===sticks.move&&AUTORUN){AUTORUN=null;sysFeed('',0,'run')}
   try{cv.setPointerCapture(ev.pointerId)}catch(e){}});
 cv.addEventListener('pointermove',ev=>{if(ev.pointerType==='mouse'){mouse.sx=ev.clientX;mouse.sy=ev.clientY;mouse.active=true;return}
@@ -3153,7 +3162,7 @@ function drawDetailCached(x0,y0,x1,y1,z){const k=MAP.id+'|'+Q.lv+'|'+LOWD+'|'+wa
   for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){const id=cx+','+cy;let t=DC.m.get(id);
     if(t&&t.sc<sc&&budget>0)t=null;
     if(!t){if(budget<=0)continue;budget--;const c=document.createElement('canvas'),px=Math.ceil(S*sc);c.width=c.height=px;const g=c.getContext('2d'),save=ctx,X=cx*S,Y=cy*S;
-      const qh=Q.hi;ctx=g;Q.hi=true;try{g.setTransform(sc,0,0,sc,-X*sc,-Y*sc);g.beginPath();g.rect(X,Y,S,S);g.clip();drawGroundMacro(X,Y,S);drawContactAO(X-60,Y-60,X+S+60,Y+S+60);draw2DSurfaceDetail(X-70,Y-70,X+S+70,Y+S+70);drawGroundDecor(X-40,Y-40,X+S+40,Y+S+40);drawWorldMicroDetail(X-70,Y-70,X+S+70,Y+S+70);drawTunisianRelief(X-70,Y-70,X+S+70,Y+S+70)}catch(e){console.warn(e)}finally{ctx=save;Q.hi=qh}
+      const qh=Q.hi;ctx=g;Q.hi=true;try{g.setTransform(sc,0,0,sc,-X*sc,-Y*sc);g.beginPath();g.rect(X,Y,S,S);g.clip();if(MAP.charfia)drawCharfia(X-80,Y-80,X+S+80,Y+S+80);drawGroundMacro(X,Y,S);drawContactAO(X-60,Y-60,X+S+60,Y+S+60);draw2DSurfaceDetail(X-70,Y-70,X+S+70,Y+S+70);drawGroundDecor(X-40,Y-40,X+S+40,Y+S+40);drawWorldMicroDetail(X-70,Y-70,X+S+70,Y+S+70);drawTunisianRelief(X-70,Y-70,X+S+70,Y+S+70)}catch(e){console.warn(e)}finally{ctx=save;Q.hi=qh}
       t={c,sc};DC.m.set(id,t);if(DC.m.size>40)DC.m.delete(DC.m.keys().next().value)}
     else{DC.m.delete(id);DC.m.set(id,t)}
     ctx.drawImage(t.c,cx*S,cy*S,S,S)}}
@@ -3226,6 +3235,13 @@ function drawGrade(){if(LOWD)return;const st=MAP.st,desert=MAP.gen==='desert'||s
     gr=g.createRadialGradient(w/2,h/2,Math.min(w,h)*.42,w/2,h/2,Math.hypot(w,h)*.62);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,0,.3)');g.fillStyle=gr;g.fillRect(0,0,w,h);
     GRADE={c,k:key}}
   ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(GRADE.c,0,0,ctx.canvas.width,ctx.canvas.height);ctx.setTransform(DPR,0,0,DPR,0,0)}
+function drawCharfia(x0,y0,x1,y1){const c=ctx,G=260;c.save();c.lineCap='round';
+  for(let gx=Math.floor(x0/G)*G;gx<x1;gx+=G)for(let gy=Math.floor(y0/G)*G;gy<y1;gy+=G){const h=(Math.imul(gx|0,2654435761)^Math.imul(gy|0,40503))>>>0;if((h%100)>55)continue;const x=gx+(h>>>8)%G,y=gy+(h>>>16)%G;if(!isWater(x,y))continue;
+    let land=null;for(let a=0;a<8;a++){const ax=x+Math.cos(a*TAU/8)*260,ay=y+Math.sin(a*TAU/8)*260;if(!isWater(ax,ay)){land=a*TAU/8;break}}if(land===null)continue;
+    const dir=land+Math.PI,L=90+(h%60),sp=.42;c.strokeStyle='rgba(70,52,30,.75)';c.lineWidth=2.2;c.setLineDash([3,3]);
+    for(const s of[-1,1]){c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(dir+s*sp)*-L,y+Math.sin(dir+s*sp)*-L);c.stroke()}
+    c.setLineDash([]);c.beginPath();c.arc(x,y,10,0,TAU);c.stroke();c.fillStyle='rgba(30,70,80,.35)';c.fill();c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=1;c.beginPath();c.arc(x,y,13,0,TAU);c.stroke()}
+  c.restore()}
 function drawGroundMacro(X,Y,S){const c=ctx,G=260,desert=MAP.gen==='desert'||MAP.st==='sahara',city=MAP.gen==='city'||MAP.st==='ville';
   for(let gx=Math.floor((X-300)/G)*G;gx<X+S+300;gx+=G)for(let gy=Math.floor((Y-300)/G)*G;gy<Y+S+300;gy+=G){const h=(Math.imul(gx|0,73856093)^Math.imul(gy|0,19349663)^Math.imul(MAP.id.length,83492791))>>>0,u=(h%1000)/1000,v=((h>>>10)%1000)/1000;
     const x=gx+u*G,y=gy+v*G,r=150+((h>>>4)%170);if(isWater(x,y))continue;const lt=((h>>>20)&1)===1,a=city?.035:.06;
@@ -3887,8 +3903,13 @@ function render(){SFF++;CAMROT=stats.camMode==='dos'&&(game.mode==='play'||game.
   for(const f of floats){const s=toS(f.x,f.y);ctx.globalAlpha=clamp(f.l/.5,0,1);ctx.lineWidth=3;ctx.strokeStyle='rgba(28,23,18,.8)';ctx.strokeText(f.t,s[0],s[1]);ctx.fillStyle=f.c;ctx.fillText(f.t,s[0],s[1])}ctx.globalAlpha=1;
   if(!player)return;
   const ps=toS(player.x,player.y);
+  if(WAYPT&&player.alive&&!player.inPlane&&game.mode==='play'){const w=toS(WAYPT.x,WAYPT.y),d=Math.round(Math.hypot(WAYPT.x-player.x,WAYPT.y-player.y)/10),M2=46,on=w[0]>M2&&w[0]<VW-M2&&w[1]>M2+60&&w[1]<VH-M2-60;ctx.save();
+    if(on){const b=Math.sin(TIME*4)*3;ctx.fillStyle='rgba(255,192,97,.95)';ctx.strokeStyle='#2a1606';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(w[0],w[1]-4+b);ctx.lineTo(w[0]-9,w[1]-20+b);ctx.lineTo(w[0]+9,w[1]-20+b);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='rgba(255,192,97,.6)';ctx.beginPath();ctx.ellipse(w[0],w[1],14,7,0,0,TAU);ctx.stroke()}
+    else{const a=Math.atan2(w[1]-VH/2,w[0]-VW/2),ex=clamp(VW/2+Math.cos(a)*VW,M2,VW-M2),ey=clamp(VH/2+Math.sin(a)*VH,VH>VW?230:120,VH-M2-(VH>VW?150:60));ctx.translate(ex,ey);ctx.fillStyle='rgba(20,16,10,.7)';ctx.beginPath();ctx.arc(0,0,20,0,TAU);ctx.fill();ctx.rotate(a);ctx.fillStyle='#ffc061';ctx.beginPath();ctx.moveTo(15,0);ctx.lineTo(3,-8);ctx.lineTo(3,8);ctx.closePath();ctx.fill();ctx.rotate(-a);
+      ctx.fillStyle='#ffe2a8';ctx.font='700 10.5px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText(d+' m',0,4)}ctx.restore();
+    if(d<4){WAYPT=null;sysFeed('📍 '+trS('Point de passage atteint'),1.6,'tip')}}
   // aim guide
-  if(player.alive&&sticks.aim.id!==null&&sticks.aim.mag>.2){ctx.strokeStyle=sticks.aim.mag>FIRE_AT?'rgba(255,107,34,.7)':'rgba(243,233,212,.45)';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();{const sa=scrAng(player.angle,ps);ctx.moveTo(ps[0]+Math.cos(sa)*24,ps[1]+Math.sin(sa)*24);ctx.lineTo(ps[0]+Math.cos(sa)*150,ps[1]+Math.sin(sa)*150)}ctx.stroke();ctx.setLineDash([]);
+  if(player.alive&&sticks.aim.id!==null&&sticks.aim.mag>.2){ctx.strokeStyle=sticks.aim.mag>FIRE_AT?'rgba(255,107,34,.7)':'rgba(243,233,212,.45)';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();{const sa=scrAng(player.angle,ps);ctx.moveTo(ps[0]+Math.cos(sa)*24,ps[1]+Math.sin(sa)*24);const AL=stats.aimLine==='long'?Math.min(Math.max(VW,VH)*.45,360):stats.aimLine==='off'?0:150;if(AL)ctx.lineTo(ps[0]+Math.cos(sa)*AL,ps[1]+Math.sin(sa)*AL)}if(stats.aimLine!=='off')ctx.stroke();ctx.setLineDash([]);
     const cw=curW(player);if(cw&&WEAP[cw.type].cls==='sn'){const D=Math.min(Math.min(VW,VH)*.42,320),rx=ps[0]+Math.cos(scrAng(player.angle,ps))*D,ry=ps[1]+Math.sin(scrAng(player.angle,ps))*D,R=30;ctx.save();ctx.strokeStyle='rgba(10,10,10,.55)';ctx.lineWidth=5;ctx.beginPath();ctx.arc(rx,ry,R,0,TAU);ctx.stroke();ctx.strokeStyle=sticks.aim.mag>FIRE_AT?'rgba(255,77,58,.95)':'rgba(240,240,230,.9)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(rx,ry,R,0,TAU);ctx.moveTo(rx-R-6,ry);ctx.lineTo(rx-6,ry);ctx.moveTo(rx+6,ry);ctx.lineTo(rx+R+6,ry);ctx.moveTo(rx,ry-R-6);ctx.lineTo(rx,ry-6);ctx.moveTo(rx,ry+6);ctx.lineTo(rx,ry+R+6);ctx.stroke();ctx.fillStyle='#ff4d3a';ctx.beginPath();ctx.arc(rx,ry,2.2,0,TAU);ctx.fill();ctx.restore()}}
   if(USEK>=0&&player.alive){ctx.save();ctx.lineCap='round';ctx.lineWidth=5;ctx.strokeStyle='rgba(10,12,16,.55)';ctx.beginPath();ctx.arc(ps[0],ps[1],30,0,TAU);ctx.stroke();ctx.lineWidth=3.2;ctx.strokeStyle=player.reloadT>0?'#ffc54d':'#5fd38d';ctx.beginPath();ctx.arc(ps[0],ps[1],30,-Math.PI/2,-Math.PI/2+TAU*clamp(USEK,0,1));ctx.stroke();ctx.restore()}
   // zone arrow
@@ -3995,25 +4016,26 @@ function drawRoofCached(b){if(b.lh||b.w<20||b.h<20)return false;const m=ctx.getT
 const TUNTREE={hendi:1,bouga:1,orange:1};
 function tunisify(){if(!blds.length&&!trees.length)return;if(blds.some(b=>b.tun||b.tunRoof))return;
   const st=MAP.st,desert=MAP.gen==='desert'||st==='sahara',forest=MAP.gen==='forest'||st==='foret',city=MAP.gen==='city'||st==='ville';
-  const R=mulberry32(((MAP.id||'').split('').reduce((a,c)=>a*31+c.charCodeAt(0),7))>>>0),rr=(a,b)=>a+R()*(b-a);
+  const R=mulberry32(((MAP.id||'').split('').reduce((a,c)=>a*31+c.charCodeAt(0),7))>>>0),rr=(a,b)=>a+R()*(b-a),TK=MAP.tunK||'',HM=TK==='village'?2:TK==='medina'?1.6:TK==='island'?1.3:TK==='wild'?.4:1;
   const rectFree=(x,y,w,h)=>{for(const [px,py] of [[x,y],[x+w,y],[x,y+h],[x+w,y+h],[x+w/2,y+h/2]])if(!free(px,py,14,{paved:city}))return false;for(const it of items)if(it.x>x-20&&it.x<x+w+20&&it.y>y-20&&it.y<y+h+20)return false;return true};
   const tree=(x,y,r,k)=>{if(free(x,y,r*.6,{paved:city})){addTree(x,y,r,k);return true}return false};
   const house=(x,y,w,h,kind)=>{const b=bld(Math.round(x),Math.round(y),Math.round(w),Math.round(h),'med',[],{});b.tun=kind;b.tv=R();b.props=[];return b};
   // toits existants repeints à la tunisienne (portes et intérieur inchangés)
-  {const ok={house:1,house2:1,house3:1,shop:1,med:1};let best=null,bd=1e18;for(const b of blds){if(!ok[b.st])continue;if(R()<(city?.5:.55))b.tunRoof=R()<.2?'dome':'house';if(city){const d=dd2(b.x+b.w/2,b.y+b.h/2,POIS[0].x,POIS[0].y)-b.w*b.h*40;if(b.w>110&&b.h>110&&d<bd){bd=d;best=b}}}if(best)best.tunRoof='mosq'}
-  let nb=0;const capB=city?26:forest?10:20;
+  {const ok={house:1,house2:1,house3:1,shop:1,med:1};let best=null,bd=1e18;for(const b of blds){if(!ok[b.st])continue;if(R()<(TK==='village'?1:TK==='medina'?.85:city?.5:.55))b.tunRoof=R()<.2?'dome':'house';if(city){const d=dd2(b.x+b.w/2,b.y+b.h/2,POIS[0].x,POIS[0].y)-b.w*b.h*40;if(b.w>110&&b.h>110&&d<bd){bd=d;best=b}}}if(best)best.tunRoof='mosq'}
+  let nb=0;const capB=Math.round((city?26:forest?10:20)*Math.max(1,HM));
   // maisons blanches autour des lieux habités
-  for(const P of POIS){if(isWater(P.x,P.y))continue;let k=0,n=city?6:forest?2:4;for(let t=0;t<70&&k<n&&nb<capB;t++){const a=R()*TAU,d=rr(190,560),w=rr(66,104),h=rr(58,92),x=P.x+Math.cos(a)*d-w/2,y=P.y+Math.sin(a)*d-h/2;
+  for(const P of POIS){if(isWater(P.x,P.y))continue;let k=0,n=Math.max(1,Math.round((city?6:forest?2:4)*HM));for(let t=0;t<70&&k<n&&nb<capB;t++){const a=R()*TAU,d=rr(190,560),w=rr(66,104),h=rr(58,92),x=P.x+Math.cos(a)*d-w/2,y=P.y+Math.sin(a)*d-h/2;
       if(!rectFree(x,y,w,h))continue;const b=house(x,y,w,h,R()<.18?'dome':'house');k++;nb++;
-      if(!desert&&R()<.5){const cx=R()<.5?b.x-16:b.x+b.w+16,cy=b.y+rr(10,b.h-10);tree(cx,cy,rr(13,17),'bouga')}
+      if(!desert&&R()<(TK==='village'?.85:.5)){const cx=R()<.5?b.x-16:b.x+b.w+16,cy=b.y+rr(10,b.h-10);tree(cx,cy,rr(13,17),'bouga')}
       if(!desert&&!city&&R()<.35){for(let i=0;i<2;i++)tree(b.x+b.w/2+rr(-60,60),b.y+b.h+rr(40,80),rr(19,24),'orange')}}}
   // mosquées : coupole et minaret
-  const nm=city?2:1;for(let m=0,t=0;m<nm&&t<160;t++){const P=POIS[m===0?0:(1+Math.floor(R()*(POIS.length-1)))];const a=R()*TAU,d=rr(240,720),s=rr(136,168),x=P.x+Math.cos(a)*d-s/2,y=P.y+Math.sin(a)*d-s/2;if(!rectFree(x,y,s,s))continue;const b=house(x,y,s,s,'mosq');b.fh=30;m++}
+  const nm=city||TK==='medina'?2:TK==='wild'?0:1;let m=0;for(let t=0;m<nm&&t<160;t++){const P=POIS[m===0?0:(1+Math.floor(R()*(POIS.length-1)))];const a=R()*TAU,d=rr(240,720),s=rr(136,168),x=P.x+Math.cos(a)*d-s/2,y=P.y+Math.sin(a)*d-s/2;if(!rectFree(x,y,s,s))continue;const b=house(x,y,s,s,'mosq');b.fh=30;m++}
+  if(m<nm){const cand=blds.filter(b=>!b.tun&&b.tunRoof!=='mosq'&&b.w>=100&&b.h>=100&&!b.mil).sort((a,b)=>b.w*b.h-a.w*a.h);for(const b of cand){if(m>=nm)break;b.tunRoof='mosq';m++}}
   // cafés avec auvent rayé, au bord des routes
   for(let c=0,t=0;c<(city?3:2)&&t<120&&roads.length;t++){const rd=roads[Math.floor(R()*roads.length)];if(!rd||rd.length<2)continue;const i=Math.floor(R()*(rd.length-1)),A=rd[i],B=rd[i+1],u=R(),px=A[0]+(B[0]-A[0])*u,py=A[1]+(B[1]-A[1])*u,L=Math.hypot(B[0]-A[0],B[1]-A[1])||1,nx=-(B[1]-A[1])/L,ny=(B[0]-A[0])/L,sd=R()<.5?1:-1,off=city?118:96;
     const w=86,h=64,x=px+nx*sd*off-w/2,y=py+ny*sd*off-h/2;if(!rectFree(x,y,w,h))continue;const b=house(x,y,w,h,'cafe');b.ax=-nx*sd;b.ay=-ny*sd;c++}
   // palmiers le long de la côte
-  let np=0;for(let y=260;y<WS-260&&np<34;y+=rr(120,190)){const cx=coastX(y);if(!(cx<WS-40))continue;const x=cx-rr(110,260);if(tree(x,y,rr(30,40),'palm'))np++}
+  let np=0;const npC=TK==='island'?64:34;for(let y=260;y<WS-260&&np<npC;y+=rr(TK==='island'?80:120,TK==='island'?130:190)){const cx=coastX(y);if(!(cx<WS-40))continue;const x=cx-rr(110,260);if(tree(x,y,rr(30,40),'palm'))np++}
   // oliveraies en rangées (Sahel, Cap Bon…)
   if(!desert&&!forest&&!city)for(let g=0,t=0;g<3&&t<60;t++){const x0=rr(400,WS-700),y0=rr(400,WS-700);if(!free(x0+110,y0+90,120))continue;for(let i=0;i<3;i++)for(let j=0;j<4;j++)tree(x0+j*72+rr(-6,6),y0+i*70+rr(-6,6),rr(22,28),'olive');g++}
   // haies de figuiers de Barbarie le long des pistes
@@ -5061,10 +5083,16 @@ function drawMapView(c,S,cx,cy,span,full){const k=S/span,ts=480/WS;c.setTransfor
   if(plane&&!plane.done&&player&&player.inPlane){const a=M(plane.sx,plane.sy),b=M(plane.sx+plane.dx*plane.len,plane.sy+plane.dy*plane.len);c.strokeStyle='rgba(255,255,255,.85)';c.lineWidth=Math.max(1.5,S/140);c.setLineDash([S/50,S/70]);c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1]);c.stroke();c.setLineDash([])}
   gpMapMark(c,M,k,S);
   for(const d of drops){const q=M(d.x,d.y),sz=Math.max(6,S/36);c.fillStyle='#e5482b';c.strokeStyle='#fff';c.lineWidth=1.5;c.fillRect(q[0]-sz/2,q[1]-sz/2,sz,sz);c.strokeRect(q[0]-sz/2,q[1]-sz/2,sz,sz)}
+  if(WAYPT){const w=M(WAYPT.x,WAYPT.y),q=Math.max(5,S/26);c.save();c.translate(w[0],w[1]);c.rotate(Math.PI/4);c.fillStyle='#ffc061';c.strokeStyle='#2a1606';c.lineWidth=Math.max(1.2,S/220);c.fillRect(-q/2,-q/2,q,q);c.strokeRect(-q/2,-q/2,q,q);c.restore()}
   if(player){const p=M(player.x,player.y);if(player.alive&&!player.inPlane&&player.air<=0&&zone&&dd2(player.x,player.y,zone.cx,zone.cy)>zone.r*zone.r){const zc=M(zone.cx,zone.cy);c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=1.5;c.setLineDash([4,4]);c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(zc[0],zc[1]);c.stroke();c.setLineDash([])}
     const sz=Math.max(6,S/22);c.save();c.translate(p[0],p[1]);c.rotate(player.inPlane?plane.ang:player.angle);c.fillStyle='#ff6b22';c.strokeStyle='#fff';c.lineWidth=1.5;c.beginPath();c.moveTo(sz,0);c.lineTo(-sz*.7,-sz*.65);c.lineTo(-sz*.35,0);c.lineTo(-sz*.7,sz*.65);c.closePath();c.fill();c.stroke();c.restore()}}
 function drawMini(){const S=mini.width;if(!S||!player)return;let span,cx,cy;if(player.inPlane||player.air>0){span=WS;cx=cy=WS/2}else{span=1500;cx=clamp(player.x,span/2,WS-span/2);cy=clamp(player.y,span/2,WS-span/2)}drawMapView(mctx,S,cx,cy,span,false)}
-function toggleMap(){bigOpen=!bigOpen;$('#bigmap').hidden=!bigOpen;if(bigOpen)sizeBig()}
+function toggleMap(){BMD=false;bigOpen=!bigOpen;$('#bigmap').hidden=!bigOpen;if(bigOpen)sizeBig()}
+function applyLefty(){const L=!!stats.lefty;document.body.classList.toggle('lefty',L);const els=[document.querySelector('#hud .acts'),$('#btnFire'),$('#btnPist'),document.querySelector('#hud .slots.side')];
+  for(const el of els){if(!el)continue;el.style.left=el.style.right='';if(el.classList.contains('acts'))el.style.alignItems=''}
+  if(!L)return;const hud=$('#hud');if(!hud)return;const hr=hud.getBoundingClientRect();
+  for(const el of els){if(!el)continue;const cs=getComputedStyle(el);let right=parseFloat(cs.right);if(!isFinite(right)){const r=el.getBoundingClientRect();if(!r.width)continue;right=hr.right-r.right}el.style.left=right+'px';el.style.right='auto';if(el.classList.contains('acts'))el.style.alignItems='flex-start'}}
+addEventListener('resize',()=>setTimeout(applyLefty,60));addEventListener('orientationchange',()=>setTimeout(applyLefty,300));
 function sizeBig(){const s=Math.floor(Math.min(VW-32,VH-80));bigcv.style.width=s+'px';bigcv.style.height=s+'px';bigcv.width=Math.round(s*DPR);bigcv.height=Math.round(s*DPR)}
 
 /* ===== HUD ===== */
@@ -5114,7 +5142,11 @@ tapOn(H.pick,humanPick);
 tapOn(H.reload,()=>player&&startReload(player));
 tapOn(H.jump,()=>{if(player&&player.inPlane)jump(player)});
 tapOn(mini,toggleMap);mini.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' ')toggleMap()});
-tapOn($('#bigmap'),toggleMap);
+let WAYPT=null;
+function setWaypoint(ev){const r=bigcv.getBoundingClientRect(),cx=ev.clientX,cy=ev.clientY;if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return false;const x=(cx-r.left)/r.width*WS,y=(cy-r.top)/r.height*WS;
+  if(WAYPT&&Math.hypot(WAYPT.x-x,WAYPT.y-y)<WS*.04){WAYPT=null;sysFeed('📍 '+trS('Point de passage retiré'),1.6,'tip')}else{WAYPT={x,y};sysFeed('📍 '+trS('Point de passage posé'),1.8,'tip');buzz(10)}return true}
+let BMD=false;$('#bigmap').addEventListener('pointerdown',()=>{BMD=true});$('#bigmap').addEventListener('click',ev=>{if(bigOpen&&!BMD&&ev.detail===0)toggleMap()});
+$('#bigmap').addEventListener('pointerup',ev=>{if(!bigOpen||!BMD)return;BMD=false;if(game.mode==='play'&&player&&player.alive)setWaypoint(ev);toggleMap();ev.preventDefault()});
 tapOn($('#btnPause'),()=>setPause(true));
 /* v2.23 — zoom rapide : proche / normal / large (et molette ou touches + / - sur ordinateur) */
 const ZL=[[1.2,'proche'],[1,'normale'],[.8,'large']];
@@ -5565,7 +5597,7 @@ function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();const 
   document.querySelectorAll('#modes .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.m===id)));cupGrid()}
 function buildModes(){const box=$('#modes');box.innerHTML=Object.keys(MODES).map(k=>'<button class="chip" role="radio" data-m="'+k+'" aria-checked="false">'+MODES[k].n+'</button>').join('');
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));setMode(stats.mode);buildMaps()}
-function buildMaps(){const box=$('#maps');const glyph={seddik:'🏝️',cote:'🌊',sahara:'🏜️',ville:'🌆',foret:'🌲',hautes:'⛰️',djerba:'🐚',capbon:'🌅',tunis:'🕌',sousse:'⛵',sfax:'🫒',bizerte:'⚓',tabarka:'🌳',gabes:'🌴',tozeur:'🌴',tataouine:'🏰',kef:'🏔️',gafsa:'⛏️'};box.innerHTML=Object.keys(MAPS).map(k=>{const m=MAPS[k];return '<button class="map-card map-'+k+'" role="radio" data-k="'+k+'" aria-checked="false"><span class="map-art" aria-hidden="true"><i>'+ (glyph[k]||'🗺️') +'</i><em>ZONE DE COMBAT</em></span><span class="map-copy"><b>'+m.n+'</b><small>'+m.poi.slice(0,3).join(' · ')+'</small></span><span class="map-check" aria-hidden="true">✓</span></button>'}).join('');
+function buildMaps(){const box=$('#maps');const glyph={seddik:'🏝️',cote:'🌊',sahara:'🏜️',ville:'🌆',foret:'🌲',hautes:'⛰️',djerba:'🐚',capbon:'🌅',tunis:'🕌',sousse:'⛵',sfax:'🫒',bizerte:'⚓',tabarka:'🌳',gabes:'🌴',tozeur:'🌴',tataouine:'🏰',kef:'🏔️',gafsa:'⛏️',sidibou:'🚪',hammamet:'🏖️',mahdia:'🏛️',kerkennah:'🛶',galite:'🪨'};box.innerHTML=Object.keys(MAPS).map(k=>{const m=MAPS[k];return '<button class="map-card map-'+k+'" role="radio" data-k="'+k+'" aria-checked="false"><span class="map-art" aria-hidden="true"><i>'+ (glyph[k]||'🗺️') +'</i><em>ZONE DE COMBAT</em></span><span class="map-copy"><b>'+m.n+'</b><small>'+m.poi.slice(0,3).join(' · ')+'</small></span><span class="map-check" aria-hidden="true">✓</span></button>'}).join('');
   box.querySelectorAll('.map-card').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
 function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mode];return MAPS[(M&&M.map)||stats.map]}
 function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .map-card').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
@@ -5875,6 +5907,7 @@ Object.assign(I18N.en,{"VICTOIRE": "VICTORY", "Fête au village pour le dernier 
 Object.assign(I18N.en,{"proche": "close", "normale": "normal", "large": "wide", "Zoom caméra": "Camera zoom"});Object.assign(I18N.ar,{"proche": "قريبة", "normale": "عادية", "large": "واسعة", "Zoom caméra": "تكبير الكاميرا"});Object.assign(I18N.es,{"proche": "cercana", "normale": "normal", "large": "amplia", "Zoom caméra": "Zoom de cámara"});Object.assign(I18N.de,{"proche": "nah", "normale": "normal", "large": "weit", "Zoom caméra": "Kamerazoom"});Object.assign(I18N.it,{"proche": "vicina", "normale": "normale", "large": "ampia", "Zoom caméra": "Zoom fotocamera"});Object.assign(I18N.pt,{"proche": "próxima", "normale": "normal", "large": "ampla", "Zoom caméra": "Zoom da câmera"});Object.assign(I18N.tr,{"proche": "yakın", "normale": "normal", "large": "geniş", "Zoom caméra": "Kamera yakınlaştırma"});Object.assign(I18N.ru,{"proche": "близко", "normale": "обычно", "large": "широко", "Zoom caméra": "Зум камеры"});
 Object.assign(I18N.en,{"au dos": "behind", "drone": "drone", "Changer de caméra": "Switch camera", "cinématique": "cinematic", "standard": "standard"});Object.assign(I18N.ar,{"au dos": "من الخلف", "drone": "درون", "Changer de caméra": "بدّل الكاميرا", "cinématique": "سينمائية", "standard": "عادية"});Object.assign(I18N.es,{"au dos": "por detrás", "drone": "dron", "Changer de caméra": "Cambiar cámara", "cinématique": "cinematográfica", "standard": "estándar"});Object.assign(I18N.de,{"au dos": "hinter dem Spieler", "drone": "Drohne", "Changer de caméra": "Kamera wechseln", "cinématique": "filmisch", "standard": "Standard"});Object.assign(I18N.it,{"au dos": "alle spalle", "drone": "drone", "Changer de caméra": "Cambia visuale", "cinématique": "cinematografica", "standard": "standard"});Object.assign(I18N.pt,{"au dos": "por trás", "drone": "drone", "Changer de caméra": "Trocar câmera", "cinématique": "cinematográfica", "standard": "padrão"});Object.assign(I18N.tr,{"au dos": "arkadan", "drone": "drone", "Changer de caméra": "Kamerayı değiştir", "cinématique": "sinematik", "standard": "standart"});Object.assign(I18N.ru,{"au dos": "из-за спины", "drone": "дрон", "Changer de caméra": "Сменить камеру", "cinématique": "кинематографичная", "standard": "стандартная"});
 Object.assign(I18N.en,{"Course verrouillée · touchez à gauche pour arrêter": "Auto-run locked · tap left to stop"});Object.assign(I18N.ar,{"Course verrouillée · touchez à gauche pour arrêter": "الجري مقفول · المس على اليسار باش توقف"});Object.assign(I18N.es,{"Course verrouillée · touchez à gauche pour arrêter": "Carrera bloqueada · toca a la izquierda para parar"});Object.assign(I18N.de,{"Course verrouillée · touchez à gauche pour arrêter": "Auto-Lauf aktiv · links tippen zum Stoppen"});Object.assign(I18N.it,{"Course verrouillée · touchez à gauche pour arrêter": "Corsa bloccata · tocca a sinistra per fermarti"});Object.assign(I18N.pt,{"Course verrouillée · touchez à gauche pour arrêter": "Corrida travada · toque à esquerda para parar"});Object.assign(I18N.tr,{"Course verrouillée · touchez à gauche pour arrêter": "Otomatik koşu kilitli · durmak için sola dokun"});Object.assign(I18N.ru,{"Course verrouillée · touchez à gauche pour arrêter": "Автобег включён · коснитесь слева, чтобы остановиться"});
+Object.assign(I18N.en,{"Point de passage posé": "Waypoint set", "Point de passage retiré": "Waypoint removed", "Point de passage atteint": "Waypoint reached", "Gaucher": "Left-handed", "Ligne de visée": "Aim line", "courte": "short", "longue": "long", "masquée": "hidden", "Mini-carte": "Mini-map", "grande": "large", "normale": "normal"});Object.assign(I18N.ar,{"Point de passage posé": "تم وضع نقطة العبور", "Point de passage retiré": "تم حذف نقطة العبور", "Point de passage atteint": "وصلت لنقطة العبور", "Gaucher": "أعسر", "Ligne de visée": "خط التصويب", "courte": "قصير", "longue": "طويل", "masquée": "مخفي", "Mini-carte": "الخريطة الصغيرة", "grande": "كبيرة", "normale": "عادية"});Object.assign(I18N.es,{"Point de passage posé": "Punto de ruta marcado", "Point de passage retiré": "Punto de ruta eliminado", "Point de passage atteint": "Punto de ruta alcanzado", "Gaucher": "Zurdo", "Ligne de visée": "Línea de mira", "courte": "corta", "longue": "larga", "masquée": "oculta", "Mini-carte": "Minimapa", "grande": "grande", "normale": "normal"});Object.assign(I18N.de,{"Point de passage posé": "Wegpunkt gesetzt", "Point de passage retiré": "Wegpunkt entfernt", "Point de passage atteint": "Wegpunkt erreicht", "Gaucher": "Linkshänder", "Ligne de visée": "Ziellinie", "courte": "kurz", "longue": "lang", "masquée": "aus", "Mini-carte": "Minikarte", "grande": "groß", "normale": "normal"});Object.assign(I18N.it,{"Point de passage posé": "Punto di passaggio impostato", "Point de passage retiré": "Punto di passaggio rimosso", "Point de passage atteint": "Punto di passaggio raggiunto", "Gaucher": "Mancino", "Ligne de visée": "Linea di mira", "courte": "corta", "longue": "lunga", "masquée": "nascosta", "Mini-carte": "Minimappa", "grande": "grande", "normale": "normale"});Object.assign(I18N.pt,{"Point de passage posé": "Ponto de passagem marcado", "Point de passage retiré": "Ponto de passagem removido", "Point de passage atteint": "Ponto de passagem alcançado", "Gaucher": "Canhoto", "Ligne de visée": "Linha de mira", "courte": "curta", "longue": "longa", "masquée": "oculta", "Mini-carte": "Minimapa", "grande": "grande", "normale": "normal"});Object.assign(I18N.tr,{"Point de passage posé": "Yol noktası kondu", "Point de passage retiré": "Yol noktası kaldırıldı", "Point de passage atteint": "Yol noktasına ulaşıldı", "Gaucher": "Solak", "Ligne de visée": "Nişan çizgisi", "courte": "kısa", "longue": "uzun", "masquée": "gizli", "Mini-carte": "Mini harita", "grande": "büyük", "normale": "normal"});Object.assign(I18N.ru,{"Point de passage posé": "Метка установлена", "Point de passage retiré": "Метка удалена", "Point de passage atteint": "Метка достигнута", "Gaucher": "Левша", "Ligne de visée": "Линия прицела", "courte": "короткая", "longue": "длинная", "masquée": "скрыта", "Mini-carte": "Мини-карта", "grande": "большая", "normale": "обычная"});
 function trOne(k){const d=I18N[LANG];if(!d)return null;if(Object.prototype.hasOwnProperty.call(d,k))return d[k];
   for(const r of I18N_RX){if(r[0].test(k)){const v=r[1][LANG];if(v!==undefined)return k.replace(r[0],v)}}
   const low=k.charAt(0).toUpperCase()+k.slice(1);if(low!==k&&Object.prototype.hasOwnProperty.call(d,low)){const v=d[low];return v.charAt(0).toLowerCase()+v.slice(1)}
@@ -5942,6 +5975,10 @@ function optLabels(){const on=v=>v?'oui':'non';
   $('#bloodBtn').textContent='Sang : '+on(!stats.noBlood);$('#fpsBtn').textContent='Compteur i/s : '+on(stats.fps);
   const n=stats.tod==='night';document.querySelectorAll('#tod .chip').forEach(b=>b.setAttribute('aria-checked',String((b.dataset.t==='night')===n)));
   $('#todD').textContent=n?'Nuit noire : lampe torche, lampadaires et lueur des tirs. Les adversaires voient moins loin.':'Du matin au coucher du soleil.'}
+{const lb=()=>{$('#leftyBtn').textContent='Gaucher : '+(stats.lefty?'oui':'non');$('#aimBtn').textContent='Ligne de visée : '+({long:'longue',off:'masquée'}[stats.aimLine]||'courte');$('#miniBtn').textContent='Mini-carte : '+(stats.bigMini?'grande':'normale');document.body.classList.toggle('bigmini',!!stats.bigMini)};lb();
+  $('#leftyBtn').addEventListener('click',()=>{stats.lefty=!stats.lefty;saveStats();lb();applyLefty()});
+  $('#aimBtn').addEventListener('click',()=>{stats.aimLine=stats.aimLine==='long'?'off':stats.aimLine==='off'?'':'long';saveStats();lb()});
+  $('#miniBtn').addEventListener('click',()=>{stats.bigMini=!stats.bigMini;saveStats();lb()})}
 stats.camBehind=false;$('#camBtn').addEventListener('click',()=>{nextCam(false);optLabels()});
 for(const [id,k] of [['#afBtn','autoFire'],['#numBtn','noNums'],['#bloodBtn','noBlood'],['#fpsBtn','fps']])$(id).addEventListener('click',()=>{stats[k]=!stats[k];saveStats();optLabels()});
 document.querySelectorAll('#tod .chip').forEach(b=>b.addEventListener('click',()=>{stats.tod=b.dataset.t==='night'?'night':'day';saveStats();optLabels()}));
@@ -6099,6 +6136,7 @@ html[data-sf-lang="ar"] #hud .feed,html[data-sf-lang="ar"] #hud .act,html[data-s
 /* v2.17 — radio d'équipe, grille des étapes, choix de langue */
 #sfRadio{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translate(-50%,-14px);max-width:min(560px,86vw);z-index:40;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;
  display:flex;gap:8px;align-items:flex-start;padding:8px 13px 9px;border-radius:12px;background:linear-gradient(180deg,rgba(18,30,22,.92),rgba(10,18,14,.92));border:1px solid rgba(120,220,140,.45);box-shadow:0 6px 18px rgba(0,0,0,.4);color:#e9f5ea;font:600 13.5px/1.35 system-ui,sans-serif}
+.bigmini #mini{width:150px;height:150px}@media (max-height:520px){.bigmini #mini{width:124px;height:124px}}@media (orientation:portrait) and (max-width:420px){.bigmini #mini{width:124px;height:124px}}
 .minirow .ibcol{display:flex;flex-direction:column;gap:6px;align-self:flex-start}
 #sfFest{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 #end .endbox{position:relative;z-index:1}

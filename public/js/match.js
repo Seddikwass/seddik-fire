@@ -8,6 +8,17 @@ import { getMatchFlavor, getGoalCommentKeys, pickLine, fillLine } from './commen
 import { getShootoutStatus, getNextKicker, getShootoutOrder, getAIPenaltyChoice, getPenaltyStrike, getAIKeeperDive, getPenaltyOutcome } from './shootout.js';
 
 export const TV_WIPE = 0.55;
+// Météo du match : visuel + quelques effets de jeu (pelouse mouillée). Sans document (serveur, tests) : nuit claire.
+export const WEATHERS = { night: 'Nuit claire', day: 'Plein soleil', rain: 'Pluie battante', fog: 'Brouillard' };
+export function resolveWeather(choice, headless = false, rnd = Math.random) {
+  if (choice && WEATHERS[choice]) return choice;
+  if (headless) return 'night';
+  const r = rnd();
+  return r < 0.42 ? 'night' : r < 0.74 ? 'day' : r < 0.9 ? 'rain' : 'fog';
+}
+export function getWeatherPhysics(weather) {
+  return weather === 'rain' ? { groundFriction: 0.86, bounce: 0.42 } : { groundFriction: 1.1, bounce: 0.5 };
+}
 export const CEREMONY_DUR = 12.2;
 // Plan de réalisation : vue large, derrière le but, puis caméra rapprochée sur la fin de l'action.
 export function buildReplayPlan(frames, attackDir = 1) {
@@ -940,6 +951,7 @@ export class Match {
     this.msg = null; this.msgT = 0; this.ticker = ''; this.tickerT = 0;
     this.goalFxT = 0; this.goalFxTeam = 0;
     this.matchIntroT = 5.8;
+    this.weather = resolveWeather(opts.weather ?? this.settings?.weather, typeof document === 'undefined');
     this.r = Math.random; this.acc = 0; this.last = 0; this.frameSkip = 0;
     this.subsLeft = [5, 5];
     this.crowdTex = null;
@@ -1020,7 +1032,7 @@ export class Match {
     let dt = Math.min(0.1, (now - this.last) / 1000);
     if (!this.paused) this.updateRenderBudget(dt * 1000, now);
     this.last = now;
-    if (this.ceremony === undefined) this.ceremony = (!this.net && this.settings.ceremony !== false && this.renderer3d && this.minute < 1) ? { t: 0 } : null;
+    if (this.ceremony === undefined) { this.ceremony = (!this.net && this.settings.ceremony !== false && this.renderer3d && this.minute < 1) ? { t: 0 } : null; if (!this.ceremony) this.announceWeather(); }
     if (this.net) this.net.frame(dt); // match en ligne : l'état vient du serveur
     else if (!this.paused) {
       if (this.ceremony) this.updateCeremony(dt);
@@ -2130,8 +2142,9 @@ export class Match {
     if (b.z <= 0) {
       b.dip = 0;
       b.z = 0;
-      if (b.vz < -1.5) { b.vz = -b.vz * 0.5; } else { b.vz = 0; }
-      const f = 1 - 1.1 * dt; b.vx *= f; b.vy *= f;
+      const wp = this._wp || (this._wp = getWeatherPhysics(this.weather));
+      if (b.vz < -1.5) { b.vz = -b.vz * wp.bounce; } else { b.vz = 0; }
+      const f = 1 - wp.groundFriction * dt; b.vx *= f; b.vy *= f;
     }
     if (b.inFlightShot) b.inFlightShot.t += dt;
     if (this.passInfo) this.passInfo.t += dt;
@@ -2536,8 +2549,13 @@ export class Match {
     this.goalCrowdT = t > 1 && t < 9 ? 0.4 : 0;
     if (t >= plan.dur) this.endCeremony();
   }
+  announceWeather() {
+    const lines = { rain: 'Pluie battante : pelouse glissante, le ballon file plus vite au sol.', fog: 'Brouillard sur le stade : visibilité réduite dans les tribunes.', day: 'Plein soleil sur la pelouse, conditions idéales.' };
+    if (lines[this.weather]) { this.ticker = lines[this.weather]; this.tickerT = 5; }
+  }
   endCeremony() {
     if (!this.ceremony) return;
+    this.announceWeather();
     this.ceremony = null; this.goalCrowdT = 0; this.tvWipeT = TV_WIPE; this.matchIntroT = 0;
     if (this.renderer3d?.officials) this.renderer3d.officials.forEach((o, k) => { o.x = k ? o.x : 0; o.y = k === 0 ? 10 : o.y < 0 ? -35.1 : 35.1; });
   }
@@ -2574,7 +2592,7 @@ export class Match {
     c.fillStyle = 'rgba(7,17,29,0.9)'; this.rr(bx, by, bw, bh, 8 * d); c.fill();
     c.fillStyle = '#ffdf45'; c.fillRect(bx, by, 5 * d, bh);
     const title = phase === 0 ? (T[0].stadium || 'Stade') : phase === 1 ? 'ENTRÉE DES JOUEURS' : `${T[0].short}  ${T[0].formation || ''}   •   ${T[1].short}  ${T[1].formation || ''}`;
-    const sub = phase === 0 ? `${T[0].name}  —  ${T[1].name}` : phase === 1 ? 'Les deux équipes sortent du tunnel, derrière le trio arbitral' : 'Hymne national — les équipes saluent le public';
+    const sub = phase === 0 ? `${T[0].name}  —  ${T[1].name}   •   ${WEATHERS[this.weather] || ''}` : phase === 1 ? 'Les deux équipes sortent du tunnel, derrière le trio arbitral' : 'Hymne national — les équipes saluent le public';
     c.textAlign = 'left'; c.fillStyle = '#fff'; c.font = `900 ${Math.max(12, 15 * d)}px system-ui,Arial`;
     c.fillText(title.toUpperCase(), bx + 16 * d, by + 18 * d, bw - 30 * d);
     c.fillStyle = '#aebbd0'; c.font = `700 ${Math.max(9, 11 * d)}px system-ui,Arial`;

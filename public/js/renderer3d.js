@@ -481,7 +481,7 @@ function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glov
 }
 
 const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; void main(){ vec3 p=aPosition; if(aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; if(aAnim<0.0){ float w=0.5+0.5*sin(uTime*2.4-(p.x+p.z)*0.45); vColor=aColor*(0.7+0.45*w)+vec3(0.3*uExcite*max(sin(uTime*15.0),0.0)); } vWorld=p; gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
-const FS = 'precision mediump float; uniform vec3 uFog; uniform vec3 uEye; uniform float uRim; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); vec3 lp=vColor*(amb*0.78+0.62*key+0.16*rim+0.1*fill)+vec3(sh*0.16)+vec3(1.0,0.94,0.82)*fres*0.32*(0.4+0.6*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(48.0,170.0,vDepth)*0.55; color=mix(color,uFog,fog); gl_FragColor=vec4(color,1.0); }';
+const FS = 'precision mediump float; uniform vec3 uFog; uniform vec3 uEye; uniform float uRim; uniform vec3 uFogRange; uniform vec3 uLight; uniform float uWet; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); vec3 lp=vColor*(amb*0.78+0.62*key+0.16*rim+0.1*fill)+vec3(sh*0.16)+vec3(1.0,0.94,0.82)*fres*0.32*(0.4+0.6*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } if(uWet>0.0&&n.y>0.85){ vec3 Vw=normalize(uEye-vWorld); float gl2=pow(max(dot(n,normalize(sun+Vw)),0.0),46.0); float fr=pow(1.0-max(dot(n,Vw),0.0),4.0); lit+=vec3(0.75,0.8,0.9)*(gl2*0.6+fr*0.34)*uWet; lit*=1.0-0.12*uWet*(1.0-uRim); } lit*=uLight; vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(uFogRange.x,uFogRange.y,vDepth)*uFogRange.z; color=mix(color,uFog,fog); gl_FragColor=vec4(color,1.0); }';
 
 function compile(gl, type, source) {
   const shader = gl.createShader(type);
@@ -502,6 +502,16 @@ function programFor(gl) {
 }
 
 const SKY_HORIZON = [0.2, 0.25, 0.34], SKY_MID = [0.07, 0.11, 0.2], SKY_TOP = [0.02, 0.035, 0.08];
+// Ambiances : ciel, brume, lumière globale, pelouse mouillée, type d'ombres et pluie.
+export function getWeatherProfile(kind = 'night') {
+  const P = {
+    night: { sky: [SKY_HORIZON, SKY_MID, SKY_TOP], fog: SKY_HORIZON, fogRange: [48, 170, 0.55], light: [1, 1, 1], wet: 0, shadows: 'flood', rain: 0 },
+    day: { sky: [[0.66, 0.77, 0.9], [0.4, 0.6, 0.86], [0.2, 0.42, 0.8]], fog: [0.7, 0.79, 0.9], fogRange: [70, 230, 0.32], light: [1.24, 1.19, 1.07], wet: 0, shadows: 'sun', rain: 0 },
+    rain: { sky: [[0.2, 0.22, 0.26], [0.12, 0.13, 0.16], [0.06, 0.07, 0.09]], fog: [0.22, 0.24, 0.28], fogRange: [26, 130, 0.72], light: [0.72, 0.76, 0.84], wet: 1, shadows: 'soft', rain: 1 },
+    fog: { sky: [[0.46, 0.48, 0.52], [0.36, 0.38, 0.42], [0.26, 0.28, 0.32]], fog: [0.5, 0.52, 0.56], fogRange: [12, 78, 0.9], light: [0.93, 0.94, 0.97], wet: 0.25, shadows: 'soft', rain: 0 },
+  };
+  return P[kind] || P.night;
+}
 function seededNoise(seed) { let v = seed >>> 0; return () => { v = (Math.imul(v, 1664525) + 1013904223) >>> 0; return v / 4294967296; }; }
 function gradientQuad(out, a, b, c, d, bottom, top) {
   const n = [0, 0, 1];
@@ -555,6 +565,7 @@ function seatBlock(out, x, y, z, facing, color) {
 
 export class MatchRenderer3D {
   constructor(hostCanvas, match) {
+    this.wx = getWeatherProfile(match?.weather);
     this.hostCanvas = hostCanvas;
     this.qualityName = match.settings.quality || 'high';
     this.quality = get3DQualityProfile(this.qualityName);
@@ -579,6 +590,9 @@ export class MatchRenderer3D {
     this.fogLoc = gl.getUniformLocation(this.program, 'uFog');
     this.eyeLoc = gl.getUniformLocation(this.program, 'uEye');
     this.rimLoc = gl.getUniformLocation(this.program, 'uRim');
+    this.fogRangeLoc = gl.getUniformLocation(this.program, 'uFogRange');
+    this.lightLoc = gl.getUniformLocation(this.program, 'uLight');
+    this.wetLoc = gl.getUniformLocation(this.program, 'uWet');
     this.staticBuffer = gl.createBuffer();
     this.dynamicBuffer = gl.createBuffer();
     this.staticCount = 0;
@@ -591,7 +605,7 @@ export class MatchRenderer3D {
     this.uploadStatic();
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
     gl.disable(gl.CULL_FACE);
-    gl.clearColor(SKY_HORIZON[0], SKY_HORIZON[1], SKY_HORIZON[2], 1);
+    gl.clearColor(this.wx.fog[0], this.wx.fog[1], this.wx.fog[2], 1);
     this.resize();
   }
   buildStadium(match) {
@@ -608,8 +622,9 @@ export class MatchRenderer3D {
       const p0 = [Math.cos(a) * R, -2, Math.sin(a) * R], p1 = [Math.cos(b) * R, -2, Math.sin(b) * R];
       const q0 = [Math.cos(a) * R, 42, Math.sin(a) * R], q1 = [Math.cos(b) * R, 42, Math.sin(b) * R];
       const r0 = [Math.cos(a) * R * 0.8, 95, Math.sin(a) * R * 0.8], r1 = [Math.cos(b) * R * 0.8, 95, Math.sin(b) * R * 0.8];
-      gradientQuad(g, p0, p1, q1, q0, SKY_HORIZON, SKY_MID);
-      gradientQuad(g, q0, q1, r1, r0, SKY_MID, SKY_TOP);
+      const sk = (this.wx || getWeatherProfile()).sky;
+      gradientQuad(g, p0, p1, q1, q0, sk[0], sk[1]);
+      gradientQuad(g, q0, q1, r1, r0, sk[1], sk[2]);
     }
     // Sol extérieur et pelouse : bandes de tonte dans les deux sens, légères variations naturelles.
     box(g, [0,-1.2,0], [190,1.8,150], [0.05,0.07,0.08]);
@@ -861,6 +876,9 @@ export class MatchRenderer3D {
   addPlayer(g, match, player, frame, index) {
     const pose=getPlayer3DPose(player,frame);
     const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+    // Lissage des articulations : chaque angle rejoint sa cible en douceur (plus de poses qui « sautent »).
+    const rig=player._rig||(player._rig={}), rdt=this._rigDt||0;
+    const sm=(k,v,rate)=>{ const p=rig[k]; if(!Number.isFinite(p)||!Number.isFinite(v)||Math.abs(v-p)>2.5){ rig[k]=v; return v; } const r=p+(v-p)*(1-Math.exp(-rdt*rate)); rig[k]=r; return r; };
     const x=pose.x,z=-pose.y,yaw=-pose.heading;
     const cos=Math.cos(yaw),sin=Math.sin(yaw);
     // Transformation du corps entier (plongeon, tacle glissé, déséquilibre, feinte) autour d'un pivot.
@@ -907,7 +925,7 @@ export class MatchRenderer3D {
     const lean=pose.lean+pose.accelerationLean+kickLean+headSnap*0.4+archPre+
       action.stumble*0.12+action.brace*0.035+(player.isGK?action.diveFlight*0.045:0);
     const gkReadyLean=player.isGK&&!(dive>0.015)&&pose.speed<4?0.2:0;
-    const tilt=clamp(lean*1.15+gkReadyLean,-0.45,0.6);
+    const tilt=sm('tilt',clamp(lean*1.15+gkReadyLean,-0.45,0.6),12);
     // Le gardien accompagne le plongeon avec une translation du buste et des bras
     // dans le sens réel du tir ; les joueurs de champ amortissent les contacts.
     const diveSide=Math.sign(-pose.diveDir*Math.cos(yaw))||1;
@@ -953,18 +971,22 @@ export class MatchRenderer3D {
       // Teinte prise sur la bande de tonte sous le joueur : ombre douce, jamais de tache noire.
       const band=(Math.floor((px+52.5)/5.25)%2+2)%2?1.06:0.955, grass=[0.125*band,0.375*band,0.15*band];
       const shade=k=>[grass[0]*k,grass[1]*k,grass[2]*k];
-      if(detail>0||player===match.selected) for(const [tx,tz] of [[-53,-42],[53,-42],[-53,42],[53,42]]){
+      const shMode=(this.wx||{}).shadows||'flood';
+      if(shMode==='sun'){ const ux=0.8,uz=-0.6; ellipse(px+ux*0.95,pz+uz*0.95,ux,uz,1.0*lift0,0.2,shade(0.62),0.04,10); }
+      if(shMode==='flood'&&(detail>0||player===match.selected)) for(const [tx,tz] of [[-53,-42],[53,-42],[-53,42],[53,42]]){
         let ux=px-tx,uz=pz-tz; const L=Math.hypot(ux,uz)||1; ux/=L; uz/=L;
         ellipse(px+ux*0.55,pz+uz*0.55,ux,uz,0.6*lift0,0.13,shade(0.8),0.04,8);
       }
-      ellipse(px,pz,1,0,0.33*lift0,0.23*lift0,shade(0.52),0.046,12);
+      ellipse(px,pz,1,0,0.33*lift0,0.23*lift0,shade(shMode==='soft'?0.62:0.52),0.046,12);
     }
     if(player===match.selected&&!match.breakShow&&!match.ceremony){
       ring(g,x,0.085,z,0.58,[0.94,0.78,0.24],22,0.045);
       sphere(g,[x,0.13,z],[0.08,0.025,0.08],[1,0.9,0.3],6,3);
     }
-    const ready=player.isGK&&!diving&&pose.speed<4&&!pose.keeperCatch&&!pose.keeperPunch?0.85:0;
-    const hipY=0.83-low*0.28+lift-ready*0.12;
+    const shotIn=!!(match.ball?.inFlightShot&&match.ball.inFlightShot.team!==player.team);
+    const ready=player.isGK&&!diving&&pose.speed<4&&!pose.keeperCatch&&!pose.keeperPunch?(shotIn?1:0.85):0;
+    const gkSet=ready&&shotIn?1:0;
+    const hipY=0.83-low*0.28+lift-ready*0.12-gkSet*0.06;
     const shoulderY=bodyY+0.23;
     const torsoF=lean*0.45;
     // ---- Buste : poitrine, épaules, bassin (vraies proportions, orientés avec le joueur) ----
@@ -1012,10 +1034,12 @@ export class MatchRenderer3D {
       if(side===touchSide){ th+=action.firstTouchAbsorb*0.32; fl+=action.firstTouchAbsorb*0.28; }
       if(airborne>0){ const a=airborne*0.85; th+=((isKickLeg?0.4:-0.08)-th)*a; fl+=((isKickLeg?0.75:1.05)-fl)*a; }
       if(pose.celebrateHop>0.02){ fl=Math.max(fl,0.5); }
-      if(ready>0){ th+=(0.32-th)*ready; fl+=(0.78-fl)*ready; }
+      if(ready>0){ th+=((gkSet?0.42:0.32)-th)*ready; fl+=((gkSet?0.95:0.78)-fl)*ready; }
       if(slideAmt>0){ const lead=side===(pose.slideDir>=0?kickFootSide:-kickFootSide); th+=((lead?0.28:-0.3)-th)*slideAmt; fl+=((lead?0.05:1.55)-fl)*slideAmt; }
       if(rollAmt>0){ th+=((side>0?0.12:-0.12)-th)*rollAmt; fl+=(0.15-fl)*rollAmt; }
       if(skillOn&&isKickLeg){ const a=Math.sin(skillP*Math.PI); th+=(0.45-th)*a; fl+=(0.95-fl)*a; }
+      const fastL=kicking||rollAmt>0.05||slideAmt>0.05?42:18;
+      th=sm('th'+side,th,fastL); fl=sm('fl'+side,fl,fastL);
       legAngles.push([side,th,fl,isKickLeg]);
     }
     const sw=Math.sin(phase)*0.36*action.gait;
@@ -1076,7 +1100,7 @@ export class MatchRenderer3D {
       if(aer>0){ al+=(1.3-al)*aer; be+=(0.75-be)*aer; ab+=(0.6-ab)*aer; }
       if(pose.celebrate>0){ const c=pose.celebrate; al+=(2.75-al)*c; be+=(0.15-be)*c; ab+=(0.35-ab)*c; }
       if(throwing||holdingThrow){ const t=throwing?kp:0; const c=throwing?1-smooth((kp-0.6)/0.4):1; const ta=2.9-t*1.5; al+=(ta-al)*c; be+=(0.9-t*0.6-be)*c; ab+=(0.12-ab)*c; }
-      if(ready>0){ al+=(0.55-al)*ready; be+=(0.75-be)*ready; ab+=(0.5-ab)*ready; }
+      if(ready>0){ al+=((gkSet?0.7:0.55)-al)*ready; be+=((gkSet?0.4:0.75)-be)*ready; ab+=((gkSet?0.85:0.5)-ab)*ready; }
       if(player.isGK&&pose.keeperCatch>0){ const c=pose.keeperCatch; al+=(1.25-al)*c; be+=(0.6-be)*c; ab+=(-0.05-ab)*c; }
       if(player.isGK&&pose.keeperPunch>0){ const c=pose.keeperPunch; al+=(2.7-al)*c; be+=(0.05-be)*c; ab+=(0.08-ab)*c; }
       if(rollAmt>0){ al+=(3.0-al)*rollAmt; be+=(0.08-be)*rollAmt; ab+=(0.12-ab)*rollAmt; }
@@ -1096,6 +1120,7 @@ export class MatchRenderer3D {
       const gkRaise=player.isGK?action.catchReach*0.24*(1-rollAmt):0;
       const gkU=player.isGK?(leadingKeeperArm?action.diveFlight*0.13:action.diveLanding*0.035):0;
       const spread=action.headerBrace*0.16+action.tackleReach*0.14+action.tackleArmSpread*0.14;
+      { const fastA=rollAmt>0.05||kicking||heading?34:13; al=sm('al'+side,al,fastA); be=sm('be'+side,be,fastA); ab=sm('ab'+side,ab,fastA); }
       const sF0=tilt*0.12, sS0=side*0.235*build, sF=torsoF+sF0*Math.cos(twist)-sS0*Math.sin(twist), sU=shoulderY, sS=sF0*Math.sin(twist)+sS0*Math.cos(twist);
       const eF=sF+Math.sin(al)*A1*Math.cos(ab*0.6), eU=sU-Math.cos(al)*A1*Math.cos(ab*0.6), eS=sS+side*Math.sin(ab)*A1*0.55;
       const fa=al+be;
@@ -1261,7 +1286,22 @@ export class MatchRenderer3D {
       else { const v=G._v||1.7; G.vx=dx/dd*v; G.vy=dy/dd*v; G.x+=G.vx*dt; G.y+=G.vy*dt; G.anim=(G.anim||0)+v*1.55*dt; G.heading=Math.atan2(dy,dx); G.face=Math.sign(dx)||1; }
     } else this.subGhost=null;
   }
+  // Pluie : traits fins qui tombent autour de la zone filmée (géométrie dynamique légère).
+  addRain(g, match) {
+    const t=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
+    const cam=this.lastCamera, cx=cam?cam.target[0]:0, cz=cam?cam.target[2]:0;
+    const n=this.quality.detail===2?700:this.quality.detail===1?450:220, col=[0.85,0.88,0.95], nrm=[[0,0,1],[0,0,1],[0,0,1]];
+    for(let i=0;i<n;i++){
+      const h1=Math.sin(i*12.9898)*43758.5453, h2=Math.sin(i*78.233)*12345.678, h3=Math.sin(i*39.425)*24634.6345;
+      const fx=h1-Math.floor(h1), fz=h2-Math.floor(h2), fo=h3-Math.floor(h3);
+      const x=cx-30+fx*60, z=cz-22+fz*44, y=((fo*16-t*17)%16+16)%16;
+      const a=[x,y,z], b=[x+0.06,y+1.0,z+0.02], w=0.024;
+      triangle(g,[a[0]-w,a[1],a[2]],[a[0]+w,a[1],a[2]],[b[0]+w,b[1],b[2]],col,nrm);
+      triangle(g,[a[0]-w,a[1],a[2]],[b[0]+w,b[1],b[2]],[b[0]-w,b[1],b[2]],col,nrm);
+    }
+  }
   buildDynamic(match, frame) {
+    { const nw=(typeof performance!=='undefined'?performance.now():Date.now())/1000; this._rigDt=clamp(nw-(this._rigT||nw),0,0.1); this._rigT=nw; }
     this._lookBall=frame?[frame.b[0],frame.b[1]]:[Number(match.ball?.x)||0,Number(match.ball?.y)||0];
     const g=this.dynamicGeometry;g.length=0;
     let index=0;
@@ -1277,6 +1317,7 @@ export class MatchRenderer3D {
       for(const o of this.staff) this.addPlayer(g,match,o,null,95+o.k);
       if(this.subGhost) this.addPlayer(g,match,this.subGhost,null,99);
     }
+    if((this.wx||{}).rain) this.addRain(g,match);
     const bx=frame?frame.b[0]:match.ball.x,by=frame?frame.b[1]:match.ball.y,bz=frame?frame.b[2]:match.ball.z;
     // L'ombre s'élargit et s'éclaircit à mesure que le ballon prend de la hauteur.
     const ballX=bx,ballZ=-by,ballY=Math.max(0.24,bz+0.24);
@@ -1324,6 +1365,7 @@ export class MatchRenderer3D {
     const gl=this.gl;
     const aspect=this.width/Math.max(1,this.height);
     const camera=get3DCameraPose(match,frame,aspect);
+    this.lastCamera=camera;
     const vp=multiply4(perspective(camera.fovy,aspect,0.25,220),lookAt(camera.eye,camera.target,[0,1,0]));
     this.lastVP=vp;
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
@@ -1334,7 +1376,11 @@ export class MatchRenderer3D {
     this.excite=(this.excite??0.12)+(excite-(this.excite??0.12))*0.08;
     gl.uniform1f(this.timeLoc,(match.clock||0)+(performance.now()/1000)%1000);
     gl.uniform1f(this.exciteLoc,this.excite);
-    gl.uniform3f(this.fogLoc,SKY_HORIZON[0],SKY_HORIZON[1],SKY_HORIZON[2]);
+    const wx=this.wx||getWeatherProfile();
+    gl.uniform3f(this.fogLoc,wx.fog[0],wx.fog[1],wx.fog[2]);
+    gl.uniform3f(this.fogRangeLoc,wx.fogRange[0],wx.fogRange[1],wx.fogRange[2]);
+    gl.uniform3f(this.lightLoc,wx.light[0],wx.light[1],wx.light[2]);
+    gl.uniform1f(this.wetLoc,wx.wet);
     gl.uniform3f(this.eyeLoc,camera.eye[0],camera.eye[1],camera.eye[2]);
     gl.uniform1f(this.rimLoc,0);
     gl.bindBuffer(gl.ARRAY_BUFFER,this.staticBuffer);

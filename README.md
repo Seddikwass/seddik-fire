@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.40.0 — météo, mouvements fluides, gardien en appui
+- Quatre ambiances de match : nuit claire sous les projecteurs, plein soleil (ciel bleu, lumière vive, ombres portées par le soleil), pluie battante (ciel sombre, rideau de pluie animé, pelouse brillante et mouillée) et brouillard (brume dense qui avale les tribunes).
+- Effet de jeu de la pluie : sur pelouse mouillée le ballon roule plus loin et rebondit moins haut.
+- Réglage « Météo des matchs » : variable (aléatoire) ou ambiance fixe ; annonce de la météo au coup d'envoi et dans la présentation d'avant-match. Matchs en ligne : nuit claire pour les deux joueurs.
+- Mouvements fluides : chaque articulation (hanches, genoux, épaules, coudes, buste) rejoint sa position en douceur au lieu de sauter d'une pose à l'autre ; réactions rapides conservées pour les frappes, plongeons et tacles.
+- Gardien : appui de concentration au moment d'un tir adverse (plus fléchi, bras écartés, prêt à plonger).
+- Tests : choix de la météo et physique de la pelouse mouillée.
+
 ## Version 3.39.0 — bancs de touche, entraîneurs et remplacements visibles
 - Deux bancs de touche face à la caméra (abri, sièges aux couleurs du club, remplaçants assis), zone technique tracée au sol et table du quatrième arbitre entre les bancs ; les panneaux LED s'interrompent devant les bancs.
 - Entraîneurs en costume (pantalon et manches longues) qui arpentent leur zone technique en suivant le jeu, donnent des consignes bras tendu, applaudissent, exultent bras levés quand leur équipe marque et se prennent la tête quand elle encaisse.

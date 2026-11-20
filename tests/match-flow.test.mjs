@@ -125,3 +125,12 @@ console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroul
   assert.equal(q2.y, 60, 'arrivés au tunnel, les joueurs disparaissent');
   console.log('BREAK SHOW OK — sortie vers le tunnel et homme du match');
 }
+{
+  const { resolveWeather, getWeatherPhysics } = await import('../public/js/match.js');
+  assert.equal(resolveWeather('auto', true), 'night', 'serveur et tests : nuit claire, déterministe');
+  assert.equal(resolveWeather('rain'), 'rain');
+  const seen = new Set(Array.from({ length: 60 }, (_, i) => resolveWeather('auto', false, () => i / 60)));
+  assert.equal(seen.size, 4, 'météo variable : les 4 ambiances apparaissent');
+  assert.ok(getWeatherPhysics('rain').groundFriction < getWeatherPhysics('night').groundFriction, 'pelouse mouillée : le ballon roule plus loin');
+  console.log('WEATHER OK — 4 ambiances, pluie = ballon plus rapide au sol');
+}

@@ -13,7 +13,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.39.0';
+export const APP_VERSION = '3.40.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -500,6 +500,7 @@ function settingsHTML() {
    <label>${t('Images/seconde')}${sel('fps', [[30, '30'], [60, '60']])}</label>
    <label>Ralentis après les buts${sel('replays', [[true, 'Oui'], [false, 'Non']])}</label>
    <label>Cérémonie d'avant-match (TV)${sel('ceremony', [[true, 'Oui'], [false, 'Non']])}</label>
+   <label>Météo des matchs${sel('weather', [['auto', 'Variable (aléatoire)'], ['night', 'Nuit claire'], ['day', 'Plein soleil'], ['rain', 'Pluie'], ['fog', 'Brouillard']])}</label>
    <label>Disposition des commandes${sel('leftHanded', [[false, 'Joystick à gauche'], [true, 'Joystick à droite (gaucher)']])}</label>
    <label>Taille des boutons${sel('btnScale', [[0.85, 'Petits'], [1, 'Normaux'], [1.2, 'Grands']])}</label>
    <label>Publicités personnalisées${sel('adsConsent', [[null, 'Non choisi'], [true, 'Accepter'], [false, 'Refuser (pubs non personnalisées)']])}</label></div>
@@ -527,7 +528,7 @@ function startMatchView() {
   const cv = $('#cv'); const ctx = args;
   const m = new Match({
     canvas: cv, home: ctx.home, away: ctx.away, userSide: ctx.userSide, knockout: ctx.knockout || null,
-    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: settings.quality, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), replays: settings.replays, ceremony: settings.ceremony !== false },
+    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: settings.quality, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
     onEnd: res => onMatchEnd(res), onPause: () => pauseMenu(),
   });
   match = m;

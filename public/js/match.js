@@ -2876,8 +2876,9 @@ export class Match {
     T.ps[outIdx] = np; if (this.selected === out) this.select(np);
     if (this.ball.owner === out) this.ball.owner = np;
     this.subsLeft[side]--;
+    this.subCall = { t: this.clock, half: this.half, team: side, out: { ...out, x: out.x, y: out.y }, outNum: out.num, inNum: np.num, outName: out.name, inName: np.name };
     this.events.push({ type: 'sub', min: Math.round(this.minute), team: side, pid: np.id, name: np.name, outName: out.name, outId: out.id });
-    this.banner(`${out.name}  →  ${np.name}`, 2.2);
+    if (!this.renderer3d) this.banner(`${out.name}  →  ${np.name}`, 2.2);
     return true;
   }
   allPlayersForResult() {
@@ -3682,6 +3683,23 @@ export class Match {
     c.fillStyle = 'rgba(0,0,0,0.38)'; c.fillRect(0, 0, this.W, 6 * d);
     c.restore();
   }
+  // Carte « Remplacement » façon TV : ▼ sortant en rouge, ▲ entrant en vert.
+  drawSubCard() {
+    const S = this.subCall; if (!S || !this.renderer3d) return;
+    const age = (this.clock - S.t) + (this.half !== S.half ? 999 : 0); if (age < 0 || age > 4.2) return;
+    const c = this.c, d = this.dpr, T = this.teams[S.team];
+    const k = clamp(age / 0.35, 0, 1) * clamp((4.2 - age) / 0.35, 0, 1), e = 1 - Math.pow(1 - k, 3);
+    const w = Math.min(250 * d, this.W * 0.42), h = 66 * d, x = 12 * d - (1 - e) * (w + 20 * d), y = this.H * 0.34;
+    c.save();
+    c.fillStyle = 'rgba(7,17,29,0.9)'; this.rr(x, y, w, h, 8 * d); c.fill();
+    c.fillStyle = T.kit.shirt; this.rr(x, y, w, 18 * d, 8 * d); c.fill(); c.fillRect(x, y + 10 * d, w, 8 * d);
+    c.fillStyle = '#fff'; c.font = `900 ${10 * d}px system-ui,Arial`; c.textBaseline = 'middle'; c.textAlign = 'left';
+    c.fillText(`REMPLACEMENT — ${T.short}`, x + 10 * d, y + 9 * d);
+    c.font = `800 ${11 * d}px system-ui,Arial`;
+    c.fillStyle = '#ff4b4b'; c.fillText('▼', x + 10 * d, y + 31 * d); c.fillStyle = '#4bdc7a'; c.fillText('▲', x + 10 * d, y + 52 * d);
+    c.fillStyle = '#fff'; c.fillText(`${S.outNum || ''}  ${S.outName}`, x + 28 * d, y + 31 * d, w - 36 * d); c.fillText(`${S.inNum || ''}  ${S.inName}`, x + 28 * d, y + 52 * d, w - 36 * d);
+    c.restore();
+  }
   // Volet de transition aux couleurs du club (masque les changements de caméra).
   drawTvWipe() {
     const t = this.tvWipeT || 0; if (t <= 0) return;
@@ -3775,6 +3793,7 @@ export class Match {
       c.fillStyle = isReplay ? '#ffe14a' : '#fff'; c.fillText(this.msg, this.W / 2, by + 1 * d); c.restore();
     }
     c.textBaseline = 'alphabetic';
+    if (!isReplay) this.drawSubCard();
     if (isReplay && this.replay) this.drawReplayBug();
     this.drawTvWipe();
     // Tirs au but : tableau de séance à la place du radar.

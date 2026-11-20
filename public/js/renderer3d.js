@@ -56,7 +56,7 @@ export function getOfficialTargets(match = {}) {
     }
     return clamp(defLine, 0, HLm - 1) * half;
   };
-  return { ref, ar1: { x: line(1), y: -HWm - 1.1 }, ar2: { x: line(-1), y: HWm + 1.1 } };
+  return { ref, ar1: { x: line(1), y: -HWm - 0.8 }, ar2: { x: line(-1), y: HWm + 0.7 } };
 }
 export function getPlayer3DPose(player = {}, frame = null) {
   const p = frame || [];
@@ -462,18 +462,18 @@ function addKitNumber(out, point, forward, centerY, number, color, scale = 1, fa
     }
   }
 }
-function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glove = false) {
+function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glove = false, longSleeve = glove) {
   // Manche courte jusqu'à mi-bras avec revers ; le gardien garde ses manches longues.
-  if (glove) cylinder(out, shoulder, elbow, 0.105, sleeve, 8, 0.075);
+  if (glove || longSleeve) cylinder(out, shoulder, elbow, 0.105, sleeve, 8, 0.075);
   else {
     const cuff = [shoulder[0] + (elbow[0] - shoulder[0]) * 0.52, shoulder[1] + (elbow[1] - shoulder[1]) * 0.52, shoulder[2] + (elbow[2] - shoulder[2]) * 0.52];
     cylinder(out, shoulder, cuff, 0.108, sleeve, 8, 0.092);
     cylinder(out, cuff, elbow, 0.07, skin, 7, 0.06);
     if (detail > 0) { const k = 0.07, c2 = [cuff[0] - (elbow[0] - shoulder[0]) * k, cuff[1] - (elbow[1] - shoulder[1]) * k, cuff[2] - (elbow[2] - shoulder[2]) * k]; cylinder(out, c2, cuff, 0.1, trim, 8, 0.096); }
   }
-  cylinder(out, elbow, hand, glove ? 0.07 : 0.06, glove ? sleeve : skin, 7, 0.045);
+  cylinder(out, elbow, hand, glove || longSleeve ? 0.07 : 0.06, glove || longSleeve ? sleeve : skin, 7, 0.045);
   if (detail > 0) {
-    sphere(out, elbow, [0.066,0.066,0.066], glove ? sleeve : skin, 6, 4);
+    sphere(out, elbow, [0.066,0.066,0.066], glove || longSleeve ? sleeve : skin, 6, 4);
     sphere(out, hand, glove ? [0.095,0.075,0.08] : [0.07,0.075,0.07], glove ? trim : skin, 7, 4);
   } else {
     sphere(out, hand, [0.07,0.075,0.07], glove ? trim : skin, 6, 4);
@@ -705,7 +705,7 @@ export class MatchRenderer3D {
       }
       currentAnim = 0;
     };
-    for (let i = 0; i < 10; i++) { const x = -48 + i * 10.65; ledBoard(x, -35.6, 'x', 10.3, i, 1); ledBoard(x, 35.6, 'x', 10.3, i + 2, -1); }
+    for (let i = 0; i < 10; i++) { const x = -48 + i * 10.65; if (i < 4 || i > 5) ledBoard(x, -35.6, 'x', 10.3, i, 1); ledBoard(x, 35.6, 'x', 10.3, i + 2, -1); }
     for (const s of [-1, 1]) for (let i = 0; i < 4; i++) ledBoard(s * 55.4, -25 + i * 16.7, 'z', 16, i + 1, -s);
     // Tribunes en gradins : deux anneaux, sièges et milliers de supporters animés par le GPU.
     const lower = profile.detail >= 2 ? 15 : profile.detail === 1 ? 11 : 7;
@@ -795,10 +795,22 @@ export class MatchRenderer3D {
       box(g,[x,25.9,z-0.12],[4.7,0.12,0.1],[0.95,0.88,0.64]);
     }
     // Subtle technical area and benches outside the touchline.
-    for(const s of [-1,1]){
-      box(g,[0,0.48,s*38.7],[22,0.3,2.0],[0.12,0.15,0.18]);
-      for(let i=0;i<7;i++) box(g,[-8.6+i*2.85,0.92,s*38.7],[1.1,0.55,0.9],[0.24,0.27,0.31]);
-    }
+    // Bancs de touche face caméra (côté tribune lointaine) : abri, sièges aux couleurs du club, remplaçants assis.
+    const benchKits=[[home,homeTrim],[away,awayTrim]];
+    [-1,1].forEach((sx,ti)=>{
+      const [col,tr]=benchKits[ti], cx=sx*6.6, cz=-36.9;
+      box(g,[cx,0.04,cz],[7.2,0.08,1.9],[0.16,0.17,0.2]);
+      box(g,[cx,1.05,cz-0.85],[7.2,2.1,0.12],[0.07,0.08,0.1]);
+      box(g,[cx-3.55,1.05,cz],[0.1,2.1,1.8],[0.12,0.13,0.16]); box(g,[cx+3.55,1.05,cz],[0.1,2.1,1.8],[0.12,0.13,0.16]);
+      box(g,[cx,2.12,cz+0.05],[7.4,0.08,1.95],col.map(v=>v*0.55));
+      box(g,[cx,1.98,cz+0.95],[7.4,0.2,0.06],tr);
+      for(let k=0;k<7;k++){ const x=cx-3.0+k*1.0; box(g,[x,0.45,cz-0.4],[0.8,0.1,0.55],col); box(g,[x,0.78,cz-0.7],[0.8,0.6,0.08],col.map(v=>v*0.8));
+        if(k%3!==1) spectator(g,x,0.45,cz-0.25,[0,0,1],tr.map(v=>v*0.9+0.05),[[0.55,0.36,0.24],[0.35,0.22,0.15],[0.75,0.55,0.4]][k%3],null); }
+      // Zone technique tracée au sol.
+      box(g,[cx,0.012,-35.15],[8,0.02,0.06],[0.85,0.88,0.84]);
+    });
+    // Table du quatrième arbitre entre les deux bancs.
+    box(g,[0,0.45,-36.7],[1.6,0.9,0.7],[0.1,0.11,0.14]); box(g,[0,0.92,-36.7],[1.7,0.05,0.8],[0.85,0.85,0.88]);
     // Central broadcast camera platform and scoreboard.
     box(g,[0,17.3,-54],[20,1.2,2.2],[0.06,0.08,0.12]);
     box(g,[0,21,-55.4],[18,4.8,0.55],[0.025,0.04,0.075]);
@@ -1029,10 +1041,11 @@ export class MatchRenderer3D {
       const mid=[hip[0]+(knee[0]-hip[0])*0.55,hip[1]+(knee[1]-hip[1])*0.55,hip[2]+(knee[2]-hip[2])*0.55];
       cylinder(g,hip,mid,0.112*build,shorts,8,0.104*build);
       if(detail>0&&!player.isOfficial) cylinder(g,legPoint(lean*0.25,hipY+0.04,side*0.205*build),[mid[0]+(legPoint(0,0,side*0.1)[0]-legPoint(0,0,0)[0]),mid[1],mid[2]+(legPoint(0,0,side*0.1)[2]-legPoint(0,0,0)[2])],0.016,trim,4,0.014);
-      cylinder(g,mid,knee,0.088*build,skin,8,0.07);
-      sphere(g,knee,[0.068,0.072,0.068],skin,6,4);
+      const legSkin=player.longPants?shorts:skin;
+      cylinder(g,mid,knee,player.longPants?0.1:0.088*build,legSkin,8,player.longPants?0.085:0.07);
+      sphere(g,knee,[0.068,0.072,0.068],legSkin,6,4);
       const sockTop=[knee[0]+(ankle[0]-knee[0])*0.14,knee[1]+(ankle[1]-knee[1])*0.14,knee[2]+(ankle[2]-knee[2])*0.14];
-      cylinder(g,knee,sockTop,0.07,skin,7,0.07);
+      cylinder(g,knee,sockTop,0.07,legSkin,7,0.07);
       cylinder(g,sockTop,ankle,0.072*build,sock,hi?10:7,0.05);
       if(detail>0){ const tp=[sockTop[0]+(ankle[0]-sockTop[0])*0.18,sockTop[1]+(ankle[1]-sockTop[1])*0.18,sockTop[2]+(ankle[2]-sockTop[2])*0.18]; ring(g,sockTop[0],sockTop[1],sockTop[2],0.074,trim,10,0.014); if(!player.isOfficial) ring(g,tp[0],tp[1],tp[2],0.075,[0.92,0.92,0.9],10,0.022);
         // Mollet : léger galbe derrière le tibia.
@@ -1072,8 +1085,11 @@ export class MatchRenderer3D {
       const sig=player.signal, sigArm=side===1;
       if(sig&&sigArm){
         if(sig==='yellow'||sig==='red'||sig==='flag'){ al=2.95; be=0.05; ab=0.12; }
-        else if(sig==='foul'||sig==='penalty'||sig==='goal'){ al=1.55; be=0.02; ab=sig==='goal'?0.1:0.5; }
+        else if(sig==='foul'||sig==='penalty'||sig==='goal'||sig==='point'){ al=1.55; be=0.02; ab=sig==='goal'||sig==='point'?0.1:0.5; }
       }
+      if(sig==='head'){ al=2.5; be=2.25; ab=0.55; }
+      if(sig==='board'){ al=2.75; be=0.25; ab=0.18; }
+      if(sig==='clap'){ const w=Math.sin((Number(match.clock)||0)*14+index)*0.12; al=1.25; be=0.9+w; ab=-0.12; }
       const leadingKeeperArm=player.isGK&&side===diveSide;
       const keeperArmReach=player.isGK?(leadingKeeperArm?action.keeperLeadReach:action.keeperBalanceReach):0;
       const keeperArmOffset=(player.isGK?(leadingKeeperArm?diveSide*keeperArmReach*0.48:-diveSide*keeperArmReach*0.16):0)*(1-rollAmt);
@@ -1088,7 +1104,10 @@ export class MatchRenderer3D {
       const elbow=bodyPoint(eF+pose.contactDir*action.brace*0.075,eU+gkRaise*0.4+gkU,eS+side*spread+keeperArmOffset*0.68);
       const hand=bodyPoint(hF,hU+gkRaise+(player.isGK?keeperArmReach*0.12+gkU*1.1:0),hS+side*spread*1.5+keeperArmOffset*1.25);
       sphere(g,shoulder,[0.085,0.08,0.085],shirt,7,5);
-      addArmPose(g,shoulder,elbow,hand,shirt,skin,trim,detail,!!player.isGK);
+      addArmPose(g,shoulder,elbow,hand,shirt,skin,trim,detail,!!player.isGK,!!player.longSleeve);
+      // Panneau lumineux du quatrième arbitre (rouge : sortant, vert : entrant).
+      if(sig==='board'&&side===1){ const bc=[(hand[0]+(-sin)*-0.3),hand[1]+0.2,(hand[2]+cos*-0.3)];
+        box(g,[bc[0],bc[1]+0.13,bc[2]],[0.62,0.24,0.62*0+0.06],[1.25,0.12,0.1]); box(g,[bc[0],bc[1]-0.12,bc[2]],[0.62,0.24,0.06],[0.15,1.2,0.25]); }
       // Carton brandi ou drapeau du juge de ligne.
       if(sigArm&&(sig==='yellow'||sig==='red')) box(g,[hand[0],hand[1]+0.13,hand[2]],[0.09,0.13,0.09],sig==='red'?[1.1,0.08,0.08]:[1.25,1.05,0.1]);
       if(player.isOfficial&&player.role==='ar'&&sigArm){
@@ -1201,6 +1220,47 @@ export class MatchRenderer3D {
       }
     }
   }
+  // Entraîneurs, quatrième arbitre et joueur remplacé (purement visuel).
+  updateStaff(match) {
+    const now=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
+    const dt=clamp(now-(this._stT||now),0,0.1); this._stT=now;
+    const suit=[{ shirt:'#1b2233', trim:'#f2f4f7', shorts:'#151a26' },{ shirt:'#2a2d33', trim:'#e9edf2', shorts:'#1c1f24' }];
+    if(!this.staff) this.staff=[0,1].map(k=>({ k, isOfficial:true, role:'coach', team:k, x:(k?6.6:-6.6), y:35.55, vx:0, vy:0, anim:0, heading:-Math.PI/2,
+      num:0, name:'Coach '+k, skin:['#7a4a30','#b98361'][k], kitOverride:suit[k], sockColor:[0.06,0.06,0.07], longPants:true, longSleeve:true, a:{phy:40} }))
+      .concat([{ k:2, isOfficial:true, role:'fourth', team:0, x:0, y:35.6, vx:0, vy:0, anim:0, heading:-Math.PI/2, num:0, name:'Quatrième arbitre', skin:'#9a6644',
+        kitOverride:{ shirt:'#15171c', trim:'#f2d21b', shorts:'#101114' }, sockColor:[0.08,0.08,0.09], longSleeve:true, a:{phy:50} }]);
+    const clock=Number(match.clock)||0, bx=Number(match.ball?.x)||0;
+    const goalAge=match.refCall?.type==='goal'?clock-match.refCall.t:99;
+    const sub=match.subCall, subAge=sub&&sub.half===match.half?clock-sub.t:99;
+    for(const o of this.staff){
+      let tx=o.x, ty=35.55;
+      o.signal=null; o.celebrateT=0;
+      if(o.role==='coach'){
+        const base=o.team?6.6:-6.6;
+        // L'entraîneur arpente sa zone technique en suivant le jeu.
+        tx=clamp(base+bx*0.06,base-3.2,base+3.2);
+        const scored=goalAge<4.5&&match.lastGoalTeam!=null;
+        if(scored&&match.lastGoalTeam===o.team){ o.celebrateT=1.4; }
+        else if(scored){ o.signal='head'; }
+        else { const ph=(clock*0.13+o.team*0.5)%1; if(ph<0.16) o.signal='point'; else if(ph>0.55&&ph<0.62) o.signal='clap'; }
+      } else {
+        tx=0;
+        if(subAge>=0&&subAge<4.5){ o.signal='board'; tx=sub.team?1.2:-1.2; ty=34.6; }
+      }
+      const dx=tx-o.x, dy=ty-o.y, dd=Math.hypot(dx,dy), want=dd>0.15?Math.min(o.role==='coach'?1.6:3,dd*1.5):0;
+      o.vx+=((dd?dx/dd*want:0)-o.vx)*Math.min(1,dt*4); o.vy+=((dd?dy/dd*want:0)-o.vy)*Math.min(1,dt*4);
+      o.x+=o.vx*dt; o.y+=o.vy*dt; o.anim+=Math.hypot(o.vx,o.vy)*1.55*dt;
+      const sp=Math.hypot(o.vx,o.vy), look=sp>0.4?Math.atan2(o.vy,o.vx):-Math.PI/2;
+      o.heading+=Math.atan2(Math.sin(look-o.heading),Math.cos(look-o.heading))*Math.min(1,dt*5);
+    }
+    // Le joueur remplacé quitte la pelouse en marchant vers son banc.
+    if(sub&&subAge>=0&&subAge<9){
+      if(!this.subGhost||this.subGhost._src!==sub){ const g0=sub.out; this.subGhost={ ...g0, _src:sub, kickT:0, headerT:0, jumpT:0, diveT:0, slideT:0, skillT:0, celebrateT:0, firstTouchT:0, stumbleT:0, contactT:0, x:g0.x, y:g0.y, vx:0, vy:0 }; this.subGhost._v=Math.max(1.7,Math.hypot((sub.team?3.2:-3.2)-g0.x,34.4-g0.y)/7.5); }
+      const G=this.subGhost, gx=sub.team?3.2:-3.2, gy=34.4, dx=gx-G.x, dy=gy-G.y, dd=Math.hypot(dx,dy);
+      if(dd<0.4||subAge>8.5) this.subGhost=null;
+      else { const v=G._v||1.7; G.vx=dx/dd*v; G.vy=dy/dd*v; G.x+=G.vx*dt; G.y+=G.vy*dt; G.anim=(G.anim||0)+v*1.55*dt; G.heading=Math.atan2(dy,dx); G.face=Math.sign(dx)||1; }
+    } else this.subGhost=null;
+  }
   buildDynamic(match, frame) {
     this._lookBall=frame?[frame.b[0],frame.b[1]]:[Number(match.ball?.x)||0,Number(match.ball?.y)||0];
     const g=this.dynamicGeometry;g.length=0;
@@ -1212,6 +1272,11 @@ export class MatchRenderer3D {
     }
     if(!frame) this.updateOfficials(match);
     if(this.officials) for(const o of this.officials) if(o.y<50) this.addPlayer(g,match,o,null,90+o.k);
+    if(!match.ceremony&&!(match.breakShow&&match.breakShow.phases[match.breakShow.idx]?.id!=='clip')){
+      if(!frame||!this.staff) this.updateStaff(match);
+      for(const o of this.staff) this.addPlayer(g,match,o,null,95+o.k);
+      if(this.subGhost) this.addPlayer(g,match,this.subGhost,null,99);
+    }
     const bx=frame?frame.b[0]:match.ball.x,by=frame?frame.b[1]:match.ball.y,bz=frame?frame.b[2]:match.ball.z;
     // L'ombre s'élargit et s'éclaircit à mesure que le ballon prend de la hauteur.
     const ballX=bx,ballZ=-by,ballY=Math.max(0.24,bz+0.24);

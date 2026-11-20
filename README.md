@@ -1,5 +1,12 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.39.0 — bancs de touche, entraîneurs et remplacements visibles
+- Deux bancs de touche face à la caméra (abri, sièges aux couleurs du club, remplaçants assis), zone technique tracée au sol et table du quatrième arbitre entre les bancs ; les panneaux LED s'interrompent devant les bancs.
+- Entraîneurs en costume (pantalon et manches longues) qui arpentent leur zone technique en suivant le jeu, donnent des consignes bras tendu, applaudissent, exultent bras levés quand leur équipe marque et se prennent la tête quand elle encaisse.
+- Remplacement visible : le quatrième arbitre s'avance au bord de la touche et lève le panneau lumineux rouge/vert, le joueur remplacé quitte la pelouse en marchant vers son banc, et une carte TV « REMPLACEMENT » affiche ▼ le sortant et ▲ l'entrant avec leurs numéros (pour vos changements comme pour ceux de l'adversaire).
+- Les juges de ligne courent désormais au plus près de la ligne de touche.
+- Tout ce décor est purement visuel : aucune influence sur le moteur ni sur le jeu en ligne.
+
 ## Version 3.38.0 — mi-temps et fin de match télévisées
 - À la mi-temps et au coup de sifflet final, le moteur se fige et une séquence télé démarre (passable d'un toucher, Entrée ou Espace) :
   1. plan large des joueurs et du trio arbitral qui regagnent le tunnel, bandeau « MI-TEMPS / FIN DU MATCH » avec score et buteurs ;

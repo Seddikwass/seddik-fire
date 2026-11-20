@@ -1,5 +1,11 @@
 # Seddik Fire
 
+## Version 2.28
+- Chasse au trésor : 6 trésors propres à chaque carte (clé de la médina, rose des sables, corail rouge de Tabarka, fossile de Tataouine, cage d'oiseau de Sidi Bou Saïd, poterie de Guellala, poulpe de Kerkennah…). Compteur à gauche, +40 XP par trésor et +300 XP pour les 6.
+- Gourmandises tunisiennes à ramasser : glace (+20 PV et vitesse), thé à la menthe (rechargement rapide), harissa (dégâts +20 %), bambalouni (+35 PV), dattes (PV et énergie), et coffres au butin rare. Marchands de glaces dans chaque ville.
+- Décors propres à chaque carte : dromadaires et tentes bédouines (désert, Djerba, Gabès), felouques de pêche (côtes et îles), ruines romaines et mosaïques (Le Kef, Carthage, Sousse, Mahdia, Tunis), greniers ksouriens (Tataouine), terrils de phosphate (Gafsa), chênes-lièges écorcés (Tabarka, forêt).
+- Soldats encore plus nets sur téléphone.
+
 ## Version 2.27
 - Cinq nouvelles cartes tunisiennes : Sidi Bou Saïd & Carthage (village blanc et bleu), Hammamet & Nabeul (médina, deux mosquées), Mahdia (presqu'île fatimide), Îles Kerkennah (palmiers et pêcheries traditionnelles « charfia » en mer), Île de La Galite (île sauvage). Sols pré-calculés inclus dans l'application Android.
 - Nouvelles options en partie :

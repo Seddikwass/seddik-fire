@@ -344,3 +344,8 @@ button:disabled,.btn:disabled{
 .talk-opts .btn{min-height:44px}
 .tag.neg{background:#ff4d4d33;color:#ffb3b3}
 .neg-actions{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+
+/* Centre de formation */
+.regions{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:8px}
+.btn.region{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:4px;min-height:64px}
+.btn.region small{opacity:.75;font-weight:500}

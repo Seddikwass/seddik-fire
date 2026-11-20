@@ -4,6 +4,7 @@ import { rng, clamp, uid, deepCopy } from './util.js';
 import { quickSim } from './match.js';
 import * as Dr from './dressing.js';
 import * as Tx from './transfers.js';
+import * as Y from './youth.js';
 
 export const SAVE_VERSION = 3;
 const POS_LIST = ['GK', 'DD', 'DC', 'DG', 'MDC', 'MC', 'MD', 'MG', 'MOC', 'AD', 'AG', 'BU'];
@@ -135,6 +136,9 @@ export function newCareer(opts) {
   for (const R of STAFF_ROLES) for (let i = 0; i < R.count; i++) { const s = genStaff(r, R.id, uc.rep, season); st.staff[s.id] = s; }
   const head = Object.values(st.staff).find(s => s.role === 'head'); if (head) uc.coach = head.name;
   refreshStaffMarket(st, r);
+  // Première génération U19 du centre de formation.
+  for (let i = 0; i < 6; i++) { const p = genPlayer(r, r.pick(POS_LIST), 34 + uc.rep * 0.18 + uc.infra.academy * 3, uc.id, season, { youth: true }); Object.assign(p, { role: 'jeune', num: 0, academy: true, wage: 300 }); st.players[p.id] = p; }
+  st.prospects = []; st.youthScouting = null;
   st.rs = r.state();
   st.cafSquads = {};
   setupSeason(st);
@@ -158,7 +162,9 @@ function ledger(st, amount, cat, label) {
   if (st.ledger.length > 600) st.ledger = st.ledger.slice(-600);
 }
 export function clubPlayers(st, cid) { return Object.values(st.players).filter(p => p.clubId === cid && !(p.loan && p.loan.to && p.loan.from === cid)).concat(Object.values(st.players).filter(p => p.loan && p.loan.to === cid && p.clubId !== cid)); }
-export function squad(st, cid) { return Object.values(st.players).filter(p => (p.loan ? p.loan.to === cid : p.clubId === cid)); }
+export function squad(st, cid) { return Object.values(st.players).filter(p => !p.academy && (p.loan ? p.loan.to === cid : p.clubId === cid)); }
+// Équipe U19 du centre de formation (hors effectif professionnel).
+export function academy(st, cid = st.userClub) { return Object.values(st.players).filter(p => p.academy && p.clubId === cid && !p.loan); }
 export const available = p => !p.injury && !p.suspended;
 
 // ------------------------------------------------------------------ composition
@@ -631,6 +637,7 @@ function weekly(st) {
   }
   // entraînement (club joueur)
   training(st, r);
+  youthWeek(st, r);
   // finances mensuelles (tous les 4 créneaux)
   if (st.slot % 4 === 3) monthly(st);
   // constructions
@@ -709,6 +716,8 @@ function monthly(st) {
   const wages = squad(st, st.userClub).reduce((a, p) => a + p.wage * (p.loan && p.loan.to === st.userClub ? (p.loan.wageShare ?? 1) : 1), 0)
     + Object.values(st.players).filter(p => p.loan && p.clubId === st.userClub && p.loan.to !== st.userClub).reduce((a, p) => a + p.wage * (1 - (p.loan.wageShare ?? 1)), 0);
   ledger(st, -wages, 'salaires', 'Salaires des joueurs (mensuel)');
+  const youthWages = academy(st).reduce((a, p) => a + (p.wage || 300), 0);
+  if (youthWages) ledger(st, -youthWages, 'formation', 'Bourses des U19 (mensuel)');
   const sw = Object.values(st.staff).reduce((a, s) => a + s.wage, 0);
   ledger(st, -sw, 'staff', 'Salaires du staff (mensuel)');
   const maint = Object.values(uc.infra).reduce((a, l) => a + l * 4500, 0);
@@ -1183,7 +1192,17 @@ function endSeason(st) {
     p.ovr = Math.min(ovrOf(p), Math.max(p.pot, ovrOf(p) - 0));
     if (p.ovr > p.pot) p.pot = p.ovr;
     p.stats = { apps: 0, goals: 0, assists: 0, rsum: 0, cs: 0 }; p.yellows = 0; p.suspended = 0;
-    if (p.loan && p.loan.until <= st.season) { if (p.loan.to === st.userClub) addNews(st, `Fin du prêt de ${p.name}, retour à ${clubName(st, p.loan.from)}.`, 'transfer'); p.loan = null; }
+    if (p.loan && p.loan.until <= st.season) {
+      if (p.loan.to === st.userClub) addNews(st, `Fin du prêt de ${p.name}, retour à ${clubName(st, p.loan.from)}.`, 'transfer');
+      if (p.loan.from === st.userClub && p.loan.dev) addNews(st, `🔁 Retour de prêt : ${p.name} revient ${p.loanStartOvr != null ? `(${p.loanStartOvr} → ${p.ovr})` : ''}.`, 'transfer');
+      p.loan = null; p.loanStartOvr = null;
+    }
+    // Fin de formation : à 20 ans, un U19 signe pro s'il a le niveau, sinon il quitte le club.
+    if (p.academy && p.clubId === st.userClub && p.age >= 20) {
+      const uc = st.clubs[st.userClub];
+      if (p.ovr >= uc.rep * 0.55 + 18 || p.pot >= uc.rep * 0.6 + 30) { p.academy = false; p.role = 'espoir'; p.wage = Math.max(p.wage, 1200); addNews(st, `⬆️ Fin de formation : ${p.name} signe automatiquement son premier contrat pro.`, 'club'); }
+      else { p.academy = false; p.clubId = null; addNews(st, `${p.name} termine sa formation sans contrat professionnel et quitte le club.`, 'club'); }
+    }
     if (p.contractEnd <= st.season && p.clubId) {
       if (p.clubId === st.userClub) { addNews(st, `${p.name} quitte le club libre en fin de contrat.`, 'contract'); p.clubId = null; }
       else if (r() < 0.6) p.contractEnd = st.season + r.int(1, 3); else p.clubId = null;
@@ -1196,8 +1215,8 @@ function endSeason(st) {
   for (const c of Object.values(st.clubs)) {
     const q = c.id === st.userClub ? staffAb(st, 'academy', 35) / 100 * 10 + c.infra.academy * 3 : c.infra.academy * 3;
     const n = c.id === st.userClub ? 3 + Math.floor(c.infra.academy / 2) : 2;
-    for (let i = 0; i < n; i++) { const p = genPlayer(r, r.pick(POS_LIST), 34 + c.rep * 0.18 + q, c.id, st.season + 1, { youth: true }); p.role = 'jeune'; p.num = 0; st.players[p.id] = p; }
-    if (c.id === st.userClub) addNews(st, `Centre de formation : ${n} jeunes intègrent l'effectif.`, 'club');
+    for (let i = 0; i < n; i++) { const p = genPlayer(r, r.pick(POS_LIST), 34 + c.rep * 0.18 + q, c.id, st.season + 1, { youth: true }); p.role = 'jeune'; p.num = 0; if (c.id === st.userClub) { p.academy = true; p.wage = 300; } st.players[p.id] = p; }
+    if (c.id === st.userClub) addNews(st, `Centre de formation : ${n} jeunes de la génération ${st.season + 1} rejoignent les U19.`, 'club');
     // compléter les effectifs IA
     if (c.id !== st.userClub) {
       let sq = squad(st, c.id);
@@ -1280,3 +1299,116 @@ export function acceptClubCounter(st, nid) {
   const r = R(st); evalNegotiation(st, n, r); saveR(st, r);
   return { ok: n.status !== 'refusée', msg: n.msg || 'Indemnité acceptée : place aux conditions personnelles.', n };
 }
+
+// ---------- Centre de formation ----------
+function scoutQuality(st) { return clamp((staffAb(st, 'scout', 25) + staffOf(st, 'scout').length * 8) / 100, 0, 1); }
+function youthWeek(st, r) {
+  const uc = st.clubs[st.userClub];
+  // Missions de détection en région.
+  const sc = st.youthScouting;
+  if (sc && sc.weeksLeft > 0) {
+    sc.weeksLeft--;
+    const q = scoutQuality(st);
+    if (r() < Y.findChance(q, sc.region)) {
+      const reg = Y.REGIONS[sc.region];
+      const pos = r.pick(reg.pos);
+      const p = genPlayer(r, pos, 40 + uc.infra.academy * 2 + (reg.quality - 1) * 20, null, st.season, { youth: true, age: r.int(15, 17) });
+      for (const k of reg.attrs) p.attrs[k] = clamp(p.attrs[k] + r.int(2, 5), 1, 99);
+      p.ovr = ovrOf(p);
+      p.pot = Math.max(p.ovr + 4, Y.prospectPotential({ region: sc.region, academyLevel: uc.infra.academy, roll: r }));
+      p.nat = sc.region === 'diaspora' ? 'TUN' : p.nat;
+      p.region = sc.region;
+      const range = Y.potentialRange(p.pot, q, p.id.charCodeAt(2) + p.id.charCodeAt(3));
+      st.prospects = (st.prospects || []).concat({ id: p.id, player: p, range, region: sc.region, fee: Y.prospectFee(range.high), found: st.slot });
+      addNews(st, `🔎 Détection (${reg.label}) : ${p.name}, ${p.age} ans, ${p.pos}, potentiel estimé ${range.low}-${range.high}.`, 'club');
+    }
+    if (sc.weeksLeft <= 0) { addNews(st, `Mission de détection terminée : ${Y.REGIONS[sc.region].label}.`, 'club'); st.youthScouting = null; }
+  }
+  st.prospects = (st.prospects || []).filter(x => st.slot - x.found < 10);
+  // Progression des U19.
+  const coach = staffAb(st, 'academy', 35);
+  for (const p of academy(st)) {
+    if (p.injury) continue;
+    const chance = Y.academyGrowthChance({ academyLevel: uc.infra.academy, coach, age: p.age, room: p.pot - p.ovr, morale: p.morale });
+    if (r() < chance) growYouth(p, r);
+  }
+  // Prêts de développement : nos jeunes prêtés progressent selon leur temps de jeu.
+  for (const p of Object.values(st.players)) {
+    if (!p.loan || p.loan.from !== st.userClub || p.injury) continue;
+    const host = st.clubs[p.loan.to];
+    const playing = Y.loanPlayingTime(p.ovr, host?.rep ?? 50);
+    p.loanPlaying = playing;
+    if (r() < Y.loanGrowthChance({ age: p.age, room: p.pot - p.ovr, playing })) growYouth(p, r);
+  }
+}
+export function startScouting(st, region) {
+  const reg = Y.REGIONS[region];
+  if (!reg) return { ok: false, msg: 'Région inconnue.' };
+  if (st.youthScouting) return { ok: false, msg: `Une mission est déjà en cours (${Y.REGIONS[st.youthScouting.region].label}).` };
+  if (!staffOf(st, 'scout').length) return { ok: false, msg: 'Engagez au moins un recruteur dans le staff.' };
+  const uc = st.clubs[st.userClub];
+  if (uc.budget < reg.cost && !st.settingsGame.allowDebt) return { ok: false, msg: 'Budget insuffisant pour cette mission.' };
+  ledger(st, -reg.cost, 'formation', `Mission de détection : ${reg.label}`);
+  st.youthScouting = { region, weeksLeft: reg.weeks, started: st.slot };
+  return { ok: true, msg: `Recruteurs envoyés : ${reg.label} (${reg.weeks} semaines).` };
+}
+export function signProspect(st, id) {
+  const x = (st.prospects || []).find(y => y.id === id);
+  if (!x) return { ok: false, msg: 'Ce jeune n\'est plus disponible.' };
+  if (academy(st).length >= Y.ACADEMY_MAX) return { ok: false, msg: `Centre de formation complet (${Y.ACADEMY_MAX} jeunes au maximum).` };
+  const uc = st.clubs[st.userClub];
+  if (uc.budget < x.fee && !st.settingsGame.allowDebt) return { ok: false, msg: 'Budget insuffisant.' };
+  const p = x.player;
+  Object.assign(p, { clubId: st.userClub, academy: true, wage: 300, role: 'jeune', contractEnd: st.season + 3, scoutedRange: x.range });
+  st.players[p.id] = p;
+  st.prospects = st.prospects.filter(y => y.id !== id);
+  ledger(st, -x.fee, 'formation', `Signature U19 : ${p.name}`);
+  addNews(st, `🎓 ${p.name} (${p.age} ans) rejoint le centre de formation.`, 'club');
+  return { ok: true, msg: `${p.name} rejoint les U19.` };
+}
+export function rejectProspect(st, id) { st.prospects = (st.prospects || []).filter(y => y.id !== id); return { ok: true, msg: 'Talent écarté.' }; }
+export function promoteYouth(st, pid) {
+  const p = st.players[pid];
+  if (!p || !p.academy || p.clubId !== st.userClub) return { ok: false, msg: 'Jeune introuvable.' };
+  if (squad(st, st.userClub).length >= 34) return { ok: false, msg: 'Effectif professionnel complet (34 joueurs).' };
+  p.academy = false; p.role = 'espoir'; p.wage = Math.max(p.wage, 1200); p.contractEnd = Math.max(p.contractEnd, st.season + 3);
+  const nums = new Set(squad(st, st.userClub).map(x => x.num)); let num = 30; while (nums.has(num)) num++; p.num = num;
+  p.happiness = clamp(p.happiness + 15, 0, 100); p.morale = clamp(p.morale + 10, 5, 100);
+  addNews(st, `⬆️ ${p.name} (${p.age} ans) signe son premier contrat professionnel.`, 'club');
+  return { ok: true, msg: `${p.name} est promu en équipe première.` };
+}
+export function releaseYouth(st, pid) {
+  const p = st.players[pid];
+  if (!p || !p.academy || p.clubId !== st.userClub) return { ok: false, msg: 'Jeune introuvable.' };
+  p.academy = false; p.clubId = null; p.listed = false;
+  addNews(st, `${p.name} quitte le centre de formation.`, 'club');
+  return { ok: true, msg: `${p.name} est libéré.` };
+}
+export function loanTargetsFor(st, pid) {
+  const p = st.players[pid]; if (!p) return [];
+  return Y.loanTargets(Object.values(st.clubs), p, st.userClub);
+}
+export function loanForDevelopment(st, pid, clubId) {
+  const p = st.players[pid];
+  if (!p || p.clubId !== st.userClub || p.loan) return { ok: false, msg: 'Joueur indisponible pour un prêt.' };
+  if (p.age > 23) return { ok: false, msg: 'Les prêts de développement concernent les joueurs de 23 ans au plus.' };
+  const c = st.clubs[clubId];
+  if (!c || clubId === st.userClub) return { ok: false, msg: 'Club d\'accueil invalide.' };
+  if (p.academy) { p.academy = false; p.role = 'espoir'; p.wage = Math.max(p.wage, 800); }
+  p.loan = { from: st.userClub, to: clubId, until: st.season, wageShare: 0, dev: true }; p.loanStartOvr = p.ovr;
+  removeFromTactics(st, p.id);
+  const playing = Y.loanPlayingTime(p.ovr, c.rep);
+  addNews(st, `🔁 ${p.name} est prêté à ${c.name} jusqu'à la fin de saison pour progresser (temps de jeu attendu ~${Math.round(playing * 100)} %).`, 'transfer');
+  return { ok: true, msg: `${p.name} prêté à ${c.name}.` };
+}
+
+// Progression ciblée d'un jeune : les attributs qui comptent pour son poste.
+function growYouth(p, r) {
+  const g = POS_GROUP[p.pos];
+  const keys = p.pos === 'GK' ? ['gk', 'gk', 'phy'] : g === 'D' ? ['def', 'def', 'phy', 'pac'] : g === 'M' ? ['pas', 'pas', 'dri', 'def'] : ['sho', 'sho', 'pac', 'dri'];
+  const key = r.pick(keys);
+  p.attrs[key] = clamp(p.attrs[key] + 2, 1, 99);
+  p.ovr = Math.min(ovrOf(p), p.pot);
+}
+export function scoutQualityOf(st) { return scoutQuality(st); }
+export function loanedOut(st) { return Object.values(st.players).filter(p => p.loan && p.loan.from === st.userClub); }

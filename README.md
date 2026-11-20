@@ -1,5 +1,15 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.27.0 — centre de formation
+- Nouvel écran 🎓 Formation : équipe U19 séparée de l'effectif professionnel (20 places), bourses mensuelles, niveau de l'académie, responsable de la formation et précision des recruteurs.
+- Détection régionale : missions de 3 à 5 semaines dans le Grand Tunis, le Sahel, Sfax et le Centre-Est, le Nord-Ouest, le Sud ou la diaspora ; profils de joueurs propres à chaque région ; talents plus rares et missions plus chères dans la diaspora.
+- Potentiel estimé sous forme de fourchette, plus précise avec de meilleurs recruteurs ; un talent non signé est perdu au bout d'une dizaine de semaines.
+- Progression hebdomadaire des U19 selon l'académie, le responsable de la formation, l'âge et le moral, sur les attributs clés de leur poste.
+- Promotion en équipe première (statut d'espoir, premier contrat pro) ; à 20 ans, un U19 signe pro s'il a le niveau, sinon il quitte le club.
+- Prêts de développement (23 ans au plus) vers des clubs choisis selon le temps de jeu attendu ; le jeune prêté progresse d'autant plus qu'il joue ; bilan affiché au retour. Correction : auparavant, les joueurs prêtés ne progressaient pas du tout.
+- La fournée annuelle du centre de formation rejoint désormais les U19 au lieu de l'effectif professionnel.
+- Nouveau module public/js/youth.js et tests tests/youth.test.mjs.
+
 ## Version 3.26.0 — mercato en plusieurs tours, agents et clauses
 - Club vendeur : jusqu'à 3 tours de négociation ; contre-propositions dégressives (le club cède un peu plus à chaque tour) ; il honore toujours sa propre contre-offre ; offre insultante (moins de 55 % du prix) = discussions rompues 4 semaines.
 - Agents des joueurs (gourmand, raisonnable, proche du joueur) : salaire, prime à la signature et commission ; au premier contact l'agent annonce ses conditions, puis se rapproche de vos offres selon sa souplesse (3 tours au plus).

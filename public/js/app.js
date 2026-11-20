@@ -4,13 +4,14 @@ import { Match } from './match.js';
 import { TACTIC_PRESETS, getCoachAdvice } from './tactics.js';
 import * as Dr from './dressing.js';
 import * as Tx from './transfers.js';
+import * as Y from './youth.js';
 import * as A from './audio.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.26.0';
+export const APP_VERSION = '3.27.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -48,7 +49,7 @@ function render() {
   if (view === 'match') startMatchView();
 }
 const NAV = [
-  ['hub', '🏠', 'Accueil'], ['prematch', '⚽', 'Match'], ['squad', '👥', 'Effectif'], ['tactics', '📋', 'Tactique'], ['transfers', '💱', 'Transferts'],
+  ['hub', '🏠', 'Accueil'], ['prematch', '⚽', 'Match'], ['squad', '👥', 'Effectif'], ['youth', '🎓', 'Formation'], ['tactics', '📋', 'Tactique'], ['transfers', '💱', 'Transferts'],
   ['staff', '🧑‍💼', 'Staff'], ['medical', '🩺', 'Médical'], ['finances', '💰', 'Finances'], ['infra', '🏟', 'Infrastructures'],
   ['comps', '🏆', 'Compétitions'], ['tables', '📊', 'Classements'], ['president', '🗳', 'Président'], ['settings', '⚙', 'Paramètres'],
 ];
@@ -240,6 +241,7 @@ function playerModal(id) {
      ${p.clubId === st.userClub ? `<button class="btn small danger" data-a="release" data-id="${p.id}">Résilier</button>` : ''}
      <button class="btn small" data-a="setRole" data-id="${p.id}">Rôle : ${Dr.ROLE_LABEL[p.role] || p.role}</button>
      <button class="btn small primary" data-a="talk" data-id="${p.id}">💬 Discuter</button>
+     ${p.clubId === st.userClub && !p.loan && p.age <= 23 ? `<button class="btn small" data-a="loanYouth" data-id="${p.id}">🔁 Prêter pour progresser</button>` : ''}
      ${tac.lineup.includes(p.id) ? '' : `<button class="btn small primary" data-a="toXI" data-id="${p.id}">Faire entrer dans le XI</button>`}`
     : `<button class="btn primary" data-a="offer" data-id="${p.id}">Faire une offre</button><button class="btn" data-a="offer" data-id="${p.id}" data-loan="1">Demander un prêt</button>`}
      <button class="btn ghost" data-a="closeModal">${t('Fermer')}</button></div></div>`, { wide: true });
@@ -339,6 +341,28 @@ function offerModal(pid, loan, presetFee) {
 }
 
 // ------------------------------------------------------------------ staff
+VIEWS.youth = () => {
+  const uc = st.clubs[st.userClub], q = C.scoutQualityOf(st);
+  const u19 = C.academy(st).sort((a, b) => b.pot - a.pot);
+  const sc = st.youthScouting, prospects = st.prospects || [];
+  const est = p => p.scoutedRange || Y.potentialRange(p.pot, Math.min(1, q + 0.25), p.id.charCodeAt(2) + p.id.charCodeAt(3));
+  const loans = C.loanedOut(st);
+  return `<div class="ph"><h2>🎓 Centre de formation</h2></div>
+   <div class="card"><div class="row wrap"><span>Académie niveau <b>${uc.infra.academy}</b></span><span>Responsable de la formation <b>${Math.round(C.staffOf(st, 'academy').reduce((a, s) => Math.max(a, s.ability), 0))}/100</b></span><span>Recruteurs : précision <b>${Math.round(q * 100)} %</b></span><span>U19 <b>${u19.length}/${Y.ACADEMY_MAX}</b> · bourses ${fmtMoney(u19.reduce((a, p) => a + (p.wage || 300), 0))}/mois</span></div>
+   <p class="hint">La qualité des jeunes dépend du niveau de l'académie (Infrastructures) et du responsable de la formation (Staff). Les recruteurs déterminent la précision du potentiel estimé.</p></div>
+   <div class="card"><h3>🔎 Détection régionale</h3>
+   ${sc ? `<p>Mission en cours : <b>${Y.REGIONS[sc.region].label}</b> — encore ${sc.weeksLeft} semaine(s).</p>` : '<p class="hint">Envoyez vos recruteurs dans une région : chaque semaine de mission peut révéler un talent.</p>'}
+   <div class="regions">${Object.entries(Y.REGIONS).map(([k, r]) => `<button class="btn region" data-a="scoutRegion" data-k="${k}" ${sc ? 'disabled' : ''}><b>${r.label}</b><small>${fmtMoney(r.cost)} · ${r.weeks} sem. · profils : ${r.pos.slice(0, 3).join(', ')}${k === 'diaspora' ? ' · talents rares, mission chère' : ''}</small></button>`).join('')}</div></div>
+   <div class="card"><h3>Talents détectés</h3>${prospects.length ? `<table class="tbl"><thead><tr><th>Joueur</th><th>Âge</th><th>Poste</th><th>Note</th><th>Potentiel estimé</th><th>Région</th><th>Prime</th><th></th></tr></thead><tbody>${prospects.map(x => `<tr><td>${esc(x.player.name)}</td><td>${x.player.age}</td><td>${x.player.pos}</td><td>${x.player.ovr}</td><td><b>${x.range.low}–${x.range.high}</b></td><td>${esc(Y.REGIONS[x.region].label.split(' (')[0])}</td><td>${fmtMoney(x.fee)}</td><td><button class="btn small primary" data-a="signProspect" data-id="${x.id}">Signer</button> <button class="btn small ghost" data-a="rejectProspect" data-id="${x.id}">Écarter</button></td></tr>`).join('')}</tbody></table><p class="hint">Un talent non signé est perdu après une dizaine de semaines.</p>` : '<p class="hint">Aucun talent pour l\'instant.</p>'}</div>
+   <div class="card"><h3>U19</h3>${u19.length ? `<table class="tbl"><thead><tr><th>Joueur</th><th>Âge</th><th>Poste</th><th>Note</th><th>Potentiel estimé</th><th></th></tr></thead><tbody>${u19.map(p => { const r = est(p); return `<tr><td data-a="player" data-id="${p.id}">${esc(p.name)}</td><td>${p.age}</td><td>${p.pos}</td><td><b class="${ovrCls(p.ovr)}">${p.ovr}</b></td><td>${r.low}–${r.high}</td><td class="neg-actions"><button class="btn small primary" data-a="promoteYouth" data-id="${p.id}">Promouvoir</button><button class="btn small" data-a="loanYouth" data-id="${p.id}">Prêter</button><button class="btn small ghost" data-a="releaseYouth" data-id="${p.id}">Libérer</button></td></tr>`; }).join('')}</tbody></table>` : '<p class="hint">Le centre de formation est vide.</p>'}</div>
+   <div class="card"><h3>Prêts de développement</h3>${loans.length ? `<table class="tbl"><thead><tr><th>Joueur</th><th>Club d'accueil</th><th>Temps de jeu</th><th>Progression</th></tr></thead><tbody>${loans.map(p => `<tr><td>${esc(p.name)} (${p.age} ans)</td><td>${esc(C.clubName(st, p.loan.to))}</td><td>~${Math.round((p.loanPlaying ?? 0.5) * 100)} %</td><td>${p.loanStartOvr ?? p.ovr} → <b>${p.ovr}</b></td></tr>`).join('')}</tbody></table>` : '<p class="hint">Aucun joueur prêté. Un jeune qui joue régulièrement en prêt progresse plus vite qu\'à l\'entraînement.</p>'}</div>`;
+};
+function loanModal(pid) {
+  const p = st.players[pid]; const targets = C.loanTargetsFor(st, pid);
+  modal(`<h3>🔁 Prêter ${esc(p.name)} (${p.age} ans, ${p.ovr})</h3><p class="hint">Prêt jusqu'à la fin de saison, salaire pris en charge par le club d'accueil. Plus le temps de jeu est élevé, plus il progresse.</p>
+   <div class="talk-opts">${targets.map(t => `<button class="btn" data-a="doLoan" data-id="${p.id}" data-club="${t.club.id}"><b>${esc(t.club.name)}</b><br><small>temps de jeu attendu ~${Math.round(t.playing * 100)} %</small></button>`).join('')}</div>
+   <div class="row end"><button class="btn ghost" data-a="closeModal">${t('Annuler')}</button></div>`);
+}
 VIEWS.staff = () => {
   const tab = args.tab || 'equipe';
   const roleName = id => STAFF_ROLES.find(r => r.id === id)?.fr;
@@ -732,6 +756,13 @@ const ACT = {
   setCaptain: el => { st.clubs[st.userClub].tactics.captain = el.dataset.id; save(); closeModal(); toast('Nouveau capitaine désigné.', 'ok'); render(); },
   setNumber: el => { const p = st.players[el.dataset.id]; const n = Number(prompt('Numéro de maillot (1-99)', p.num)); if (!n || n < 1 || n > 99) return; if (C.squad(st, st.userClub).some(x => x.num === n && x.id !== p.id)) return toast('Numéro déjà attribué.', 'err'); p.num = n; save(); closeModal(); render(); },
   talk: el => talkModal(el.dataset.id),
+  scoutRegion: el => { const r = C.startScouting(st, el.dataset.k); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
+  signProspect: el => { const r = C.signProspect(st, el.dataset.id); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
+  rejectProspect: el => { C.rejectProspect(st, el.dataset.id); save(); render(); },
+  promoteYouth: el => { const r = C.promoteYouth(st, el.dataset.id); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
+  releaseYouth: el => { const p = st.players[el.dataset.id]; confirmBox(`Libérer <b>${esc(p.name)}</b> du centre de formation ?`, () => { const r = C.releaseYouth(st, p.id); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); }); },
+  loanYouth: el => loanModal(el.dataset.id),
+  doLoan: el => { const r = C.loanForDevelopment(st, el.dataset.id, el.dataset.club); save(); closeModal(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
   doTalk: el => { const r = C.talkToPlayer(st, el.dataset.id, el.dataset.k); save(); toast(r.msg, r.ok ? 'ok' : 'err'); if (r.ok) { closeModal(); render(); } },
   meeting: el => { const r = C.holdTeamMeeting(st, el.dataset.k); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
   setRole: el => { const p = st.players[el.dataset.id]; const roles = ['cle', 'titulaire', 'rotation', 'espoir', 'jeune']; p.role = roles[(roles.indexOf(p.role) + 1) % roles.length]; save(); playerModal(p.id); },

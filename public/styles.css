@@ -353,3 +353,6 @@ button:disabled,.btn:disabled{
 /* Match en ligne */
 .room-code{font:900 54px/1.1 system-ui,Arial;letter-spacing:.25em;margin:14px auto;padding:10px 22px;border-radius:16px;background:#ffffff10;border:2px dashed #ffe14a88;display:inline-block}
 .code-in{text-transform:uppercase;letter-spacing:.2em;font-weight:800;width:7em}
+
+/* Ralenti TV : commandes masquées pour une image propre (un toucher passe le ralenti). */
+.match.replaying .joyzone,.match.replaying .btns{opacity:0;pointer-events:none;transition:opacity .25s}

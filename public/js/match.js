@@ -7,6 +7,20 @@ import { getFormationAssignment, getFormationBase, applyPreset, getCoachAdvice }
 import { getMatchFlavor, getGoalCommentKeys, pickLine, fillLine } from './commentary.js';
 import { getShootoutStatus, getNextKicker, getShootoutOrder, getAIPenaltyChoice, getPenaltyStrike, getAIKeeperDive, getPenaltyOutcome } from './shootout.js';
 
+export const TV_WIPE = 0.55;
+// Plan de réalisation : vue large, derrière le but, puis caméra rapprochée sur la fin de l'action.
+export function buildReplayPlan(frames, attackDir = 1) {
+  const n = frames.length, last = frames[n - 1]?.b || [attackDir * 52.5, 0, 0];
+  const goalSide = Math.abs(last[0]) > 40 ? Math.sign(last[0]) : (attackDir >= 0 ? 1 : -1);
+  return {
+    frames, i: 0, seg: 0, goalSide,
+    segs: [
+      { angle: 'tv', from: 0, speed: 0.42, label: 'Caméra principale' },
+      { angle: 'goal', from: Math.max(0, n - 64), speed: 0.36, label: 'Derrière le but' },
+      { angle: 'close', from: Math.max(0, n - 50), speed: 0.3, label: 'Caméra rapprochée' },
+    ],
+  };
+}
 const HL = 52.5, HW = 34, GOAL_W = 3.66, GOAL_H = 2.44, G = 9.81;
 const DT = 1 / 60;
 const SKIN = ['#8d5524', '#c68642', '#e0ac69', '#a0662f', '#5c3a1e', '#f1c27d'];
@@ -997,7 +1011,7 @@ export class Match {
     if (this.net) this.net.frame(dt); // match en ligne : l'état vient du serveur
     else if (!this.paused) {
       if (this.replay) this.updateReplay(dt);
-      else { this.acc += dt; while (this.acc >= DT) { this.step(DT); this.acc -= DT; } }
+      else { if (this.tvWipeT > 0) this.tvWipeT = Math.max(0, this.tvWipeT - dt); this.acc += dt; while (this.acc >= DT) { this.step(DT); this.acc -= DT; } }
     }
     this.render();
   }
@@ -2303,16 +2317,25 @@ export class Match {
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }
+  // Réalisation TV : le but est rejoué sous trois angles, séparés par un volet animé.
   startReplay() {
     if (this.settings.replays === false || this.replayBuf.length < 20) return this.afterGoal();
-    this.replay = { frames: this.replayBuf.slice(-130), i: 0 };
-    this.banner('RALENTI', 99);
+    const frames = this.replayBuf.slice(-130);
+    this.replay = buildReplayPlan(frames, this.lastGoalTeam != null ? this.teams[this.lastGoalTeam].dir : 1);
+    this.tvWipeT = TV_WIPE;
+    this.msg = ''; this.msgT = 0;
   }
   updateReplay(dt) {
-    this.replay.i += dt * 30 * 0.34;
-    if (this.replay.i >= this.replay.frames.length - 1) this.skipReplay();
+    const r = this.replay;
+    this.tvWipeT = Math.max(0, (this.tvWipeT || 0) - dt);
+    const seg = r.segs[r.seg];
+    r.i += dt * 30 * seg.speed;
+    if (r.i >= r.frames.length - 1) {
+      if (r.seg < r.segs.length - 1) { r.seg++; r.i = r.segs[r.seg].from; this.tvWipeT = TV_WIPE; }
+      else this.skipReplay();
+    }
   }
-  skipReplay() { if (!this.replay) return; this.replay = null; this.msgT = 0; this.afterGoal(); }
+  skipReplay() { if (!this.replay) return; this.replay = null; this.msgT = 0; this.tvWipeT = TV_WIPE; this.afterGoal(); }
   afterGoal() { this.replayBuf = []; this.setupKickoff(1 - this.lastGoalTeam); }
 
   // ---------------- fin ----------------
@@ -2609,6 +2632,8 @@ export class Match {
   render() {
     const c = this.c, W = this.W, H = this.H;
     let frame = null;
+    const host = this.canvas.parentElement;
+    if (host && !!this.replay !== !!this._replayClass) { this._replayClass = !!this.replay; host.classList.toggle('replaying', this._replayClass); }
     if (this.replay) { const fr = this.replay.frames, i = Math.floor(this.replay.i); frame = fr[Math.min(i, fr.length - 1)]; }
     const bx = frame ? frame.b[0] : this.ball.x, by = frame ? frame.b[1] : this.ball.y;
     const follow = getCameraFollow({
@@ -3345,6 +3370,43 @@ export class Match {
       if (opt) drawPath(opt.tx, opt.ty, this.setPiece === 'corner' || Math.hypot(opt.tx - b.x, opt.ty - b.y) > 32 ? 2 : 0.15, '#ffffff', 'pass');
     }
   }
+  drawReplayBug() {
+    const c = this.c, d = this.dpr, r = this.replay, seg = r.segs[r.seg];
+    const x = 12 * d, y = this.H - 64 * d, w = Math.min(230 * d, this.W * 0.42), h = 40 * d;
+    c.save();
+    c.fillStyle = 'rgba(7,17,29,0.82)'; this.rr(x, y, w, h, 7 * d); c.fill();
+    c.fillStyle = '#ffdf45'; this.rr(x, y, 62 * d, h, 7 * d); c.fill();
+    c.fillStyle = '#07111d'; c.font = `900 ${10 * d}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('RALENTI', x + 31 * d, y + h / 2 - 5 * d);
+    c.font = `800 ${9 * d}px system-ui,Arial`; c.fillText(`${r.seg + 1}/${r.segs.length}`, x + 31 * d, y + h / 2 + 8 * d);
+    c.textAlign = 'left'; c.fillStyle = '#fff'; c.font = `800 ${11 * d}px system-ui,Arial`;
+    c.fillText(seg.label, x + 72 * d, y + 14 * d);
+    const bx = x + 72 * d, bw = w - 82 * d, prog = clamp((r.i - seg.from) / Math.max(1, r.frames.length - 1 - seg.from), 0, 1);
+    c.fillStyle = 'rgba(255,255,255,0.25)'; c.fillRect(bx, y + 26 * d, bw, 3 * d);
+    c.fillStyle = '#ffdf45'; c.fillRect(bx, y + 26 * d, bw * prog, 3 * d);
+    c.fillStyle = 'rgba(255,255,255,0.7)'; c.font = `700 ${9 * d}px system-ui,Arial`; c.textAlign = 'right';
+    c.fillText('Touchez pour passer', this.W - 14 * d, this.H - 14 * d);
+    // Bandeaux cinéma pendant le ralenti.
+    c.fillStyle = 'rgba(0,0,0,0.38)'; c.fillRect(0, 0, this.W, 6 * d);
+    c.restore();
+  }
+  // Volet de transition aux couleurs du club (masque les changements de caméra).
+  drawTvWipe() {
+    const t = this.tvWipeT || 0; if (t <= 0) return;
+    const c = this.c, d = this.dpr, W = this.W, H = this.H;
+    const p = 1 - t / TV_WIPE, ease = p * p * (3 - 2 * p);
+    const cx = -W * 0.45 + ease * W * 1.9, band = W * 0.62, slant = H * 0.45;
+    const home = this.teams[this.lastGoalTeam ?? 0]?.kit || {};
+    c.save();
+    const poly = (x0, wdt, col) => { c.fillStyle = col; c.beginPath(); c.moveTo(x0 - wdt / 2 + slant, 0); c.lineTo(x0 + wdt / 2 + slant, 0); c.lineTo(x0 + wdt / 2 - slant, H); c.lineTo(x0 - wdt / 2 - slant, H); c.closePath(); c.fill(); };
+    poly(cx - band * 0.62, band * 0.16, home.trim || '#ffffff');
+    poly(cx, band, home.shirt || '#c8102e');
+    poly(cx + band * 0.6, band * 0.1, '#ffdf45');
+    c.fillStyle = '#fff'; c.font = `900 ${Math.min(46 * d, H * 0.14)}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.globalAlpha = clamp(1 - Math.abs(ease - 0.5) * 2.4, 0, 1);
+    c.fillText('FT 26', cx, H / 2);
+    c.restore();
+  }
   drawHUD(isReplay, frame = null) {
     const c = this.c, d = this.dpr, T = this.teams;
     if (!isReplay) this.drawAimGuide();
@@ -3421,17 +3483,8 @@ export class Match {
       c.fillStyle = isReplay ? '#ffe14a' : '#fff'; c.fillText(this.msg, this.W / 2, by + 1 * d); c.restore();
     }
     c.textBaseline = 'alphabetic';
-    if (isReplay) {
-      const rw = Math.min(280 * d, this.W * 0.7), rx = (this.W - rw) / 2, ry = this.H * 0.48;
-      c.fillStyle = '#07111ddd'; c.fillRect(rx, ry, rw, 34 * d);
-      c.fillStyle = '#ffdf45'; c.font = `900 ${12 * d}px system-ui,Arial`; c.textAlign = 'center';
-      c.fillText('RALENTI • ACTION DU MATCH', this.W / 2, ry + 13 * d);
-      c.fillStyle = '#ffffff55'; c.fillRect(rx + 10 * d, ry + 22 * d, rw - 20 * d, 3 * d);
-      const progress = this.replay ? this.replay.i / Math.max(1, this.replay.frames.length - 1) : 0;
-      c.fillStyle = '#ffdf45'; c.fillRect(rx + 10 * d, ry + 22 * d, (rw - 20 * d) * clamp(progress, 0, 1), 3 * d);
-      c.fillStyle = '#fff'; c.font = `700 ${10 * d}px system-ui,Arial`;
-      c.fillText('Touchez pour passer', this.W / 2, ry + 48 * d);
-    }
+    if (isReplay && this.replay) this.drawReplayBug();
+    this.drawTvWipe();
     // Tirs au but : tableau de séance à la place du radar.
     if (this.state === 'shootout') { this.drawShootoutPanel(); this.drawShootoutAim(); c.textBaseline = 'alphabetic'; return; }
     // radar

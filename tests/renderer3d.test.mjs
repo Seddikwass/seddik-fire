@@ -288,3 +288,20 @@ console.log('3D ACTION MESH OK — corps orienté sur première touche, tête, c
   assert.ok(styles.size >= 5, 'coiffures variées dans un effectif');
   console.log('3D PLAYER LOOK OK — repos sans grand écart, ' + styles.size + ' coiffures');
 }
+
+{
+  const { buildReplayPlan } = await import('../public/js/match.js');
+  const { get3DCameraPose: cam } = await import('../public/js/renderer3d.js');
+  const frames = Array.from({ length: 130 }, (_, k) => ({ b: [20 + k * 0.25, 2, 0.4], p: [] }));
+  const plan = buildReplayPlan(frames, 1);
+  assert.equal(plan.segs.length, 3, 'trois angles de ralenti');
+  assert.equal(plan.goalSide, 1, 'but côté droit détecté');
+  for (let s = 0; s < 3; s++) {
+    plan.seg = s; plan.i = plan.segs[s].from;
+    const pose = cam({ replay: plan, cam: { x: 0, y: 0 }, ball: { x: 0, y: 0, z: 0 } }, frames[plan.i], 16 / 9);
+    assert.ok(pose.eye.every(Number.isFinite) && pose.target.every(Number.isFinite), 'caméra finie ' + s);
+    if (s === 1) assert.ok(pose.eye[0] > 54 && pose.eye[1] < 8, 'caméra derrière le but');
+    if (s === 2) assert.ok(pose.distance < 16, 'caméra rapprochée proche du ballon');
+  }
+  console.log('REPLAY TV OK — 3 angles (principale, derrière le but, rapprochée)');
+}

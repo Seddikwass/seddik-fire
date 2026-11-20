@@ -1,5 +1,12 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.32.0 — ralentis façon télévision
+- Chaque but est rejoué sous trois angles : caméra principale, caméra derrière le but, puis caméra rapprochée au bord du terrain qui accompagne le ballon.
+- Volet de transition animé aux couleurs du club qui a marqué (« FT 26 ») entre les angles, au début et à la fin du ralenti.
+- Habillage TV : pastille « RALENTI 1/3 » avec le nom de l'angle et une barre de progression en bas à gauche, à la place du grand panneau qui cachait l'action ; bandeau cinéma.
+- Joystick et boutons masqués pendant le ralenti pour une image propre ; un toucher passe toujours le ralenti.
+- Tests : plan de réalisation à trois angles, caméras finies et bien placées.
+
 ## Version 3.31.0 — joueurs plus naturels
 - Correction majeure : au repos ou en course, la jambe de frappe de chaque joueur restait tendue en « grand écart ». Le suivi de frappe n'apparaît désormais que juste après une frappe, puis s'efface en douceur.
 - Posture d'attente réaliste : appuis légèrement écartés et respiration discrète quand le joueur est arrêté.

@@ -212,6 +212,29 @@ function multiply4(a, b) {
 // et resserre le cadre sans perdre les lignes du terrain en format paysage.
 export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   const cam = match.cam || {};
+  const plan = replay && match.replay?.segs ? match.replay : null;
+  const angle = plan ? plan.segs[plan.seg]?.angle : null;
+  if (angle === 'goal' || angle === 'close') {
+    const b = Array.isArray(replay.b) ? replay.b : [0, 0, 0];
+    const bx = Number.isFinite(b[0]) ? b[0] : 0, by = Number.isFinite(b[1]) ? b[1] : 0, bz = clamp(Number.isFinite(b[2]) ? b[2] : 0, 0, 10);
+    const gs = plan.goalSide >= 0 ? 1 : -1;
+    const safe = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
+    let eye, target, fovy;
+    if (angle === 'goal') {
+      // Caméra en hauteur derrière le filet, qui regarde l'action arriver.
+      eye = [gs * 56, 5.6, clamp(-by * 0.35, -10, 10)];
+      target = [clamp(bx, -50, 50) - gs * 4, 0.9 + bz * 0.4, -by * 0.85];
+      fovy = safe < 1.15 ? 0.85 : 0.62;
+    } else {
+      // Caméra au bord du terrain, basse, qui accompagne le ballon.
+      const t = (plan.i - plan.segs[plan.seg].from) * 0.012;
+      eye = [bx - gs * (8 - t * 2), 3.1, -by + 10.5 + Math.sin(t) * 1.5];
+      target = [bx + gs * 1.5, 1.0 + bz * 0.5, -by];
+      fovy = safe < 1.15 ? 0.95 : 0.72;
+    }
+    return { eye, target, zoom: 1, aspect: safe, ballHeight: bz, focusLift: 0, portrait: 0, fovy, angle,
+      distance: Math.hypot(eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]) };
+  }
   const zoom = replay ? 1.02 : clamp(cam.actionZoom || 1, 1, 1.16);
   const targetX = clamp(Number.isFinite(cam.x) ? cam.x : 0, -48, 48);
   const targetZ = clamp(Number.isFinite(cam.y) ? -cam.y : 0, -28, 28);

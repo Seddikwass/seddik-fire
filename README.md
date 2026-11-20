@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Nouveautés 2.29 — Soldats et vie propres à chaque carte
+- **Tenues des soldats selon la carte** : chacune des 23 cartes a sa propre tenue de camouflage (3 variantes par carte), par exemple sable au Sahara, blanc et bleu à Sidi Bou Saïd, vert à la Forêt, gris anthracite à Tunis. La nuit, les tenues sont plus sombres.
+- **Nouvel équipement** : chèche ou foulard dans les couleurs de la carte, avec pan qui flotte en marchant, et écusson du drapeau tunisien sur l'épaule ; poussière de sable ou boue sur les tenues selon le terrain.
+- **Vie propre à chaque carte** : traces de pas dans le sable et sur les plages, ronds dans l'eau quand on y marche, mouettes sur les côtes et les îles, pigeons en ville, rapaces au-dessus du désert et des montagnes, tourbillons de sable dans le désert, feuilles qui tombent en forêt.
+
 ## Version 2.28
 - Chasse au trésor : 6 trésors propres à chaque carte (clé de la médina, rose des sables, corail rouge de Tabarka, fossile de Tataouine, cage d'oiseau de Sidi Bou Saïd, poterie de Guellala, poulpe de Kerkennah…). Compteur à gauche, +40 XP par trésor et +300 XP pour les 6.
 - Gourmandises tunisiennes à ramasser : glace (+20 PV et vitesse), thé à la menthe (rechargement rapide), harissa (dégâts +20 %), bambalouni (+35 PV), dattes (PV et énergie), et coffres au butin rare. Marchands de glaces dans chaque ville.

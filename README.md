@@ -1,5 +1,11 @@
 # Seddik Fire
 
+## Nouveautés 2.30 — Chaque carte a son architecture et ses monuments
+- **Maisons selon la région** : briques ocre à motifs à Tozeur, ghorfas en argile à Tataouine et Gabès, menzels blanchis à la chaux à Djerba et Kerkennah, blanc et bleu à Sidi Bou Saïd, tuiles rouges à Tabarka, Bizerte et au Kef, pierre grise au Kef, à Gafsa et à La Galite, immeubles coloniaux à Tunis.
+- **Monuments propres à chaque carte** : forts (fort génois de Tabarka, Borj El Kebir à Djerba et Mahdia, Kélibia, Hammamet, Bizerte), kasbahs (Le Kef, Gafsa, Tataouine), ribats de Sousse et Monastir, amphithéâtres (El Jem, Carthage), portes de médina (Skifa Kahla, Bab Bhar, Sfax), horloge de l'avenue Bourguiba, phares, mosquées en briques du Jérid, maison troglodyte de Matmata.
+- **Arbres propres à chaque carte** : palmiers dattiers et palmeraies (Tozeur, Gabès, Djerba, Kerkennah), chênes-lièges de Kroumirie, pins d'Alep, ficus des avenues de Tunis, cyprès, jasmin d'Hammamet, orangeraies du Cap Bon, oliveraies de Sfax et du Sahel.
+- **Teinte du sol propre à chaque carte** : sable rouge à Tataouine, ocre à Tozeur, vert en Kroumirie, roche volcanique à La Galite…
+
 ## Nouveautés 2.29 — Soldats et vie propres à chaque carte
 - **Tenues des soldats selon la carte** : chacune des 23 cartes a sa propre tenue de camouflage (3 variantes par carte), par exemple sable au Sahara, blanc et bleu à Sidi Bou Saïd, vert à la Forêt, gris anthracite à Tunis. La nuit, les tenues sont plus sombres.
 - **Nouvel équipement** : chèche ou foulard dans les couleurs de la carte, avec pan qui flotte en marchant, et écusson du drapeau tunisien sur l'épaule ; poussière de sable ou boue sur les tenues selon le terrain.

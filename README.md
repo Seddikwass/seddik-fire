@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.41.0 — tribunes en fête : tifo, fumigènes, drapeaux, chœurs
+- Tifo géant qui se déroule de bas en haut sur le virage à domicile pendant l'avant-match (rayures aux couleurs du club, croissant et étoile au centre) et ondule au vent ; le survol d'ouverture s'attarde sur lui.
+- Fumigènes après chaque but dans la tribune de l'équipe qui marque : torches incandescentes qui vacillent et fumée colorée, douce et translucide, qui monte et se dissipe pendant une dizaine de secondes (y compris pendant le ralenti).
+- Nouveau rendu translucide (passe de transparence) : fumée et pluie se fondent désormais dans l'image au lieu de former des volumes opaques.
+- Environ 150 drapeaux agités par les supporters dans les tribunes, au rythme de leur porteur.
+- Chœurs des tribunes : « olé, olé » chanté quand l'équipe à domicile mène, chant d'encouragement montant quand elle est menée en fin de match, en plus des claquements de mains et de la darbouka.
+- Correction : déclaration de l'uniforme de transparence partagée entre les deux shaders avec des précisions différentes (échec de liaison WebGL qui renvoyait au rendu 2.5D) — détectée et corrigée avant publication.
+
 ## Version 3.40.0 — météo, mouvements fluides, gardien en appui
 - Quatre ambiances de match : nuit claire sous les projecteurs, plein soleil (ciel bleu, lumière vive, ombres portées par le soleil), pluie battante (ciel sombre, rideau de pluie animé, pelouse brillante et mouillée) et brouillard (brume dense qui avale les tribunes).
 - Effet de jeu de la pluie : sur pelouse mouillée le ballon roule plus loin et rebondit moins haut.

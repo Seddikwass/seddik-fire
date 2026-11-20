@@ -32,7 +32,7 @@ export function audioInit() {
   src.start();
 }
 export function setAudio(on, vol) { enabled = on; if (vol != null) volume = vol; if (master) master.gain.value = enabled ? volume : 0; }
-export function audioSuspend() { if (ctx && ctx.state === 'running') ctx.suspend(); stopDrums(); stopChant(); }
+export function audioSuspend() { if (ctx && ctx.state === 'running') ctx.suspend(); stopDrums(); stopChant(); stopSing(); }
 export function audioResume() { if (ctx && ctx.state === 'suspended') ctx.resume(); }
 
 export function crowd(level) { // 0..1
@@ -186,6 +186,35 @@ export function chant(seconds = 7) {
   sched(); chantTimer = setInterval(sched, 200);
   startDrums(seconds);
 }
+// Chœur des tribunes : quelques milliers de voix (oscillateurs désaccordés + formant de voyelle « o »).
+// mood 'ole' : « Olé, olé, olé, olé » quand l'équipe à domicile mène ; 'push' : encouragement montant.
+let singNodes = [];
+export function sing(mood = 'ole', seconds = 8) {
+  if (!ctx || !enabled) return;
+  stopSing();
+  const mel = mood === 'ole'
+    ? [[64, 0.45], [64, 0.45], [67, 0.45], [64, 0.9], [62, 0.45], [64, 0.45], [67, 0.45], [69, 0.9], [67, 0.45], [64, 1.1]]
+    : [[57, 0.5], [60, 0.5], [62, 0.5], [64, 1.0], [62, 0.5], [60, 0.5], [57, 1.2]];
+  const out = ctx.createGain(); out.gain.value = 0;
+  const f1 = ctx.createBiquadFilter(); f1.type = 'bandpass'; f1.frequency.value = 520; f1.Q.value = 1.6;
+  const f2 = ctx.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.value = 1400;
+  out.connect(f1).connect(f2).connect(master);
+  const t0 = ctx.currentTime + 0.05, end = t0 + seconds;
+  out.gain.linearRampToValueAtTime(0.055, t0 + 0.6); out.gain.setValueAtTime(0.055, end - 0.8); out.gain.linearRampToValueAtTime(0, end);
+  const voices = [];
+  for (let v = 0; v < 6; v++) {
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.detune.value = (v - 2.5) * 9;
+    const g = ctx.createGain(); g.gain.value = 0.16; o.connect(g).connect(out); o.start(t0); o.stop(end + 0.1); voices.push(o);
+  }
+  let t = t0, i = 0;
+  while (t < end) {
+    const [note, dur] = mel[i % mel.length]; const hz = 440 * Math.pow(2, (note - 12 - 69) / 12) * 2;
+    for (const o of voices) o.frequency.setValueAtTime(hz, t);
+    t += dur; i++;
+  }
+  singNodes = voices.concat([out]);
+}
+export function stopSing() { for (const n of singNodes) { try { n.stop ? n.stop() : n.disconnect(); } catch (e) {} } singNodes = []; }
 export function stopChant() { if (chantTimer) clearInterval(chantTimer); chantTimer = null; }
 export function click() { if (!ctx || !enabled) return; drum(ctx.currentTime, 900, 0.04, 0.1); }
 

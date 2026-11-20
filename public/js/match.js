@@ -999,7 +999,7 @@ export class Match {
 
   // ---------------- cycle de vie ----------------
   start() { this.running = true; this.last = performance.now(); A.audioInit(); A.crowd(0.25); requestAnimationFrame(this.loop); }
-  destroy() { this.running = false; window.removeEventListener('resize', this.resize); document.removeEventListener('visibilitychange', this.onVis); this.renderer3d?.dispose(); this.renderer3d = null; A.stopDrums(); A.stopChant(); A.crowd(0); }
+  destroy() { this.running = false; window.removeEventListener('resize', this.resize); document.removeEventListener('visibilitychange', this.onVis); this.renderer3d?.dispose(); this.renderer3d = null; A.stopDrums(); A.stopChant(); A.stopSing?.(); A.crowd(0); }
   resize() {
     const nav = typeof navigator === 'undefined' ? {} : navigator;
     const ratio = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
@@ -1216,8 +1216,10 @@ export class Match {
     // Chants : régulièrement, plus souvent quand l'équipe à domicile mène ou pousse.
     this.nextChantT = (this.nextChantT ?? 30 + this.r() * 20) - dt;
     if (this.nextChantT <= 0) {
-      const homeLeads = this.score[0] > this.score[1];
+      const homeLeads = this.score[0] > this.score[1], homeTrails = this.score[0] < this.score[1];
       A.chant(homeLeads ? 9 : 6);
+      // Le chœur chante « olé » quand on mène, pousse son équipe quand elle est menée en fin de match.
+      if (homeLeads) A.sing?.('ole', 8); else if (homeTrails && this.minute > 60) A.sing?.('push', 7);
       this.nextChantT = (homeLeads ? 28 : 45) + this.r() * 25;
     }
   }
@@ -2564,8 +2566,9 @@ export class Match {
     const ease = v => { v = clamp(v, 0, 1); return v * v * (3 - 2 * v); };
     if (t < 3.6) {
       // Survol en hélicoptère, toujours au-dessus de la cuvette (jamais dans une tribune).
-      const u = ease(t / 3.6), a = -2.3 + u * 0.75;
-      return { eye: [Math.cos(a) * 44, 36 - u * 12, -Math.sin(a) * 27], target: [0, 1.5, -plan.lineY * 0.45], fovy: 0.82 };
+      // Ouverture sur le tifo du virage, puis bascule vers la pelouse.
+      const u = ease(t / 3.6);
+      return { eye: [16 - u * 10, 30 - u * 8, 26 - u * 2], target: [-52 + u * 52, 9 - u * 7.5, -u * plan.lineY * 0.45], fovy: 0.8 };
     }
     if (t < 8.4) {
       const u = ease((t - 3.6) / 4.8);

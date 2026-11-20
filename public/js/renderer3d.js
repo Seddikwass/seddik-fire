@@ -408,6 +408,23 @@ function addPanelBall(out, c, r, M, seg, rings) {
     pushVertex(out, A.p, A.n, col); pushVertex(out, C.p, C.n, col); pushVertex(out, D.p, D.n, col);
   }
 }
+// Bouffée de fumée : disque face caméra, opaque au centre et transparent sur les bords (passe translucide).
+function softPuff(out, c, r, color, cam, alpha = 1) {
+  if (!cam) return;
+  let f = [cam.target[0] - cam.eye[0], cam.target[1] - cam.eye[1], cam.target[2] - cam.eye[2]]; const fl = Math.hypot(...f) || 1; f = f.map(v => v / fl);
+  let rt = [f[2], 0, -f[0]]; const rl = Math.hypot(...rt) || 1; rt = rt.map(v => v / rl);
+  const up = [rt[1] * f[2] - rt[2] * f[1], rt[2] * f[0] - rt[0] * f[2], rt[0] * f[1] - rt[1] * f[0]];
+  const n = [-f[0], -f[1], -f[2]], seg = 14;
+  const P = (a, k) => [c[0] + (rt[0] * Math.cos(a) + up[0] * Math.sin(a)) * r * k, c[1] + (rt[1] * Math.cos(a) + up[1] * Math.sin(a)) * r * k, c[2] + (rt[2] * Math.cos(a) + up[2] * Math.sin(a)) * r * k];
+  for (let i = 0; i < seg; i++) {
+    const a = i / seg * Math.PI * 2, b = (i + 1) / seg * Math.PI * 2;
+    currentAnim = alpha; pushVertex(out, c, n, color);
+    currentAnim = alpha * 0.55; pushVertex(out, P(a, 0.55), n, color); pushVertex(out, P(b, 0.55), n, color);
+    pushVertex(out, P(a, 0.55), n, color); currentAnim = 0; pushVertex(out, P(a, 1), n, color); pushVertex(out, P(b, 1), n, color);
+    currentAnim = alpha * 0.55; pushVertex(out, P(a, 0.55), n, color); currentAnim = 0; pushVertex(out, P(b, 1), n, color); currentAnim = alpha * 0.55; pushVertex(out, P(b, 0.55), n, color);
+  }
+  currentAnim = 0;
+}
 function sphere(out, center, scale, color, seg = 8, rings = 6) {
   const [cx, cy, cz] = center, [rx, ry, rz] = scale;
   const point = (lat, lon) => {
@@ -480,8 +497,8 @@ function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glov
   }
 }
 
-const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; void main(){ vec3 p=aPosition; if(aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; if(aAnim<0.0){ float w=0.5+0.5*sin(uTime*2.4-(p.x+p.z)*0.45); vColor=aColor*(0.7+0.45*w)+vec3(0.3*uExcite*max(sin(uTime*15.0),0.0)); } vWorld=p; gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
-const FS = 'precision mediump float; uniform vec3 uFog; uniform vec3 uEye; uniform float uRim; uniform vec3 uFogRange; uniform vec3 uLight; uniform float uWet; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); vec3 lp=vColor*(amb*0.78+0.62*key+0.16*rim+0.1*fill)+vec3(sh*0.16)+vec3(1.0,0.94,0.82)*fres*0.32*(0.4+0.6*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } if(uWet>0.0&&n.y>0.85){ vec3 Vw=normalize(uEye-vWorld); float gl2=pow(max(dot(n,normalize(sun+Vw)),0.0),46.0); float fr=pow(1.0-max(dot(n,Vw),0.0),4.0); lit+=vec3(0.75,0.8,0.9)*(gl2*0.6+fr*0.34)*uWet; lit*=1.0-0.12*uWet*(1.0-uRim); } lit*=uLight; vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(uFogRange.x,uFogRange.y,vDepth)*uFogRange.z; color=mix(color,uFog,fog); gl_FragColor=vec4(color,1.0); }';
+const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; uniform float uFx; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; varying float vFxA; varying float vFx; void main(){ vec3 p=aPosition; vFxA=aAnim; vFx=uFx; if(uFx<0.5&&aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; if(uFx<0.5&&aAnim<0.0){ float w=0.5+0.5*sin(uTime*2.4-(p.x+p.z)*0.45); vColor=aColor*(0.7+0.45*w)+vec3(0.3*uExcite*max(sin(uTime*15.0),0.0)); } vWorld=p; gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
+const FS = 'precision mediump float; uniform vec3 uFog; uniform vec3 uEye; uniform float uRim; uniform vec3 uFogRange; uniform vec3 uLight; uniform float uWet; uniform float uAlpha; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; varying float vFxA; varying float vFx; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); vec3 lp=vColor*(amb*0.78+0.62*key+0.16*rim+0.1*fill)+vec3(sh*0.16)+vec3(1.0,0.94,0.82)*fres*0.32*(0.4+0.6*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } if(uWet>0.0&&n.y>0.85){ vec3 Vw=normalize(uEye-vWorld); float gl2=pow(max(dot(n,normalize(sun+Vw)),0.0),46.0); float fr=pow(1.0-max(dot(n,Vw),0.0),4.0); lit+=vec3(0.75,0.8,0.9)*(gl2*0.6+fr*0.34)*uWet; lit*=1.0-0.12*uWet*(1.0-uRim); } lit*=uLight; vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(uFogRange.x,uFogRange.y,vDepth)*uFogRange.z; color=mix(color,uFog,fog); gl_FragColor=vec4(color,vFx>0.5?uAlpha*clamp(vFxA,0.0,1.0):uAlpha); }';
 
 function compile(gl, type, source) {
   const shader = gl.createShader(type);
@@ -601,6 +618,10 @@ export class MatchRenderer3D {
     this.canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); this.lost = true; this.canvas.style.display = 'none'; });
     this.staticGeometry = makeGeometry();
     this.dynamicGeometry = makeGeometry();
+    this.fxGeometry = makeGeometry();
+    this.fxBuffer = gl.createBuffer();
+    this.alphaLoc = gl.getUniformLocation(this.program, 'uAlpha');
+    this.fxLoc = gl.getUniformLocation(this.program, 'uFx');
     this.buildStadium(match);
     this.uploadStatic();
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
@@ -754,6 +775,14 @@ export class MatchRenderer3D {
             if (empty) { seatBlock(g, px, h, pz, facing, awaySection ? away : home); continue; }
             currentAnim = 0.001 + rand();
             spectator(g, px, h, pz, facing, pal[Math.floor(rand() * pal.length)], skin[Math.floor(rand() * skin.length)], rand() < 0.16 ? (awaySection ? awayTrim : homeTrim) : null);
+            // Drapeaux agités par quelques supporters (ils suivent le rythme de leur porteur).
+            if (profile.detail >= 1 && rand() < 0.011) {
+              const fc = awaySection ? (rand() < 0.5 ? away : awayTrim) : (rand() < 0.55 ? home : homeTrim);
+              const top = [px, h + 2.5, pz], ax = axis === 'x' ? [1, 0, 0] : [0, 0, 1];
+              tube(g, [px, h + 0.7, pz], top, 0.025, [0.8, 0.8, 0.8], 4);
+              quad(g, top, [top[0] + ax[0] * 1.3, top[1] - 0.1, top[2] + ax[2] * 1.3], [top[0] + ax[0] * 1.3, top[1] - 0.95, top[2] + ax[2] * 1.3], [top[0], top[1] - 0.85, top[2]], fc, facing);
+              quad(g, [top[0] + ax[0] * 1.3, top[1] - 0.1, top[2] + ax[2] * 1.3], top, [top[0], top[1] - 0.85, top[2]], [top[0] + ax[0] * 1.3, top[1] - 0.95, top[2] + ax[2] * 1.3], fc, facing.map(v => -v));
+            }
             currentAnim = 0;
             fans++;
           }
@@ -1286,24 +1315,72 @@ export class MatchRenderer3D {
       else { const v=G._v||1.7; G.vx=dx/dd*v; G.vy=dy/dd*v; G.x+=G.vx*dt; G.y+=G.vy*dt; G.anim=(G.anim||0)+v*1.55*dt; G.heading=Math.atan2(dy,dx); G.face=Math.sign(dx)||1; }
     } else this.subGhost=null;
   }
+  // Tifo géant déployé sur le virage à domicile pendant l'avant-match (déroulé de bas en haut, ondulant).
+  addTifo(g, match) {
+    const t=match.ceremony.t; if(t<0.4) return;
+    const reveal=clamp((t-0.4)/2.4,0,1);
+    const home=parseColor(match.teams?.[0]?.kit?.shirt,[0.8,0.1,0.1]), trim=parseColor(match.teams?.[0]?.kit?.trim,[0.95,0.85,0.2]);
+    const rows=this.quality.detail>=2?15:this.quality.detail===1?11:7;
+    const d0=57.4, d1=57.4+rows*0.85, h0=2.4, h1=1.2+rows*0.45+1.4, Z=31, nu=this.quality.detail>=1?40:24, nv=this.quality.detail>=1?10:6;
+    const clock=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
+    const col=(u,v)=>{
+      const ex=(u-0.5)*(2*Z)/(h1-h0+ (d1-d0))*1.0, ey=v-0.55;
+      const r=Math.hypot(ex*0.9,ey);
+      if(r<0.36){ const inA=Math.hypot(ex*0.9+0.04,ey)<0.26, inB=Math.hypot(ex*0.9-0.05,ey)<0.21, star=Math.hypot(ex*0.9-0.11,ey)<0.07; return (inA&&!inB)||star?home:trim; }
+      if(r<0.4) return home;
+      return Math.floor(u*12)%2?home:trim;
+    };
+    const P=(u,v)=>{ const d=d0+(d1-d0)*v, h=h0+(h1-h0)*v, w=Math.sin(clock*2.2+u*9+v*4)*0.12; return [-(d)-w*0.6, h+w, -Z+u*2*Z]; };
+    const n=[[0.6,0.8,0],[0.6,0.8,0],[0.6,0.8,0]];
+    for(let i=0;i<nu;i++) for(let j=0;j<nv;j++){
+      const v0=j/nv, v1=(j+1)/nv; if(v1>reveal+0.001) continue;
+      const u0=i/nu, u1=(i+1)/nu, c=col((u0+u1)/2,(v0+v1)/2);
+      const a=P(u0,v0), b=P(u1,v0), cc=P(u1,v1), dd=P(u0,v1);
+      triangle(g,a,b,cc,c,n); triangle(g,a,cc,dd,c,n);
+    }
+  }
+  // Fumigènes après un but : torches rouges vacillantes et fumée aux couleurs du club qui monte et s'élargit.
+  addFlares(g, match, fx = g) {
+    const now=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
+    const call=match.refCall;
+    if(call&&call.type==='goal'&&call!==this._flareCall){ this._flareCall=call; this.flareStart=now; this.flareTeam=match.lastGoalTeam??0; }
+    if(this.flareStart==null) return;
+    const age=now-this.flareStart; if(age>14){ this.flareStart=null; return; }
+    const team=this.flareTeam, kit=match.teams?.[team]?.kit||{};
+    const smokeCol=parseColor(kit.shirt,[0.8,0.1,0.1]).map(v=>v*0.6+0.38), fog=(this.wx||{}).fog||[0.2,0.25,0.34];
+    const n=this.quality.detail>=2?10:this.quality.detail===1?7:4, puffs=this.quality.detail>=1?6:3;
+    for(let k=0;k<n;k++){
+      const h=Math.sin(k*91.7)*1000, fr=h-Math.floor(h);
+      const pos=team===0?[-(57.4+2+fr*7), 1.2+(2+fr*7)/0.85*0.45+1.2, -24+k*(48/(n-1))]:[57.4+2+fr*6, 1.2+(2+fr*6)/0.85*0.45+1.2, 12+k*(18/(n-1))];
+      const fade=clamp((14-age)/3,0,1);
+      if(age<11){ const fl=0.7+0.3*Math.sin(now*31+k*7)*Math.sin(now*17+k); sphere(g,[pos[0],pos[1]+0.5,pos[2]],[0.32*fl,0.42*fl,0.32*fl],[1.9,0.75*fl,0.3],6,4); softPuff(fx,[pos[0],pos[1]+0.55,pos[2]],1.1*fl,[1.6,0.55,0.2],this.lastCamera,0.8); }
+      for(let q=0;q<puffs;q++){
+        const a=((age-q*0.55)%3.3+3.3)%3.3; if(age-q*0.55<0) continue;
+        const rr=(0.45+a*0.6)*fade, c=smokeCol.map((v,i)=>v+(fog[i]-v)*clamp(a/3.3,0,0.6));
+        softPuff(fx,[pos[0]+(team===0?1:-1)*a*0.8,pos[1]+0.8+a*1.6,pos[2]+Math.sin(k*3+a)*0.5],rr*2.1,c,this.lastCamera,clamp(1.15-a/3.3,0,1));
+      }
+    }
+  }
   // Pluie : traits fins qui tombent autour de la zone filmée (géométrie dynamique légère).
   addRain(g, match) {
     const t=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
     const cam=this.lastCamera, cx=cam?cam.target[0]:0, cz=cam?cam.target[2]:0;
-    const n=this.quality.detail===2?700:this.quality.detail===1?450:220, col=[0.85,0.88,0.95], nrm=[[0,0,1],[0,0,1],[0,0,1]];
+    const n=this.quality.detail===2?900:this.quality.detail===1?560:260, col=[0.92,0.95,1.0], nrm=[[0,0,1],[0,0,1],[0,0,1]];
     for(let i=0;i<n;i++){
       const h1=Math.sin(i*12.9898)*43758.5453, h2=Math.sin(i*78.233)*12345.678, h3=Math.sin(i*39.425)*24634.6345;
       const fx=h1-Math.floor(h1), fz=h2-Math.floor(h2), fo=h3-Math.floor(h3);
       const x=cx-30+fx*60, z=cz-22+fz*44, y=((fo*16-t*17)%16+16)%16;
       const a=[x,y,z], b=[x+0.06,y+1.0,z+0.02], w=0.024;
+      currentAnim=0.7;
       triangle(g,[a[0]-w,a[1],a[2]],[a[0]+w,a[1],a[2]],[b[0]+w,b[1],b[2]],col,nrm);
       triangle(g,[a[0]-w,a[1],a[2]],[b[0]+w,b[1],b[2]],[b[0]-w,b[1],b[2]],col,nrm);
+      currentAnim=0;
     }
   }
   buildDynamic(match, frame) {
     { const nw=(typeof performance!=='undefined'?performance.now():Date.now())/1000; this._rigDt=clamp(nw-(this._rigT||nw),0,0.1); this._rigT=nw; }
     this._lookBall=frame?[frame.b[0],frame.b[1]]:[Number(match.ball?.x)||0,Number(match.ball?.y)||0];
-    const g=this.dynamicGeometry;g.length=0;
+    const g=this.dynamicGeometry;g.length=0; this.fxGeometry.length=0;
     let index=0;
     for(const team of match.teams) for(const player of team.ps){
       const playerFrame=frame?frame.p[index]:null;index++;
@@ -1317,7 +1394,9 @@ export class MatchRenderer3D {
       for(const o of this.staff) this.addPlayer(g,match,o,null,95+o.k);
       if(this.subGhost) this.addPlayer(g,match,this.subGhost,null,99);
     }
-    if((this.wx||{}).rain) this.addRain(g,match);
+    if((this.wx||{}).rain) this.addRain(this.fxGeometry,match);
+    if(match.ceremony) this.addTifo(g,match);
+    this.addFlares(g,match,this.fxGeometry);
     const bx=frame?frame.b[0]:match.ball.x,by=frame?frame.b[1]:match.ball.y,bz=frame?frame.b[2]:match.ball.z;
     // L'ombre s'élargit et s'éclaircit à mesure que le ballon prend de la hauteur.
     const ballX=bx,ballZ=-by,ballY=Math.max(0.24,bz+0.24);
@@ -1382,15 +1461,24 @@ export class MatchRenderer3D {
     gl.uniform3f(this.lightLoc,wx.light[0],wx.light[1],wx.light[2]);
     gl.uniform1f(this.wetLoc,wx.wet);
     gl.uniform3f(this.eyeLoc,camera.eye[0],camera.eye[1],camera.eye[2]);
-    gl.uniform1f(this.rimLoc,0);
+    gl.uniform1f(this.rimLoc,0); gl.uniform1f(this.alphaLoc,1); gl.uniform1f(this.fxLoc,0);
     gl.bindBuffer(gl.ARRAY_BUFFER,this.staticBuffer);
     this.pointAttributes();
     gl.drawArrays(gl.TRIANGLES,0,this.staticCount);
     this.buildDynamic(match,frame);
     // Joueurs et ballon : éclairage « retransmission » (ambiance ciel/pelouse, liseré des projecteurs, reflet des tissus).
     gl.uniform1f(this.rimLoc,1);
+    gl.uniform1f(this.alphaLoc,1);
     const count=this.bindGeometry(this.dynamicBuffer,this.dynamicGeometry,gl.DYNAMIC_DRAW);
     if(count)gl.drawArrays(gl.TRIANGLES,0,count);
+    // Passe translucide : fumée et pluie, sans écrire la profondeur.
+    if(this.fxGeometry.length){
+      gl.uniform1f(this.rimLoc,0); gl.uniform1f(this.alphaLoc,0.9); gl.uniform1f(this.fxLoc,1);
+      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+      const fc=this.bindGeometry(this.fxBuffer,this.fxGeometry,gl.DYNAMIC_DRAW);
+      if(fc)gl.drawArrays(gl.TRIANGLES,0,fc);
+      gl.depthMask(true); gl.disable(gl.BLEND); gl.uniform1f(this.alphaLoc,1); gl.uniform1f(this.fxLoc,0);
+    }
   }
   dispose() {
     if(this.gl){

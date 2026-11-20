@@ -38,6 +38,8 @@ await click('[data-a=playMatch]'); await p.waitForSelector('#cv'); await p.waitF
 const cer = await p.evaluate(() => window.__ft26.match.ceremony);
 if (cer) throw new Error('la cérémonie d avant-match ne se passe pas au toucher');
 await p.waitForTimeout(1200); await shot('18b-match-coup-envoi');
+// Garde-fou : le rendu 3D doit rester actif (un shader cassé renverrait silencieusement au rendu 2.5D).
+if (!(await p.evaluate(() => !!window.__ft26.match?.renderer3d && !window.__ft26.match.renderer3d.lost))) throw new Error('le rendu 3D est tombé en mode 2.5D de secours');
 // joystick : glisser vers la droite et passer / tirer
 const vp = p.viewportSize();
 await p.mouse.move(150, vp.height - 100); await p.mouse.down(); await p.mouse.move(220, vp.height - 110, { steps: 5 });

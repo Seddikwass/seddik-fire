@@ -23,6 +23,7 @@ for (let k = 0; k < N; k++) {
   let steps = 0;
   while (!m.ended && steps < 60 * 60 * 30) { if (m.state === 'goal') { m.step(1 / 60); if (m.stateT <= 0) { m.afterGoal(); } } else m.step(1 / 60); if (m.replay) m.skipReplay(); if (m.state === 'fulltime' && m.stateT <= 0) break; steps++; }
   const s = m.stats;
+  tot.skillTry = (tot.skillTry || 0) + (m._skillTry || 0); tot.skillOk = (tot.skillOk || 0) + ((s.skills || [0, 0])[0] + (s.skills || [0, 0])[1]);
   console.log(`${h} ${m.score[0]}-${m.score[1]} ${a} | tirs ${s.shots} cadrés ${s.onTarget} passes ${s.passOk}/${s.passes} poss ${s.poss.map(x => Math.round(x))} fautes ${s.fouls} corners ${s.corners} min ${Math.round(m.minute)}`);
   tot.goals += m.score[0] + m.score[1]; tot.shots += s.shots[0] + s.shots[1]; tot.on += s.onTarget[0] + s.onTarget[1]; tot.passes += s.passes[0] + s.passes[1]; tot.ok += s.passOk[0] + s.passOk[1]; tot.fouls += s.fouls[0] + s.fouls[1]; tot.corners += s.corners[0] + s.corners[1];
 }

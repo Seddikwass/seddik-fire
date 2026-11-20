@@ -1,5 +1,14 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.34.0 — gardiens spectaculaires et dribbles visibles
+- Rotation du corps entier autour d'un pivot : le gardien plonge vraiment à l'horizontale, les bras tendus au-dessus de la tête vers le ballon, avec trois hauteurs (ras du sol, mi-hauteur, lucarne) et un déplacement latéral selon l'extension ; son ombre suit le plongeon.
+- Gardien : posture d'attente fléchie (genoux pliés, buste en avant, mains ouvertes devant), prise à deux mains contre la poitrine, sortie aux poings bras tendus vers le ciel.
+- Tacle glissé réaliste : buste couché en arrière, jambe d'attaque rasant la pelouse, jambe arrière repliée, bras d'appui au sol.
+- Déséquilibres : le joueur bousculé bascule vers l'avant et sur le côté.
+- Nouveau geste technique automatique — crochet / feinte de corps : quand le porteur change brusquement de direction face à un défenseur proche, il baisse l'épaule et passe la jambe au-dessus du ballon. Selon dribble et agilité contre défense, le défenseur peut être mis dans le vent (déséquilibré, ralenti, tacle retardé). Fréquence calibrée sur des simulations IA contre IA : environ 25 crochets réussis par match, sans changer l'équilibre buts/tirs.
+- Le crochet est transmis en match en ligne et dans les ralentis.
+- Tests : probabilité de réussite du crochet bornée et liée aux qualités des joueurs.
+
 ## Version 3.33.0 — joueurs refaits, gestes réalistes, stade vivant
 - Correction de fond : les volumes du corps (buste, bassin, tête, chaussures) étaient alignés sur les axes du stade et ne tournaient pas avec le joueur (buste « tonneau », chaussures de travers). Ils sont désormais orientés dans le repère du joueur et suivent l'inclinaison du buste.
 - Nouvelles proportions : poitrine, épaules et bassin distincts, short à mi-cuisse avec genoux visibles, chaussettes avec revers, chaussures avec semelle, tête ovale avec coiffure ajustée.

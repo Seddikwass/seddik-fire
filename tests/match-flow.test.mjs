@@ -94,3 +94,10 @@ assert.ok(spotFk.x < 30, 'le tireur se place derrière le ballon face au but');
   assert.equal(m.isSetPieceLocked(), false, 'le jeu reprend normalement après la frappe');
 }
 console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroulée et saut du mur');
+{
+  const { getSkillMoveChance } = await import('../public/js/match.js');
+  const star = getSkillMoveChance(92, 88, 55), poor = getSkillMoveChance(45, 50, 85);
+  assert.ok(star > poor, 'un dribbleur technique réussit plus souvent ses crochets');
+  assert.ok(star <= 0.72 && poor >= 0.08, 'réussite bornée : jamais garantie, jamais impossible');
+  console.log('SKILL MOVE OK — crochet selon dribble, agilité et défense');
+}

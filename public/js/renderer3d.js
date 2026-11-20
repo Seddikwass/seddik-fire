@@ -103,6 +103,8 @@ export function getPlayer3DPose(player = {}, frame = null) {
     keeperPunch: clamp(keeperPunch / 0.42, 0, 1),
     contact: clamp(contact / 0.22, 0, 1),
     celebrate: clamp(celebrate / 2.2, 0, 1),
+    skill: clamp((Number.isFinite(p[29]) ? p[29] : (Number(player.skillT) || 0)) / 0.42, 0, 1),
+    skillDir: (Number.isFinite(p[30]) ? p[30] : player.skillDir) < 0 ? -1 : 1,
     idle: clamp(1 - speed / 1.2, 0, 1),
     celebrateHop: celebrate > 0 ? Math.abs(Math.sin(celebrate * 7.5)) * clamp(celebrate / 0.6, 0, 1) * 0.16 : 0,
     diveDir: diveDir || 1,
@@ -777,9 +779,17 @@ export class MatchRenderer3D {
   }
   addPlayer(g, match, player, frame, index) {
     const pose=getPlayer3DPose(player,frame);
+    const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
     const x=pose.x,z=-pose.y,yaw=-pose.heading;
     const cos=Math.cos(yaw),sin=Math.sin(yaw);
-    const point=(f,h,side)=>[x+cos*f-sin*side,h,-pose.y+sin*f+cos*side];
+    // Transformation du corps entier (plongeon, tacle glissé, déséquilibre, feinte) autour d'un pivot.
+    let BR=null;
+    const rotV=(v)=>{ if(!BR) return v; let [f,h,sd]=v;
+      const f1=f*BR.cp-h*BR.sp, h1=h*BR.cp+f*BR.sp;
+      return [f1, h1*BR.cr-sd*BR.sr, sd*BR.cr+h1*BR.sr]; };
+    const point=(f,h,side)=>{
+      if(BR){ const r=rotV([f,h-BR.ph,side]); f=r[0]+BR.fo; h=r[1]+BR.ph+BR.ho; side=r[2]+BR.so; }
+      return [x+cos*f-sin*side,h,-pose.y+sin*f+cos*side]; };
     const side0=player.team===0?match.teams[0]:match.teams[1];
     const kit=player.isGK?(side0.gkKit||side0.kit):side0.kit;
     const shirt=parseColor(kit?.shirt,[0.8,0.1,0.1]), trim=parseColor(kit?.trim,[0.95,0.88,0.72]);
@@ -792,10 +802,10 @@ export class MatchRenderer3D {
     const hair=look.hair;
     const phase=pose.phase, lift=pose.jump+pose.celebrateHop, slide=pose.slide, dive=pose.dive;
     const action=getPlayer3DActionWeights(pose);
-    const low=clamp(action.slideLunge*0.78+dive*0.52,0,0.88);
+    const low=0;
     const keeperVertical=player.isGK?dive*clamp(pose.diveHeight,-1,1)*0.19:0;
     const keeperFlightLow=player.isGK?action.diveFlight*0.085+action.diveLanding*0.035:0;
-    const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical-keeperFlightLow+action.headerDrive*0.035+pose.bodyBob+
+    const bodyY=1.22-low*0.43-(player.isGK&&!(player.isGK&&dive>0.015)&&pose.speed<4&&!pose.keeperCatch&&!pose.keeperPunch?0.85*0.17:0)+lift-action.stumble*0.065+keeperVertical-keeperFlightLow+action.headerDrive*0.035+pose.bodyBob+
       pose.idle*Math.sin((Number(match.clock)||0)*2.3+index*1.7)*0.009;
     // ---- Intentions de geste : frappe, passe, lob, tête, touche, armement de la frappe ----
     const style=pose.kickStyle;
@@ -803,7 +813,6 @@ export class MatchRenderer3D {
     const throwing=(pose.kick>0.005&&style==='throw');
     const holdingThrow=match.setPiece==='throw'&&match.ball?.owner===player;
     const kp=clamp(pose.kickProgress,0,1);
-    const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
     const windup=(!kicking&&player===match.selected&&match.input?.shooting&&match.ball?.owner===player)
       ?clamp(Number(match.input.shootHold)||0,0,1):0;
     // Enveloppe du geste : montée rapide après le contact puis retour au calme.
@@ -816,7 +825,8 @@ export class MatchRenderer3D {
     const kickLean=kicking?strikeShape*(style==='lob'?-0.13:style==='shot'?0.11+pose.kickPower*0.05:0.05):-windup*0.07;
     const lean=pose.lean+pose.accelerationLean+kickLean+headSnap*0.4+archPre+
       action.stumble*0.12+action.brace*0.035+(player.isGK?action.diveFlight*0.045:0);
-    const tilt=clamp(lean*1.15,-0.45,0.6);
+    const gkReadyLean=player.isGK&&!(dive>0.015)&&pose.speed<4?0.2:0;
+    const tilt=clamp(lean*1.15+gkReadyLean,-0.45,0.6);
     // Le gardien accompagne le plongeon avec une translation du buste et des bras
     // dans le sens réel du tir ; les joueurs de champ amortissent les contacts.
     const diveSide=Math.sign(-pose.diveDir*Math.cos(yaw))||1;
@@ -824,29 +834,45 @@ export class MatchRenderer3D {
       (pose.stumbleDir||1)*action.stumble*0.075+
       (pose.contactDir||1)*pose.contact*0.045+
       (pose.slideDir||1)*action.tackleReach*0.13+pose.turnLean*0.55;
+    // ---- Rotations globales ----
+    const diveP=1-dive, diving=player.isGK&&dive>0.015;
+    const rollAmt=diving?smooth(diveP/0.22)*(1-smooth((diveP-0.86)/0.14)):0;
+    const slideAmt=action.slideLunge*(slide>0.015?1:0);
+    const skillP=1-pose.skill, skillOn=pose.skill>0.01;
+    let roll=0,pitch=0,ph=0.95,fo=0,ho=0,so=0;
+    if(rollAmt>0){
+      roll+=diveSide*rollAmt*1.32;
+      ho+=rollAmt*(-0.62+(clamp(pose.diveHeight,-1,1)+1)*0.42)+action.diveFlight*0.22*(pose.diveHeight>-0.5?1:0.3);
+      so+=diveSide*rollAmt*(0.35+pose.diveStretch*0.55);
+    }
+    if(slideAmt>0){ pitch+=1.05*slideAmt; ph=0.8; ho-=0.4*slideAmt; fo+=0.3*slideAmt; }
+    if(action.stumble>0){ pitch-=0.32*action.stumble; roll+=(pose.stumbleDir||1)*0.18*action.stumble; }
+    if(skillOn){ roll+=pose.skillDir*0.3*Math.sin(skillP*Math.PI*2)*(1-skillP*0.4); }
+    if(Math.abs(roll)+Math.abs(pitch)+Math.abs(ho)+Math.abs(so)+Math.abs(fo)>0.002)
+      BR={cp:Math.cos(pitch),sp:Math.sin(pitch),cr:Math.cos(roll),sr:Math.sin(roll),ph,fo,ho,so};
     const bodyPoint=(f,h,side)=>point(f,h,side+bodySide);
     const legPoint=(f,h,side)=>point(f,h,side+bodySide*0.48);
     // Ellipsoïdes orientés dans le repère du joueur (avant, haut, côté), avec inclinaison du buste.
     const F=[cos,0,sin], S=[-sin,0,cos];
+    const toW=v=>[F[0]*v[0]+S[0]*v[2],v[1],F[2]*v[0]+S[2]*v[2]];
     const ell=(c,rf,ru,rs,color,seg,rings,t=0,yawOff=0)=>{
-      const cy=Math.cos(yawOff),sy=Math.sin(yawOff);
-      const f0=[F[0]*cy+S[0]*sy,0,F[2]*cy+S[2]*sy], s0=[S[0]*cy-F[0]*sy,0,S[2]*cy-F[2]*sy];
-      const ct=Math.cos(t),st=Math.sin(t);
-      const f1=[f0[0]*ct,-st,f0[2]*ct], u1=[f0[0]*st,ct,f0[2]*st];
-      orientedEllipsoid(g,c,f1,u1,s0,rf,ru,rs,color,seg,rings);
+      const cy=Math.cos(yawOff),sy=Math.sin(yawOff),ct=Math.cos(t),st=Math.sin(t);
+      const fL=[cy*ct,-st,sy*ct], uL=[cy*st,ct,sy*st], sL=[-sy,0,cy];
+      orientedEllipsoid(g,c,toW(rotV(fL)),toW(rotV(uL)),toW(rotV(sL)),rf,ru,rs,color,seg,rings);
     };
     // Ombre douce : noyau sombre sous les pieds, halo plus clair étiré vers l'arrière (projecteurs).
     const up=[[0,1,0],[0,1,0],[0,1,0]];
     const shadowLayers=[[0.5,0.32,[0.09,0.2,0.1],0.042,0.1],[0.32,0.2,[0.05,0.11,0.06],0.046,0.04]];
     for(const [rx,rz,col,sy,off] of shadowLayers) for(let i=0;i<14;i++){
-      const a=i/14*Math.PI*2,b=(i+1)/14*Math.PI*2, cx=x+off, cz=z-off*0.6;
+      const so2=(BR?BR.so:0)+bodySide, a=i/14*Math.PI*2,b=(i+1)/14*Math.PI*2, cx=x+off-sin*so2, cz=z-off*0.6+cos*so2;
       triangle(g,[cx,sy,cz],[cx+Math.cos(a)*rx,sy,cz+Math.sin(a)*rz],[cx+Math.cos(b)*rx,sy,cz+Math.sin(b)*rz],col,up);
     }
     if(player===match.selected){
       ring(g,x,0.085,z,0.58,[0.94,0.78,0.24],22,0.045);
       sphere(g,[x,0.13,z],[0.08,0.025,0.08],[1,0.9,0.3],6,3);
     }
-    const hipY=0.83-low*0.28+lift;
+    const ready=player.isGK&&!diving&&pose.speed<4&&!pose.keeperCatch&&!pose.keeperPunch?0.85:0;
+    const hipY=0.83-low*0.28+lift-ready*0.12;
     const shoulderY=bodyY+0.23;
     const torsoF=lean*0.45;
     // ---- Buste : poitrine, épaules, bassin (vraies proportions, orientés avec le joueur) ----
@@ -892,17 +918,21 @@ export class MatchRenderer3D {
       if(side===touchSide){ th+=action.firstTouchAbsorb*0.32; fl+=action.firstTouchAbsorb*0.28; }
       if(airborne>0){ const a=airborne*0.85; th+=((isKickLeg?0.4:-0.08)-th)*a; fl+=((isKickLeg?0.75:1.05)-fl)*a; }
       if(pose.celebrateHop>0.02){ fl=Math.max(fl,0.5); }
+      if(ready>0){ th+=(0.32-th)*ready; fl+=(0.78-fl)*ready; }
+      if(slideAmt>0){ const lead=side===(pose.slideDir>=0?kickFootSide:-kickFootSide); th+=((lead?0.28:-0.3)-th)*slideAmt; fl+=((lead?0.05:1.55)-fl)*slideAmt; }
+      if(rollAmt>0){ th+=((side>0?0.12:-0.12)-th)*rollAmt; fl+=(0.15-fl)*rollAmt; }
+      if(skillOn&&isKickLeg){ const a=Math.sin(skillP*Math.PI); th+=(0.45-th)*a; fl+=(0.95-fl)*a; }
       legAngles.push([side,th,fl,isKickLeg]);
     }
     const sw=Math.sin(phase)*0.36*action.gait;
-    const wOld=clamp(1-action.gait+action.tackleReach*0.8,0,1);
+    const wOld=0;
     for(const [side,th,fl,isKickLeg] of legAngles){
       const kneeF=Math.sin(th)*L1, kneeU=hipY-Math.cos(th)*L1;
       const shinA=th-fl;
       let ankF=kneeF+Math.sin(shinA)*L2, ankU=kneeU-Math.cos(shinA)*L2;
       let kF=kneeF,kU=kneeU;
       const passIn=kicking&&isKickLeg&&style==='pass'?strikeShape:0;
-      let sideOff=side*(0.115+pose.idle*0.03)-side*passIn*0.07;
+      let sideOff=side*(0.115+pose.idle*0.03)-side*passIn*0.07+(skillOn&&isKickLeg?-side*0.22*Math.sin(skillP*Math.PI*2):0);
       if(wOld>0){
         // Tacles glissés, plongeons, chutes : on conserve les poses spécialisées.
         const legSw=(side<0?sw:-sw)+(isKickLeg?action.tackleReach*0.55:0);
@@ -943,10 +973,16 @@ export class MatchRenderer3D {
       if(aer>0){ al+=(1.3-al)*aer; be+=(0.75-be)*aer; ab+=(0.6-ab)*aer; }
       if(pose.celebrate>0){ const c=pose.celebrate; al+=(2.75-al)*c; be+=(0.15-be)*c; ab+=(0.35-ab)*c; }
       if(throwing||holdingThrow){ const t=throwing?kp:0; const c=throwing?1-smooth((kp-0.6)/0.4):1; const ta=2.9-t*1.5; al+=(ta-al)*c; be+=(0.9-t*0.6-be)*c; ab+=(0.12-ab)*c; }
+      if(ready>0){ al+=(0.55-al)*ready; be+=(0.75-be)*ready; ab+=(0.5-ab)*ready; }
+      if(player.isGK&&pose.keeperCatch>0){ const c=pose.keeperCatch; al+=(1.25-al)*c; be+=(0.6-be)*c; ab+=(-0.05-ab)*c; }
+      if(player.isGK&&pose.keeperPunch>0){ const c=pose.keeperPunch; al+=(2.7-al)*c; be+=(0.05-be)*c; ab+=(0.08-ab)*c; }
+      if(rollAmt>0){ al+=(3.0-al)*rollAmt; be+=(0.08-be)*rollAmt; ab+=(0.12-ab)*rollAmt; }
+      if(slideAmt>0){ const back=side===(pose.slideDir>=0?-kickFootSide:kickFootSide); al+=((back?-0.9:0.35)-al)*slideAmt; be+=(0.2-be)*slideAmt; ab+=((back?0.55:0.65)-ab)*slideAmt; }
+      if(skillOn){ const a=Math.sin(skillP*Math.PI); ab+=0.35*a; al+=(side===pose.skillDir?-0.3:0.4)*a; }
       const leadingKeeperArm=player.isGK&&side===diveSide;
       const keeperArmReach=player.isGK?(leadingKeeperArm?action.keeperLeadReach:action.keeperBalanceReach):0;
-      const keeperArmOffset=player.isGK?(leadingKeeperArm?diveSide*keeperArmReach*0.48:-diveSide*keeperArmReach*0.16):0;
-      const gkRaise=player.isGK?action.catchReach*0.24:0;
+      const keeperArmOffset=(player.isGK?(leadingKeeperArm?diveSide*keeperArmReach*0.48:-diveSide*keeperArmReach*0.16):0)*(1-rollAmt);
+      const gkRaise=player.isGK?action.catchReach*0.24*(1-rollAmt):0;
       const gkU=player.isGK?(leadingKeeperArm?action.diveFlight*0.13:action.diveLanding*0.035):0;
       const spread=action.headerBrace*0.16+action.tackleReach*0.14+action.tackleArmSpread*0.14;
       const sF=torsoF+tilt*0.12, sU=shoulderY, sS=side*0.235*build;

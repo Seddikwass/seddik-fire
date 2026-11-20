@@ -893,6 +893,11 @@ export function getOffsideDecision(attacker, ball, defenders = [], direction = 1
 }
 
 // Caméra broadcast : léger suivi anticipé et zoom d'action progressif, jamais instantané.
+// Réussite d'un crochet : technique du dribbleur contre lecture du défenseur.
+export function getSkillMoveChance(dribbling = 50, agility = 50, defending = 50) {
+  const d = clamp(Number(dribbling) || 50, 0, 100), a = clamp(Number(agility) || 50, 0, 100), def = clamp(Number(defending) || 50, 0, 100);
+  return clamp(0.32 + (d * 0.7 + a * 0.3 - def) / 140, 0.08, 0.72);
+}
 export function getCameraFollow(ball = {}, close = false) {
   const x = Number.isFinite(ball.x) ? ball.x : 0;
   const y = Number.isFinite(ball.y) ? ball.y : 0;
@@ -1328,6 +1333,24 @@ export class Match {
     const targetHeading = requestedSpeed > 0.15 ? Math.atan2(wy, wx) : currentHeading;
     const delta = Math.atan2(Math.sin(targetHeading - currentHeading), Math.cos(targetHeading - currentHeading));
     p.turn = clamp(delta / Math.PI, -1, 1);
+    // Crochet / feinte de corps : virage sec balle au pied face à un défenseur proche.
+    if (this.ball && this.ball.owner === p && !(p.skillCd > 0) && Math.abs(delta) > 1.15 && currentSpeed > 2.4) {
+      let opp = null, best = 3.3;
+      for (const o of this.teams[1 - p.team].ps) {
+        if (o.sentOff || o.isGK) continue;
+        const dd = Math.hypot(o.x - p.x, o.y - p.y);
+        if (dd < best) { best = dd; opp = o; }
+      }
+      if (opp) {
+        p.skillT = 0.42; p.skillDir = Math.sign(delta) || 1; p.skillCd = 1.5; this._skillTry = (this._skillTry || 0) + 1;
+        const chance = getSkillMoveChance(p.a?.dri, p.a?.agi ?? p.a?.pac, opp.a?.def);
+        if (this.r() < chance) {
+          opp.stumbleT = Math.max(opp.stumbleT || 0, 0.32); opp.stumbleDir = -p.skillDir;
+          opp.vx *= 0.35; opp.vy *= 0.35; opp.tackleCd = Math.max(opp.tackleCd || 0, 0.7);
+          this.stats.skills = this.stats.skills || [0, 0]; this.stats.skills[p.team]++;
+        }
+      }
+    }
     const tuning = getMovementTuning(p.a, p.stamina);
     // Le freinage et les virages consomment une partie de l'accélération disponible.
     const turnLoad = clamp(Math.abs(delta) / Math.PI, 0, 1);
@@ -1356,6 +1379,8 @@ export class Match {
       p.headerT = Math.max(0, (p.headerT || 0) - dt);
       p.firstTouchT = Math.max(0, (p.firstTouchT || 0) - dt);
       p.stumbleT = Math.max(0, (p.stumbleT || 0) - dt);
+      if (p.skillT) p.skillT = Math.max(0, p.skillT - dt);
+      if (p.skillCd) p.skillCd = Math.max(0, p.skillCd - dt);
       p.keeperCatchT = Math.max(0, (p.keeperCatchT || 0) - dt);
       p.keeperPunchT = Math.max(0, (p.keeperPunchT || 0) - dt);
       p.celebrateT = Math.max(0, (p.celebrateT || 0) - dt);
@@ -2319,7 +2344,7 @@ export class Match {
       p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1,
       p.diveHeight || 0, p.diveStretch || 0,
       p.contactT || 0, p.contactDir || 1, p.slideDuration || 0.38, p.heading || 0,
-      p.kickFootSide || 1, p.motionAccel || 0
+      p.kickFootSide || 1, p.motionAccel || 0, p.skillT || 0, p.skillDir || 1
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }
@@ -3516,7 +3541,7 @@ export function quickSim(strH, strA, r = Math.random, homeAdv = 1.08) {
 }
 
 // ---------- Réseau : état compact d'un match (même champs que le ralenti) ----------
-export const NET_PLAYER_FIELDS = ['x', 'y', 'face', 'anim', 'vx', 'vy', 'jumpT', 'diveT', 'slideT', 'kickT', 'headerT', 'firstTouchT', 'stumbleT', 'keeperCatchT', 'keeperPunchT', 'headerDir', 'diveDir', 'slideDir', 'kickDir', 'firstTouchDir', 'stumbleDir', 'diveHeight', 'diveStretch', 'contactT', 'contactDir', 'slideDuration', 'heading', 'kickFootSide', 'motionAccel', 'celebrateT', 'saveT'];
+export const NET_PLAYER_FIELDS = ['x', 'y', 'face', 'anim', 'vx', 'vy', 'jumpT', 'diveT', 'slideT', 'kickT', 'headerT', 'firstTouchT', 'stumbleT', 'keeperCatchT', 'keeperPunchT', 'headerDir', 'diveDir', 'slideDir', 'kickDir', 'firstTouchDir', 'stumbleDir', 'diveHeight', 'diveStretch', 'contactT', 'contactDir', 'slideDuration', 'heading', 'kickFootSide', 'motionAccel', 'celebrateT', 'saveT', 'skillT', 'skillDir'];
 const r2 = v => Math.round((Number(v) || 0) * 100) / 100;
 export function getNetSnapshot(m, full = false) {
   const b = m.ball;

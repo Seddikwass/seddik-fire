@@ -6,13 +6,14 @@ import * as Dr from './dressing.js';
 import * as Tx from './transfers.js';
 import * as Y from './youth.js';
 import * as CAF from './caf.js';
+import * as Online from './online.js';
 import * as A from './audio.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.28.0';
+export const APP_VERSION = '3.29.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -45,9 +46,10 @@ function go(v, a = {}) { view = v; args = a; render(); const m = $('main'); if (
 function render() {
   if (match && view !== 'match') { match.destroy(); match = null; }
   const V = VIEWS[view] || VIEWS.home;
-  if (['home', 'newCareer', 'quick', 'settingsHome', 'account', 'match', 'gameOver', 'postmatchQuick'].includes(view)) app().innerHTML = V();
+  if (['home', 'newCareer', 'quick', 'online', 'settingsHome', 'account', 'match', 'gameOver', 'postmatchQuick'].includes(view)) app().innerHTML = V();
   else app().innerHTML = shell(V());
   if (view === 'match') startMatchView();
+  if (view === 'online') loadLeaderboard();
 }
 const NAV = [
   ['hub', '🏠', 'Accueil'], ['prematch', '⚽', 'Match'], ['squad', '👥', 'Effectif'], ['youth', '🎓', 'Formation'], ['tactics', '📋', 'Tactique'], ['transfers', '💱', 'Transferts'],
@@ -73,6 +75,7 @@ VIEWS.home = () => {
     ${has ? `<button class="btn big primary" data-a="continue">▶ ${t('Continuer')}</button>` : ''}
     <button class="btn big ${has ? '' : 'primary'}" data-a="nav" data-v="newCareer">🏆 ${t('Nouvelle carrière')}</button>
     <button class="btn big" data-a="nav" data-v="quick">⚡ ${t('Match rapide')}</button>
+    <button class="btn big" data-a="nav" data-v="online">🌐 Match en ligne</button>
     <div class="row"><button class="btn" data-a="nav" data-v="settingsHome">⚙ ${t('Paramètres')}</button><button class="btn" data-a="nav" data-v="account">👤 ${t('Compte')}</button></div>
    </div>
    <p class="fine">v${APP_VERSION} · données ${DATA_VERSION} (vérifiées le ${VERIFIED_ON}) · joueurs fictifs · <a href="privacy.html" target="_blank">Confidentialité</a></p>
@@ -527,6 +530,7 @@ function startMatchView() {
     onEnd: res => onMatchEnd(res), onPause: () => pauseMenu(),
   });
   match = m;
+  if (ctx.online && online?.conn) { Online.linkMatch(m, online.conn); m.settings.replays = false; }
   $('#mLoad').remove();
   bindControls(m);
   m.start();
@@ -584,7 +588,7 @@ function bindControls(m) {
   // Consignes rapides sans interrompre le jeu.
   const tacBar = $('#tacBar'), bTac = $('#bTac');
   const markPreset = () => { const T = m.teams[m.userSide]; tacBar?.querySelectorAll('[data-preset]').forEach(b => b.classList.toggle('on', b.dataset.preset === T?.preset)); };
-  const setPreset = key => { if (m.userSide == null) return; m.setTacticPreset(m.userSide, key); markPreset(); m.banner(TACTIC_PRESETS[key].icon + ' ' + TACTIC_PRESETS[key].label.toUpperCase(), 1.4); };
+  const setPreset = key => { if (m.userSide == null) return; if (m.net) online?.conn?.send({ t: 'act', a: 'preset:' + key }); m.setTacticPreset(m.userSide, key); markPreset(); m.banner(TACTIC_PRESETS[key].icon + ' ' + TACTIC_PRESETS[key].label.toUpperCase(), 1.4); };
   if (bTac && tacBar) {
     bTac.onclick = () => { tacBar.hidden = !tacBar.hidden; bTac.setAttribute('aria-expanded', String(!tacBar.hidden)); markPreset(); };
     tacBar.onclick = e => { const b = e.target.closest('[data-preset]'); if (!b) return; setPreset(b.dataset.preset); tacBar.hidden = true; bTac.setAttribute('aria-expanded', 'false'); };
@@ -616,6 +620,12 @@ function bindControls(m) {
 }
 function pauseMenu() {
   if (!match) return;
+  if (match.net) {
+    modal(`<h3>Match en ligne</h3><p class="hint">Le match continue pendant que ce menu est ouvert.</p><div class="row wrap"><button class="btn primary" id="pRes">▶ ${t('Reprendre')}</button><button class="btn danger" id="pForfeit">Abandonner (défaite 3-0)</button></div>`);
+    $('#pRes').onclick = () => { closeModal(); match.paused = false; };
+    $('#pForfeit').onclick = () => confirmBox('Abandonner le match ? Votre adversaire gagne 3-0.', () => { online?.conn?.send({ t: 'forfeit' }); closeModal(); });
+    return;
+  }
   if (document.getElementById('pRes')) return;
   const m = match, side = m.userSide;
   const T = side != null ? m.teams[side] : null;
@@ -681,7 +691,77 @@ VIEWS.postmatch = () => {
   const f = st.fixtures.find(x => x.id === args.f), res = args.res;
   return postHTML(C.clubName(st, f.h), C.clubName(st, f.a), f.hg, f.ag, res, f) + `<div class="row center"><button class="btn primary big" data-a="nav" data-v="hub">${t('Continuer')}</button></div>`;
 };
-VIEWS.postmatchQuick = () => `<div class="page">${postHTML(args.home.name, args.away.name, args.res.hg, args.res.ag, args.res)}<div class="row center"><button class="btn primary big" data-a="nav" data-v="quick">Rejouer</button><button class="btn big" data-a="nav" data-v="home">${t('Accueil')}</button></div></div>`;
+// ------------------------------------------------------------------ match en ligne
+let online = null; // { conn, status, code, side, token }
+function onlineSession() { try { return JSON.parse(sessionStorage.getItem('ft26-online') || 'null'); } catch (e) { return null; } }
+function setOnlineSession(v) { try { v ? sessionStorage.setItem('ft26-online', JSON.stringify(v)) : sessionStorage.removeItem('ft26-online'); } catch (e) {} }
+function onlineConnect() {
+  if (online?.conn && online.conn.ws.readyState <= 1) return online.conn;
+  online = online || {};
+  online.conn = Online.connectOnline({
+    onMessage: onlineMessage,
+    onClose: () => { if (match?.net) { toast('Connexion perdue : tentative de reprise…', 'err'); setTimeout(onlineResume, 1500); } else if (online?.status === 'waiting') { online.status = 'idle'; render(); } },
+  });
+  return online.conn;
+}
+function onlineMessage(msg) {
+  if (msg.t === 'err') { toast(msg.msg, 'err'); if (online) online.status = 'idle'; if (view === 'online') render(); return; }
+  if (msg.t === 'created') { Object.assign(online, { status: 'waiting', code: msg.code, side: 0, token: msg.token }); setOnlineSession({ code: msg.code, token: msg.token }); if (view === 'online') render(); return; }
+  if (msg.t === 'joined') { Object.assign(online, { code: msg.code, side: 1, token: msg.token }); setOnlineSession({ code: msg.code, token: msg.token }); return; }
+  if (msg.t === 'start') {
+    online.status = 'playing'; online.names = msg.names;
+    if (match?.net) return; // reprise : le match est déjà affiché
+    go('match', { online: true, home: msg.home, away: msg.away, userSide: msg.side, duration: msg.duration });
+    return;
+  }
+  if (msg.t === 's') { match?.net?.push(msg.s); return; }
+  if (msg.t === 'opp') { const me = online?.side; if (msg.side !== me) { toast(msg.status === 'left' ? 'Adversaire déconnecté : l\'IA prend le relais.' : 'Votre adversaire est de retour.', msg.status === 'left' ? 'err' : 'ok'); match && match.banner(msg.status === 'left' ? 'ADVERSAIRE DÉCONNECTÉ' : 'ADVERSAIRE DE RETOUR', 2); } return; }
+  if (msg.t === 'end') {
+    setOnlineSession(null);
+    if (match) { match.running = false; match.destroy(); match = null; }
+    online.status = 'idle';
+    go('postmatchQuick', { res: msg.res, home: msg.home, away: msg.away, online: true, names: msg.names });
+    online.conn?.close(); online = null;
+  }
+}
+function onlineResume() {
+  const sess = onlineSession(); if (!sess) return;
+  if (online) online.conn = null;
+  const conn = onlineConnect();
+  Object.assign(online, { code: sess.code, token: sess.token });
+  conn.send({ t: 'rejoin', code: sess.code, token: sess.token });
+}
+VIEWS.online = () => {
+  const st0 = online?.status || 'idle', sess = onlineSession();
+  const clubs = CLUBS.filter(c => c.div === 1 || !c.div).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  const name = settings.onlineName || '';
+  if (st0 === 'waiting') return `<div class="page"><div class="card center"><h2>🌐 Salon créé</h2><p>Donnez ce code à votre adversaire :</p>
+    <div class="room-code">${esc(online.code)}</div>
+    <div class="row center"><button class="btn primary" data-a="shareCode">📤 Partager le code</button><button class="btn ghost" data-a="leaveOnline">Annuler</button></div>
+    <p class="hint">En attente d'un adversaire… Le match démarre dès qu'il entre le code (match de 5 minutes, chacun dirige son équipe, l'IA remplace un joueur déconnecté).</p></div></div>`;
+  return `<div class="page"><div class="ph"><h2>🌐 Match en ligne</h2></div>
+   ${sess ? `<div class="card"><p>Un match en ligne est en cours sur cet appareil.</p><button class="btn primary" data-a="resumeOnline">Reprendre le match</button></div>` : ''}
+   <div class="card"><div class="form2"><label>Pseudo<input id="olName" maxlength="16" value="${esc(name)}" placeholder="Votre pseudo"></label>
+    <label>Votre club<select id="olClub">${clubs.map(c => `<option value="${c.id}" ${c.id === (settings.onlineClub || 'est') ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></label></div>
+    <div class="row wrap"><button class="btn primary big" data-a="createRoom">➕ Créer un salon</button></div>
+    <div class="row wrap"><label class="inline">Code<input id="olCode" maxlength="4" class="code-in" placeholder="ABCD" autocapitalize="characters"></label><button class="btn big" data-a="joinRoom">➡️ Rejoindre</button></div>
+    <p class="hint">Match de 5 minutes contre un ami, en temps réel. Le serveur arbitre le match pour les deux joueurs. Connexion internet nécessaire.</p></div>
+   <div class="card"><h3>🏆 Classement en ligne</h3><div id="olBoard"><p class="hint">Chargement…</p></div></div></div>`;
+};
+async function loadLeaderboard() {
+  const box = $('#olBoard'); if (!box) return;
+  try {
+    const r = await fetch(S.API + '/mp/leaderboard'); const { leaderboard } = await r.json();
+    box.innerHTML = leaderboard.length ? `<table class="tbl"><thead><tr><th>#</th><th>Joueur</th><th>J</th><th>V</th><th>N</th><th>D</th><th>Diff</th><th>Pts</th></tr></thead><tbody>${leaderboard.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.name)}</td><td>${x.played}</td><td>${x.w}</td><td>${x.d}</td><td>${x.l}</td><td>${x.gf - x.ga}</td><td><b>${x.pts}</b></td></tr>`).join('')}</tbody></table>` : '<p class="hint">Aucun match joué pour l\'instant. Soyez le premier !</p>';
+  } catch (e) { box.innerHTML = '<p class="hint">Classement indisponible hors connexion.</p>'; }
+}
+function onlineIdentity() {
+  const name = ($('#olName')?.value || '').trim(), club = $('#olClub')?.value;
+  if (!name) { toast('Choisissez un pseudo.', 'err'); return null; }
+  settings.onlineName = name; settings.onlineClub = club; S.saveSettings(settings);
+  return { name, club };
+}
+VIEWS.postmatchQuick = () => `<div class="page">${args.online && args.names ? `<p class="center hint">🌐 Match en ligne : <b>${esc(args.names[0] || '')}</b> (${esc(args.home.short || '')}) contre <b>${esc(args.names[1] || '')}</b> (${esc(args.away.short || '')})</p>` : ''}${postHTML(args.home.name, args.away.name, args.res.hg, args.res.ag, args.res)}<div class="row center"><button class="btn primary big" data-a="nav" data-v="${args.online ? 'online' : 'quick'}">${args.online ? 'Rejouer en ligne' : 'Rejouer'}</button><button class="btn big" data-a="nav" data-v="home">${t('Accueil')}</button></div></div>`;
 function postHTML(hn, an, hg, ag, res, f = null) {
   const s = res.stats;
   const ev = (res.events || []).filter(e => ['goal', 'yellow', 'red', 'injury', 'sub', 'shootout'].includes(e.type)).sort((a, b) => a.min - b.min);
@@ -769,6 +849,11 @@ const ACT = {
   setCaptain: el => { st.clubs[st.userClub].tactics.captain = el.dataset.id; save(); closeModal(); toast('Nouveau capitaine désigné.', 'ok'); render(); },
   setNumber: el => { const p = st.players[el.dataset.id]; const n = Number(prompt('Numéro de maillot (1-99)', p.num)); if (!n || n < 1 || n > 99) return; if (C.squad(st, st.userClub).some(x => x.num === n && x.id !== p.id)) return toast('Numéro déjà attribué.', 'err'); p.num = n; save(); closeModal(); render(); },
   talk: el => talkModal(el.dataset.id),
+  createRoom: () => { const id = onlineIdentity(); if (!id) return; onlineConnect().send({ t: 'create', ...id }); },
+  joinRoom: () => { const id = onlineIdentity(); if (!id) return; const code = ($('#olCode')?.value || '').trim().toUpperCase(); if (code.length !== 4) return toast('Entrez le code à 4 caractères.', 'err'); onlineConnect().send({ t: 'join', code, ...id }); },
+  leaveOnline: () => { online?.conn?.close(); online = null; setOnlineSession(null); render(); },
+  resumeOnline: () => onlineResume(),
+  shareCode: async () => { const text = `Rejoins-moi sur Football Tunisia 2026 : match en ligne, code ${online?.code} — ${location.origin}`; try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Invitation copiée.', 'ok'); } } catch (e) {} },
   rotate: () => { const ch = C.rotateLineup(st); save(); toast(ch.length ? 'Rotation : ' + ch.map(c => `${c.out.name} → ${c.in.name}`).join(', ') : 'Aucun changement.', ch.length ? 'ok' : 'info'); render(); },
   scoutRegion: el => { const r = C.startScouting(st, el.dataset.k); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
   signProspect: el => { const r = C.signProspect(st, el.dataset.id); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },

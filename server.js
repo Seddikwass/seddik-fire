@@ -5,6 +5,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import zlib from 'node:zlib';
 import { openStore } from './lib/store.js';
+import { attachWebSocket } from './lib/ws.js';
+import { createMultiplayer } from './lib/multiplayer.js';
 
 const PKG = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url)));
 const PORT = Number(process.env.PORT || 3000);
@@ -89,6 +91,8 @@ async function api(req, res, url) {
   if (m === 'OPTIONS') { res.writeHead(204, cors(req)); return res.end(); }
   if (p === '/api/health') return send(res, 200, { ok: true, version: PKG.version, commit: COMMIT, store: store.kind, persistent: store.kind === 'postgres', accounts: ACCOUNTS, time: new Date().toISOString() }, req);
   if (!ACCOUNTS && (p.startsWith('/api/auth/') || p.startsWith('/api/save'))) return send(res, 503, { error: 'Comptes en ligne temporairement indisponibles (base de données non configurée). Votre partie reste sauvegardée sur cet appareil.' }, req);
+  if (p === '/api/mp/leaderboard' && m === 'GET') return send(res, 200, { leaderboard: await mp.leaderboard() }, req);
+  if (p === '/api/mp/status' && m === 'GET') return send(res, 200, { rooms: mp.rooms.size }, req);
   if (p === '/api/data' && m === 'GET') { const d = await store.getKV('data_overrides'); return send(res, 200, d || {}, req); }
   if (p === '/api/auth/register' || p === '/api/auth/login') {
     if (m !== 'POST') return send(res, 405, { error: 'Méthode non autorisée' }, req);
@@ -156,8 +160,11 @@ const server = http.createServer(async (req, res) => {
   try { if (url.pathname.startsWith('/api/')) await api(req, res, url); else serveStatic(req, res, url); }
   catch (e) { log('error', 'erreur', { p: url.pathname, err: e.message }); if (!res.headersSent) send(res, e.status || 500, { error: e.status ? e.message : 'Erreur interne du serveur' }, req); }
 });
+// Match en ligne : WebSocket sur /ws, simulation officielle côté serveur.
+const mp = createMultiplayer({ store, log });
+attachWebSocket(server, '/ws', ws => mp.onConnection(ws));
 server.listen(PORT, () => log('info', `serveur à l'écoute`, { port: PORT }));
-const stop = () => { log('info', 'arrêt'); server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 5000).unref(); };
+const stop = () => { log('info', 'arrêt'); mp.stop(); server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 5000).unref(); };
 process.on('SIGTERM', stop); process.on('SIGINT', stop);
 
 // Render deployment refresh marker — Football Tunisia 2026 v3.14.0 (2026-11-19)

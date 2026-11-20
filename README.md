@@ -1,5 +1,14 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.29.0 — match en ligne
+- Nouveau mode 🌐 Match en ligne (menu principal) : match de 5 minutes contre un ami, en temps réel.
+- Salon par code de 4 caractères (sans caractères ambigus), bouton de partage ; l'ami entre le code et choisit un autre club ; erreurs claires (code inconnu, salon complet, club déjà pris).
+- Le serveur Render fait tourner la simulation officielle (60 images/s) avec deux joueurs humains et envoie l'état ~15 fois par seconde ; chaque téléphone l'affiche avec un lissage et envoie joystick, sprint, tir, passes, pressing, changement de joueur et consignes rapides.
+- Déconnexion : l'IA prend le relais ; reprise du match possible depuis le même appareil ; abandon depuis le menu (défaite 3-0).
+- Classement en ligne (points, victoires, nuls, défaites, différence de buts). Attention : sans base PostgreSQL persistante, il est remis à zéro à chaque redéploiement.
+- Serveur WebSocket écrit sans dépendance (lib/ws.js) ; salons et boucle de simulation dans lib/multiplayer.js ; moteur à deux humains dans public/js/netmatch.js ; client dans public/js/online.js. L'application Android se connecte au serveur Render.
+- Tests : tests/multiplayer.test.mjs (serveur réel, deux clients, reconnexion, abandon, classement) et tests/online-e2e.mjs (deux navigateurs qui s'affrontent).
+
 ## Version 3.28.0 — compétitions africaines
 - Tirage des groupes CAF par chapeaux (selon le niveau des clubs) avec protection par pays : jamais deux clubs du même pays dans un groupe (vérifié sur 240 groupes) ; tirage annoncé dans l'actualité, drapeaux des pays dans les groupes.
 - Quarts de finale tirés au sort : premier de groupe contre deuxième d'un autre groupe (et d'un autre pays si possible), retour chez le premier ; demi-finales en tirage intégral ; chaque tirage du club est annoncé.

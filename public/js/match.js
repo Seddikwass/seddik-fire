@@ -993,7 +993,8 @@ export class Match {
     let dt = Math.min(0.1, (now - this.last) / 1000);
     if (!this.paused) this.updateRenderBudget(dt * 1000, now);
     this.last = now;
-    if (!this.paused) {
+    if (this.net) this.net.frame(dt); // match en ligne : l'état vient du serveur
+    else if (!this.paused) {
       if (this.replay) this.updateReplay(dt);
       else { this.acc += dt; while (this.acc >= DT) { this.step(DT); this.acc -= DT; } }
     }
@@ -1087,6 +1088,7 @@ export class Match {
     if (designated && (type === 'penalty' || Math.hypot(designated.x - x, designated.y - y) < 40)) taker = designated;
     const b = this.ball; b.x = x; b.y = y; b.z = 0; b.vx = b.vy = b.vz = 0; b.owner = null;
     this.restart = { type, team, taker, x, y };
+    if (this.humans?.[team] && taker && !taker.isGK) this.humans[team].selected = taker;
     this.wall = null;
     if (type === 'freekick') {
       const plan = getFreeKickWall({ x, y }, T.dir);
@@ -1233,6 +1235,13 @@ export class Match {
   }
 
   select(p) { if (p && !p.sentOff) this.selected = p; }
+  // Joueur dirigé par un humain : le joueur local, ou l'un des deux joueurs d'un match en ligne.
+  isHuman(p) {
+    if (!p) return false;
+    if (p === this.selected && p.team === this.userSide) return true;
+    const h = this.humans?.[p.team];
+    return !!(h && h.connected !== false && h.selected === p);
+  }
   // Le tireur d'un coup de pied arrêté ne peut pas partir balle au pied.
   isSetPieceLocked() {
     return !!(this.setPiece && this.restart && this.ball.owner && this.ball.owner === this.restart.taker);
@@ -1442,7 +1451,7 @@ export class Match {
       T.liveMentality = clamp(T.mentality + urgency * 0.85 - protectLead * 0.48, -2, 2);
       T.livePressing = clamp(T.pressing + urgency * 1.2 - protectLead * 0.45, 0, 3);
       const inPoss = possTeam === T.side;
-      const supportPlayers = T.ps.filter(p => !(p === this.selected && this.userSide === T.side));
+      const supportPlayers = T.ps.filter(p => !this.isHuman(p));
       const attackingPlan = inPoss && own
         ? getAttackingSupportPlan(supportPlayers, own, this.teams[1 - T.side].ps, T.dir)
         : [];
@@ -1472,7 +1481,7 @@ export class Match {
           }
         }
         const markingCandidates = T.ps.filter(p => !pressers.includes(p) && p !== interceptor &&
-          !(p === this.selected && this.userSide === T.side));
+          !this.isHuman(p));
         markingPlan = getDefensiveMarkAssignments(
           markingCandidates, this.teams[1 - T.side].ps, b, -HL * T.dir
         );
@@ -1480,7 +1489,7 @@ export class Match {
       const markingByPlayer = new Map(markingPlan.map(entry => [entry.player, entry]));
       for (const p of T.ps) {
         if (p.sentOff) continue;
-        if (p === this.selected && this.userSide === T.side) continue; // contrôlé par l'utilisateur
+        if (this.isHuman(p)) continue; // contrôlé par un joueur humain
         if (p === own) { this.aiCarrier(p, dt); continue; }
         if (p.isGK) { this.aiKeeper(p, dt); continue; }
         const locked = this.isSetPieceLocked();
@@ -2043,7 +2052,7 @@ export class Match {
       const heading = Number.isFinite(p.heading) ? p.heading : Math.atan2(p.vy || 0, p.vx || p.face || 1);
       const fx = sp > 0.5 ? p.vx / sp : Math.cos(heading);
       const fy = sp > 0.5 ? p.vy / sp : Math.sin(heading);
-      const userSprint = p === this.selected && p.team === this.userSide && this.input && this.input.sprint;
+      const userSprint = this.isHuman(p) && (p === this.selected ? this.input?.sprint : this.humans?.[p.team]?.input?.sprint);
       const aiSprint = sp > this.speedOf(p, false) * 1.06;
       const carry = getCarryBallOffset({
         speed: sp, dribbling: p.a.dri, technique: p.a.tec, stamina: p.stamina,
@@ -3448,4 +3457,47 @@ export function quickSim(strH, strA, r = Math.random, homeAdv = 1.08) {
   const lamH = 1.25 * Math.pow(ratio, 2.2), lamA = 1.05 * Math.pow(1 / ratio, 2.2);
   const pois = l => { const L = Math.exp(-Math.min(l, 6)); let k = 0, p = 1; do { k++; p *= r(); } while (p > L); return k - 1; };
   return [Math.min(pois(lamH), 8), Math.min(pois(lamA), 8)];
+}
+
+// ---------- Réseau : état compact d'un match (même champs que le ralenti) ----------
+export const NET_PLAYER_FIELDS = ['x', 'y', 'face', 'anim', 'vx', 'vy', 'jumpT', 'diveT', 'slideT', 'kickT', 'headerT', 'firstTouchT', 'stumbleT', 'keeperCatchT', 'keeperPunchT', 'headerDir', 'diveDir', 'slideDir', 'kickDir', 'firstTouchDir', 'stumbleDir', 'diveHeight', 'diveStretch', 'contactT', 'contactDir', 'slideDuration', 'heading', 'kickFootSide', 'motionAccel', 'celebrateT', 'saveT'];
+const r2 = v => Math.round((Number(v) || 0) * 100) / 100;
+export function getNetSnapshot(m, full = false) {
+  const b = m.ball;
+  const snap = {
+    t: r2(m.clock), mi: r2(m.minute), h: m.half, st: m.state, sc: m.score.slice(),
+    b: [r2(b.x), r2(b.y), r2(b.z), r2(b.vx), r2(b.vy), r2(b.vz), r2(b.spin)],
+    o: b.owner ? b.owner.team * 11 + b.owner.i : -1,
+    p: m.teams.flatMap(T => T.ps.map(p => NET_PLAYER_FIELDS.map(k => r2(p[k])).concat(p.sentOff ? 1 : 0))),
+    sel: [m.humans?.[0]?.selected?.i ?? -1, m.humans?.[1]?.selected?.i ?? -1],
+    sp: m.setPiece || null, msg: m.msgT > 0 ? m.msg : null, msgT: r2(m.msgT),
+    tk: m.tickerT > 0 ? m.ticker : null, tkT: r2(m.tickerT),
+    gfx: m.goalFxT > 0 ? [r2(m.goalFxT), m.goalFxTeam, m.goalFxScorer] : null,
+  };
+  if (full) snap.stats = m.stats;
+  return snap;
+}
+export function applyNetSnapshot(m, snap, smooth = 1) {
+  if (!snap) return;
+  m.clock = snap.t; m.minute = snap.mi; m.half = snap.h; m.state = snap.st; m.score = snap.sc;
+  const [bx, by, bz, bvx, bvy, bvz, spin] = snap.b, b = m.ball;
+  b.x += (bx - b.x) * smooth; b.y += (by - b.y) * smooth; b.z += (bz - b.z) * smooth;
+  b.vx = bvx; b.vy = bvy; b.vz = bvz; b.spin = spin;
+  b.owner = snap.o >= 0 ? m.teams[Math.floor(snap.o / 11)]?.ps[snap.o % 11] || null : null;
+  const n = NET_PLAYER_FIELDS.length;
+  let k = 0;
+  for (const T of m.teams) for (const p of T.ps) {
+    const row = snap.p[k++]; if (!row) continue;
+    for (let i = 0; i < n; i++) {
+      const key = NET_PLAYER_FIELDS[i];
+      if (smooth < 1 && (key === 'x' || key === 'y')) p[key] += (row[i] - p[key]) * smooth; else p[key] = row[i];
+    }
+    p.sentOff = !!row[n];
+  }
+  if (m.userSide != null && snap.sel[m.userSide] >= 0) m.selected = m.teams[m.userSide].ps[snap.sel[m.userSide]];
+  m.setPiece = snap.sp;
+  if (snap.msg) { m.msg = snap.msg; m.msgT = snap.msgT; } else m.msgT = 0;
+  if (snap.tk) { m.ticker = snap.tk; m.tickerT = snap.tkT; }
+  if (snap.gfx) { [m.goalFxT, m.goalFxTeam, m.goalFxScorer] = snap.gfx; } else m.goalFxT = 0;
+  if (snap.stats) m.stats = snap.stats;
 }

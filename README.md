@@ -1,5 +1,11 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.42.0 — filets vivants, traînée du ballon, ralentis des occasions
+- Filets dessinés à chaque image avec un maillage subdivisé : quand le ballon entre, le filet se creuse autour du point d'impact (plus fort sur les frappes puissantes) puis revient en oscillant comme un vrai filet ; il reste enfoncé tant que le ballon pousse le fond. Les panneaux latéraux et le toit du filet sont complets.
+- Traînée lumineuse translucide derrière le ballon sur les frappes puissantes, qui s'affine et s'efface avec la distance.
+- Ralentis des grosses occasions : après un poteau, un arrêt ou une frappe qui frôle le cadre, dès que le jeu s'arrête (corner, six mètres, touche), le moment est rejoué sous deux angles avec l'habillage « OCCASION — QUEL ARRÊT ! / SUR LE POTEAU ! / TOUT PRÈS ! ». Au plus un toutes les 10 minutes, passable d'un toucher, désactivable avec le réglage des ralentis, jamais en ligne.
+- Tests : déclenchement et limites des ralentis d'occasion.
+
 ## Version 3.41.0 — tribunes en fête : tifo, fumigènes, drapeaux, chœurs
 - Tifo géant qui se déroule de bas en haut sur le virage à domicile pendant l'avant-match (rayures aux couleurs du club, croissant et étoile au centre) et ondule au vent ; le survol d'ouverture s'attarde sur lui.
 - Fumigènes après chaque but dans la tribune de l'équipe qui marque : torches incandescentes qui vacillent et fumée colorée, douce et translucide, qui monte et se dissipe pendant une dizaine de secondes (y compris pendant le ralenti).

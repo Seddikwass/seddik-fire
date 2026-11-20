@@ -134,3 +134,19 @@ console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroul
   assert.ok(getWeatherPhysics('rain').groundFriction < getWeatherPhysics('night').groundFriction, 'pelouse mouillée : le ballon roule plus loin');
   console.log('WEATHER OK — 4 ambiances, pluie = ballon plus rapide au sol');
 }
+{
+  const { Match } = await import('../public/js/match.js');
+  const P = Match.prototype;
+  const frames = Array.from({ length: 120 }, (_, k) => ({ b: [30 + k * 0.2, 1, 0, 20, 0, 0, 0, 0], p: [] }));
+  const mk = () => ({ net: null, replay: null, settings: {}, renderer3d: {}, clock: 100, minute: 30, replayBuf: frames, bigChance: { kind: 'post', clock: 98, minute: 30 } });
+  const a = mk(); P.maybeChanceReplay.call(a, 'goalkick');
+  assert.ok(a.replay && a.replay.kind === 'chance' && a.replay.segs.length === 2, 'poteau puis 6 mètres : ralenti de l occasion (2 angles)');
+  assert.equal(a.replay.title, 'SUR LE POTEAU !');
+  const b = mk(); b.clock = 110; P.maybeChanceReplay.call(b, 'goalkick');
+  assert.equal(b.replay, null, 'pas de ralenti si le jeu s arrête longtemps après l occasion');
+  const c = mk(); c.lastChanceReplayMin = 25; P.maybeChanceReplay.call(c, 'corner');
+  assert.equal(c.replay, null, 'pas plus d un ralenti d occasion toutes les 10 minutes');
+  const d = mk(); d.net = {}; P.maybeChanceReplay.call(d, 'corner');
+  assert.equal(d.replay, null, 'pas de ralenti en ligne');
+  console.log('CHANCE REPLAY OK — poteaux, arrêts et frappes frôlant le cadre rejoués quand le jeu s arrête');
+}

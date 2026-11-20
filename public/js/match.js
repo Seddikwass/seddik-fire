@@ -1055,6 +1055,7 @@ export class Match {
   // Réactions du public : les tribunes soutiennent l'équipe qui reçoit (camp 0).
   crowdReact(kind, team = 0) {
     const home = team === 0;
+    if ((kind === 'save' || kind === 'post' || kind === 'miss') && !this.net) this.bigChance = { kind, clock: this.clock, minute: this.minute };
     if (kind === 'goal') { if (home) { A.roar(); this.nextChantT = 25; } else A.groan(); }
     else if (kind === 'save') { if (home) A.applause(2.2); else A.ooh(0.8); }
     else if (kind === 'miss' || kind === 'post') { if (home) A.ooh(kind === 'post' ? 1 : 0.7); else A.applause(1.2, 25); }
@@ -1117,7 +1118,20 @@ export class Match {
     this.state = 'restart'; this.stateT = 1.4;
     if (this.userSide === team) this.select(taker);
   }
+  // Ralenti des grosses occasions (arrêt, poteau, frappe frôlant le cadre) dès que le jeu s'arrête.
+  maybeChanceReplay(type) {
+    const C = this.bigChance; this.bigChance = null;
+    if (!C || this.net || this.replay || this.settings.replays === false || !this.renderer3d) return;
+    if (!['corner', 'goalkick', 'throw'].includes(type) || this.clock - C.clock > 4.5) return;
+    if (this.minute - (this.lastChanceReplayMin ?? -99) < 10 || this.replayBuf.length < 30) return;
+    this.lastChanceReplayMin = this.minute;
+    const plan = buildReplayPlan(this.replayBuf.slice(-110), 1);
+    plan.kind = 'chance'; plan.title = C.kind === 'save' ? 'QUEL ARRÊT !' : C.kind === 'post' ? 'SUR LE POTEAU !' : 'TOUT PRÈS !';
+    plan.segs = plan.segs.slice(0, 2).map(sg => ({ ...sg, from: Math.max(0, plan.frames.length - 80), speed: sg.speed + 0.08 }));
+    this.replay = plan; this.tvWipeT = TV_WIPE; this.msg = ''; this.msgT = 0;
+  }
   setRestart(type, team, x, y) {
+    if (this.bigChance) this.maybeChanceReplay(type);
     this.passInfo = null;
     const T = this.teams[team];
     if (type === 'corner') this.say('corner', { t: T.short });
@@ -2639,7 +2653,7 @@ export class Match {
       else this.skipReplay();
     }
   }
-  skipReplay() { if (!this.replay) return; this.replay = null; this.msgT = 0; this.tvWipeT = TV_WIPE; this.afterGoal(); }
+  skipReplay() { if (!this.replay) return; const kind = this.replay.kind; this.replay = null; this.msgT = 0; this.tvWipeT = TV_WIPE; if (kind !== 'chance') this.afterGoal(); }
   afterGoal() { this.replayBuf = []; this.setupKickoff(1 - this.lastGoalTeam); }
 
   // ---------------- fin ----------------
@@ -3691,10 +3705,10 @@ export class Match {
     c.fillStyle = 'rgba(7,17,29,0.82)'; this.rr(x, y, w, h, 7 * d); c.fill();
     c.fillStyle = '#ffdf45'; this.rr(x, y, 62 * d, h, 7 * d); c.fill();
     c.fillStyle = '#07111d'; c.font = `900 ${10 * d}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText('RALENTI', x + 31 * d, y + h / 2 - 5 * d);
+    c.fillText(r.kind === 'chance' ? 'OCCASION' : 'RALENTI', x + 31 * d, y + h / 2 - 5 * d);
     c.font = `800 ${9 * d}px system-ui,Arial`; c.fillText(`${r.seg + 1}/${r.segs.length}`, x + 31 * d, y + h / 2 + 8 * d);
     c.textAlign = 'left'; c.fillStyle = '#fff'; c.font = `800 ${11 * d}px system-ui,Arial`;
-    c.fillText(seg.label, x + 72 * d, y + 14 * d);
+    c.fillText(r.title ? `${r.title} — ${seg.label}` : seg.label, x + 72 * d, y + 14 * d, w - 80 * d);
     const bx = x + 72 * d, bw = w - 82 * d, prog = clamp((r.i - seg.from) / Math.max(1, r.frames.length - 1 - seg.from), 0, 1);
     c.fillStyle = 'rgba(255,255,255,0.25)'; c.fillRect(bx, y + 26 * d, bw, 3 * d);
     c.fillStyle = '#ffdf45'; c.fillRect(bx, y + 26 * d, bw * prog, 3 * d);

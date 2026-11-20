@@ -704,22 +704,7 @@ export class MatchRenderer3D {
       line([postX,gh,-halfGoal],[postX,gh,halfGoal],0.12,[0.94,0.95,0.9]);
       for(const zz of [-halfGoal,halfGoal]) line([postX,0,zz],[backX,0,zz],0.07,softWhite);
       line([backX,0,-halfGoal],[backX,0,halfGoal],0.065,softWhite);
-      for(let j=0;j<=12;j++){
-        const zz=-halfGoal+j*(halfGoal*2/12);
-        line([postX,0,zz],[backX,gh*0.75,zz],0.022,softWhite);
-        line([postX,gh,zz],[backX,gh*0.75,zz],0.022,softWhite);
-        line([backX,0,zz],[backX,gh*0.75,zz],0.018,softWhite);
-      }
-      for(let j=1;j<=7;j++){
-        const yy=gh*j/8;
-        line([postX,yy,-halfGoal],[backX,yy,-halfGoal],0.019,softWhite);
-        line([postX,yy,halfGoal],[backX,yy,halfGoal],0.019,softWhite);
-        line([backX,yy,-halfGoal],[backX,yy,halfGoal],0.018,softWhite);
-      }
-      for(const zz of [-halfGoal,halfGoal]) for(let j=1;j<6;j++){
-        const yy=gh*j/6;
-        line([postX,yy,zz],[backX,yy*0.75,zz],0.018,softWhite);
-      }
+      // Le filet lui-même est dessiné à chaque image (addNets) pour pouvoir se déformer.
       // Corner flags.
       for(const side of [-1,1]){
         const fx=s*52.1,fz=side*33.7;
@@ -1315,6 +1300,61 @@ export class MatchRenderer3D {
       else { const v=G._v||1.7; G.vx=dx/dd*v; G.vy=dy/dd*v; G.x+=G.vx*dt; G.y+=G.vy*dt; G.anim=(G.anim||0)+v*1.55*dt; G.heading=Math.atan2(dy,dx); G.face=Math.sign(dx)||1; }
     } else this.subGhost=null;
   }
+  // Filets : maillage subdivisé qui se creuse autour du point d'impact du ballon puis revient en oscillant.
+  addNets(g, match, frame) {
+    const now=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
+    const bx=frame?frame.b[0]:Number(match.ball?.x)||0, by=frame?frame.b[1]:Number(match.ball?.y)||0, bz=frame?frame.b[2]:Number(match.ball?.z)||0;
+    const bvx=frame?frame.b[3]:Number(match.ball?.vx)||0, bvy=frame?frame.b[4]:Number(match.ball?.vy)||0;
+    const inGoal=Math.abs(bx)>52.55&&Math.abs(by)<3.75&&bz<2.6;
+    const N=this.nets||(this.nets={ s:0, iy:0, iz:0, punch:0, t0:0, was:false });
+    if(inGoal&&!N.was){ N.s=Math.sign(bx); N.punch=clamp(Math.hypot(bvx,bvy)/24,0.25,1)*0.85; N.t0=now; }
+    N.was=inGoal;
+    if(inGoal){ N.iy=bz+0.2; N.iz=-by; }
+    const dtn=now-N.t0, spring=N.punch*Math.exp(-dtn*2.6)*Math.cos(dtn*9);
+    const push=inGoal?clamp(Math.abs(bx)+0.25-55.2,0,1.2):0;
+    const softWhite=[0.76,0.82,0.76], halfGoal=3.66, gh=2.44;
+    for(const s of [-1,1]){
+      const active=N.s===s&&(inGoal||dtn<2.5);
+      const D=active?Math.max(push,spring*(dtn<2.5?1:0)):0, sub=active?(this.quality.detail>=1?6:3):1;
+      const postX=s*52.5, backX=s*55.2;
+      const def=p=>{ if(!D) return p; const back=clamp((Math.abs(p[0])-52.5)/2.7,0,1); const w=Math.exp(-((p[2]-N.iz)**2+(p[1]-N.iy)**2*1.6)/1.3)*back;
+        return [p[0]+s*w*D, p[1]+w*D*0.15*(p[1]>gh*0.6?1:0), p[2]+Math.sign(p[2]-N.iz||1)*w*D*0.12]; };
+      const L=(a,b,r)=>{ if(sub===1){ tube(g,a,b,r,softWhite,4); return; } let pa=def(a); for(let i=1;i<=sub;i++){ const t=i/sub, pb=def([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]); tube(g,pa,pb,r,softWhite,4); pa=pb; } };
+      for(let j=0;j<=12;j++){
+        const zz=-halfGoal+j*(halfGoal*2/12);
+        L([postX,gh,zz],[backX,gh*0.75,zz],0.022);
+        L([backX,0,zz],[backX,gh*0.75,zz],0.018);
+      }
+      for(let j=1;j<=7;j++){
+        const yy=gh*j/8;
+        L([postX,yy,-halfGoal],[backX,yy*0.75+0*yy,-halfGoal],0.019);
+        L([postX,yy,halfGoal],[backX,yy*0.75,halfGoal],0.019);
+        L([backX,yy*0.75,-halfGoal],[backX,yy*0.75,halfGoal],0.018);
+      }
+      for(let j=1;j<=4;j++){ const xx=postX+s*2.7*j/5, hh=gh-(gh*0.25)*j/5; L([xx,hh,-halfGoal],[xx,hh,halfGoal],0.018); L([xx,0,-halfGoal],[xx,hh,-halfGoal],0.018); L([xx,0,halfGoal],[xx,hh,halfGoal],0.018); }
+    }
+  }
+  // Traînée lumineuse derrière le ballon sur les frappes puissantes.
+  addBallTrail(fx, match, frame) {
+    const b=frame?{ x:frame.b[0], y:frame.b[1], z:frame.b[2], vx:frame.b[3], vy:frame.b[4] }:match.ball||{};
+    const sp=Math.hypot(Number(b.vx)||0,Number(b.vy)||0);
+    const T=this.trail||(this.trail=[]);
+    if(sp>19&&!b.owner&&(Number(b.z)||0)<9){ T.push([Number(b.x)||0,(Number(b.z)||0)+0.24,-(Number(b.y)||0)]); if(T.length>14) T.shift(); }
+    else if(T.length) T.shift();
+    if(T.length<3||!this.lastCamera) return;
+    const cam=this.lastCamera;
+    for(let i=1;i<T.length;i++){
+      const a=T[i-1], c=T[i], k0=(i-1)/(T.length-1), k1=i/(T.length-1);
+      let d=[c[0]-a[0],c[1]-a[1],c[2]-a[2]]; const dl=Math.hypot(...d)||1; d=d.map(v=>v/dl);
+      let v=[cam.eye[0]-c[0],cam.eye[1]-c[1],cam.eye[2]-c[2]]; const vl=Math.hypot(...v)||1; v=v.map(q=>q/vl);
+      let w=[d[1]*v[2]-d[2]*v[1],d[2]*v[0]-d[0]*v[2],d[0]*v[1]-d[1]*v[0]]; const wl=Math.hypot(...w)||1; w=w.map(q=>q/wl);
+      const r0=0.03+0.16*k0, r1=0.03+0.16*k1, col=[1.0,0.97,0.82], n=[v,v,v];
+      const A0=[a[0]-w[0]*r0,a[1]-w[1]*r0,a[2]-w[2]*r0], A1=[a[0]+w[0]*r0,a[1]+w[1]*r0,a[2]+w[2]*r0], C0=[c[0]-w[0]*r1,c[1]-w[1]*r1,c[2]-w[2]*r1], C1=[c[0]+w[0]*r1,c[1]+w[1]*r1,c[2]+w[2]*r1];
+      currentAnim=k0*0.55; pushVertex(fx,A0,v,col); pushVertex(fx,A1,v,col); currentAnim=k1*0.55; pushVertex(fx,C1,v,col);
+      currentAnim=k0*0.55; pushVertex(fx,A0,v,col); currentAnim=k1*0.55; pushVertex(fx,C1,v,col); pushVertex(fx,C0,v,col);
+    }
+    currentAnim=0;
+  }
   // Tifo géant déployé sur le virage à domicile pendant l'avant-match (déroulé de bas en haut, ondulant).
   addTifo(g, match) {
     const t=match.ceremony.t; if(t<0.4) return;
@@ -1394,6 +1434,8 @@ export class MatchRenderer3D {
       for(const o of this.staff) this.addPlayer(g,match,o,null,95+o.k);
       if(this.subGhost) this.addPlayer(g,match,this.subGhost,null,99);
     }
+    this.addNets(g,match,frame);
+    this.addBallTrail(this.fxGeometry,match,frame);
     if((this.wx||{}).rain) this.addRain(this.fxGeometry,match);
     if(match.ceremony) this.addTifo(g,match);
     this.addFlares(g,match,this.fxGeometry);

@@ -375,6 +375,38 @@ function orientedEllipsoid(out, c, fx, uy, sz, rf, ru, rs, color, seg = 8, rings
     pushVertex(out, A.p, A.n, color); pushVertex(out, C.p, C.n, color); pushVertex(out, D.p, D.n, color);
   }
 }
+// Rotation incrémentale d'une matrice 3×3 (lignes) autour de l'axe ω, d'angle |ω|·dt (formule de Rodrigues).
+function rotateMatrix3(M, w, dt) {
+  const ang = Math.hypot(w[0], w[1], w[2]) * dt; if (!(ang > 1e-6)) return M;
+  const k = [w[0] / (ang / dt), w[1] / (ang / dt), w[2] / (ang / dt)], c = Math.cos(ang), s = Math.sin(ang), t = 1 - c;
+  const Rm = [t*k[0]*k[0]+c, t*k[0]*k[1]-s*k[2], t*k[0]*k[2]+s*k[1], t*k[0]*k[1]+s*k[2], t*k[1]*k[1]+c, t*k[1]*k[2]-s*k[0], t*k[0]*k[2]-s*k[1], t*k[1]*k[2]+s*k[0], t*k[2]*k[2]+c];
+  const o = new Array(9);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o[i*3+j] = Rm[i*3]*M[j] + Rm[i*3+1]*M[3+j] + Rm[i*3+2]*M[6+j];
+  // Ré-orthonormalisation légère pour éviter la dérive numérique.
+  const n0 = Math.hypot(o[0], o[3], o[6]) || 1, n1 = Math.hypot(o[1], o[4], o[7]) || 1, n2 = Math.hypot(o[2], o[5], o[8]) || 1;
+  for (let i = 0; i < 3; i++) { o[i*3] /= n0; o[i*3+1] /= n1; o[i*3+2] /= n2; }
+  return o;
+}
+const PHI = (1 + Math.sqrt(5)) / 2;
+const BALL_PENTAGONS = [[0,1,PHI],[0,1,-PHI],[0,-1,PHI],[0,-1,-PHI],[1,PHI,0],[1,-PHI,0],[-1,PHI,0],[-1,-PHI,0],[PHI,0,1],[PHI,0,-1],[-PHI,0,1],[-PHI,0,-1]].map(v => { const l = Math.hypot(...v); return v.map(c => c / l); });
+export function ballPanelColor(local) {
+  let best = -1; for (const c of BALL_PENTAGONS) best = Math.max(best, local[0]*c[0] + local[1]*c[1] + local[2]*c[2]);
+  return best > 0.968 ? [0.05, 0.06, 0.08] : best > 0.958 ? [0.42, 0.44, 0.46] : [0.95, 0.96, 0.93];
+}
+function addPanelBall(out, c, r, M, seg, rings) {
+  const pt = (lat, lon) => { const d = [Math.sin(lat) * Math.cos(lon), Math.cos(lat), Math.sin(lat) * Math.sin(lon)]; return { p: [c[0] + d[0] * r, c[1] + d[1] * r, c[2] + d[2] * r], n: d }; };
+  for (let iy = 0; iy < rings; iy++) for (let ix = 0; ix < seg; ix++) {
+    const A = pt(Math.PI * iy / rings, Math.PI * 2 * ix / seg), B = pt(Math.PI * (iy + 1) / rings, Math.PI * 2 * ix / seg);
+    const C = pt(Math.PI * (iy + 1) / rings, Math.PI * 2 * (ix + 1) / seg), D = pt(Math.PI * iy / rings, Math.PI * 2 * (ix + 1) / seg);
+    const m = [(A.n[0]+B.n[0]+C.n[0]+D.n[0])/4, (A.n[1]+B.n[1]+C.n[1]+D.n[1])/4, (A.n[2]+B.n[2]+C.n[2]+D.n[2])/4];
+    const ml = Math.hypot(...m) || 1;
+    // Direction dans le repère du ballon : transposée de la rotation.
+    const local = [(M[0]*m[0]+M[3]*m[1]+M[6]*m[2])/ml, (M[1]*m[0]+M[4]*m[1]+M[7]*m[2])/ml, (M[2]*m[0]+M[5]*m[1]+M[8]*m[2])/ml];
+    const col = ballPanelColor(local);
+    pushVertex(out, A.p, A.n, col); pushVertex(out, B.p, B.n, col); pushVertex(out, C.p, C.n, col);
+    pushVertex(out, A.p, A.n, col); pushVertex(out, C.p, C.n, col); pushVertex(out, D.p, D.n, col);
+  }
+}
 function sphere(out, center, scale, color, seg = 8, rings = 6) {
   const [cx, cy, cz] = center, [rx, ry, rz] = scale;
   const point = (lat, lon) => {
@@ -430,18 +462,25 @@ function addKitNumber(out, point, forward, centerY, number, color, scale = 1, fa
   }
 }
 function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glove = false) {
-  cylinder(out, shoulder, elbow, 0.105, sleeve, 8, 0.075);
-  cylinder(out, elbow, hand, 0.064, skin, 7, 0.045);
+  // Manche courte jusqu'à mi-bras avec revers ; le gardien garde ses manches longues.
+  if (glove) cylinder(out, shoulder, elbow, 0.105, sleeve, 8, 0.075);
+  else {
+    const cuff = [shoulder[0] + (elbow[0] - shoulder[0]) * 0.52, shoulder[1] + (elbow[1] - shoulder[1]) * 0.52, shoulder[2] + (elbow[2] - shoulder[2]) * 0.52];
+    cylinder(out, shoulder, cuff, 0.108, sleeve, 8, 0.092);
+    cylinder(out, cuff, elbow, 0.07, skin, 7, 0.06);
+    if (detail > 0) { const k = 0.07, c2 = [cuff[0] - (elbow[0] - shoulder[0]) * k, cuff[1] - (elbow[1] - shoulder[1]) * k, cuff[2] - (elbow[2] - shoulder[2]) * k]; cylinder(out, c2, cuff, 0.1, trim, 8, 0.096); }
+  }
+  cylinder(out, elbow, hand, glove ? 0.07 : 0.06, glove ? sleeve : skin, 7, 0.045);
   if (detail > 0) {
-    sphere(out, elbow, [0.072,0.072,0.072], sleeve, 6, 4);
+    sphere(out, elbow, [0.066,0.066,0.066], glove ? sleeve : skin, 6, 4);
     sphere(out, hand, glove ? [0.095,0.075,0.08] : [0.07,0.075,0.07], glove ? trim : skin, 7, 4);
   } else {
     sphere(out, hand, [0.07,0.075,0.07], glove ? trim : skin, 6, 4);
   }
 }
 
-const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; void main(){ vec3 p=aPosition; if(aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; if(aAnim<0.0){ float w=0.5+0.5*sin(uTime*2.4-(p.x+p.z)*0.45); vColor=aColor*(0.7+0.45*w)+vec3(0.3*uExcite*max(sin(uTime*15.0),0.0)); } gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
-const FS = 'precision mediump float; uniform vec3 uFog; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(48.0,170.0,vDepth)*0.55; color=mix(color,uFog,fog); gl_FragColor=vec4(color,1.0); }';
+const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; void main(){ vec3 p=aPosition; if(aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; if(aAnim<0.0){ float w=0.5+0.5*sin(uTime*2.4-(p.x+p.z)*0.45); vColor=aColor*(0.7+0.45*w)+vec3(0.3*uExcite*max(sin(uTime*15.0),0.0)); } vWorld=p; gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
+const FS = 'precision mediump float; uniform vec3 uFog; uniform vec3 uEye; uniform float uRim; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); vec3 lp=vColor*(amb*0.78+0.62*key+0.16*rim+0.1*fill)+vec3(sh*0.16)+vec3(1.0,0.94,0.82)*fres*0.32*(0.4+0.6*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(48.0,170.0,vDepth)*0.55; color=mix(color,uFog,fog); gl_FragColor=vec4(color,1.0); }';
 
 function compile(gl, type, source) {
   const shader = gl.createShader(type);
@@ -472,6 +511,8 @@ function gradientQuad(out, a, b, c, d, bottom, top) {
 function rectV(out, x0, x1, y0, y1, z, color, facing = 1) { quad(out, [x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z], color, [0, 0, facing]); }
 function rectVZ(out, x, z0, z1, y0, y1, color, facing = 1) { quad(out, [x, y0, z0], [x, y0, z1], [x, y1, z1], [x, y1, z0], color, [facing, 0, 0]); }
 // Supporter : buste et tête tournés vers la pelouse, parfois une écharpe levée.
+// Chaussures modernes : couleur principale + semelle/virgule contrastée.
+const BOOT_COLORS=[[[0.04,0.045,0.05],[0.95,0.95,0.95]],[[0.93,0.93,0.92],[0.06,0.06,0.07]],[[0.85,1.0,0.12],[0.05,0.05,0.06]],[[1.0,0.42,0.08],[0.08,0.08,0.1]],[[0.1,0.35,1.0],[0.95,0.95,0.95]],[[1.0,0.3,0.6],[0.06,0.06,0.07]],[[0.9,0.08,0.1],[0.95,0.95,0.95]],[[0.04,0.045,0.05],[1.0,0.76,0.1]]];
 const HAIR_COLORS=[[0.03,0.025,0.02],[0.06,0.04,0.03],[0.13,0.08,0.045],[0.24,0.15,0.07],[0.5,0.38,0.2],[0.02,0.02,0.025]];
 function nameHash(text) { let h = 2166136261; for (const ch of String(text || '')) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822507) >>> 0; h ^= h >>> 13; return h >>> 0; }
 export function playerLook(player = {}, index = 0) {
@@ -479,7 +520,8 @@ export function playerLook(player = {}, index = 0) {
   const styles = ['crop', 'crop', 'buzz', 'afro', 'fade', 'long', 'bald', 'quiff'];
   const style = styles[h % styles.length];
   const hair = HAIR_COLORS[(h >>> 4) % (style === 'afro' ? 2 : HAIR_COLORS.length)];
-  return { style, hair, beard: ((h >>> 9) % 4) === 0 };
+  const boots = BOOT_COLORS[(h >>> 13) % BOOT_COLORS.length];
+  return { style, hair, beard: ((h >>> 9) % 4) === 0, boot: boots[0], bootAccent: boots[1] };
 }
 // Coiffure posée sur une tête de demi-axes 0.125 (avant) × 0.15 (haut) × 0.112 (côté).
 function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0) {
@@ -534,6 +576,8 @@ export class MatchRenderer3D {
     this.timeLoc = gl.getUniformLocation(this.program, 'uTime');
     this.exciteLoc = gl.getUniformLocation(this.program, 'uExcite');
     this.fogLoc = gl.getUniformLocation(this.program, 'uFog');
+    this.eyeLoc = gl.getUniformLocation(this.program, 'uEye');
+    this.rimLoc = gl.getUniformLocation(this.program, 'uRim');
     this.staticBuffer = gl.createBuffer();
     this.dynamicBuffer = gl.createBuffer();
     this.staticCount = 0;
@@ -818,7 +862,7 @@ export class MatchRenderer3D {
     const kit=player.kitOverride||(player.isGK?(side0.gkKit||side0.kit):side0.kit);
     const shirt=parseColor(kit?.shirt,[0.8,0.1,0.1]), trim=parseColor(kit?.trim,[0.95,0.88,0.72]);
     const shorts=parseColor(kit?.shorts||kit?.trim,[0.08,0.1,0.13]);
-    const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=player.sockColor||[0.86,0.88,0.83];
+    const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=player.sockColor||parseColor(kit?.socks,shirt.map(v=>v*0.92));
     const detail=this.quality.detail;
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
     const build=0.98+physique*0.18;
@@ -912,8 +956,10 @@ export class MatchRenderer3D {
     const torsoF=lean*0.45;
     // ---- Buste : poitrine, épaules, bassin (vraies proportions, orientés avec le joueur) ----
     const hi=detail===2;
-    ell(bodyPoint(torsoF,bodyY+0.03,0),0.135*build,0.3-low*0.08,0.2*build,shirt,hi?12:9,hi?8:6,tilt);
-    ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.2,0),0.13*build,0.12,0.25*build,shirt,hi?12:9,hi?6:5,tilt);
+    // Rotation des épaules opposée au bassin pendant la course.
+    const twist=-Math.sin(phase)*0.22*clamp(pose.speed/8.5,0,1)*action.gait*(1-pose.idle)*(pose.kick>0.005?0:1);
+    ell(bodyPoint(torsoF,bodyY+0.03,0),0.135*build,0.3-low*0.08,0.2*build,shirt,hi?12:9,hi?8:6,tilt,twist*0.5);
+    ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.2,0),0.13*build,0.12,0.25*build,shirt,hi?12:9,hi?6:5,tilt,twist);
     ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?10:8,5,tilt*0.5);
     // Col et bande de taille.
     cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.31,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.36,0),0.082,trim,hi?10:8,0.088);
@@ -981,18 +1027,26 @@ export class MatchRenderer3D {
       const ankle=legPoint(ankF,ankU,sideOff+side*0.02);
       const mid=[hip[0]+(knee[0]-hip[0])*0.55,hip[1]+(knee[1]-hip[1])*0.55,hip[2]+(knee[2]-hip[2])*0.55];
       cylinder(g,hip,mid,0.112*build,shorts,8,0.104*build);
+      if(detail>0&&!player.isOfficial) cylinder(g,legPoint(lean*0.25,hipY+0.04,side*0.205*build),[mid[0]+(legPoint(0,0,side*0.1)[0]-legPoint(0,0,0)[0]),mid[1],mid[2]+(legPoint(0,0,side*0.1)[2]-legPoint(0,0,0)[2])],0.016,trim,4,0.014);
       cylinder(g,mid,knee,0.088*build,skin,8,0.07);
       sphere(g,knee,[0.068,0.072,0.068],skin,6,4);
       const sockTop=[knee[0]+(ankle[0]-knee[0])*0.14,knee[1]+(ankle[1]-knee[1])*0.14,knee[2]+(ankle[2]-knee[2])*0.14];
       cylinder(g,knee,sockTop,0.07,skin,7,0.07);
       cylinder(g,sockTop,ankle,0.072*build,sock,hi?10:7,0.05);
-      if(detail>0) ring(g,sockTop[0],sockTop[1],sockTop[2],0.073,trim,10,0.012);
+      if(detail>0){ const tp=[sockTop[0]+(ankle[0]-sockTop[0])*0.18,sockTop[1]+(ankle[1]-sockTop[1])*0.18,sockTop[2]+(ankle[2]-sockTop[2])*0.18]; ring(g,sockTop[0],sockTop[1],sockTop[2],0.074,trim,10,0.014); if(!player.isOfficial) ring(g,tp[0],tp[1],tp[2],0.075,[0.92,0.92,0.9],10,0.022);
+        // Mollet : léger galbe derrière le tibia.
+        const cv=[sockTop[0]+(ankle[0]-sockTop[0])*0.3,sockTop[1]+(ankle[1]-sockTop[1])*0.3,sockTop[2]+(ankle[2]-sockTop[2])*0.3]; const back=legPoint(kF+Math.sin(shinA)*L2*0.3-0.035,kU-Math.cos(shinA)*L2*0.3,sideOff*0.8+side*0.03); sphere(g,[(cv[0]+back[0])/2,(cv[1]+back[1])/2,(cv[2]+back[2])/2],[0.06,0.085,0.06],sock,6,4); }
       // Chaussure : orientée avec le pied, pointe tendue pendant la frappe, ouverte pour la passe intérieure.
       const footA=(shinA+Math.PI/2)-(kicking&&isKickLeg?0.55*strikeShape:0)-(windup>0&&isKickLeg?0.6*windup:0);
       const fd=[Math.sin(footA),-Math.cos(footA)];
       const bootC=legPoint(ankF+fd[0]*0.075,Math.max(0.05,ankU+fd[1]*0.075-0.035),sideOff+side*0.02);
-      ell(bootC,0.13,0.055,0.06,dark,hi?10:7,hi?6:4,-(footA-Math.PI/2),passIn*side*0.9);
-      if(detail>0) ell([bootC[0],bootC[1]+0.02,bootC[2]],0.07,0.012,0.062,trim,6,3,-(footA-Math.PI/2),passIn*side*0.9);
+      const bootCol=player.isOfficial?dark:look.boot, bootAcc=player.isOfficial?dark:look.bootAccent;
+      ell(bootC,0.13,0.055,0.06,bootCol,hi?10:7,hi?6:4,-(footA-Math.PI/2),passIn*side*0.9);
+      if(detail>0){
+        // Semelle et crampons contrastés + virgule latérale.
+        ell([bootC[0],bootC[1]-0.04,bootC[2]],0.125,0.014,0.055,bootAcc,hi?8:6,3,-(footA-Math.PI/2),passIn*side*0.9);
+        ell(legPoint(ankF+fd[0]*0.08,Math.max(0.05,ankU+fd[1]*0.08-0.03),sideOff+side*0.075),0.06,0.016,0.006,bootAcc,6,3,-(footA-Math.PI/2),passIn*side*0.9);
+      }
     }
     // ---- Bras : épaule/coude/main (balancier opposé aux jambes, gestes d'équilibre) ----
     const A1=0.27, A2=0.25;
@@ -1025,7 +1079,7 @@ export class MatchRenderer3D {
       const gkRaise=player.isGK?action.catchReach*0.24*(1-rollAmt):0;
       const gkU=player.isGK?(leadingKeeperArm?action.diveFlight*0.13:action.diveLanding*0.035):0;
       const spread=action.headerBrace*0.16+action.tackleReach*0.14+action.tackleArmSpread*0.14;
-      const sF=torsoF+tilt*0.12, sU=shoulderY, sS=side*0.235*build;
+      const sF0=tilt*0.12, sS0=side*0.235*build, sF=torsoF+sF0*Math.cos(twist)-sS0*Math.sin(twist), sU=shoulderY, sS=sF0*Math.sin(twist)+sS0*Math.cos(twist);
       const eF=sF+Math.sin(al)*A1*Math.cos(ab*0.6), eU=sU-Math.cos(al)*A1*Math.cos(ab*0.6), eS=sS+side*Math.sin(ab)*A1*0.55;
       const fa=al+be;
       let hF=eF+Math.sin(fa)*A2, hU=eU-Math.cos(fa)*A2, hS=eS+side*Math.sin(ab)*A2*0.4;
@@ -1050,19 +1104,31 @@ export class MatchRenderer3D {
     cylinder(g,bodyPoint(neckF,bodyY+0.32,0),bodyPoint(neckF+headSnap*0.06,bodyY+0.46,0),0.062,skin,8);
     const headF=neckF+headSnap*0.13+tilt*0.08, headY=bodyY+0.6-headSnap*0.03;
     const headTilt=tilt*0.4+headSnap*0.5+archPre*0.6;
-    ell(bodyPoint(headF,headY,0),0.125,0.15,0.112,skin,hi?12:10,hi?9:7,headTilt);
-    ell(bodyPoint(headF-0.005,headY,-0.112),0.03,0.045,0.02,skin,6,4);
-    ell(bodyPoint(headF-0.005,headY,0.112),0.03,0.045,0.02,skin,6,4);
-    addHair(g,(f,h,s)=>bodyPoint(f,h,s),headF,headY-0.62,look,detail,ell,headTilt);
+    // Regard : la tête suit le ballon (rotation limitée du cou, lissée dans le temps).
+    let lookYaw=0;
+    const lb=this._lookBall;
+    if(lb&&!match.ceremony&&rollAmt<0.2&&slideAmt<0.2){
+      const dxr=lb[0]-x, dzr=-lb[1]-z, lf=dxr*F[0]+dzr*F[2], ls=dxr*S[0]+dzr*S[2];
+      if(Math.hypot(lf,ls)>0.6) lookYaw=clamp(Math.atan2(ls,lf),-1.05,1.05);
+    }
+    const prevYaw=Number.isFinite(player._headYaw)?player._headYaw:lookYaw;
+    const headYaw=player._headYaw=prevYaw+(lookYaw-prevYaw)*0.18;
+    const cyh=Math.cos(headYaw), syh=Math.sin(headYaw);
+    const headPoint=(f,h,sd)=>{ const df=f-headF; return bodyPoint(headF+df*cyh-sd*syh,h,df*syh+sd*cyh); };
+    const ellH=(c,rf,ru,rs,color,seg,rings,t=0,yo=0)=>ell(c,rf,ru,rs,color,seg,rings,t,yo+headYaw);
+    ellH(headPoint(headF,headY,0),0.125,0.15,0.112,skin,hi?12:10,hi?9:7,headTilt);
+    ellH(headPoint(headF-0.005,headY,-0.112),0.03,0.045,0.02,skin,6,4);
+    ellH(headPoint(headF-0.005,headY,0.112),0.03,0.045,0.02,skin,6,4);
+    addHair(g,headPoint,headF,headY-0.62,look,detail,ellH,headTilt);
     if(detail>0){
       const ff=headF+0.105, fy=headY;
       for(const side of [-1,1]){
-        ell(bodyPoint(ff,fy+0.035,side*0.045),0.012,0.016,0.019,[0.94,0.92,0.84],6,4,headTilt);
-        ell(bodyPoint(ff+0.01,fy+0.035,side*0.045),0.008,0.01,0.009,[0.035,0.03,0.025],5,3,headTilt);
-        tube(g,bodyPoint(ff,fy+0.07,side*0.075),bodyPoint(ff+0.004,fy+0.074,side*0.022),0.01,hair,5);
+        ellH(headPoint(ff,fy+0.035,side*0.045),0.012,0.016,0.019,[0.94,0.92,0.84],6,4,headTilt);
+        ellH(headPoint(ff+0.01,fy+0.035,side*0.045),0.008,0.01,0.009,[0.035,0.03,0.025],5,3,headTilt);
+        tube(g,headPoint(ff,fy+0.07,side*0.075),headPoint(ff+0.004,fy+0.074,side*0.022),0.01,hair,5);
       }
-      ell(bodyPoint(ff+0.025,fy-0.005,0),0.03,0.035,0.022,skin,6,4,headTilt);
-      tube(g,bodyPoint(ff+0.004,fy-0.06,-0.03),bodyPoint(ff+0.004,fy-0.06,0.03),0.008,[0.22,0.08,0.065],5);
+      ellH(headPoint(ff+0.025,fy-0.005,0),0.03,0.035,0.022,skin,6,4,headTilt);
+      tube(g,headPoint(ff+0.004,fy-0.06,-0.03),headPoint(ff+0.004,fy-0.06,0.03),0.008,[0.22,0.08,0.065],5);
     }
     // Gardien : gants renforcés.
     if(player.isGK&&detail>0) for(const side of [-1,1]) {
@@ -1135,6 +1201,7 @@ export class MatchRenderer3D {
     }
   }
   buildDynamic(match, frame) {
+    this._lookBall=frame?[frame.b[0],frame.b[1]]:[Number(match.ball?.x)||0,Number(match.ball?.y)||0];
     const g=this.dynamicGeometry;g.length=0;
     let index=0;
     for(const team of match.teams) for(const player of team.ps){
@@ -1160,17 +1227,16 @@ export class MatchRenderer3D {
         [ballX+Math.cos(b)*shadow.radiusX,0.06,ballZ+Math.sin(b)*shadow.radiusZ],
         shadowColor,[[0,1,0],[0,1,0],[0,1,0]]);
     }
-    sphere(g,[ballX,ballY,ballZ],[0.22,0.22,0.22],[0.94,0.95,0.91],this.quality.sphereSegments,Math.max(4,this.quality.sphereSegments-2));
-    // Panneaux sombres répartis sur deux couronnes : motif de ballon moins ponctuel.
-    for(let ringIndex=0;ringIndex<2;ringIndex++) for(let i=0;i<6;i++){
-      const a=i*Math.PI/3+(ringIndex?Math.PI/6:0)+match.clock*0.7;
-      const elevation=ringIndex?0.18:-0.18;
-      const radius=Math.sqrt(1-elevation*elevation);
-      const px=ballX+Math.cos(a)*0.164*radius;
-      const pz=ballZ+Math.sin(a)*0.164*radius;
-      const py=ballY+elevation*0.164;
-      sphere(g,[px,py,pz],[0.038,0.024,0.038],[0.045,0.055,0.065],5,3);
-    }
+    // Ballon à panneaux qui roule réellement : rotation intégrée depuis la vitesse (roulement) et l'effet (spin).
+    const now=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
+    const bdt=clamp(now-(this._ballT||now),0,0.1); this._ballT=now;
+    const bvx=frame?frame.b[3]:(Number(match.ball.vx)||0), bvy=frame?frame.b[4]:(Number(match.ball.vy)||0), bspin=frame?frame.b[6]:(Number(match.ball.spin)||0);
+    const replaySlow=frame&&match.replay?match.replay.segs?.[match.replay.seg]?.speed||0.4:1;
+    const vrx=bvx, vrz=-bvy, R0=0.22;
+    let wx=vrz/R0, wy=-bspin*1.5, wz=-vrx/R0;
+    if(bz>0.4){ wx*=0.35; wz*=0.35; }
+    this.ballRot=rotateMatrix3(this.ballRot||[1,0,0,0,1,0,0,0,1],[wx,wy,wz],bdt*(match.paused&&!frame?0:replaySlow));
+    addPanelBall(g,[ballX,ballY,ballZ],R0,this.ballRot,Math.max(12,this.quality.sphereSegments+4),Math.max(8,this.quality.sphereSegments));
   }
   bindGeometry(buffer, geometry, usage) {
     const gl=this.gl,data=new Float32Array(geometry);
@@ -1203,10 +1269,14 @@ export class MatchRenderer3D {
     gl.uniform1f(this.timeLoc,(match.clock||0)+(performance.now()/1000)%1000);
     gl.uniform1f(this.exciteLoc,this.excite);
     gl.uniform3f(this.fogLoc,SKY_HORIZON[0],SKY_HORIZON[1],SKY_HORIZON[2]);
+    gl.uniform3f(this.eyeLoc,camera.eye[0],camera.eye[1],camera.eye[2]);
+    gl.uniform1f(this.rimLoc,0);
     gl.bindBuffer(gl.ARRAY_BUFFER,this.staticBuffer);
     this.pointAttributes();
     gl.drawArrays(gl.TRIANGLES,0,this.staticCount);
     this.buildDynamic(match,frame);
+    // Joueurs et ballon : éclairage « retransmission » (ambiance ciel/pelouse, liseré des projecteurs, reflet des tissus).
+    gl.uniform1f(this.rimLoc,1);
     const count=this.bindGeometry(this.dynamicBuffer,this.dynamicGeometry,gl.DYNAMIC_DRAW);
     if(count)gl.drawArrays(gl.TRIANGLES,0,count);
   }

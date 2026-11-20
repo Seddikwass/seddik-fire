@@ -1,5 +1,14 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.37.0 — joueurs plus réels, ballon qui roule vraiment
+- Éclairage « retransmission » réservé aux joueurs et au ballon : lumière d'ambiance venant du ciel et reflet vert de la pelouse, liseré lumineux des projecteurs sur les contours (les silhouettes se détachent du terrain), reflet satiné des maillots selon l'angle de la caméra.
+- Regard : chaque joueur tourne la tête vers le ballon (rotation du cou limitée et lissée), visage, cheveux et barbe compris.
+- Course : les épaules tournent à l'opposé du bassin à chaque foulée, comme un vrai sprinteur.
+- Tenues modernes : manches courtes jusqu'à mi-bras avec revers, chaussettes aux couleurs du club avec bande de strap blanche, mollets galbés, liseré sur les côtés du short ; gardiens en manches longues.
+- Chaussures de couleur propres à chaque joueur (noir, blanc, jaune fluo, orange, bleu électrique, rose, rouge, noir et or) avec semelle et virgule contrastées.
+- Ballon à vrais panneaux (12 pentagones) qui roule dans le sens de sa course, tourne sur lui-même avec l'effet, freine sa rotation en l'air, et reste cohérent au ralenti.
+- Tests : proportion de panneaux sombres du ballon.
+
 ## Version 3.36.0 — avant-match télévisé
 - Nouvelle séquence d'avant-match (environ 12 s, passable d'un toucher, de la touche Entrée ou Espace), moteur de jeu figé pendant ce temps :
   1. survol du stade en hélicoptère au-dessus de la cuvette, bandeau avec le nom du stade et l'affiche ;

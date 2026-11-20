@@ -316,3 +316,12 @@ console.log('3D ACTION MESH OK — corps orienté sur première touche, tête, c
   assert.ok(Math.hypot(t.ref.x - 20, t.ref.y - 10) > 8, 'l arbitre garde ses distances avec le ballon');
   console.log('OFFICIALS OK — arbitre en diagonale, juges de ligne sur la ligne de hors-jeu');
 }
+
+{
+  const { ballPanelColor } = await import('../public/js/renderer3d.js');
+  let dark = 0, n = 0;
+  for (let i = 0; i < 4000; i++) { const z = 2 * ((i + 0.5) / 4000) - 1, a = i * 2.39996, r = Math.sqrt(1 - z * z); const c = ballPanelColor([r * Math.cos(a), z, r * Math.sin(a)]); n++; if (c[0] < 0.2) dark++; }
+  const share = dark / n;
+  assert.ok(share > 0.08 && share < 0.3, 'ballon : environ 1/6 de la surface en panneaux sombres (' + share.toFixed(2) + ')');
+  console.log('BALL PANELS OK — 12 pentagones, ' + Math.round(share * 100) + ' % de surface sombre');
+}

@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.44.0 — vrais maillots et vrais effectifs des grands clubs
+- Maillots domicile réels dessinés en 3D (motif et couleurs, sans logos ni sponsors) : Espérance (rayures verticales rouges et jaunes, short noir), Club Africain (cerceaux rouges et blancs, short et chaussettes blancs), CS Sfaxien (rayures noires et blanches), Étoile du Sahel (rouge uni), US Monastir (blanc à bande centrale et épaules bleues, liseré doré), Stade Tunisien (rayures rouges et vertes). Sources : footyheadlines.com et footballkitarchive.com.
+- Le motif est calculé sur le buste en 3D (rayures, cerceaux, bande centrale) et les manches prennent la couleur du maillot ; à l'extérieur, chaque club garde son maillot extérieur.
+- Noms réels des joueurs pour l'Espérance, le Club Africain, le CS Sfaxien, l'Étoile du Sahel et l'US Monastir, relevés le 21/11/2026 (livefoot.fr, ysscores.com) : postes, nationalités et âges réels quand la source les donne, numéros réels pour l'USM. Les listes publiques étant partielles, les places restantes sont complétées par des joueurs fictifs ; les notes de jeu restent calculées par le jeu.
+- Stade Tunisien : la seule liste trouvée mélangeait anciens et actuels joueurs, l'effectif reste donc fictif pour ce club (comme pour les 10 autres clubs de L1).
+- Réglage « Noms réels des joueurs » (activé par défaut) : passer à « Non » donne une nouvelle carrière entièrement fictive. Les mentions « joueurs fictifs » de l'accueil et de l'effectif s'adaptent.
+- Tests : intégration des effectifs réels, numéros uniques, option fictive, maillots domicile/extérieur.
+
 ## Version 3.43.0 — techniques des joueurs : enroulé, piqué, volée, retourné
 - Correction de fond : la base de joueurs ne contient ni « technique » ni « jeu de tête » ; le moteur s'en servait pourtant (contrôle, précision, enroulé, têtes) avec une valeur par défaut de 50 pour tout le monde. Ces qualités sont désormais calculées pour chaque joueur (technique = dribble + passe, jeu de tête = physique + finition + défense) : un meneur de jeu et un défenseur rugueux ne se comportent plus pareil.
 - Enroulé du plat du pied : tir dosé d'un technicien vers le petit filet opposé, plus précis et plus courbé, avec le buste qui s'incline au moment de la frappe.

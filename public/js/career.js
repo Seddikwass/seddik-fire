@@ -1,5 +1,5 @@
 // Moteur de carrière : saisons, compétitions, finances, transferts, staff, médical, élections.
-import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP } from './data.js';
+import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, REAL_SQUADS, KIT_DESIGNS } from './data.js';
 import { rng, clamp, uid, deepCopy } from './util.js';
 import { quickSim } from './match.js';
 import * as Dr from './dressing.js';
@@ -122,12 +122,43 @@ export function newCareer(opts) {
     };
     const target = c.div === 1 ? 46 + c.rep * 0.3 : 44 + c.rep * 0.2;
     let num = 1;
-    for (const pos of SQUAD_TEMPLATE) {
+    // Effectif réel (option) : chaque poste du gabarit prend le prochain joueur réel du même groupe.
+    const pool = opts.realNames === false ? null : (REAL_SQUADS[c.id] || []).map(e => ({ name: e[0], g: e[1], nat: e[2], born: e[3], num: e[4], pos: e[5] }));
+    const usedNums = new Set(), reserved = new Set((pool || []).map(e => e.num).filter(Boolean));
+    const takeReal = pos => {
+      if (!pool || !pool.length) return null;
+      const g = POS_GROUP[pos] === 'G' || pos === 'GK' ? 'G' : POS_GROUP[pos];
+      let i = pool.findIndex(e => e.g === g && e.pos === pos);
+      if (i < 0) i = pool.findIndex(e => e.g === g && !e.pos);
+      if (i < 0) i = pool.findIndex(e => e.g === g);
+      return i < 0 ? null : pool.splice(i, 1)[0];
+    };
+    const applyReal = (p, e) => {
+      const parts = e.name.split(' ');
+      Object.assign(p, { first: parts[0], last: parts.slice(1).join(' ') || parts[0], name: e.name, nat: e.nat || '—', fictif: false, real: true });
+      if (e.born) p.age = season - e.born;
+      if (e.num && !usedNums.has(e.num)) p.num = e.num;
+      p.ovr = ovrOf(p); p.value = valueOf(p, season);
+    };
+    const squadPos = [...SQUAD_TEMPLATE];
+    for (const pos of squadPos) {
       const p = genPlayer(r, pos, target + r.int(-4, 4), c.id, season, { rep: c.rep });
       p.num = pos === 'GK' && num > 1 && num < 12 ? (num === 2 ? 16 : 30) : num; num++;
+      const e = takeReal(pos); const fixed = e && e.num && !usedNums.has(e.num);
+      if (e) applyReal(p, e);
+      if (!fixed) while (usedNums.has(p.num) || reserved.has(p.num)) p.num += 1;
+      usedNums.add(p.num);
       st.players[p.id] = p;
     }
-    for (let i = 0; i < 3; i++) { const p = genPlayer(r, r.pick(POS_LIST.slice(1)), target - 10, c.id, season, { youth: true }); p.num = 40 + i; p.role = 'jeune'; st.players[p.id] = p; }
+    // Joueurs réels restants (listes plus longues que le gabarit) : ajoutés à l'effectif à leur poste.
+    if (pool) while (pool.length && Object.values(st.players).filter(x => x.clubId === c.id).length < 36) {
+      const e = pool.shift();
+      const pos = e.pos || (e.g === 'G' ? 'GK' : e.g === 'D' ? 'DC' : e.g === 'M' ? 'MC' : 'BU');
+      const p = genPlayer(r, pos, target + r.int(-6, 2), c.id, season, { rep: c.rep });
+      p.num = 33; const fixed = e.num && !usedNums.has(e.num); applyReal(p, e); if (!fixed) while (usedNums.has(p.num) || reserved.has(p.num)) p.num++; usedNums.add(p.num);
+      st.players[p.id] = p;
+    }
+    for (let i = 0; i < 3; i++) { const p = genPlayer(r, r.pick(POS_LIST.slice(1)), target - 10, c.id, season, { youth: true }); p.num = 40 + i; while (usedNums.has(p.num) || reserved.has(p.num)) p.num++; usedNums.add(p.num); p.role = 'jeune'; st.players[p.id] = p; }
     autoLineup(st, c.id);
   }
   // agents libres
@@ -145,7 +176,7 @@ export function newCareer(opts) {
   setupSeason(st);
   if (st.cafDrawNews) { addNews(st, st.cafDrawNews, 'comp'); st.cafDrawNews = null; }
   addNews(st, `Bienvenue, ${st.president.name} ! Vous prenez la présidence de ${uc.name}. Objectif fixé : ${OBJECTIVES[st.objective]}.`, 'club');
-  addNews(st, `Données : clubs de Ligue 1 ${season}-${season + 1} vérifiés le 16/11/2026. Tous les joueurs et membres du staff sont fictifs.`, 'info');
+  addNews(st, `Données : clubs de Ligue 1 ${season}-${season + 1} vérifiés le 16/11/2026. ${opts.realNames === false ? 'Tous les joueurs et membres du staff sont fictifs.' : 'Effectifs réels (EST, CA, CSS, ESS, USM, relevés le 21/11/2026) complétés par des joueurs fictifs ; notes de jeu et staff fictifs.'}`, 'info');
   return st;
 }
 const R = st => { const r = rng(st.rs || st.seed); return r; };
@@ -443,7 +474,7 @@ export function matchTeam(st, id, kitAway = false) {
     const withMorale = p => { const k = Dr.moraleFactor(p.morale ?? 70); const a = {}; for (const [key, v] of Object.entries(p.attrs)) a[key] = typeof v === 'number' ? Math.round(v * k) : v; return a; };
     const mk = p => ({ id: p.id, name: p.name, num: p.num, pos: p.pos, attrs: withMorale(p), fitness: p.fitness, instr: t.instr?.[p.id] || '' });
     const kitCols = kitAway ? c.away : c.colors;
-    return { id, name: c.name, short: c.short, colors: kitCols, kit: { shirt: kitCols[0], trim: kitCols[1], shorts: kitAway ? kitCols[0] : '#f2f2f2' }, formation: t.formation, mentality: t.mentality, pressing: t.pressing, width: t.width, line: t.line, takers: t.takers || {}, stadium: c.stadium, players: t.lineup.map(i => mk(st.players[i])), bench: t.bench.map(i => st.players[i]).filter(Boolean).map(mk), formPos: form };
+    return { id, name: c.name, short: c.short, colors: kitCols, kit: !kitAway && KIT_DESIGNS[id] ? { ...KIT_DESIGNS[id] } : { shirt: kitCols[0], trim: kitCols[1], shorts: kitAway ? kitCols[0] : '#f2f2f2' }, formation: t.formation, mentality: t.mentality, pressing: t.pressing, width: t.width, line: t.line, takers: t.takers || {}, stadium: c.stadium, players: t.lineup.map(i => mk(st.players[i])), bench: t.bench.map(i => st.players[i]).filter(Boolean).map(mk), formPos: form };
   }
   const caf = CAF_CLUBS.find(x => x.id === id), sq = cafSquad(st, id);
   const cols = kitAway ? [caf.colors[1], caf.colors[0]] : caf.colors;

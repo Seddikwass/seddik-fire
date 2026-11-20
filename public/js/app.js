@@ -13,7 +13,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.43.0';
+export const APP_VERSION = '3.44.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -78,14 +78,14 @@ VIEWS.home = () => {
     <button class="btn big" data-a="nav" data-v="online">🌐 Match en ligne</button>
     <div class="row"><button class="btn" data-a="nav" data-v="settingsHome">⚙ ${t('Paramètres')}</button><button class="btn" data-a="nav" data-v="account">👤 ${t('Compte')}</button></div>
    </div>
-   <p class="fine">v${APP_VERSION} · données ${DATA_VERSION} (vérifiées le ${VERIFIED_ON}) · joueurs fictifs · <a href="privacy.html" target="_blank">Confidentialité</a></p>
+   <p class="fine">v${APP_VERSION} · données ${DATA_VERSION} (vérifiées le ${VERIFIED_ON}) · ${settings.realNames === false ? 'joueurs fictifs' : 'effectifs réels des 5 grands clubs (relevés le 21/11/2026)'} · <a href="privacy.html" target="_blank">Confidentialité</a></p>
   </div></div>`;
 };
 VIEWS.newCareer = () => {
   const step = args.step || 1;
   const clubs = (dataOverrides?.clubs || CLUBS).filter(c => c.div === 1).sort((a, b) => b.rep - a.rep);
   if (step === 1) return `<div class="page"><div class="ph"><button class="btn ghost" data-a="nav" data-v="home">← ${t('Retour')}</button><h2>${t('Choisir un club')}</h2></div>
-    <p class="hint">Ligue 1 ${SEASON_LABEL} — 16 clubs vérifiés le ${VERIFIED_ON}. Écussons provisoires originaux, joueurs fictifs.</p>
+    <p class="hint">Ligue 1 ${SEASON_LABEL} — 16 clubs vérifiés le ${VERIFIED_ON}. Écussons provisoires originaux. ${settings.realNames === false ? 'Joueurs fictifs.' : 'Noms réels des joueurs pour EST, CA, CSS, ESS et USM (complétés par des joueurs fictifs), notes de jeu fictives.'}</p>
     <div class="grid clubs">${clubs.map(c => `<button class="clubcard" data-a="pickClub" data-id="${c.id}">${crestSVG(c, 42)}<b>${esc(c.name)}</b><small>${esc(c.city)} · ${'★'.repeat(Math.max(1, Math.round(c.rep / 20)))}</small></button>`).join('')}
     <button class="clubcard custom" data-a="customClub">➕<b>${t('Créer un club fictif')}</b><small>Remplace le club le plus modeste de L1</small></button></div></div>`;
   const c = args.custom ? { name: args.custom.name, city: args.custom.city, colors: [args.custom.c1, args.custom.c2], short: args.custom.short, id: 'custom' } : clubs.find(x => x.id === args.clubId);
@@ -203,7 +203,7 @@ VIEWS.squad = () => {
   }
   if (tab === 'vestiaire') body = dressingHTML();
   if (tab === 'stats') body = `<table class="tbl"><thead><tr><th>Joueur</th><th>MJ</th><th>Buts</th><th>Passes D.</th><th>Note moy.</th><th>Clean sheets</th></tr></thead><tbody>${list.slice().sort((a, b) => b.stats.goals - a.stats.goals || b.stats.apps - a.stats.apps).map(p => `<tr data-a="player" data-id="${p.id}"><td>${esc(p.name)}</td><td>${p.stats.apps}</td><td>${p.stats.goals}</td><td>${p.stats.assists}</td><td>${p.stats.apps ? (p.stats.rsum / p.stats.apps).toFixed(1) : '-'}</td><td>${p.pos === 'GK' ? p.stats.cs : ''}</td></tr>`).join('')}</tbody></table>`;
-  return `<div class="ph"><h2>${t('Effectif')} <small>(${list.length} joueurs, ${t('Joueurs fictifs').toLowerCase()})</small></h2><div class="tabs">${tabs.map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" data-a="nav" data-v="squad" data-tab="${k}">${l}</button>`).join('')}</div></div>${body}`;
+  return `<div class="ph"><h2>${t('Effectif')} <small>(${list.length} joueurs${list.some(p => p.real) ? ', dont ' + list.filter(p => p.real).length + ' réels' : ', ' + t('Joueurs fictifs').toLowerCase()})</small></h2><div class="tabs">${tabs.map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" data-a="nav" data-v="squad" data-tab="${k}">${l}</button>`).join('')}</div></div>${body}`;
 };
 function moodCls(v) { return v >= 70 ? 'pos' : v >= 45 ? '' : 'neg'; }
 function playShareText(p) { const sh = Dr.playingShare(p); return sh == null ? '—' : Math.round(sh * 100) + ' %'; }
@@ -500,6 +500,7 @@ function settingsHTML() {
    <label>${t('Images/seconde')}${sel('fps', [[30, '30'], [60, '60']])}</label>
    <label>Ralentis après les buts${sel('replays', [[true, 'Oui'], [false, 'Non']])}</label>
    <label>Cérémonie d'avant-match (TV)${sel('ceremony', [[true, 'Oui'], [false, 'Non']])}</label>
+   <label>Noms réels des joueurs (EST, CA, CSS, ESS, USM)${sel('realNames', [[true, 'Oui'], [false, 'Non (joueurs fictifs)']])}</label>
    <label>Météo des matchs${sel('weather', [['auto', 'Variable (aléatoire)'], ['night', 'Nuit claire'], ['day', 'Plein soleil'], ['rain', 'Pluie'], ['fog', 'Brouillard']])}</label>
    <label>Disposition des commandes${sel('leftHanded', [[false, 'Joystick à gauche'], [true, 'Joystick à droite (gaucher)']])}</label>
    <label>Taille des boutons${sel('btnScale', [[0.85, 'Petits'], [1, 'Normaux'], [1.2, 'Grands']])}</label>
@@ -795,13 +796,13 @@ const ACT = {
   },
   startCareer: () => {
     const go2 = () => {
-      const opts = { clubId: args.clubId, custom: args.custom, difficulty: Number($('#ncDiff').value), objective: $('#ncObj').value, finObjective: $('#ncFin').value, presidentName: $('#ncPres').value.trim() || 'Président', clubs: dataOverrides?.clubs };
+      const opts = { clubId: args.clubId, custom: args.custom, difficulty: Number($('#ncDiff').value), objective: $('#ncObj').value, finObjective: $('#ncFin').value, presidentName: $('#ncPres').value.trim() || 'Président', clubs: dataOverrides?.clubs, realNames: settings.realNames !== false };
       st = C.newCareer(opts); save('Carrière créée et sauvegardée'); go('hub');
     };
     if (S.loadLocal()) confirmBox('Une carrière existe déjà sur cet appareil. La remplacer ? (pensez à l\'exporter si besoin)', go2, 'Remplacer'); else go2();
   },
   quickPlay: () => {
-    const fake = C.newCareer({ clubId: 'est', seed: 99 });
+    const fake = C.newCareer({ clubId: 'est', seed: 99, realNames: settings.realNames !== false });
     const h = $('#qh').value, a = $('#qa').value; if (h === a) return toast('Choisissez deux équipes différentes.', 'err');
     const side = Number($('#qside').value);
     const home = C.matchTeam(fake, h, false), away = C.matchTeam(fake, a, true);

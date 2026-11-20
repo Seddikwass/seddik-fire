@@ -154,3 +154,61 @@ export const FORMATION_POS = {
   '4-1-4-1': ['GK','DD','DC','DC','DG','MDC','MD','MC','MC','MG','BU'],
 };
 export const POS_GROUP = { GK: 'G', DD: 'D', DC: 'D', DG: 'D', MDC: 'M', MC: 'M', MD: 'M', MG: 'M', MOC: 'M', AD: 'A', AG: 'A', BU: 'A' };
+
+// ---------------------------------------------------------------------------
+// Effectifs réels (option « Noms réels des joueurs », activée par défaut).
+// Sources consultées le 21/11/2026 : livefoot.fr (EST, CA, CSS, ESS) et ysscores.com (USM).
+// Les listes publiques sont partielles : les places restantes sont complétées par des joueurs fictifs.
+// Les notes de jeu restent générées par le jeu (aucune donnée de performance réelle).
+// Format : [nom, groupe (G/D/M/A), nationalité ou null, année de naissance ou null, numéro ou null, poste précis ou null]
+export const REAL_SQUADS_VERIFIED_ON = '21/11/2026';
+export const REAL_SQUADS = {
+  est: [
+    ['Amanallah Memmich', 'G', 'TUN', 2004], ['Bechir Ben Said', 'G', 'TUN', 1994], ['Mohamed Debchi', 'G', 'TUN', 1999], ['Mohamed Elmokhtar Ifaoui', 'G', 'TUN', 2003],
+    ['Amine Ben Hmida', 'D', 'TUN'], ['Elyas Bouzaiene', 'D', 'SWE'], ['Hamza Jelassi', 'D', 'TUN', 1991], ['Ibrahima Keita', 'D', 'MTN', 2001], ['Mohamed Ben Ali', 'D', 'TUN', 1995],
+    ['Mohamed Tougai', 'D', 'ALG', 2000], ['Nidhal Laifi', 'D', 'TUN', 1998], ['Rayed Bouchniba', 'D', 'TUN', 2003], ['Yassine Meriah', 'D', 'TUN', 1993],
+    ['Abdramane Konaté', 'M', 'CIV', 2006], ['Aziz Falah', 'M', 'TUN', 2002], ['Chiheb Jbeli', 'M', 'TUN', 1996], ['Houssem Teka', 'M', 'TUN'], ['Khalil Guenichi', 'M', 'TUN'],
+    ['Mohamed Mouhli', 'M', 'BEL', 1998], ['Mohamed Wael Derbali', 'M', 'TUN'], ['Onuche Ogbelu', 'M', 'NGA', 2003], ['Zakaria El Ayeb', 'M', 'TUN', 2003],
+    ['Aboubacar Diakite', 'A', 'MLI', 2006], ['Achref Jebri', 'A', 'TUN', 2001], ['Florian Danho', 'A', 'FRA'], ['Haytham Dhaou', 'A', 'TUN', 2005], ['Kouceila Boualia', 'A', 'ALG', 2001],
+    ['Koussay Maacha', 'A', 'TUN', 2007], ['Oussama Bouguerra', 'A', 'TUN', 1997], ['Yan Sasse', 'A', 'BRA', 1997], ['Youcef Belaili', 'A', 'ALG', 1992], ['Younes Rached', 'A', 'TUN', 1999], ['Youssef Msakni', 'A', 'TUN', 1990],
+  ],
+  ca: [
+    ['Dries Arfaoui', 'G', 'BEL', 2004], ['Ghaith Yeferni', 'G', 'TUN', 1998], ['Wassim Maghzaoui', 'G', 'TUN', 2004],
+    ['Ali Youssef', 'D'], ['Ghaith Zaalouni', 'D'], ['Houssem Ben Ali', 'D'], ['Oussema Fredj', 'D'], ['Toufik Cherifi', 'D'],
+    ['Moataz Zemzemi', 'M'], ['Osama Mukhtar Al Shremi', 'M'], ['Saidou Khan', 'M'],
+    ['Bassem Srarfi', 'A'], ['Bilel Ait Malek', 'A'], ['Fahd Saad Mohamed', 'A'], ['Firas Chaouat', 'A'], ['Phillippe Kinzumbi', 'A', 'COD'],
+  ],
+  css: [
+    ['Aymen Dahmen', 'G', 'TUN', 1997], ['Mohamed Gaaloul', 'G', 'TUN', 1989],
+    ['Abdessalem Akid', 'D', 'TUN'], ['Ali Maaloul', 'D'], ['Hamza Mathlouthi', 'D'], ['Hichem Baccar', 'D'], ['Kévin Mondeko Zatu', 'D'], ['Mohamed Mhadhebi', 'D'], ['Rayane Derbali', 'D'],
+    ['Ammar Kamaleldin Taifour', 'M'], ['Firas Sekkouhi', 'M'], ['Mohamed Absi', 'M'], ['Travis Mutyaba', 'M'],
+    ['Leandre Willy Essomba Onana', 'A'], ['Omar Ben Ali', 'A'], ['Youssef Becha', 'A'],
+  ],
+  ess: [
+    ['Raed Gazzeh', 'G', 'TUN', 2003], ['Sabri Ben Hsan', 'G', 'TUN', 1996],
+    ['Alphonce Otieno Omija', 'D'], ['Ghofrane Naouali', 'D'], ['Houssem Dagdoug', 'D'], ['Nassim Hnid', 'D'], ['Salaheddine Ghedamsi', 'D'],
+    ['Adem Ouertani', 'M'], ['Mohamed Amine Ben Amor', 'M'], ['Mohamed Amine Jebali', 'M'], ['Mohamed Aziz Jebali', 'M'], ['Noor Aldeen Al Qulaib', 'M'],
+    ['Kanté Kefing', 'A'], ['Mohamed Eldawi Kresto', 'A'], ['Mohamed Rayan Anan', 'A'], ['Mohamed Said Benmazouz', 'A'], ['Moussa Senghor', 'A'], ['Raki Aouani', 'A'],
+  ],
+  usm: [
+    ['Ahmed Slimane', 'G', null, null, 24], ['Rayen Besbes', 'G'], ['Yassine Kallel', 'G', null, null, 32],
+    ['Youssef Herch', 'D', null, null, 3, 'DG'], ['Rayane Azzouz', 'D', null, null, 13, 'DD'], ['Abderrahman Bouzganda', 'D', null, null, 12, 'DD'], ['Aboubakar Benga Youssouf', 'D', null, null, 17, 'DC'],
+    ['Ayman Ben Mohamed', 'D', null, null, 16, 'DG'], ['Raed Bouchniba', 'D', null, null, 7, 'DD'], ['Nour Zamen Zammouri', 'D', null, null, 26, 'DC'], ['Mahmoud Ghorbel', 'D', null, null, 2, 'DD'],
+    ['Rayan Boukadida', 'D', null, null, 19, 'DC'], ['Montasar Boughzala', 'D', null, null, null, 'DC'],
+    ['Ousmane Diané', 'M', null, null, null, 'MDC'], ['Adnene Yaakoubi', 'M', null, null, 11, 'MOC'], ['Nassim Douihech', 'M', null, null, null, 'MOC'], ['Salah Barhoumi', 'M', null, null, 20, 'MC'],
+    ['Chaïm El Djebali', 'M', null, null, 23, 'MC'], ['Adem Boulila', 'M', null, null, 31, 'MOC'], ['Behaja Tsirava', 'M', null, null, 33, 'MDC'], ['Miras Ben Hassan', 'M', null, null, 5, 'MC'],
+    ['Mohamed Boussadia', 'M', null, null, 27, 'MOC'], ['Malek Mehri', 'M', null, null, 8, 'MC'],
+    ['Youssef Methni', 'A', null, null, null, 'AG'], ['Firas Miladi', 'A', null, null, null, 'BU'], ['Yassine Amri', 'A', null, null, 10, 'AD'], ['Samy Bouali', 'A', null, null, 14, 'AD'],
+    ['Ahmed Bouassida', 'A', null, null, 9, 'BU'], ['Béchir Yacoub', 'A', null, null, 15, 'AG'],
+  ],
+};
+// Maillots domicile réels (motif et couleurs, sans logos ni sponsors).
+// Sources : footyheadlines.com et footballkitarchive.com (saisons 2025-26 / 2026-27).
+export const KIT_DESIGNS = {
+  est: { pattern: 'stripes', shirt: '#d4141c', alt: '#f7c600', trim: '#111111', shorts: '#111111', socks: '#d4141c', stripes: 10 },
+  ca: { pattern: 'hoops', shirt: '#e30613', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#ffffff', hoops: 7 },
+  css: { pattern: 'stripes', shirt: '#111111', alt: '#ffffff', trim: '#ffffff', shorts: '#111111', socks: '#111111', stripes: 10 },
+  ess: { pattern: 'plain', shirt: '#c8102e', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#c8102e' },
+  usm: { pattern: 'centerStripe', shirt: '#ffffff', alt: '#1d4fa3', sleeves: '#1d4fa3', trim: '#d4af37', shorts: '#1d4fa3', socks: '#ffffff' },
+  st: { pattern: 'stripes', shirt: '#b5121b', alt: '#0f7b3c', trim: '#ffffff', shorts: '#ffffff', socks: '#b5121b', stripes: 8 },
+};

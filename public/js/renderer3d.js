@@ -374,9 +374,27 @@ function orientedEllipsoid(out, c, fx, uy, sz, rf, ru, rs, color, seg = 8, rings
   for (let iy = 0; iy < rings; iy++) for (let ix = 0; ix < seg; ix++) {
     const A = pt(Math.PI * iy / rings, Math.PI * 2 * ix / seg), B = pt(Math.PI * (iy + 1) / rings, Math.PI * 2 * ix / seg);
     const C = pt(Math.PI * (iy + 1) / rings, Math.PI * 2 * (ix + 1) / seg), D = pt(Math.PI * iy / rings, Math.PI * 2 * (ix + 1) / seg);
-    pushVertex(out, A.p, A.n, color); pushVertex(out, B.p, B.n, color); pushVertex(out, C.p, C.n, color);
-    pushVertex(out, A.p, A.n, color); pushVertex(out, C.p, C.n, color); pushVertex(out, D.p, D.n, color);
+    let col = color;
+    if (typeof color === 'function') {
+      // Motif du maillot évalué au centre de la facette, en coordonnées locales (avant, haut, côté).
+      const lat = Math.PI * (iy + 0.5) / rings, lon = Math.PI * 2 * (ix + 0.5) / seg;
+      col = color(Math.sin(lat) * Math.cos(lon), Math.cos(lat), Math.sin(lat) * Math.sin(lon));
+    }
+    pushVertex(out, A.p, A.n, col); pushVertex(out, B.p, B.n, col); pushVertex(out, C.p, C.n, col);
+    pushVertex(out, A.p, A.n, col); pushVertex(out, C.p, C.n, col); pushVertex(out, D.p, D.n, col);
   }
+}
+// Motifs de maillot : rayures verticales, cerceaux horizontaux, bande centrale, uni.
+export function kitPatternColor(kit, shirt, alt) {
+  const pattern = kit?.pattern;
+  if (!pattern || pattern === 'plain') return shirt;
+  const n = Number(kit.stripes || kit.hoops) || (pattern === 'hoops' ? 7 : 10);
+  return (a, y, b) => {
+    if (pattern === 'stripes') { const lon = Math.atan2(b, a); return Math.floor((lon / (Math.PI * 2) + 0.5) * n + 0.5) % 2 ? alt : shirt; }
+    if (pattern === 'hoops') return Math.floor((y + 1) / 2 * n) % 2 ? alt : shirt;
+    if (pattern === 'centerStripe') return Math.abs(b) < 0.34 ? alt : shirt;
+    return shirt;
+  };
 }
 // Rotation incrémentale d'une matrice 3×3 (lignes) autour de l'axe ω, d'angle |ω|·dt (formule de Rodrigues).
 function rotateMatrix3(M, w, dt) {
@@ -909,6 +927,7 @@ export class MatchRenderer3D {
     const kit=player.kitOverride||(player.isGK?(side0.gkKit||side0.kit):side0.kit);
     const shirt=parseColor(kit?.shirt,[0.8,0.1,0.1]), trim=parseColor(kit?.trim,[0.95,0.88,0.72]);
     const shorts=parseColor(kit?.shorts||kit?.trim,[0.08,0.1,0.13]);
+    const kitAlt=parseColor(kit?.alt,trim), shirtPat=player.isOfficial?shirt:kitPatternColor(kit,shirt,kitAlt), sleeveCol=kit?.sleeves?parseColor(kit.sleeves,shirt):(kit?.pattern==='hoops'?kitAlt:shirt);
     const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=player.sockColor||parseColor(kit?.socks,shirt.map(v=>v*0.92));
     const detail=this.quality.detail;
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
@@ -1020,8 +1039,8 @@ export class MatchRenderer3D {
     const hi=detail===2;
     // Rotation des épaules opposée au bassin pendant la course.
     const twist=-Math.sin(phase)*0.22*clamp(pose.speed/8.5,0,1)*action.gait*(1-pose.idle)*(pose.kick>0.005?0:1);
-    ell(bodyPoint(torsoF,bodyY+0.03,0),0.135*build,0.3-low*0.08,0.2*build,shirt,hi?12:9,hi?8:6,tilt,twist*0.5);
-    ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.2,0),0.13*build,0.12,0.25*build,shirt,hi?12:9,hi?6:5,tilt,twist);
+    ell(bodyPoint(torsoF,bodyY+0.03,0),0.135*build,0.3-low*0.08,0.2*build,shirtPat,hi?20:12,hi?10:7,tilt,twist*0.5);
+    ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.2,0),0.13*build,0.12,0.25*build,kit?.sleeves?sleeveCol:shirtPat,hi?20:12,hi?6:5,tilt,twist);
     ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?10:8,5,tilt*0.5);
     // Col et bande de taille.
     cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.31,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.36,0),0.082,trim,hi?10:8,0.088);
@@ -1158,8 +1177,8 @@ export class MatchRenderer3D {
       const shoulder=bodyPoint(sF,sU,sS);
       const elbow=bodyPoint(eF+pose.contactDir*action.brace*0.075,eU+gkRaise*0.4+gkU,eS+side*spread+keeperArmOffset*0.68);
       const hand=bodyPoint(hF,hU+gkRaise+(player.isGK?keeperArmReach*0.12+gkU*1.1:0),hS+side*spread*1.5+keeperArmOffset*1.25);
-      sphere(g,shoulder,[0.085,0.08,0.085],shirt,7,5);
-      addArmPose(g,shoulder,elbow,hand,shirt,skin,trim,detail,!!player.isGK,!!player.longSleeve);
+      sphere(g,shoulder,[0.085,0.08,0.085],sleeveCol,7,5);
+      addArmPose(g,shoulder,elbow,hand,sleeveCol,skin,trim,detail,!!player.isGK,!!player.longSleeve);
       // Panneau lumineux du quatrième arbitre (rouge : sortant, vert : entrant).
       if(sig==='board'&&side===1){ const bc=[(hand[0]+(-sin)*-0.3),hand[1]+0.2,(hand[2]+cos*-0.3)];
         box(g,[bc[0],bc[1]+0.13,bc[2]],[0.62,0.24,0.62*0+0.06],[1.25,0.12,0.1]); box(g,[bc[0],bc[1]-0.12,bc[2]],[0.62,0.24,0.06],[0.15,1.2,0.25]); }

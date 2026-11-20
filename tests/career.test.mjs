@@ -49,3 +49,26 @@ const json = JSON.stringify(st);
 console.log('Taille sauvegarde :', Math.round(json.length / 1024), 'Ko — durée', Date.now() - t0, 'ms');
 const back = C.migrate(JSON.parse(json)); assert.equal(back.season, st.season);
 console.log('OK — tous les tests carrière passent');
+
+{
+  const { REAL_SQUADS, KIT_DESIGNS } = await import('../public/js/data.js');
+  const st = C.newCareer({ clubId: 'est', seed: 11 });
+  for (const id of Object.keys(REAL_SQUADS)) {
+    const sq = Object.values(st.players).filter(p => p.clubId === id && p.num > 0);
+    const real = sq.filter(p => p.real);
+    assert.ok(real.length >= Math.min(REAL_SQUADS[id].length, 24), `${id} : joueurs réels intégrés (${real.length})`);
+    assert.equal(new Set(sq.map(p => p.num)).size, sq.length, `${id} : pas de numéro en double`);
+    assert.ok(real.every(p => !p.fictif && p.name && p.ovr > 0), `${id} : joueurs réels complets`);
+  }
+  const est = Object.values(st.players).filter(p => p.clubId === 'est' && p.real);
+  assert.ok(est.some(p => p.name === 'Youssef Msakni' && p.age === 36), 'âge réel calculé depuis l année de naissance');
+  const usm = Object.values(st.players).filter(p => p.clubId === 'usm' && p.real);
+  assert.ok(usm.some(p => p.name === 'Ahmed Bouassida' && p.num === 9), 'numéro réel conservé (USM)');
+  const off = C.newCareer({ clubId: 'est', seed: 11, realNames: false });
+  assert.equal(Object.values(off.players).filter(p => p.real).length, 0, 'option désactivée : uniquement des joueurs fictifs');
+  const t = C.matchTeam(st, 'ca', false);
+  assert.equal(t.kit.pattern, 'hoops', 'Club Africain à domicile : maillot à cerceaux rouges et blancs');
+  assert.equal(C.matchTeam(st, 'est', true).kit.pattern, undefined, 'à l extérieur : maillot extérieur uni');
+  assert.ok(Object.values(KIT_DESIGNS).every(k => /^#[0-9a-f]{6}$/i.test(k.shirt) && /^#[0-9a-f]{6}$/i.test(k.alt)), 'couleurs de maillot valides');
+  console.log('REAL SQUADS OK — 5 effectifs réels, numéros uniques, option fictive, maillots réels');
+}

@@ -1644,6 +1644,31 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 .bikes .bk.on{border-bottom-color:var(--acc);background:rgba(255,122,24,.12)}.bikes .bk.lock{opacity:.55}
 @media (max-width:900px){.bikes>div{grid-template-columns:repeat(3,1fr)}}
 
+/* V226 — niveau du pilote, XP, trophées */
+.lvlchip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 4px;background:var(--pan);border:1px solid var(--line);border-radius:10px;color:#fff;min-height:36px}
+.lvlchip b,.lvb{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#ffd166,#ff7a18);color:#1a0f00;font:800 15px var(--fh)}
+.lvlchip span{display:flex;flex-direction:column;gap:3px;min-width:84px}.lvlchip small{font:700 10.5px var(--fb);color:#dfe5ee;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+.lvlchip i,.xpbar{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}.lvlchip u{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#ff7a18);text-decoration:none}
+.xpbar u{display:block;height:100%;width:var(--w);background:linear-gradient(90deg,#ffd166,#ff7a18);animation:xpgrow 1.4s cubic-bezier(.2,.8,.2,1) both}
+@keyframes xpgrow{from{width:0}to{width:var(--w)}}
+.xpbox{margin:10px 0 4px;padding:9px 11px;border-radius:10px;background:rgba(255,209,102,.07);border:1px solid rgba(255,209,102,.25)}
+.xpbox.up{box-shadow:0 0 22px rgba(255,190,60,.35);border-color:rgba(255,209,102,.6)}
+.xprow{display:flex;align-items:center;gap:9px;margin-bottom:6px}.xprow span{flex:1;font:700 13px var(--fb);color:#e9eef5}.xprow em{font:800 normal 14px var(--fh);color:#ffd166}
+.lvup{margin:7px 0 0;font:800 14px var(--fh);color:#ffd166;animation:pop .6s ease-out}.achup{margin:5px 0 0;font:700 12.5px var(--fb);color:#9fe8b4}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+#prog{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.82);backdrop-filter:blur(4px);padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+#prog.hidden{display:none}
+.pg-box{width:min(980px,100%);max-height:100%;overflow:auto;background:#0b111b;border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;box-shadow:0 20px 60px #000}
+.pg-box h3{margin:12px 0 7px;font:400 16px var(--fh);color:#fff}
+.pg-lv{display:flex;align-items:center;gap:12px;margin-top:6px}.pg-lv>div{flex:1;display:flex;flex-direction:column;gap:5px}.pg-lv strong{font:400 18px var(--fh);color:#ffd166}.pg-lv small{color:#aab3c2;font:600 12px var(--fb)}
+.lvb.big{min-width:54px;height:54px;font-size:26px;border-radius:12px}
+.pg-st{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:10px}.pg-st span{display:flex;flex-direction:column;align-items:center;padding:7px 4px;border-radius:9px;background:rgba(255,255,255,.04);color:#aab3c2;font:600 11px var(--fb);text-align:center}.pg-st b{font:400 18px var(--fh);color:#fff}
+.pg-ach{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+.pg-ach div{display:grid;grid-template-columns:30px 1fr;gap:1px 8px;align-items:center;padding:7px 9px;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);opacity:.55}
+.pg-ach div.ok{opacity:1;background:rgba(99,219,140,.08);border-color:rgba(99,219,140,.35)}
+.pg-ach i{grid-row:span 2;font-style:normal;font-size:22px;text-align:center}.pg-ach b{font:700 12px var(--fb);color:#e9eef5}.pg-ach small{font:700 11px var(--fb);color:#ffd166}
+@media (max-width:760px),(max-height:540px){.pg-st{grid-template-columns:repeat(3,1fr)}.lvlchip span{min-width:60px}.lvlchip small{max-width:86px}}
+
 </style>
 </head>
 <body>
@@ -1656,8 +1681,9 @@ body.sub #btn-install,.native #btn-install{display:none!important}
   <div id="topbar">
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
+    <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V225</span>
+    <span id="build-tag" aria-label="Version">V226</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1776,6 +1802,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 <div id="pause" class="overlay"><div class="box"><h2 data-i18n="pause">PAUSE</h2><button id="p-resume" class="cta" data-i18n="resume">REPRENDRE</button><button id="p-restart" data-i18n="restart">Recommencer</button><button id="p-quit" data-i18n="quitRace">Quitter la course</button></div></div>
 <div id="results" class="overlay"><div class="box wide" id="res-body"></div></div>
 <div id="trk-sheet" class="hidden" role="dialog"></div>
+<div id="prog" class="hidden" role="dialog"></div>
 <div id="fest" class="hidden" role="dialog" aria-live="polite"><canvas id="fest-cv"></canvas><div class="fest-card" id="fest-card"></div></div>
 <div id="confirm" class="overlay"><div class="box"><p id="cf-text"></p><div class="row"><button id="cf-no" data-i18n="cancel">Annuler</button><button id="cf-yes" class="cta" data-i18n="confirm">CONFIRMER</button></div></div></div>
 <div id="rotate" class="overlay"><div class="rotic"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 40a24 24 0 0 0 20 16M52 24A24 24 0 0 0 36 8" fill="none" stroke="#ff7a18" stroke-width="3"/></svg></div><p data-i18n="rotate">Tourne ton téléphone en mode paysage pour mieux jouer.</p><button id="rot-ok" data-i18n="rotateOk">Continuer quand même</button></div>
@@ -4680,8 +4707,17 @@ function buildTrack(def, quality) {
   // portique de départ
   {
     const mb = ch(rk(0)), y0 = py[0];
-    for (const sd of [-1, 1]) { const p = pos(0, sd * (W + 2.2)); mb.box(p[0], p[1], p[2], 0.9, 8.6, 0.9, [0.1, 0.1, 0.12], 4, hd[0]); }
-    const b = pos(0, 0, 6.2); mb.box(b[0], b[1], b[2], 2 * W + 5.3, 2.4, 1.0, [0.06, 0.06, 0.08], 4, hd[0]);
+    // V226 — portique tunisien : deux tours chaulées à bandes de zellige bleues et coupoles vertes, arc outrepassé, drapeaux
+    const WHT = [0.94, 0.93, 0.9], ZB = [0.06, 0.3, 0.7], ZG = [0.1, 0.5, 0.32];
+    for (const sd of [-1, 1]) { const p = pos(0, sd * (W + 2.6)); mb.box(p[0], p[1] - 0.3, p[2], 2.2, 9.6, 2.2, WHT, 18, hd[0]);
+      for (const yy of [1.2, 4.6, 8.2]) mb.box(p[0], p[1] + yy, p[2], 2.26, 0.42, 2.26, ZB, 0, hd[0]);
+      for (const yy of [1.62, 5.02]) mb.box(p[0], p[1] + yy, p[2], 2.24, 0.12, 2.24, [0.95, 0.8, 0.25], 0, hd[0]);
+      mb.box(p[0], p[1] + 9.3, p[2], 2.6, 0.35, 2.6, WHT, 18, hd[0]); mb.dome(p[0], p[1] + 9.65, p[2], 1.05, 1.3, 1.05, 10, 3, ZG, 4, [0.2, 0.65, 0.42]);
+      bar(mb, [p[0], p[1] + 10.9, p[2]], [p[0], p[1] + 13.6, p[2]], 0.05, [0.85, 0.86, 0.88], 4); const fq = [p[0] + tx[0] * 0.05, p[1] + 12.3, p[2] + tz[0] * 0.05];
+      mb.box(fq[0] + rx[0] * sd * 0.9, fq[1], fq[2] + rz[0] * sd * 0.9, 1.8, 1.2, 0.05, [0.86, 0.05, 0.08], 0, hd[0]); discZ(mb, fq[0] + rx[0] * sd * 0.9, fq[1] + 0.6, fq[2] + 0.03, 0.34, [1, 1, 1], 0, 12); }
+    { const Wa = W + 1.5; let prv = null; for (let k = 0; k <= 18; k++) { const a = Math.PI * (-0.08 + k / 18 * 1.16), lat = Math.cos(a) * Wa, up = 4.4 + Math.sin(a) * 1.7, q = pos(0, lat, up); if (prv) bar(mb, prv, q, 0.3, k % 3 ? WHT : ZB, 18, 0.3, 6); prv = q; } }
+    const b = pos(0, 0, 6.2); mb.box(b[0], b[1], b[2], 2 * W + 5.3, 2.4, 1.0, WHT, 18, hd[0]);
+    for (const yy of [6.25, 8.45]) { const q = pos(0, 0, yy); mb.box(q[0], q[1], q[2], 2 * W + 5.36, 0.12, 1.06, ZB, 0, hd[0]); }
     const lb = pos(0, 0, 6.05); mb.box(lb[0], lb[1], lb[2], 2 * W + 3, 0.12, 0.5, [1, 0.95, 0.85], 2, hd[0]);
     const txt = 'SUPER SEDDIK & JOUD', px0 = Math.min(0.25, (2 * W + 3) / (txt.length * 6)), tw = txt.length * 6 * px0, yo = (0.25 - px0) * 3.5;
     for (const face of [-1, 1]) {
@@ -4690,7 +4726,7 @@ function buildTrack(def, quality) {
         for (let row = 0; row < 7; row++) for (let col = 0; col < 5; col++) if (g[row][col] === '1') {
           const lat = (-tw / 2 + (ci * 6 + col + 0.5) * px0) * face, up = 6.4 + (6 - row) * px0 + 0.2 + yo;
           const p = [px[0] + rx[0] * lat - tx[0] * 0.53 * face, y0 + up, pz[0] + rz[0] * lat - tz[0] * 0.53 * face];
-          mb.box(p[0], p[1], p[2], px0 * 0.92, px0 * 0.92, 0.08, [1, 0.5, 0.08], 2, hd[0]);
+          mb.box(p[0], p[1], p[2], px0 * 0.92, px0 * 0.92, 0.08, [0.85, 0.08, 0.1], 0, hd[0]);
         }
       }
     }
@@ -4706,8 +4742,10 @@ function buildTrack(def, quality) {
     }
   }
   // décors par thème
-  const placeOK = (x, z, rr) => T.roadDist(x, z, rr + W + 2) > rr + W + 1.5;
+  const placeOK = (x, z, rr) => { if (T.roadDist(x, z, rr + W + 2) <= rr + W + 1.5) return false; if (T.resv) for (const q of T.resv) { const dx = x - q[0], dz = z - q[1], rq = rr + q[2]; if (dx * dx + dz * dz < rq * rq) return false; } return true; };
   const objAt = (i, side, off) => pos(i, side * off);
+  T.resv = [];
+  buildLandmarks();   // V226 : les monuments réservent leur place, les immeubles et décors s'écartent pour les laisser visibles
   buildRoadside();
   if (theme === 'city') buildCity();
   if (theme === 'desert') buildDesert();
@@ -4716,12 +4754,12 @@ function buildTrack(def, quality) {
   if (theme === 'circuit') buildCircuit();
   if (theme === 'port') buildPort();
   if (theme === 'forest') buildForest();
-  buildLandmarks();
+  buildTunisKit();
 
   // V224 — monuments et repères tunisiens propres à chaque circuit
   function buildLandmarks() {
     const id = def.id, EARTH = [0.66, 0.5, 0.34], WHITE = [0.9, 0.89, 0.86], STONE = [0.74, 0.66, 0.52], DARK = [0.05, 0.045, 0.045], BLUE = [0.08, 0.32, 0.72], TERRA = [0.68, 0.34, 0.18];
-    const spot = (f0, side, off, rr) => { for (let k = 0; k < 70; k++) { const i = Math.floor((((f0 + k * 0.0137) % 1) + 1) % 1 * N), s2 = side || (k % 2 ? 1 : -1), p = objAt(i, s2, off + (k % 4) * 6); if (placeOK(p[0], p[2], rr)) return { p, i, s: s2, y: T.groundY(p[0], p[2]) - 0.3, yaw: hd[i] }; } return null; };
+    const spot = (f0, side, off, rr) => { for (let k = 0; k < 70; k++) { const i = Math.floor((((f0 + k * 0.0137) % 1) + 1) % 1 * N), s2 = side || (k % 2 ? 1 : -1), p = objAt(i, s2, off + (k % 4) * 6); if (placeOK(p[0], p[2], rr)) { T.resv.push([p[0], p[2], rr * 0.9]); return { p, i, s: s2, y: T.groundY(p[0], p[2]) - 0.3, yaw: hd[i] }; } } return null; };
     const LF = o => { const cs = Math.cos(o.yaw), sn = Math.sin(o.yaw); return (lx, ly, lz) => [o.p[0] + lx * cs + lz * sn, o.y + ly, o.p[2] - lx * sn + lz * cs]; };
     const flag = (mb, b, h, yaw) => { bar(mb, b, [b[0], b[1] + h, b[2]], 0.08, [0.85, 0.86, 0.88], 4); const q = [b[0], b[1] + h - 2.4, b[2]]; mb.box(q[0], q[1], q[2], 3.6, 2.4, 0.06, [0.86, 0.05, 0.08], 0, yaw); discZ(mb, q[0], q[1] + 1.2, q[2] + 0.04, 0.72, [1, 1, 1], 0, 16); discZ(mb, q[0] + 0.08, q[1] + 1.2, q[2] + 0.06, 0.5, [0.86, 0.05, 0.08], 0, 14); discZ(mb, q[0] + 0.2, q[1] + 1.2, q[2] + 0.07, 0.4, [1, 1, 1], 0, 14); };
     function minaret(o, h, col, lx = 0, lz = 0) {
@@ -5017,6 +5055,71 @@ function buildTrack(def, quality) {
     if (id === 'nabeul' || id === 'monastir' || id === 'kairouan') olives(60, W + 14, 60);
   }
 
+  // V226 — « kit tunisien » sur tous les circuits : bornes kilométriques à tête rouge, hanouts, cafés,
+  // étals de fruits selon la région, figuiers de Barbarie, murets chaulés à porte bleue, bottes de liège
+  function buildTunisKit() {
+    const WH = [0.93, 0.92, 0.89], RD = [0.8, 0.08, 0.06], BL = [0.08, 0.32, 0.72], WOOD = [0.42, 0.28, 0.16];
+    const rural = theme === 'desert' || theme === 'mountain' || theme === 'forest' || theme === 'coast';
+    const at = (f, side, off, rr) => { for (let k = 0; k < 30; k++) { const i = Math.floor((((f + k * 0.011) % 1) + 1) % 1 * N), sd = side || (r() < 0.5 ? -1 : 1), p = objAt(i, sd, off + r() * 3); if (placeOK(p[0], p[2], rr)) { (T.resv || (T.resv = [])).push([p[0], p[2], rr]); return { p, i, s: sd, y: T.groundY(p[0], p[2]) - 0.15, yaw: hd[i] }; } } return null; };
+    const LF2 = o => { const cs = Math.cos(o.yaw), sn = Math.sin(o.yaw); return (lx, ly, lz) => [o.p[0] + lx * cs + lz * sn, o.y + ly, o.p[2] - lx * sn + lz * cs]; };
+    // bornes kilométriques : blanches à tête rouge, comme sur les routes tunisiennes
+    for (let s0 = 150; s0 < T.L - 60; s0 += 400) { const i = Math.floor(s0 / ds) % N, sd = T.inSide ? -T.inSide : 1, p = objAt(i, sd, W + 2.6); if (!placeOK(p[0], p[2], 0.6)) continue; const mb = ch(rk(i)), y = T.groundY(p[0], p[2]) - 0.1;
+      mb.box(p[0], y, p[2], 0.45, 0.62, 0.22, WH, 18, hd[i]); sphere(mb, p[0], y + 0.62, p[2], 0.225, RD, 0, 0, Math.PI / 2, 10, 1, 0.5); mb.box(p[0], y + 0.25, p[2], 0.47, 0.06, 0.24, [0.1, 0.1, 0.1], 0, hd[i]); }
+    function hanout(o) {
+      // petite épicerie de quartier : comptoir, auvent rayé, caisses de fruits, bonbonnes et cageots
+      const mb = ch(rk(o.i)), P = LF2(o), aw = [[0.85, 0.12, 0.1], [0.1, 0.45, 0.25], [0.1, 0.32, 0.7]][Math.floor(r() * 3)], b = P(0, 0, 0);
+      mb.box(b[0], b[1], b[2], 3.2, 2.9, 3.6, WH, 18, o.yaw); const d = P(-o.s * 1.62, 0.05, 0); mb.box(d[0], d[1], d[2], 0.08, 2.2, 2.4, [0.08, 0.09, 0.1], 0, o.yaw);
+      for (let k = 0; k < 4; k++) { const q = P(-o.s * (1.6 + 0.4 + k * 0.3), 2.65 - k * 0.12, 0); mb.box(q[0], q[1], q[2], 0.32, 0.06, 3.8, k % 2 ? [0.96, 0.95, 0.92] : aw, 0, o.yaw); }
+      for (let k = 0; k < 3; k++) { const q = P(-o.s * 2.2, 0, -1.1 + k * 1.1); mb.box(q[0], q[1], q[2], 0.6, 0.5, 0.8, WOOD, 0, o.yaw); const fc = [[1, 0.55, 0.08], [0.85, 0.12, 0.08], [0.95, 0.85, 0.2]][k]; for (let u = 0; u < 4; u++) sphere(mb, q[0] + (u % 2 - 0.5) * 0.25, q[1] + 0.58, q[2] + (u > 1 ? 0.18 : -0.18), 0.12, fc, 0, -Math.PI / 2, Math.PI / 2, 6); }
+      const g = P(-o.s * 1.9, 0, 1.6); bar(mb, g, [g[0], g[1] + 0.9, g[2]], 0.18, [0.2, 0.45, 0.85], 0, 0.18, 8);
+    }
+    function cafe(o) {
+      // café en terrasse : tables rondes, chaises, parasols, comptoir chaulé
+      const mb = ch(rk(o.i)), P = LF2(o), b = P(o.s * 1.5, 0, 0);
+      mb.box(b[0], b[1], b[2], 3, 3.1, 5, WH, 18, o.yaw); const dd = P(o.s * 1.5 - o.s * 1.52, 0.05, 0); mb.box(dd[0], dd[1], dd[2], 0.06, 2.2, 1.4, BL, 0, o.yaw);
+      for (let k = 0; k < 3; k++) { const c = P(-o.s * 1.4, 0, -2.4 + k * 2.4); bar(mb, c, [c[0], c[1] + 0.75, c[2]], 0.04, [0.3, 0.3, 0.32], 4); mb.dome(c[0], c[1] + 0.74, c[2], 0.42, 0.05, 0.42, 10, 1, WH, 0, WH);
+        for (const dz of [-0.62, 0.62]) { const ch2 = [c[0], c[1], c[2] + dz]; mb.box(ch2[0], ch2[1] + 0.42, ch2[2], 0.4, 0.05, 0.4, [0.55, 0.3, 0.15], 0, o.yaw); mb.box(ch2[0], ch2[1], ch2[2] + (dz > 0 ? 0.18 : -0.18), 0.4, 0.95, 0.05, [0.55, 0.3, 0.15], 0, o.yaw); }
+        if (k !== 1) { bar(mb, c, [c[0], c[1] + 2.4, c[2]], 0.03, [0.85, 0.85, 0.85], 4); mb.dome(c[0], c[1] + 2.4, c[2], 1.2, 0.45, 1.2, 8, 2, k ? [0.1, 0.35, 0.7] : [0.85, 0.15, 0.1], 0, WH); } }
+    }
+    function fruitStall(o, kind) {
+      // étal de bord de route : oranges du Cap Bon, pastèques, dattes de Tozeur, figues de Barbarie, poteries
+      const mb = ch(rk(o.i)), P = LF2(o), t0 = P(0, 0, 0);
+      mb.box(t0[0], t0[1], t0[2], 1.6, 0.8, 3.2, WOOD, 0, o.yaw);
+      for (const [ax, az] of [[-0.75, -1.5], [0.75, -1.5], [-0.75, 1.5], [0.75, 1.5]]) { const q = P(ax, 0, az); bar(mb, q, [q[0], q[1] + 2.4, q[2]], 0.04, WOOD, 0); }
+      const roof = P(0, 2.4, 0); mb.box(roof[0], roof[1], roof[2], 2, 0.08, 3.6, kind === 'dates' ? [0.55, 0.42, 0.25] : [0.85, 0.82, 0.72], 0, o.yaw);
+      for (let k = 0; k < 14; k++) { const q = P((r() - 0.5) * 1.2, 0.8, (r() - 0.5) * 2.8);
+        if (kind === 'melon') sphere(mb, q[0], q[1] + 0.22, q[2], 0.24, [0.12, 0.42, 0.14], 0, -Math.PI / 2, Math.PI / 2, 8, 0.85, 1.25);
+        else if (kind === 'dates') { if (k < 6) { const h2 = P((k % 3 - 1) * 0.5, 2.3, (k > 2 ? 0.8 : -0.8)); sphere(mb, h2[0], h2[1] - 0.35, h2[2], 0.2, [0.55, 0.28, 0.1], 0, -Math.PI / 2, Math.PI / 2, 6, 1.8); } else sphere(mb, q[0], q[1] + 0.1, q[2], 0.12, [0.45, 0.22, 0.08], 0, -Math.PI / 2, Math.PI / 2, 6); }
+        else if (kind === 'pots') sphere(mb, q[0], q[1] + 0.25, q[2], 0.22, k % 3 ? [0.68, 0.34, 0.18] : BL, 0, -Math.PI / 2, Math.PI / 2, 8, 1.3);
+        else sphere(mb, q[0], q[1] + 0.1, q[2], 0.11, kind === 'hendi' ? [0.9, 0.5, 0.15] : [1, 0.52, 0.06], 0, -Math.PI / 2, Math.PI / 2, 6); }
+    }
+    function hendi(mb, x, y, z, s) {
+      // figuier de Barbarie (hendi) : raquettes ovales empilées et petits fruits orangés
+      const G1 = [0.32, 0.5, 0.26];
+      for (let k = 0; k < 7; k++) { const a = r() * 6.28, rr = (k < 3 ? 0.3 : 0.7) * s, h = (0.5 + (k < 3 ? 0 : 0.8) + r() * 0.5) * s, flat = k % 2;
+        sphere(mb, x + Math.sin(a) * rr, y + h, z + Math.cos(a) * rr, 0.42 * s * (flat ? 1 : 0.85), jit(G1, r, 0.06), 20, -Math.PI / 2, Math.PI / 2, 7, 1.3, 0.3);
+        if (r() < 0.5) sphere(mb, x + Math.sin(a) * rr, y + h + 0.55 * s, z + Math.cos(a) * rr, 0.07 * s, [0.95, 0.45, 0.12], 0, -Math.PI / 2, Math.PI / 2, 5); }
+    }
+    function wallDoor(o) {
+      // muret chaulé de campagne avec sa porte bleue cloutée
+      const mb = ch(rk(o.i)), P = LF2(o);
+      for (let k = -2; k <= 2; k++) { const q = P(0, 0, k * 3); mb.box(q[0], q[1], q[2], 0.5, 2.1, 3.02, k ? jit(WH, r, 0.02) : WH, 18, o.yaw); }
+      const g = P(0, 0, 0); mb.box(g[0], g[1], g[2], 0.6, 2.9, 2.4, WH, 18, o.yaw); const d = P(-o.s * 0.31, 0.05, 0); mb.box(d[0], d[1], d[2], 0.04, 2.2, 1.5, BL, 0, o.yaw);
+      for (let u = 0; u < 3; u++) for (let v = 0; v < 4; v++) { const q = P(-o.s * 0.34, 0.5 + v * 0.45, -0.45 + u * 0.45); mb.box(q[0], q[1], q[2], 0.02, 0.05, 0.05, [0.08, 0.08, 0.1], 4, o.yaw); }
+      if (r() < 0.6) { const q = P(o.s * 2, 0, 3); addPalm(mb, q[0], q[1], q[2], 5 + r() * 3, r); }
+    }
+    function cork(o) { const mb = ch(rk(o.i)), P = LF2(o); for (let k = 0; k < 10; k++) { const q = P((k % 2 - 0.5) * 1.6, Math.floor(k / 2) * 0.5, 0); mb.box(q[0], q[1], q[2], 1.5, 0.5, 3, jit([0.5, 0.36, 0.22], r, 0.08), 17, o.yaw + (r() - 0.5) * 0.2); } }
+    const n = (a, b) => Math.round(a + r() * (b - a));
+    if (theme === 'city' || theme === 'coast' || theme === 'port') { for (let k = 0, m = n(5, 7); k < m; k++) { const o = at(k / m + 0.05, 0, W + 6, 3); if (o) hanout(o); } for (let k = 0, m = n(3, 5); k < m; k++) { const o = at(k / m + 0.12, 0, W + 7, 4); if (o) cafe(o); } }
+    const fruit = def.id === 'nabeul' || def.id === 'hammamet' || def.id === 'corniche' ? 'orange' : theme === 'desert' ? 'dates' : def.id === 'nabeul' ? 'pots' : theme === 'mountain' ? 'hendi' : 'melon';
+    for (let k = 0, m = n(4, 6); k < m; k++) { const o = at(k / m + 0.2, 0, W + 4.5, 2.5); if (o) fruitStall(o, k === 2 && (def.id === 'nabeul' || def.id === 'djerba') ? 'pots' : fruit); }
+    if (rural) {
+      for (let k = 0, m = theme === 'forest' ? 15 : 45; k < m; k++) { const i = Math.floor(r() * N), sd = r() < 0.5 ? -1 : 1, p = objAt(i, sd, W + 5 + r() * 26); if (!placeOK(p[0], p[2], 1.6)) continue; hendi(ch(rk(i)), p[0], T.groundY(p[0], p[2]) - 0.1, p[2], 0.9 + r() * 0.6); }
+      for (let k = 0; k < 4; k++) { const o = at(k / 4 + 0.07, 0, W + 9, 8); if (o) wallDoor(o); }
+    }
+    if (theme === 'forest') for (let k = 0; k < 4; k++) { const o = at(k / 4 + 0.15, 0, W + 6, 3); if (o) cork(o); }
+  }
+
   function windowsOnFace(mb, P, hx, hz, h, face, prob, warm) {
     const e = 0.07, fl = 3.6, nf = Math.floor((h - 4.5) / fl);
     const along = (face === 'x+' || face === 'x-') ? hz * 2 : hx * 2, nc = Math.floor((along - 2) / 3.2);
@@ -5269,6 +5372,7 @@ function buildTrack(def, quality) {
         for (const [la, al] of [[-dep / 2, -bw / 2], [-dep / 2, bw / 2], [dep / 2, -bw / 2], [dep / 2, bw / 2], [0, 0]]) {
           const X = c[0] - rx[i] * side * la * -1 + tx[i] * al, Z = c[2] - rz[i] * side * la * -1 + tz[i] * al;
           if (T.roadDist(X, Z, W + 7) < W + 5.5) { good = false; break; }
+          for (const q of T.resv) { const dx = X - q[0], dz = Z - q[1]; if (dx * dx + dz * dz < (q[2] + 3) * (q[2] + 3)) { good = false; break; } } if (!good) break;
         }
         if (good) {
           const center = Math.hypot(c[0] - cx, c[2] - cz) / rad;
@@ -6652,6 +6756,88 @@ const V224_TXT = {"fr": ["Vélos", "Course vélo", "Peloton de vélos, sans circ
 const V224_TRK = {"matmata": ["Matmata • Maisons troglodytes et cratères", "Matmata • Cave houses and craters", "مطماطة • المساكن الحفرية", "مطماطة • الديار تحت الأرض"], "tataouine": ["Tataouine • Ksar Ouled Soltane et ghorfas", "Tataouine • Ksar Ouled Soltane granaries", "تطاوين • قصر أولاد سلطان والغرف", "تطاوين • قصر أولاد سلطان والغرف"], "kef": ["Le Kef • Table de Jugurtha et kasbah", "Le Kef • Jugurtha’s Table and kasbah", "الكاف • مائدة يوغرطة والقصبة", "الكاف • مايدة يوغرطة والقصبة"], "nabeul": ["Nabeul • Souk des potiers et Cap Bon", "Nabeul • Potters’ souk and Cap Bon", "نابل • سوق الفخّار والوطن القبلي", "نابل • سوق الفخّار والوطن القبلي"], "mahdia": ["Mahdia • Cap Africa, phare et port de pêche", "Mahdia • Cap Africa, lighthouse and fishing port", "المهدية • رأس إفريقيا والمنارة وميناء الصيد", "المهدية • راس افريقيا والفنار والمرسى"], "dougga": ["Dougga • Capitole et théâtre romains", "Dougga • Roman capitol and theatre", "دقة • الكابيتول والمسرح الروماني", "دقة • الكابيتول والمسرح الروماني"], "zaghouan": ["Zaghouan • Temple des Eaux et aqueduc", "Zaghouan • Water Temple and aqueduct", "زغوان • معبد المياه والحنايا", "زغوان • معبد المياه والحنايا"], "tunis_jour": ["Tunis • Avenue Habib-Bourguiba de jour", "Tunis • Habib Bourguiba Avenue by day", "تونس • شارع الحبيب بورقيبة نهاراً", "تونس • شارع بورقيبة في النهار"]};
 for (const l in V224_TXT) { const v = V224_TXT[l]; Object.assign(LANGS[l], { cat_velo: v[0], m_velo: v[1], m_veloD: v[2], q_bike: v[3] }); }
 for (const k in V224_TRK) { const v = V224_TRK[k]; TXT.trk[k] = [v[0], v[1], v[2]]; TN_CONTENT.trk[k] = v[3]; }
+// V226 — progression du pilote : niveaux, grades, XP de course et trophées récompensés
+const V226_TXT = {
+  fr: ['Niveau', 'XP', 'Trophées', 'Prochain niveau : +{0}', 'NIVEAU {0} !', 'Trophée débloqué', 'Progression du pilote', 'Podiums', 'Victoires à vélo', 'Polices semées', 'Circuits découverts', 'Fermer'],
+  en: ['Level', 'XP', 'Trophies', 'Next level: +{0}', 'LEVEL {0}!', 'Trophy unlocked', 'Driver progress', 'Podiums', 'Bike wins', 'Police escapes', 'Tracks discovered', 'Close'],
+  es: ['Nivel', 'XP', 'Trofeos', 'Siguiente nivel: +{0}', '¡NIVEL {0}!', 'Trofeo desbloqueado', 'Progreso del piloto', 'Podios', 'Victorias en bici', 'Fugas de la policía', 'Circuitos descubiertos', 'Cerrar'],
+  pt: ['Nível', 'XP', 'Troféus', 'Próximo nível: +{0}', 'NÍVEL {0}!', 'Troféu desbloqueado', 'Progresso do piloto', 'Pódios', 'Vitórias de bicicleta', 'Fugas da polícia', 'Pistas descobertas', 'Fechar'],
+  de: ['Stufe', 'XP', 'Trophäen', 'Nächste Stufe: +{0}', 'STUFE {0}!', 'Trophäe freigeschaltet', 'Fahrerfortschritt', 'Podien', 'Radsiege', 'Polizei abgehängt', 'Entdeckte Strecken', 'Schließen'],
+  it: ['Livello', 'XP', 'Trofei', 'Prossimo livello: +{0}', 'LIVELLO {0}!', 'Trofeo sbloccato', 'Progressi del pilota', 'Podi', 'Vittorie in bici', 'Fughe dalla polizia', 'Circuiti scoperti', 'Chiudi'],
+  tr: ['Seviye', 'XP', 'Kupalar', 'Sonraki seviye: +{0}', 'SEVİYE {0}!', 'Kupa açıldı', 'Pilot ilerlemesi', 'Podyumlar', 'Bisiklet zaferleri', 'Polisten kaçış', 'Keşfedilen pistler', 'Kapat'],
+  ar: ['المستوى', 'نقاط الخبرة', 'الكؤوس', 'المستوى التالي: +{0}', 'المستوى {0}!', 'كأس جديدة', 'تقدّم السائق', 'منصّات التتويج', 'انتصارات بالدراجة', 'الإفلات من الشرطة', 'الحلبات المكتشفة', 'إغلاق'],
+  tn: ['المستوى', 'الخبرة', 'الكؤوس', 'المستوى الجاي: +{0}', 'المستوى {0}!', 'كاس جديدة', 'تقدّم السوّاق', 'البوديوم', 'ربحت بالبسكلات', 'هربت من الحاكم', 'الحلبات اللي اكتشفتهم', 'سكّر'],
+};
+for (const l in V226_TXT) { const v = V226_TXT[l]; Object.assign(LANGS[l], { pg_lv: v[0], pg_xp: v[1], pg_tro: v[2], pg_next: v[3], pg_up: v[4], pg_ach: v[5], pg_title: v[6], pg_pod: v[7], pg_bike: v[8], pg_esc: v[9], pg_trk: v[10], pg_close: v[11] }); }
+// grades du pilote, du quartier jusqu'à la légende de Carthage
+const RANKS = [[1, 'Apprenti pilote', 'Rookie driver', 'سائق مبتدئ'], [5, 'Pilote de quartier', 'Neighbourhood racer', 'سائق الحومة'], [10, 'Pilote de la médina', 'Medina racer', 'سائق المدينة العتيقة'],
+  [15, 'As du Sahel', 'Sahel ace', 'نجم الساحل'], [20, 'Champion régional', 'Regional champion', 'بطل جهوي'], [30, 'Champion de Tunisie', 'Champion of Tunisia', 'بطل تونس'], [40, 'Star du Maghreb', 'Maghreb star', 'نجم المغرب العربي'], [50, 'Légende de Carthage', 'Legend of Carthage', 'أسطورة قرطاج']];
+const rankName = lv => { let k = RANKS[0]; for (const x of RANKS) if (lv >= x[0]) k = x; return L3(k[1], k[2], k[3]); };
+const xpNeed = lv => 500 + lv * 250, lvReward = lv => 1000 + lv * 200;
+function addXP(n) {
+  SAVE.lv = SAVE.lv || 1; SAVE.xp = (SAVE.xp || 0) + n; let reward = 0; const ups = [];
+  while (SAVE.xp >= xpNeed(SAVE.lv)) { SAVE.xp -= xpNeed(SAVE.lv); SAVE.lv++; reward += lvReward(SAVE.lv); ups.push(SAVE.lv); }
+  SAVE.money += reward; return { ups, reward };
+}
+function raceXP(res) {
+  let x = 0;
+  if (res.mode === 'race') { const pos = clamp(res.pos || 8, 1, 8); x = 120 + (8 - pos) * 35 + (pos === 1 ? 150 : 0); }
+  else if (res.mode === 'tt') x = 120 + (res.success ? 150 : 0);
+  else x = 100 + (res.success ? 200 : 0) + ((res.chase && res.chase.wrecked) || 0) * 20;
+  x += Math.min(200, Math.round((res.style || 0) / 20)) + (res.record ? 120 : 0) + (res.event !== undefined && res.success ? 150 : 0);
+  return Math.round(x);
+}
+// trophées : [id, icône, condition, récompense, fr, en, ar]
+const ACH = [
+  ['first', '🏁', s => s.races >= 1, 500, 'Première course', 'First race', 'أول سباق'],
+  ['races10', '🚦', s => s.races >= 10, 1500, '10 courses terminées', '10 races finished', '10 سباقات'],
+  ['races50', '🏎️', s => s.races >= 50, 5000, '50 courses terminées', '50 races finished', '50 سباقاً'],
+  ['win1', '🥇', s => s.wins >= 1, 1000, 'Première victoire', 'First win', 'أول فوز'],
+  ['win10', '🏆', s => s.wins >= 10, 4000, '10 victoires', '10 wins', '10 انتصارات'],
+  ['win50', '👑', s => s.wins >= 50, 12000, '50 victoires', '50 wins', '50 انتصاراً'],
+  ['podium10', '🥉', s => (s.podiums || 0) >= 10, 2500, '10 podiums', '10 podiums', '10 منصّات تتويج'],
+  ['bike1', '🚲', s => (s.bikeWins || 0) >= 1, 2000, 'Gagner une course de vélos', 'Win a bike race', 'الفوز بسباق دراجات'],
+  ['bike10', '🚴', s => (s.bikeWins || 0) >= 10, 6000, '10 victoires à vélo', '10 bike wins', '10 انتصارات بالدراجة'],
+  ['chase5', '🚓', s => (s.escapes || 0) >= 5, 4000, 'Semer la police 5 fois', 'Escape the police 5 times', 'الإفلات من الشرطة 5 مرات'],
+  ['speed250', '⚡', s => (s.top || 0) * 3.6 >= 250, 3000, 'Dépasser 250 km/h', 'Go over 250 km/h', 'تجاوز 250 كم/س'],
+  ['km100', '🛣️', s => (s.dist || 0) >= 100000, 4000, '100 km parcourus', '100 km driven', '100 كم مقطوعة'],
+  ['tour10', '🗺️', s => Object.keys(s.trk || {}).length >= 10, 3000, 'Courir sur 10 circuits', 'Race on 10 tracks', 'السباق في 10 حلبات'],
+  ['tourAll', '🕌', s => Object.keys(s.trk || {}).length >= TRACKS.length, 15000, 'Tour de Tunisie : tous les circuits', 'Tour of Tunisia: every track', 'جولة تونس: كل الحلبات'],
+  ['style', '💨', s => (s.bestStyle || 0) >= 3000, 3000, '3 000 points de style en une course', '3,000 style points in one race', '3000 نقطة أسلوب في سباق'],
+  ['garage10', '🔧', () => SAVE.owned.length >= 10, 5000, 'Posséder 10 véhicules', 'Own 10 vehicles', 'امتلاك 10 مركبات'],
+  ['bikesAll', '🛞', () => CARS.filter(c => c.cat === 'velo').every(c => SAVE.owned.includes(c.id)), 6000, 'Tous les vélos au garage', 'Every bike in the garage', 'كل الدراجات في المرآب'],
+  ['career10', '📅', () => (SAVE.careerDone || []).length >= 10, 4000, '10 étapes de carrière', '10 career stages', '10 مراحل في المسيرة'],
+  ['career50', '🎖️', () => (SAVE.careerDone || []).length >= 50, 25000, 'Les 50 étapes de carrière', 'All 50 career stages', 'كل المراحل الخمسين'],
+  ['lv10', '⭐', () => (SAVE.lv || 1) >= 10, 5000, 'Atteindre le niveau 10', 'Reach level 10', 'بلوغ المستوى 10'],
+  ['lv30', '🌟', () => (SAVE.lv || 1) >= 30, 15000, 'Atteindre le niveau 30', 'Reach level 30', 'بلوغ المستوى 30'],
+];
+function checkAch() {
+  SAVE.ach = SAVE.ach || {}; const s = SAVE.stats || {}, got = [];
+  for (const a of ACH) { if (SAVE.ach[a[0]]) continue; let ok = false; try { ok = a[2](s); } catch (e) { } if (ok) { SAVE.ach[a[0]] = Date.now(); SAVE.money += a[3]; got.push(a); } }
+  return got;
+}
+function updLvl() {
+  const el = $('lvl-chip'); if (!el) return; const lv = SAVE.lv || 1;
+  $('lvl-n').textContent = lv; $('lvl-rank').textContent = rankName(lv); $('lvl-bar').style.width = Math.round((SAVE.xp || 0) / xpNeed(lv) * 100) + '%';
+}
+function xpHTML(res) {
+  if (!res.xp) return '';
+  const lv = SAVE.lv || 1, pct = Math.round((SAVE.xp || 0) / xpNeed(lv) * 100), up = res.lvUp && res.lvUp.ups.length;
+  return `<div class="xpbox${up ? ' up' : ''}"><div class="xprow"><b class="lvb">${lv}</b><span>${rankName(lv)}</span><em>+${res.xp} ${t('pg_xp')}</em></div><i class="xpbar"><u style="--w:${pct}%"></u></i>`
+    + (up ? `<p class="lvup">⭐ ${t('pg_up', lv)} +${money(res.lvUp.reward)}</p>` : '')
+    + (res.ach || []).map(a => `<p class="achup">${a[1]} ${t('pg_ach')} : ${L3(a[4], a[5], a[6])} · +${money(a[3])}</p>`).join('') + '</div>';
+}
+function openProg() {
+  checkAch(); saveGame(); UI.updMoney();
+  const el = $('prog'), lv = SAVE.lv || 1, s = SAVE.stats || {}, pct = Math.round((SAVE.xp || 0) / xpNeed(lv) * 100), done = ACH.filter(a => SAVE.ach && SAVE.ach[a[0]]).length;
+  el.innerHTML = `<div class="pg-box"><div class="ts-head"><div><small>${t('pg_title')}</small><h2>${esc(profName ? profName() : '')}</h2></div><button class="ts-x" aria-label="${t('pg_close')}">✕</button></div>
+<div class="pg-lv"><b class="lvb big">${lv}</b><div><strong>${rankName(lv)}</strong><i class="xpbar"><u style="--w:${pct}%"></u></i><small>${SAVE.xp || 0} / ${xpNeed(lv)} ${t('pg_xp')} · ${t('pg_next', money(lvReward(lv + 1)))}</small></div></div>
+<div class="pg-st"><span><b>${s.races || 0}</b>${t('st_races')}</span><span><b>${s.wins || 0}</b>${t('st_wins')}</span><span><b>${s.podiums || 0}</b>${t('pg_pod')}</span><span><b>${s.bikeWins || 0}</b>${t('pg_bike')}</span><span><b>${s.escapes || 0}</b>${t('pg_esc')}</span><span><b>${Object.keys(s.trk || {}).length}/${TRACKS.length}</b>${t('pg_trk')}</span></div>
+<h3>${t('pg_tro')} · ${done}/${ACH.length}</h3><div class="pg-ach">${ACH.map(a => { const ok = SAVE.ach && SAVE.ach[a[0]]; return `<div class="${ok ? 'ok' : ''}"><i>${a[1]}</i><b>${L3(a[4], a[5], a[6])}</b><small>${ok ? '✓' : '🔒'} ${money(a[3])}</small></div>`; }).join('')}</div></div>`;
+  el.classList.remove('hidden');
+  const close = () => { el.classList.add('hidden'); el.innerHTML = ''; };
+  el.querySelector('.ts-x').onclick = close; el.onclick = e => { if (e.target === el) close(); };
+}
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -7424,7 +7610,15 @@ function endRace() {
   }
   res.total = Math.round((res.reward + res.styleBonus) * ((p.perk && p.perk.money) || 1) / 10) * 10;
   res.daily = dailyCheck(res); SAVE.money += res.total; SAVE.stats.races++; if (res.success) SAVE.stats.wins++;
+  { // V226 : statistiques détaillées, XP, niveaux et trophées
+    const S2 = SAVE.stats, tid = (TRACKS[cfg.track] || {}).id;
+    if (res.mode === 'race' && res.pos <= 3) S2.podiums = (S2.podiums || 0) + 1;
+    if (res.mode === 'race' && res.pos === 1 && G.player && catOf(G.player.car) === 'velo') S2.bikeWins = (S2.bikeWins || 0) + 1;
+    if (res.mode === 'chase' && res.success) S2.escapes = (S2.escapes || 0) + 1;
+    if (tid) (S2.trk || (S2.trk = {}))[tid] = 1; S2.bestStyle = Math.max(S2.bestStyle || 0, res.style || 0);
+  }
   SAVE.stats.dist = (SAVE.stats.dist || 0) + Math.max(0, G.odo || 0); SAVE.stats.time = (SAVE.stats.time || 0) + Math.max(0, G.cfg.mode === 'chase' ? G.chase.t : G.raceT); SAVE.stats.top = Math.max(SAVE.stats.top || 0, G.topV || 0); G.odo = 0; G.topV = 0;
+  try { res.xp = raceXP(res); res.lvUp = addXP(res.xp); res.ach = checkAch(); } catch (e) { res.xp = 0; }
   // Historique persistant : chaque parcours conserve résultat, gains et solde après paiement.
   const trackDef = TRACKS[cfg.track];
   SAVE.history = Array.isArray(SAVE.history) ? SAVE.history : [];
@@ -7901,7 +8095,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V225';
+const GAME_VERSION = 'V226';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -7988,7 +8182,7 @@ const UI = {
     $('lang-sel').value = LANG; document.body.dataset.scr = name || '';
   },
   refresh() { applyI18n(); this.show(this.screen || 'main'); },
-  updMoney() { $('money').textContent = money(SAVE.money); },
+  updMoney() { $('money').textContent = money(SAVE.money); try { updLvl(); } catch (e) { } },
   nextCfg() {
     if (SAVE.career < CAREER.length) return evCfg(SAVE.career);
     const q = this.q; return { mode: q.mode, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined };
@@ -8266,6 +8460,7 @@ const UI = {
     $('res-body').innerHTML = `<div class="res-title ${cls}">${title}</div><div class="note">${modeName(res.mode)}, ${T.name}${res.record ? ` — <b class="rec">${t('r_record')}</b>` : ''}</div><div class="note" style="color:#63dba0;font-weight:700">✓ ${t('r_saved')}</div><div class="rcols"><div class="rcol1">${body}${evLine}</div><div class="rcol2">
       <div class="rgrid"><span>${t('r_reward')}</span><b>${money(res.reward)}</b><span>${t('r_style', res.style)}</span><b>${money(res.styleBonus)}</b><span>${t('r_gain')}</span><b class="tot">${money(res.total)}</b><span>${t('r_money')}</span><b id="r-money">${money(SAVE.money)}</b></div>
       ${ADS.on && res.total > 0 ? `<button id="r-ad" class="adbtn"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg>${t('adDouble', money(res.total))}</button>` : ''}
+      ${xpHTML(res)}
       <div class="rbtns"><button id="r-menu">${t('r_menu')}</button><button id="r-garage">${t('r_garage')}</button><button id="r-again" class="${next ? '' : 'cta'}">${t('r_again')}</button>${next ? `<button id="r-next" class="cta">${t('r_next')}</button>` : ''}</div></div></div>`;
     $('results').classList.add('show'); MUS.muffle(true);
     // en quittant les résultats : éventuel interstitiel (1 course sur 3, application Android seulement)
@@ -8953,6 +9148,7 @@ function boot() {
   UI.show('main');
   setTimeout(() => $('loading').classList.remove('show'), 350);
   if (safe) setTimeout(() => toast(t('safeMode')), 900);
+  try { $('lvl-chip').onclick = () => openProg(); updLvl(); checkAch(); } catch (e) { }
   try { const db = dailyBonus(); if (db) { UI.updMoney(); setTimeout(() => toast(t('daily', db.streak, money(db.gain))), safe ? 5600 : 1200); } } catch (e) { }
   BOOT_FRAMES = 0;
   ADS.init();

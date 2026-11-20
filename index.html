@@ -1657,7 +1657,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V224</span>
+    <span id="build-tag" aria-label="Version">V225</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -4242,6 +4242,23 @@ TRACKS.push(
  Object.assign({}, TRACKS[0], {id:'tunis_jour',name:'Tunis — Avenue Bourguiba',sub:'Tunis • Horloge, cathédrale et médina de jour',theme:'city',seed:337,pts:[[0,-380,1],[0,-60,0],[40,190,1],[150,360,2],[330,420,2],[480,320,1],[500,140,0],[420,0,0],[520,-170,1],[440,-360,2],[260,-440,1],[90,-430,0]],env:{sky:[0.16,0.32,0.64],hor:[0.74,0.78,0.86],gnd:[0.22,0.22,0.22],fog:[0.6,0.66,0.74],fogDen:0.002,sunDir:nrm([0.3,0.7,-0.35]),sunCol:[1.25,1.16,1.0],wet:0,clouds:0.3,sunSize:0.0014,grade:GR([0.01,0.015,0.025],[1.04,1.02,0.98],0.29)},road:[0.14,0.145,0.15],cols:[[0.72,0.68,0.56],[0.64,0.62,0.54],[0.52,0.54,0.53],[0.72,0.68,0.58],[0.56,0.53,0.48],[0.62,0.59,0.52]]})
 );
 
+/* V225 — identité visuelle de chaque ville : couleurs des façades, volets, coupoles, moucharabiehs */
+const TRACK_PAL = {
+  tunis_jour: { walls: [[0.88, 0.85, 0.78], [0.92, 0.9, 0.84], [0.82, 0.78, 0.7], [0.86, 0.8, 0.68], [0.78, 0.74, 0.68]], shut: [[0.1, 0.3, 0.6], [0.12, 0.4, 0.26], [0.2, 0.22, 0.24]], dome: 0.03, mouch: 0.12, mouchC: [0.12, 0.34, 0.62], maxH: 30 },
+  sousse: { walls: [[0.92, 0.91, 0.87], [0.88, 0.86, 0.8], [0.94, 0.92, 0.88]], shut: [[0.08, 0.32, 0.72], [0.1, 0.45, 0.62]], dome: 0.14, mouch: 0.08, mouchC: [0.08, 0.32, 0.72], maxH: 20 },
+  sfax: { walls: [[0.8, 0.72, 0.58], [0.74, 0.66, 0.52], [0.86, 0.8, 0.68], [0.9, 0.88, 0.82]], shut: [[0.12, 0.4, 0.25], [0.4, 0.25, 0.14], [0.1, 0.3, 0.55]], dome: 0.06, mouch: 0.1, mouchC: [0.36, 0.22, 0.12], maxH: 24 },
+  kairouan: { walls: [[0.78, 0.64, 0.46], [0.72, 0.58, 0.4], [0.84, 0.72, 0.54], [0.9, 0.86, 0.78]], shut: [[0.1, 0.42, 0.3], [0.08, 0.32, 0.6]], dome: 0.12, mouch: 0.15, mouchC: [0.1, 0.38, 0.28], maxH: 14 },
+  corniche: { walls: [[0.95, 0.95, 0.93]], shut: [[0.08, 0.32, 0.72], [0.05, 0.25, 0.62]], dome: 0.18 },
+  djerba: { walls: [[0.96, 0.95, 0.92], [0.93, 0.92, 0.88]], shut: [[0.2, 0.55, 0.75], [0.15, 0.5, 0.35]], dome: 0.55 },
+  hammamet: { walls: [[0.95, 0.94, 0.9], [0.9, 0.88, 0.82]], shut: [[0.06, 0.3, 0.68], [0.1, 0.42, 0.75]], dome: 0.22 },
+  bizerte: { walls: [[0.88, 0.74, 0.42], [0.84, 0.52, 0.38], [0.9, 0.86, 0.72], [0.62, 0.72, 0.8], [0.88, 0.64, 0.52], [0.94, 0.9, 0.8]], shut: [[0.1, 0.3, 0.5], [0.45, 0.2, 0.12], [0.12, 0.38, 0.22]], dome: 0.02 },
+  monastir: { walls: [[0.88, 0.82, 0.7], [0.92, 0.88, 0.78], [0.95, 0.94, 0.9]], shut: [[0.1, 0.4, 0.3], [0.08, 0.32, 0.6]], dome: 0.12 },
+  kerkennah: { walls: [[0.94, 0.93, 0.9]], shut: [[0.2, 0.5, 0.7], [0.12, 0.4, 0.3]], dome: 0.05 },
+  nabeul: { walls: [[0.95, 0.94, 0.9], [0.92, 0.9, 0.84]], shut: [[0.1, 0.45, 0.35], [0.08, 0.32, 0.72]], dome: 0.1 },
+  mahdia: { walls: [[0.95, 0.95, 0.93], [0.9, 0.88, 0.84]], shut: [[0.08, 0.32, 0.72]], dome: 0.15 },
+};
+for (const d of TRACKS) if (TRACK_PAL[d.id]) d.pal = TRACK_PAL[d.id];
+
 
 function crPoint(p0, p1, p2, p3, t) {
   const d = (p, q) => Math.pow(Math.hypot(q[0] - p[0], q[1] - p[1], q[2] - p[2]), 0.5) || 1e-4;
@@ -4844,6 +4861,160 @@ function buildTrack(def, quality) {
     if (id === 'djerba') put(mosque, 0.4, 0, W + 28, 14, 0.8, WHITE);
     if (id === 'tozeur_oasis') put(o => minaret(o, 20, [0.72, 0.5, 0.32]), 0.45, 0, W + 26, 6);
     if (id === 'gafsa_phosphate') put(ksar, 0.62, 0, W + 34, 18);
+    // ---- V225 : identité propre de chaque circuit (monuments, végétation, activités) ----
+    function rampart(o, len = 60, col = [0.8, 0.68, 0.5]) {
+      const mb = ch(rk(o.i)), P = LF(o);
+      for (let k = 0; k <= len / 4; k++) { const lz = -len / 2 + k * 4, q = P(0, 0, lz); if (T.roadDist(q[0], q[2], 20) < W + 3) continue; mb.box(q[0], q[1], q[2], 2.2, 8, 4.1, jit(col, r, 0.03), 18, o.yaw); if (k % 2 === 0) mb.box(q[0], q[1] + 8, q[2], 2.2, 1.1, 1.6, col, 18, o.yaw); if (k % 4 === 0) mb.box(q[0], q[1], q[2], 5, 10.5, 5, V3.sc(col, 0.97), 18, o.yaw); }
+    }
+    function gate(o, col = STONE) {
+      const mb = ch(rk(o.i)), P = LF(o), b = P(0, 0, 0); mb.box(b[0], b[1], b[2], 16, 12, 7, col, 18, o.yaw);
+      for (const sz of [-1, 1]) { const q = P(0, 0, sz * 3.52); mb.box(q[0], q[1], q[2], 4.6, 7.4, 0.08, DARK, 0, o.yaw); const a = P(0, 7.4, sz * 3.52); mb.dome(a[0], a[1], a[2], 2.3, 1.5, 0.06, 10, 2, DARK, 0, DARK); }
+      for (let k = 0; k < 7; k++) for (const sz of [-1, 1]) { const q = P(-7.2 + k * 2.4, 12, sz * 3); mb.box(q[0], q[1], q[2], 1.2, 1.1, 1, col, 18, o.yaw); }
+    }
+    function ribat(o, col = [0.8, 0.7, 0.54]) {
+      // ribat (Sousse, Monastir) : forteresse carrée, tours d'angle et tour de guet ronde (nador)
+      const mb = ch(rk(o.i)), P = LF(o), S2 = 26;
+      for (const [lx, lz, w, d] of [[0, -S2 / 2, S2, 2], [0, S2 / 2, S2, 2], [-S2 / 2, 0, 2, S2], [S2 / 2, 0, 2, S2]]) { const q = P(lx, 0, lz); mb.box(q[0], q[1], q[2], w, 9, d, jit(col, r, 0.03), 18, o.yaw); for (let k = 0; k < 8; k += 2) { const t = (k + 0.5) / 8 - 0.5, e = P(lx + (w > d ? t * w : 0), 9, lz + (d > w ? t * d : 0)); mb.box(e[0], e[1], e[2], w > d ? 1.4 : 2, 1, d > w ? 1.4 : 2, col, 18, o.yaw); } }
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const q = P(sx * S2 / 2, 0, sz * S2 / 2); mb.box(q[0], q[1], q[2], 5, 11, 5, V3.sc(col, 0.96), 18, o.yaw); }
+      const t = P(S2 / 2 - 3, 0, -S2 / 2 + 3); bar(mb, t, [t[0], t[1] + 22, t[2]], 2.4, col, 18, 2.4, 14); mb.box(t[0], t[1] + 22, t[2], 5.6, 0.6, 5.6, col, 18, o.yaw); flag(mb, [t[0], t[1] + 22.6, t[2]], 5, o.yaw);
+    }
+    function mausoleum(o) {
+      // mausolée de Monastir : édifice blanc, coupole dorée, deux minarets jumeaux
+      const mb = ch(rk(o.i)), P = LF(o), b = P(0, 0, 0), GOLD = [0.92, 0.72, 0.28];
+      mb.box(b[0], b[1], b[2], 22, 1.2, 22, [0.82, 0.8, 0.76], 18, o.yaw); mb.box(b[0], b[1] + 1.2, b[2], 16, 11, 16, WHITE, 18, o.yaw);
+      mb.dome(b[0], b[1] + 12.2, b[2], 6, 7, 6, 14, 4, GOLD, 4, [1, 0.85, 0.4]);
+      for (const sx of [-1, 1]) { const q = P(sx * 10, 0, -9); mb.box(q[0], q[1], q[2], 2.6, 26, 2.6, WHITE, 18, o.yaw); mb.box(q[0], q[1] + 26, q[2], 3.4, 0.5, 3.4, WHITE, 18, o.yaw); mb.dome(q[0], q[1] + 26.5, q[2], 1.3, 2.4, 1.3, 8, 3, GOLD, 4, [1, 0.85, 0.4]); }
+      for (let k = -2; k <= 2; k++) { const q = P(k * 3, 1.2, -8.05); mb.box(q[0], q[1], q[2], 1.6, 6, 0.1, k ? [0.1, 0.3, 0.25] : [0.6, 0.45, 0.15], 0, o.yaw); }
+    }
+    function menzel(o) {
+      // menzel de Djerba : maisons cubiques chaulées, coupoles, portes bleu-vert, palmiers et oliviers
+      const mb = ch(rk(o.i)), P = LF(o);
+      for (let k = 0; k < 4; k++) { const q = P((k % 2 - 0.5) * 9, 0, (k > 1 ? 1 : -1) * 6), w = 5 + r() * 2.5, h = 3.4 + r() * 1.2; mb.box(q[0], q[1], q[2], w, h, w * 0.9, WHITE, 18, o.yaw); mb.dome(q[0], q[1] + h, q[2], w * 0.32, w * 0.3, w * 0.32, 10, 3, WHITE, 18, [0.97, 0.97, 0.95]);
+        const d = P((k % 2 - 0.5) * 9 - o.s * (w / 2 + 0.05), 0.2, (k > 1 ? 1 : -1) * 6); mb.box(d[0], d[1], d[2], 0.1, 2.2, 1.2, k % 2 ? [0.2, 0.55, 0.75] : [0.15, 0.5, 0.35], 0, o.yaw); }
+      for (let k = 0; k < 4; k++) { const a = r() * 6.28; addPalm(mb, o.p[0] + Math.sin(a) * 16, o.y, o.p[2] + Math.cos(a) * 16, 6 + r() * 4, r); }
+    }
+    function fortHill(o, col = [0.7, 0.62, 0.5]) {
+      // fort génois (Tabarka) / borj : forteresse en pierre sur une butte
+      const mb = ch(rk(o.i)); mb.dome(o.p[0], o.y - 2, o.p[2], 30, 14, 26, 12, 3, [0.36, 0.4, 0.26], 16, [0.42, 0.46, 0.3]);
+      kasbah({ p: o.p, i: o.i, s: o.s, y: o.y + 9, yaw: o.yaw });
+    }
+    function needles(o) {
+      // les Aiguilles de Tabarka : grandes lames de roche verticales
+      const mb = ch(rk(o.i));
+      for (let k = 0; k < 6; k++) { const x = o.p[0] + (r() - 0.5) * 30, z = o.p[2] + (r() - 0.5) * 22, h = 9 + r() * 12, w = 2 + r() * 2.5; mb.box(x, o.y - 1, z, w, h, w * 0.6, jit([0.72, 0.58, 0.4], r, 0.06), 17, r() * 3, 0.5, 0.35, [0.78, 0.66, 0.48]); }
+    }
+    function salt(o) {
+      // salines de Kerkennah : bassins blancs et rosés, tas de sel
+      const mb = ch(rk(o.i)), P = LF(o);
+      for (let a = 0; a < 4; a++) for (let b = 0; b < 3; b++) { const q = P(-15 + a * 10, 0.05, -10 + b * 10); mb.box(q[0], q[1], q[2], 9.2, 0.12, 9.2, b % 2 ? [0.95, 0.86, 0.86] : [0.95, 0.95, 0.96], 9, o.yaw); }
+      for (let k = 0; k < 5; k++) { const q = P(22 + (r() - 0.5) * 6, 0, -12 + k * 6); mb.dome(q[0], q[1], q[2], 2 + r(), 1.6 + r(), 2 + r(), 10, 3, [0.97, 0.97, 0.98], 0, [1, 1, 1]); }
+    }
+    function felucca(o) {
+      const mb = ch(rk(o.i)), P = LF(o), b = P(0, 0.2, 0);
+      mb.box(b[0], b[1], b[2], 2, 1, 6.5, [0.62, 0.44, 0.26], 0, o.yaw); mb.box(b[0], b[1] + 0.7, b[2], 2.05, 0.3, 6.55, [0.1, 0.35, 0.6], 0, o.yaw);
+      bar(mb, b, [b[0], b[1] + 7, b[2]], 0.08, [0.4, 0.3, 0.2], 0); const A = P(0, 1.6, -2.8), B = P(0, 9.5, 2.4), C = P(0, 1.8, 2.6); mb.tri(A, B, C, [0.95, 0.94, 0.88], 0);
+    }
+    function train(o) {
+      // train de phosphate de Gafsa : locomotive et wagons trémies sur une voie
+      const mb = ch(rk(o.i)), P = LF(o);
+      for (const sx of [-0.72, 0.72]) { const a = P(sx, 0, -42), b = P(sx, 0, 42); bar(mb, [a[0], a[1] + 0.15, a[2]], [b[0], b[1] + 0.15, b[2]], 0.07, [0.4, 0.4, 0.42], 4); }
+      const L2 = P(0, 0.4, -30); mb.box(L2[0], L2[1], L2[2], 2.8, 3.6, 14, [0.86, 0.5, 0.1], 0, o.yaw); const cab = P(0, 4, -35); mb.box(cab[0], cab[1], cab[2], 2.6, 0.8, 3, [0.15, 0.2, 0.25], 3, o.yaw);
+      for (let k = 0; k < 6; k++) { const q = P(0, 0.4, -20 + k * 10); mb.box(q[0], q[1], q[2], 3, 3, 9, [0.36, 0.33, 0.3], 4, o.yaw); mb.box(q[0], q[1] + 3, q[2], 2.6, 0.5, 8.4, [0.62, 0.6, 0.55], 0, o.yaw); }
+    }
+    function mine(o) {
+      const mb = ch(rk(o.i)), P = LF(o), G2 = [0.55, 0.53, 0.5];
+      const s1 = P(0, 0, 0); mb.box(s1[0], s1[1], s1[2], 10, 18, 10, [0.6, 0.55, 0.48], 18, o.yaw); const s2 = P(14, 0, 4); mb.box(s2[0], s2[1], s2[2], 6, 26, 6, [0.66, 0.6, 0.52], 18, o.yaw);
+      bar(mb, P(0, 16, 0), P(30, 2, 18), 0.8, [0.3, 0.3, 0.32], 4, 0.8, 6);
+      for (let k = 0; k < 3; k++) { const q = P(30 + k * 6, 0, 18 + k * 4); mb.dome(q[0], q[1], q[2], 6, 5 + k, 6, 10, 3, G2, 17, [0.62, 0.6, 0.56]); }
+    }
+    function camels(o) {
+      // caravane de dromadaires et tente bédouine (Douz)
+      const mb = ch(rk(o.i)), P = LF(o), CM = [0.66, 0.5, 0.32];
+      for (let k = 0; k < 5; k++) { const lz = -10 + k * 4.2, c = jit(CM, r, 0.06), b = P(0, 1.8, lz);
+        sphere(mb, b[0], b[1], b[2], 0.75, c, 0, -Math.PI / 2, Math.PI / 2, 8, 0.8, 1.6); sphere(mb, b[0], b[1] + 0.6, b[2], 0.45, c, 0, 0, Math.PI / 2, 8);
+        bar(mb, P(0, 2, lz + 1), P(0, 2.9, lz + 1.9), 0.17, c, 0); sphere(mb, ...P(0, 2.95, lz + 2.2), 0.24, c, 0, -Math.PI / 2, Math.PI / 2, 8, 0.8, 1.6);
+        for (const [dx, dz] of [[-0.3, 0.8], [0.3, 0.8], [-0.3, -0.8], [0.3, -0.8]]) bar(mb, P(dx, 1.6, lz + dz), P(dx, 0, lz + dz), 0.09, c, 0);
+        if (k % 2 === 0) mb.box(b[0], b[1] + 0.55, b[2], 1.4, 0.15, 1, [0.7, 0.12, 0.1], 0, o.yaw); }
+      const t = P(9, 0, 0), TC = [0.25, 0.18, 0.13];
+      const A = P(5, 0, -4), B = P(13, 0, -4), C = P(13, 0, 4), D = P(5, 0, 4), top1 = P(9, 3.2, -2.5), top2 = P(9, 3.2, 2.5);
+      mb.quad(A, B, top1, top1, TC, 0); mb.quad(D, C, top2, top2, TC, 0); mb.quad(A, D, top2, top1, V3.sc(TC, 0.9), 0); mb.quad(B, C, top2, top1, V3.sc(TC, 0.8), 0);
+      void t;
+    }
+    function shepherd(o) {
+      const mb = ch(rk(o.i)), P = LF(o);
+      for (let k = 0; k < 2; k++) { const q = P(k * 8 - 4, 0, 0); mb.box(q[0], q[1], q[2], 5, 2.8, 4, jit([0.62, 0.58, 0.52], r, 0.05), 17, o.yaw); mb.box(q[0], q[1] + 2.8, q[2], 5.4, 0.3, 4.4, [0.5, 0.36, 0.24], 0, o.yaw); }
+      for (let k = 0; k < 14; k++) { const q = P((r() - 0.5) * 20, 0.45, 8 + r() * 10); sphere(mb, q[0], q[1], q[2], 0.45, [0.92, 0.9, 0.84], 0, -Math.PI / 2, Math.PI / 2, 8, 0.8, 1.3); sphere(mb, q[0], q[1] + 0.15, q[2] + 0.5, 0.18, [0.15, 0.12, 0.1], 0, -Math.PI / 2, Math.PI / 2, 6); }
+      flag(mb, P(0, 0, -6), 8, o.yaw);
+    }
+    function terraces(o) {
+      // terrasses de café de Sidi Bou Saïd : gradins chaulés, garde-corps bleus, parasols
+      const mb = ch(rk(o.i)), P = LF(o);
+      for (let k = 0; k < 4; k++) { const q = P(0, 0, -6 + k * 4); mb.box(q[0], q[1], q[2], 12, 1 + k * 1.2, 4, WHITE, 18, o.yaw); const rl = P(0, 1 + k * 1.2, -6 + k * 4 - 1.95); mb.box(rl[0], rl[1], rl[2], 12, 0.9, 0.08, BLUE, 0, o.yaw);
+        for (let u = 0; u < 3; u++) { const p2 = P(-4 + u * 4, 1 + k * 1.2, -6 + k * 4); bar(mb, p2, [p2[0], p2[1] + 2.3, p2[2]], 0.04, [0.9, 0.9, 0.9], 0); mb.dome(p2[0], p2[1] + 2.3, p2[2], 1.3, 0.5, 1.3, 8, 2, u % 2 ? [0.95, 0.95, 0.92] : [0.1, 0.35, 0.7], 0, [1, 1, 1]); } }
+    }
+    function stadium(o) {
+      // stade olympique de Radès : anneau de tribunes et toiture
+      const mb = ch(rk(o.i)), x = o.p[0], z = o.p[2];
+      for (let row = 0; row < 9; row++) { const R2 = 34 + row * 2.2; for (let k = 0; k < 40; k++) { const a = k / 40 * Math.PI * 2, q = [x + Math.sin(a) * R2 * 1.25, o.y + row * 1.6, z + Math.cos(a) * R2]; mb.box(q[0], q[1], q[2], 6, 1.6, 2.2, row % 3 === 2 ? [0.85, 0.12, 0.12] : [0.82, 0.82, 0.84], 18, a); } }
+      for (let k = 0; k < 40; k++) { const a = k / 40 * Math.PI * 2, q = [x + Math.sin(a) * 56 * 1.25, o.y + 18, z + Math.cos(a) * 56]; mb.box(q[0], q[1], q[2], 9, 0.8, 9, [0.9, 0.9, 0.92], 4, a); }
+      mb.box(x, o.y, z, 70, 0.2, 52, [0.18, 0.5, 0.2], 16, o.yaw);
+    }
+    function ferry(o) {
+      const mb = ch(rk(o.i)), P = LF(o), b = P(0, -1, 0);
+      mb.box(b[0], b[1], b[2], 14, 8, 70, WHITE, 18, o.yaw); mb.box(b[0], b[1] + 2, b[2], 14.1, 1.4, 70.1, BLUE, 0, o.yaw);
+      for (let k = 0; k < 3; k++) { const q = P(0, 7 + k * 3, -8 + k * 2); mb.box(q[0], q[1], q[2], 12, 3, 34 - k * 8, WHITE, 18, o.yaw); }
+      const f = P(0, 16, -4); bar(mb, f, [f[0], f[1] + 7, f[2]], 2, [0.85, 0.12, 0.1], 0, 2, 10);
+    }
+    function baths(o) {
+      // thermes d'Antonin (Carthage) : grands murs à arcades et colonnes sur la côte
+      const mb = ch(rk(o.i)), P = LF(o), C = [0.78, 0.68, 0.54];
+      for (let k = 0; k < 6; k++) { const q = P(-15 + k * 6, 0, 0); mb.box(q[0], q[1], q[2], 1.8, 10 - (k % 3) * 2.5, 12, jit(C, r, 0.05), 17, o.yaw); }
+      for (let k = 0; k < 8; k++) { const q = P(-16 + k * 4.5, 0, -10); bar(mb, q, [q[0], q[1] + 4 + r() * 8, q[2]], 0.6, [0.6, 0.6, 0.62], 17, 0.6, 10); }
+    }
+    function chalet(o) {
+      // chalets d'Aïn Draham : murs en pierre, toits de tuiles rouges à deux pans
+      const mb = ch(rk(o.i)), P = LF(o), w = 7, d = 9, h = 4, RT = [0.62, 0.2, 0.12], b = P(0, 0, 0);
+      mb.box(b[0], b[1], b[2], w, h, d, jit([0.72, 0.68, 0.6], r, 0.05), 17, o.yaw);
+      const A = P(-w / 2 - 0.5, h, -d / 2 - 0.5), B = P(w / 2 + 0.5, h, -d / 2 - 0.5), C = P(w / 2 + 0.5, h, d / 2 + 0.5), D = P(-w / 2 - 0.5, h, d / 2 + 0.5), R1 = P(0, h + 3, -d / 2 - 0.5), R2 = P(0, h + 3, d / 2 + 0.5);
+      mb.quad(A, R1, R2, D, RT, 0); mb.quad(B, R1, R2, C, V3.sc(RT, 0.85), 0); mb.tri(P(-w / 2, h, -d / 2), P(w / 2, h, -d / 2), P(0, h + 2.7, -d / 2), [0.72, 0.68, 0.6], 17); mb.tri(P(-w / 2, h, d / 2), P(w / 2, h, d / 2), P(0, h + 2.7, d / 2), [0.72, 0.68, 0.6], 17);
+      const ch2 = P(1.5, h, 1); mb.box(ch2[0], ch2[1], ch2[2], 0.8, 3.6, 0.8, [0.5, 0.46, 0.42], 17, o.yaw);
+      for (const lz of [-2, 2]) { const q = P(-o.s * (w / 2 + 0.05), 1.2, lz); mb.box(q[0], q[1], q[2], 0.1, 1.3, 1, [0.35, 0.22, 0.12], 0, o.yaw); }
+    }
+    function tozeurHouses(o) {
+      // architecture de Tozeur : façades en briques ocre aux motifs géométriques en relief
+      const mb = ch(rk(o.i)), P = LF(o), BR = [0.74, 0.52, 0.32];
+      for (let k = 0; k < 4; k++) { const lz = -12 + k * 8, h = 6 + r() * 3, q = P(0, 0, lz); mb.box(q[0], q[1], q[2], 7, h, 7, jit(BR, r, 0.04), 18, o.yaw);
+        for (let row = 1; row < h / 1.1 - 1; row++) for (let u = 0; u < 5; u++) if ((row + u) % 2) { const m2 = P(-o.s * 3.55, row * 1.1, lz - 2.6 + u * 1.3); mb.box(m2[0], m2[1], m2[2], 0.12, 0.4, 0.55, V3.sc(BR, 0.78), 18, o.yaw); }
+        const d = P(-o.s * 3.56, 0.2, lz); mb.box(d[0], d[1], d[2], 0.1, 2.4, 1.3, [0.35, 0.22, 0.12], 0, o.yaw); }
+    }
+    function addOlive(mb, x, y, z, s) {
+      bar(mb, [x, y, z], [x + (r() - 0.5) * 0.6 * s, y + 1.6 * s, z + (r() - 0.5) * 0.6 * s], 0.22 * s, [0.36, 0.3, 0.22], 0, 0.18 * s, 6);
+      for (let k = 0; k < 3; k++) { const a = k * 2.1 + r(); sphere(mb, x + Math.sin(a) * 0.9 * s, y + (2 + r() * 0.6) * s, z + Math.cos(a) * 0.9 * s, (1.1 + r() * 0.4) * s, jit([0.36, 0.42, 0.28], r, 0.08), 20, -Math.PI / 2, Math.PI / 2, 6, 0.75); }
+    }
+    function olives(n, offA = W + 8, offB = 60) {
+      // oliveraies alignées, signature des campagnes de Sfax, du Sahel et du Nord-Ouest
+      for (let k = 0; k < n; k++) { const i = Math.floor(r() * N), side = r() < 0.5 ? -1 : 1, p = objAt(i, side, offA + r() * offB); if (!placeOK(p[0], p[2], 2.5)) continue; addOlive(ch(rk(i)), p[0], T.groundY(p[0], p[2]) - 0.1, p[2], 0.9 + r() * 0.5); }
+    }
+    if (id === 'tunis') { put(gate, 0.2, 0, W + 22, 12, [0.86, 0.82, 0.74]); put(o => minaret(o, 40, [0.82, 0.74, 0.6]), 0.55, 0, W + 30, 6); put(rampart, 0.8, 0, W + 26, 32); }
+    if (id === 'sahara') { put(camels, 0.2, 0, W + 24, 16); put(camels, 0.62, 0, W + 30, 16); }
+    if (id === 'atlas') { put(shepherd, 0.25, 0, W + 22, 14); put(shepherd, 0.7, 0, W + 26, 14); }
+    if (id === 'corniche') { put(terraces, 0.3, land, W + 14, 9); put(lighthouse, 0.6, sea, W + 20, 5); put(o => minaret(o, 18, WHITE), 0.85, land, W + 22, 6); }
+    if (id === 'circuit') { put(baths, 0.35, 0, W + 40, 22); put(baths, 0.75, 0, W + 46, 22); }
+    if (id === 'port') { put(stadium, 0.3, land, W + 110, 80); put(ferry, 0.7, sea, W + 70, 40); }
+    if (id === 'aindraham') { for (const f of [0.1, 0.32, 0.55, 0.78]) put(chalet, f, 0, W + 16, 8); }
+    if (id === 'sousse') { put(ribat, 0.12, 0, W + 34, 20); put(rampart, 0.82, 0, W + 30, 32); }
+    if (id === 'sfax') { put(gate, 0.15, 0, W + 24, 12, [0.8, 0.72, 0.56]); put(rampart, 0.35, 0, W + 30, 32, [0.8, 0.72, 0.56]); olives(90, W + 12, 70); }
+    if (id === 'djerba') { for (const f of [0.15, 0.62, 0.85]) put(menzel, f, land, W + 22, 16); put(kasbah, 0.3, sea, W + 30, 24); olives(60, W + 10, 40); }
+    if (id === 'hammamet') { put(kasbah, 0.2, land, W + 30, 24); put(rampart, 0.5, land, W + 26, 32, [0.84, 0.8, 0.7]); put(terraces, 0.8, land, W + 14, 9); }
+    if (id === 'bizerte') { put(kasbah, 0.25, land, W + 32, 24); for (const f of [0.45, 0.5, 0.56, 0.62, 0.7]) put(boat, f, sea, W + 12, 5); }
+    if (id === 'kairouan') { put(rampart, 0.1, 0, W + 28, 32, [0.76, 0.6, 0.42]); put(gate, 0.62, 0, W + 24, 12, [0.76, 0.6, 0.42]); put(rampart, 0.8, 0, W + 28, 32, [0.76, 0.6, 0.42]); }
+    if (id === 'monastir') { put(ribat, 0.15, sea, W + 34, 20); put(mausoleum, 0.68, land, W + 40, 20); }
+    if (id === 'tozeur_oasis') { put(tozeurHouses, 0.15, 0, W + 18, 18); put(tozeurHouses, 0.75, 0, W + 18, 18); put(camels, 0.32, 0, W + 30, 16); }
+    if (id === 'tabarka_forest') { put(fortHill, 0.3, 0, W + 50, 34); put(needles, 0.65, 0, W + 30, 18); }
+    if (id === 'kerkennah') { put(salt, 0.25, land, W + 30, 26); put(salt, 0.7, land, W + 30, 26); for (const f of [0.4, 0.48, 0.55, 0.88]) put(felucca, f, sea, W + 14, 5); }
+    if (id === 'gafsa_phosphate') { put(train, 0.2, 0, W + 24, 44); put(mine, 0.45, 0, W + 40, 34); }
+    if (id === 'dougga' || id === 'zaghouan' || id === 'kef') olives(80, W + 10, 70);
+    if (id === 'nabeul' || id === 'monastir' || id === 'kairouan') olives(60, W + 14, 60);
   }
 
   function windowsOnFace(mb, P, hx, hz, h, face, prob, warm) {
@@ -4864,12 +5035,31 @@ function buildTrack(def, quality) {
   function building(mb, x, y0, z, yaw, wLat, dAl, h, front, opts = {}) {
     const cs = Math.cos(yaw), sn = Math.sin(yaw);
     const P = (lx, ly, lz) => [x + lx * cs + lz * sn, y0 + ly, z - lx * sn + lz * cs];
-    const pal = [[0.24, 0.23, 0.22], [0.3, 0.28, 0.26], [0.19, 0.21, 0.25], [0.34, 0.31, 0.27], [0.42, 0.37, 0.31], [0.16, 0.17, 0.2]];
-    const c = jit(pal[Math.floor(r() * pal.length)], r, 0.08);
+    const TP = def.pal && def.pal.walls ? def.pal : null;
+    const pal = TP ? TP.walls : [[0.24, 0.23, 0.22], [0.3, 0.28, 0.26], [0.19, 0.21, 0.25], [0.34, 0.31, 0.27], [0.42, 0.37, 0.31], [0.16, 0.17, 0.2]];
+    const c = jit(pal[Math.floor(r() * pal.length)], r, TP ? 0.03 : 0.08);
+    if (TP) h = Math.min(h, TP.maxH || 26);
     mb.box(x, y0, z, wLat, h, dAl, c, 18, yaw, 1, 1, V3.sc(c, 1.15));
     const hx = wLat / 2, hz = dAl / 2, warm = r() < 0.65, prob = 0.2 + r() * 0.35;
     const faces = front === 1 ? ['x+', 'z+', 'z-'] : front === -1 ? ['x-', 'z+', 'z-'] : ['x+', 'x-', 'z+', 'z-'];
-    for (const f of faces) windowsOnFace(mb, P, hx, hz, h, f, f.startsWith('z') && front ? prob * 0.6 : prob, warm);
+    if (TP) {
+      // façade tunisienne : fenêtres à volets ouverts de la couleur de la ville, moucharabiehs, corniche de terrasse, coupoles
+      const sh = TP.shut[Math.floor(r() * TP.shut.length)], GL = [0.07, 0.09, 0.11], nfl = Math.floor((h - 1.2) / 3.3);
+      for (const f of (front ? faces.slice(0, 1) : faces)) {
+        const isX = f[0] === 'x', sg = f[1] === '+' ? 1 : -1, along = isX ? dAl : wLat, nc = Math.floor((along - 2) / 3.2);
+        for (let fy = (front ? 1 : 0); fy < nfl; fy++) for (let k = 0; k < nc; k++) {
+          if (r() > 0.85) continue;
+          const u = -along / 2 + 1.6 + k * 3.2 + (along - 2 - nc * 3.2) / 2 + 1.6 - 1.6, yy = fy * 3.3 + 1.0;
+          const Q = (du, dd) => isX ? P(sg * (hx + dd), yy, u + du) : P(u + du, yy, sg * (hz + dd));
+          const g = Q(0, 0.03); mb.box(g[0], g[1], g[2], isX ? 0.06 : 1.0, 1.6, isX ? 1.0 : 0.06, GL, 0, yaw);
+          for (const sd of [-1, 1]) { const q = Q(sd * 0.82, 0.07); mb.box(q[0], q[1], q[2], isX ? 0.05 : 0.6, 1.6, isX ? 0.6 : 0.05, sh, 0, yaw); }
+          if (TP.mouch && fy > 0 && r() < TP.mouch) { const m2 = Q(0, 0.4); mb.box(m2[0], m2[1] - 0.2, m2[2], isX ? 0.8 : 1.6, 2.1, isX ? 1.6 : 0.8, TP.mouchC || [0.42, 0.28, 0.16], 0, yaw); }
+        }
+      }
+      mb.box(x, y0 + h, z, wLat + 0.3, 0.6, dAl + 0.3, V3.sc(c, 1.05), 18, yaw);
+      if (r() < (TP.dome || 0)) mb.dome(x + (r() - 0.5) * wLat * 0.3, y0 + h + 0.6, z + (r() - 0.5) * dAl * 0.3, 2.6, 2.4, 2.6, 10, 3, V3.sc(c, 1.04), 18, V3.sc(c, 1.08));
+      if (r() < 0.3) { const sat = P((r() - 0.5) * wLat * 0.6, h + 0.6, (r() - 0.5) * dAl * 0.6); discX(mb, sat[0], sat[1] + 0.6, sat[2], 0.45, [0.85, 0.85, 0.86], 4, 10, 0.02); }
+    } else for (const f of faces) windowsOnFace(mb, P, hx, hz, h, f, f.startsWith('z') && front ? prob * 0.6 : prob, warm);
     if (front && !opts.noShop) {
       const fx = front * (hx + 0.08);
       const sc = r() < 0.5 ? [1, 0.75, 0.45] : [0.8, 0.9, 1];
@@ -4885,7 +5075,7 @@ function buildTrack(def, quality) {
         const aw = [[0.55, 0.1, 0.08], [0.1, 0.32, 0.55], [0.12, 0.38, 0.2], [0.6, 0.45, 0.15]][Math.floor(r() * 4)];
         mb.quad(P(fx, 3.45, -hz + 1.1), P(fx, 3.45, hz - 1.1), P(front * (hx + 1.3), 2.95, hz - 1.1), P(front * (hx + 1.3), 2.95, -hz + 1.1), aw, 0);
       }
-      if (r() < 0.55) {
+      if (!TP && r() < 0.55) {
         const neon = [[1, 0.15, 0.55], [0.15, 0.9, 1], [0.3, 1, 0.35], [1, 0.55, 0.08], [0.65, 0.3, 1], [1, 0.9, 0.2]][Math.floor(r() * 6)];
         const sw = 3 + r() * Math.min(7, dAl - 4), sz = (r() - 0.5) * (dAl - sw - 2);
         const p = P(front * (hx + 0.25), 3.7, sz); mb.box(p[0], p[1], p[2], 0.3, 0.9, sw, neon, 2, yaw);
@@ -5287,14 +5477,14 @@ function buildTrack(def, quality) {
     while (i < N) {
       const off = W + 9 + r() * 50, p = objAt(i, ins, off), w = 5 + r() * 5, d = 5 + r() * 5;
       if (placeOK(p[0], p[2], Math.max(w, d) * 0.75) && i > 8) {
-        const mb = ch(rk(i)), y = T.groundY(p[0], p[2]) - 0.6, h = 4 + r() * 3.5, yaw = hd[i] + (r() - 0.5) * 0.3, wc = jit([0.84, 0.83, 0.8], r, 0.03);
+        const CP = def.pal || {}, mb = ch(rk(i)), y = T.groundY(p[0], p[2]) - 0.6, h = 4 + r() * 3.5, yaw = hd[i] + (r() - 0.5) * 0.3, wc = jit(CP.walls ? CP.walls[Math.floor(r() * CP.walls.length)] : [0.84, 0.83, 0.8], r, 0.03);
         mb.box(p[0], y, p[2], w, h, d, wc, 18, yaw);
         // corniche du toit-terrasse, soubassement gris et volets bleus sur les pignons
         mb.box(p[0], y + h - 0.05, p[2], w + 0.22, 0.32, d + 0.22, V3.sc(wc, 1.04), 18, yaw);
         mb.box(p[0], y, p[2], w + 0.06, 1.3, d + 0.06, [0.55, 0.54, 0.52], 18, yaw);
         if (r() < 0.55) { mb.box(p[0] + (r() - 0.5) * 2, y + h, p[2] + (r() - 0.5) * 2, w * 0.6, 3, d * 0.6, wc, 18, yaw); }
-        if (r() < 0.18) mb.dome(p[0], y + h, p[2], 1.8, 1.8, 1.8, 8, 3, wc, 0, wc);
-        const cs = Math.cos(yaw), sn = Math.sin(yaw), blue = [0.08, 0.32, 0.72];
+        if (r() < (CP.dome !== undefined ? CP.dome : 0.18)) mb.dome(p[0], y + h, p[2], 1.8, 1.8, 1.8, 8, 3, wc, 0, wc);
+        const cs = Math.cos(yaw), sn = Math.sin(yaw), blue = CP.shut ? CP.shut[Math.floor(r() * CP.shut.length)] : [0.08, 0.32, 0.72];
         const P = (lx, ly, lz) => [p[0] + lx * cs + lz * sn, y + ly, p[2] - lx * sn + lz * cs];
         const fx = -ins * (w / 2 + 0.05);
         const D = P(fx, 0.6, 0); mb.box(D[0], D[1], D[2], 0.12, 2.2, 1.1, blue, 0, yaw);
@@ -7711,7 +7901,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V224';
+const GAME_VERSION = 'V225';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),

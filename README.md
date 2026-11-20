@@ -1,5 +1,13 @@
 # Seddik Fire
 
+## Version 2.27
+- Cinq nouvelles cartes tunisiennes : Sidi Bou Saïd & Carthage (village blanc et bleu), Hammamet & Nabeul (médina, deux mosquées), Mahdia (presqu'île fatimide), Îles Kerkennah (palmiers et pêcheries traditionnelles « charfia » en mer), Île de La Galite (île sauvage). Sols pré-calculés inclus dans l'application Android.
+- Nouvelles options en partie :
+  - Point de passage : touchez la grande carte pour poser un repère (flèche et distance au bord de l'écran) ; touchez-le à nouveau pour le retirer.
+  - Gaucher : joystick à droite, tir et actions à gauche, armes à droite.
+  - Ligne de visée : courte, longue ou masquée.
+  - Mini-carte : normale ou grande.
+
 ## Version 2.26
 - Cartes 100 % tunisiennes :
   - Nouvelles maisons blanchies à la chaux autour des lieux habités : toit-terrasse, petite coupole, volets et portes bleus, linge, pots de fleurs, château d'eau, bougainvillier.

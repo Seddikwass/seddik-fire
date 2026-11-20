@@ -905,6 +905,32 @@ export function getOffsideDecision(attacker, ball, defenders = [], direction = 1
 }
 
 // Caméra broadcast : léger suivi anticipé et zoom d'action progressif, jamais instantané.
+// Attributs dérivés : la base ne stocke pas « technique » ni « jeu de tête » ; on les calcule
+// à partir des qualités existantes (sinon tout le monde valait 50, sans différence entre joueurs).
+export function withDerivedAttrs(attrs = {}) {
+  const n = k => clamp(Number(attrs[k]) || 50, 0, 100);
+  return {
+    ...attrs,
+    tec: Number.isFinite(attrs.tec) ? attrs.tec : Math.round(n('dri') * 0.55 + n('pas') * 0.45),
+    hea: Number.isFinite(attrs.hea) ? attrs.hea : Math.round(n('phy') * 0.55 + n('sho') * 0.25 + n('def') * 0.2),
+  };
+}
+// Choix de la technique de frappe selon la situation.
+export function getShotTechnique({ power = 0.6, distance = 20, keeperOut = 0, technique = 50, shooterY = 0, targetY = 0, setPiece = null } = {}) {
+  if (setPiece) return 'standard';
+  if (keeperOut > 5.5 && distance > 9 && distance < 30 && power < 0.55) return 'chip';
+  const farPost = Math.sign(targetY || 1) !== Math.sign(shooterY || 1) || Math.abs(shooterY) < 4;
+  if (power >= 0.38 && power <= 0.82 && (Number(technique) || 50) >= 68 && distance > 14 && farPost) return 'curl';
+  return 'standard';
+}
+// Difficulté pour le gardien selon la technique (le piqué est redoutable face à un gardien avancé).
+export function getShotTypeSaveFactor(type, keeperOut = 0) {
+  if (type === 'chip') return keeperOut > 5 ? 0.45 : 0.8;
+  if (type === 'bicycle') return 0.85;
+  if (type === 'volley') return 0.9;
+  if (type === 'curl') return 0.92;
+  return 1;
+}
 // Réussite d'un crochet : technique du dribbleur contre lecture du défenseur.
 export function getSkillMoveChance(dribbling = 50, agility = 50, defending = 50) {
   const d = clamp(Number(dribbling) || 50, 0, 100), a = clamp(Number(agility) || 50, 0, 100), def = clamp(Number(defending) || 50, 0, 100);
@@ -983,7 +1009,7 @@ export class Match {
   makeTeam(t, side) {
     const form = FORMATIONS[t.formation] || FORMATIONS['4-3-3'];
     const ps = t.players.slice(0, 11).map((p, i) => ({
-      id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: p.attrs, team: side, i,
+      id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: withDerivedAttrs(p.attrs), team: side, i,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, diveHeight: 0, diveStretch: 0, anim: Math.random() * 6,
       stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, aiThink: 0, motionAccel: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, kickFootSide: i % 2 === 0 ? -1 : 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
@@ -1413,6 +1439,7 @@ export class Match {
       p.firstTouchT = Math.max(0, (p.firstTouchT || 0) - dt);
       p.stumbleT = Math.max(0, (p.stumbleT || 0) - dt);
       if (p.skillT) p.skillT = Math.max(0, p.skillT - dt);
+      if (p.acroT) p.acroT = Math.max(0, p.acroT - dt);
       if (p.skillCd) p.skillCd = Math.max(0, p.skillCd - dt);
       p.keeperCatchT = Math.max(0, (p.keeperCatchT || 0) - dt);
       p.keeperPunchT = Math.max(0, (p.keeperPunchT || 0) - dt);
@@ -1791,7 +1818,16 @@ export class Match {
     const urgency = Math.max(0, Number(T.liveMentality) || 0);
     const shootP = clamp((shotQuality.score - 0.52) * 2.0 + urgency * 0.055, 0, 0.8) *
       (1 - passAdvantage * 0.26);
-    if (angleOK && this.r() < shootP) { this.shoot(p, clamp(0.5 + (distG / 45), 0.4, 0.95)); return; }
+    if (angleOK && this.r() < shootP) {
+      // L'IA choisit sa technique : piqué face à un gardien sorti, enroulé côté opposé pour les techniciens.
+      const keeperOut = Math.abs(HL * T.dir - (keeper?.x ?? HL * T.dir));
+      if (keeperOut > 6 && distG > 10 && distG < 28 && this.r() < 0.75) { this.shoot(p, 0.45); return; }
+      if ((p.a.tec || 50) >= 68 && distG > 15 && distG < 28 && this.r() < 0.5) {
+        const far = (keeper?.y ?? 0) >= 0 ? -2.6 : 2.6;
+        this.shoot(p, 0.6 + this.r() * 0.15, far); return;
+      }
+      this.shoot(p, clamp(0.5 + (distG / 45), 0.4, 0.95)); return;
+    }
     // centre depuis le couloir
     if ((gx - p.x) * d < 18 && Math.abs(p.y) > 15 && this.r() < 0.45) { this.cross(p); return; }
     const decision = getCarrierPassDecision({
@@ -1927,8 +1963,11 @@ export class Match {
       shooting: p.a.sho, technique: p.a.tec, pressure, movingSpeed, power, assist
     });
     const targetY = getShotTargetY(gk.y, p.y, aimY);
+    // Techniques : piqué si le gardien est sorti, enroulé du plat du pied pour les techniciens.
+    const tech = getShotTechnique({ power, distance: Math.hypot(gx - p.x, p.y), keeperOut: Math.abs(gx - gk.x), technique: p.a.tec, shooterY: p.y, targetY, setPiece: this.setPiece });
+    if (tech === 'chip') return this.chipShot(p, gk, targetY, shotOrigin);
     const distanceFactor = clamp(Math.hypot(gx - p.x, targetY - p.y) / 24, 0.72, 1.28);
-    let ty = targetY + (this.r() - 0.5) * 2 * accuracy.spread * distanceFactor;
+    let ty = targetY + (this.r() - 0.5) * 2 * accuracy.spread * distanceFactor * (tech === 'curl' ? 0.78 : 1);
     let tz = driven ? 0.18 + this.r() * 0.22 : powerShot ? 1.35 + this.r() * 0.75 : 0.52 + this.r() * 0.62;
     tz += (this.r() - 0.5) * 2 * accuracy.verticalSpread + Math.max(0, power - 0.88) * 0.28;
     const freeKick = this.setPiece === 'freekick' ? getFreeKickShotProfile(power, p.a.sho, p.a.tec) : null;
@@ -1937,7 +1976,7 @@ export class Match {
       for (const w of this.wall || []) if (w.p && !w.p.sentOff) w.p.jumpT = 0.46;
     }
     const dist = Math.hypot(gx - p.x, ty - p.y);
-    const speed = freeKick ? freeKick.speed : 17 + power * 15 + skill * 4 + Math.min(2, movingSpeed * 0.18);
+    const speed = freeKick ? freeKick.speed : 17 + power * 15 + skill * 4 + Math.min(2, movingSpeed * 0.18) - (tech === 'curl' ? 2 : 0);
     const t = dist / speed;
     const gravity = G + (freeKick ? freeKick.dip : 0);
     const vz = clamp((tz - 0.12 + 0.5 * gravity * t * t) / t, 0.5, 14);
@@ -1948,10 +1987,50 @@ export class Match {
     this.ball.dip = freeKick ? freeKick.dip : 0;
     // Enroulé plus lisible : la technique du joueur module la courbe du ballon.
     this.ball.spin = clamp(((ty - p.y) / Math.max(8, dist)) * (0.5 + power * 0.65) * skill * (0.65 + (p.a.tec || 50) / 220) * (freeKick ? freeKick.spinBoost : 1), -0.95, 0.95);
-    this.ball.shotType = driven ? 'driven' : powerShot ? 'power' : 'placed';
+    if (tech === 'curl') { this.ball.spin = clamp(this.ball.spin * 1.7 + Math.sign(ty - p.y || 1) * 0.12, -0.95, 0.95); p.kickStyle = 'curl'; }
+    this.ball.shotType = tech === 'curl' ? 'curl' : driven ? 'driven' : powerShot ? 'power' : 'placed';
     this.ball.inFlightShot = { team: p.team, shooter: p, t: 0, type: this.ball.shotType, ...shotOrigin };
     this.stats.shots[p.team]++;
     if (this.r() < 0.5) this.say('chance', { t: T.short, p: p.name });
+  }
+  // Piqué : trajectoire haute qui passe au-dessus du gardien avancé et retombe sous la barre.
+  chipShot(p, gk, targetY, shotOrigin) {
+    const T = this.teams[p.team], gx = HL * T.dir;
+    const tec = clamp(Number(p.a.tec) || 50, 0, 100) / 100;
+    const ty = targetY * 0.7 + (this.r() - 0.5) * 2 * (1.9 - tec * 1.2);
+    const dist = Math.hypot(gx - p.x, ty - p.y), speed = 11.5 + tec * 3 + dist * 0.08, t = dist / speed;
+    const tz = 1.05 + this.r() * 0.9 + (1 - tec) * (this.r() < 0.35 ? 1.2 : 0);
+    const vz = clamp((tz - 0.12 + 0.5 * G * t * t) / t, 3, 16);
+    const ang = Math.atan2(ty - p.y, gx - p.x);
+    this.kickBall(p, Math.cos(ang) * speed, Math.sin(ang) * speed, vz, 0.45);
+    p.kickStyle = 'lob'; this.ball.spin = 0; this.ball.dip = 0;
+    this.ball.shotType = 'chip';
+    this.ball.inFlightShot = { team: p.team, shooter: p, t: 0, type: 'chip', ...shotOrigin };
+    this.stats.shots[p.team]++;
+    this.ticker = `Piqué tenté par ${p.name} au-dessus du gardien !`; this.tickerT = 3;
+  }
+  // Reprise de volée ou retourné acrobatique sur un ballon aérien dans la zone de vérité.
+  volley(p, kind = 'volley') {
+    const b = this.ball, T = this.teams[p.team], d = T.dir, gx = HL * d, gk = this.teams[1 - p.team].ps[0];
+    const tec = clamp(Number(p.a.tec) || 50, 0, 100) / 100, sho = clamp(Number(p.a.sho) || 50, 0, 100) / 100;
+    let pressure = 99;
+    for (const o of this.teams[1 - p.team].ps) if (!o.sentOff) pressure = Math.min(pressure, Math.hypot(o.x - p.x, o.y - p.y));
+    const err = (kind === 'bicycle' ? 3.2 : 2.4) * (1.25 - tec * 0.55 - sho * 0.45) + clamp((2.4 - pressure) / 2.4, 0, 1) * 0.9;
+    const farSide = gk.y >= 0 ? -1 : 1;
+    const ty = farSide * (1.2 + this.r() * 1.9) + (this.r() - 0.5) * 2 * err;
+    const dist = Math.hypot(gx - p.x, ty - p.y), speed = 21 + sho * 9 + (kind === 'bicycle' ? 1 : 0), t = dist / speed;
+    const tz = 0.3 + this.r() * 1.6 + (this.r() - 0.5) * err * 0.5;
+    const vz = clamp((tz - b.z + 0.5 * G * t * t) / t, -2, 10);
+    const ang = Math.atan2(ty - p.y, gx - p.x);
+    p.cd = 0.7; p.heading = kind === 'bicycle' ? ang + Math.PI : ang; p.face = Math.cos(p.heading) >= 0 ? 1 : -1;
+    this.kickBall(p, Math.cos(ang) * speed, Math.sin(ang) * speed, vz, 0.95);
+    p.kickStyle = kind; p.acroT = kind === 'bicycle' ? 0.95 : 0.6; p.acroKind = kind;
+    if (kind === 'bicycle') p.jumpT = 0.46;
+    b.spin = (this.r() - 0.5) * 0.3; b.dip = 0; b.shotType = kind;
+    b.inFlightShot = { team: p.team, shooter: p, t: 0, type: kind, kind, x: p.x, y: p.y, distance: Math.hypot(gx - p.x, p.y) };
+    this.stats.shots[p.team]++; p.rating += 0.1;
+    this.ticker = kind === 'bicycle' ? `RETOURNÉ ACROBATIQUE de ${p.name} !` : `Reprise de volée de ${p.name} !`; this.tickerT = 3;
+    A.kick(0.95);
   }
   tryTackle(p, user) {
     const b = this.ball, c = b.owner;
@@ -2202,6 +2281,7 @@ export class Match {
             if (!shot.judged && tcross < 0.18) {
               shot.judged = true;
               let pSave = assessment.chance;
+              pSave *= getShotTypeSaveFactor(shot.type, Math.abs(HL * (gk.x > 0 ? 1 : -1) - gk.x));
               if (Math.abs(yc) > GOAL_W - 0.5 && zc > GOAL_H - 0.6) pSave -= 0.25; // lucarne
               if (this.r() < clamp(pSave, 0.02, 0.95)) {
                 this.recordShotOnTarget(shot, yc, zc);
@@ -2240,6 +2320,8 @@ export class Match {
       if (d < rad && b.z < reachZ && d < bd && this.canClaimMovingBall(p, d)) { bd = d; best = p; }
       // Tête : le saut aide à atteindre le ballon, mais un ballon bas peut
       // également être dévié de la tête sans saut complet.
+      const acro = !p.isGK && p.cd <= 0 && b.last !== p ? this.acrobaticChoice(p, d) : null;
+      if (acro) { this.volley(p, acro); return; }
       if (!p.isGK && d < 1.1 && b.z >= 1.1 && b.z < 2.4 && p.cd <= 0 && ((p.jumpT || 0) > 0.04 || b.z < 1.72)) this.header(p);
     }
     if (best) {
@@ -2302,6 +2384,24 @@ export class Match {
   aiDefenseFactor(attackingTeam) {
     if (this.userSide == null || attackingTeam !== this.userSide) return 1;
     return [0.55, 0.85, 1, 1.15][this.settings.difficulty] ?? 1;
+  }
+  // Décide d'une reprise de volée (ballon mi-hauteur) ou d'un retourné (ballon haut, dos au but).
+  acrobaticChoice(p, d) {
+    const b = this.ball, T = this.teams[p.team], gx = HL * T.dir;
+    const goalDist = Math.hypot(gx - p.x, p.y), speed = Math.hypot(b.vx, b.vy);
+    if (goalDist > 24 || Math.abs(p.y) > 17 || speed < 5 || d > 1.3) return null;
+    if (b.lastTeam === p.team && this.passInfo?.from === p) return null;
+    const user = p === this.selected && this.isHuman(p);
+    const tec = Number(p.a.tec) || 50;
+    const toGoal = Math.atan2(-p.y, gx - p.x), facing = Number.isFinite(p.heading) ? p.heading : toGoal;
+    const backToGoal = Math.cos(facing - toGoal) < -0.15;
+    if (b.z >= 1.45 && b.z < 2.3 && backToGoal && goalDist < 15 && tec >= 68) {
+      if (user ? this.input.shooting : this.r() < 0.04 + (tec - 68) / 400) return 'bicycle';
+    }
+    if (b.z >= 0.42 && b.z < 1.2) {
+      if (user ? this.input.shooting : this.r() < 0.1 + tec / 600) return 'volley';
+    }
+    return null;
   }
   header(p) {
     const b = this.ball, T = this.teams[p.team], d = T.dir, gx = HL * d;
@@ -2631,7 +2731,7 @@ export class Match {
       p.diveDir || 1, p.slideDir || 1, p.kickDir || p.face, p.firstTouchDir || 1, p.stumbleDir || 1,
       p.diveHeight || 0, p.diveStretch || 0,
       p.contactT || 0, p.contactDir || 1, p.slideDuration || 0.38, p.heading || 0,
-      p.kickFootSide || 1, p.motionAccel || 0, p.skillT || 0, p.skillDir || 1
+      p.kickFootSide || 1, p.motionAccel || 0, p.skillT || 0, p.skillDir || 1, p.acroT || 0, p.acroKind === 'bicycle' ? 2 : p.acroKind === 'volley' ? 1 : 0
     ]);
     this.replayBuf.push(f); if (this.replayBuf.length > 150) this.replayBuf.shift();
   }
@@ -2905,7 +3005,7 @@ export class Match {
     if (this.subsLeft[side] <= 0) return false;
     const out = T.ps[outIdx], inn = T.bench[benchIdx];
     if (!out || !inn || out.sentOff || inn.used) return false;
-    const np = { ...out, id: inn.id, name: inn.name, num: inn.num, pos: inn.pos, a: inn.attrs, stamina: inn.fitness ?? 1, yellow: 0, injured: false, rating: 6.5, goals: 0, assists: 0, minutes: 0, touches: 0, skin: SKIN[inn.name.length % SKIN.length] };
+    const np = { ...out, id: inn.id, name: inn.name, num: inn.num, pos: inn.pos, a: withDerivedAttrs(inn.attrs), stamina: inn.fitness ?? 1, yellow: 0, injured: false, rating: 6.5, goals: 0, assists: 0, minutes: 0, touches: 0, skin: SKIN[inn.name.length % SKIN.length] };
     inn.used = true; out.subbedOff = true;
     this.subbedOff = this.subbedOff || []; this.subbedOff.push(out);
     T.ps[outIdx] = np; if (this.selected === out) this.select(np);
@@ -3855,7 +3955,7 @@ export function quickSim(strH, strA, r = Math.random, homeAdv = 1.08) {
 }
 
 // ---------- Réseau : état compact d'un match (même champs que le ralenti) ----------
-export const NET_PLAYER_FIELDS = ['x', 'y', 'face', 'anim', 'vx', 'vy', 'jumpT', 'diveT', 'slideT', 'kickT', 'headerT', 'firstTouchT', 'stumbleT', 'keeperCatchT', 'keeperPunchT', 'headerDir', 'diveDir', 'slideDir', 'kickDir', 'firstTouchDir', 'stumbleDir', 'diveHeight', 'diveStretch', 'contactT', 'contactDir', 'slideDuration', 'heading', 'kickFootSide', 'motionAccel', 'celebrateT', 'saveT', 'skillT', 'skillDir'];
+export const NET_PLAYER_FIELDS = ['x', 'y', 'face', 'anim', 'vx', 'vy', 'jumpT', 'diveT', 'slideT', 'kickT', 'headerT', 'firstTouchT', 'stumbleT', 'keeperCatchT', 'keeperPunchT', 'headerDir', 'diveDir', 'slideDir', 'kickDir', 'firstTouchDir', 'stumbleDir', 'diveHeight', 'diveStretch', 'contactT', 'contactDir', 'slideDuration', 'heading', 'kickFootSide', 'motionAccel', 'celebrateT', 'saveT', 'skillT', 'skillDir', 'acroT'];
 const r2 = v => Math.round((Number(v) || 0) * 100) / 100;
 export function getNetSnapshot(m, full = false) {
   const b = m.ball;

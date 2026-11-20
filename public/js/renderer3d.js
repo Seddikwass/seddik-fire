@@ -122,6 +122,8 @@ export function getPlayer3DPose(player = {}, frame = null) {
     keeperPunch: clamp(keeperPunch / 0.42, 0, 1),
     contact: clamp(contact / 0.22, 0, 1),
     celebrate: clamp(celebrate / 2.2, 0, 1),
+    acroKind: (Number.isFinite(p[32]) ? p[32] : (player.acroKind === 'bicycle' ? 2 : player.acroKind === 'volley' ? 1 : 0)),
+    acroT: Number.isFinite(p[31]) ? p[31] : (Number(player.acroT) || 0),
     skill: clamp((Number.isFinite(p[29]) ? p[29] : (Number(player.skillT) || 0)) / 0.42, 0, 1),
     skillDir: (Number.isFinite(p[30]) ? p[30] : player.skillDir) < 0 ? -1 : 1,
     idle: clamp(1 - speed / 1.2, 0, 1),
@@ -922,7 +924,8 @@ export class MatchRenderer3D {
       pose.idle*Math.sin((Number(match.clock)||0)*2.3+index*1.7)*0.009;
     // ---- Intentions de geste : frappe, passe, lob, tête, touche, armement de la frappe ----
     const style=pose.kickStyle;
-    const kicking=pose.kick>0.005&&style!=='header'&&style!=='throw';
+    const kicking=pose.kick>0.005&&style!=='header'&&style!=='throw'&&style!=='volley'&&style!=='bicycle';
+    const acroK=pose.acroKind, acroQ=acroK===2?1-clamp(pose.acroT/0.95,0,1):acroK===1?1-clamp(pose.acroT/0.6,0,1):1, acroOn=acroK>0&&pose.acroT>0.005;
     const throwing=(pose.kick>0.005&&style==='throw');
     const holdingThrow=match.setPiece==='throw'&&match.ball?.owner===player;
     const kp=clamp(pose.kickProgress,0,1);
@@ -961,6 +964,16 @@ export class MatchRenderer3D {
     if(slideAmt>0){ pitch+=1.05*slideAmt; ph=0.8; ho-=0.4*slideAmt; fo+=0.3*slideAmt; }
     if(action.stumble>0){ pitch-=0.32*action.stumble; roll+=(pose.stumbleDir||1)*0.18*action.stumble; }
     if(skillOn){ roll+=pose.skillDir*0.3*Math.sin(skillP*Math.PI*2)*(1-skillP*0.4); }
+    const kfs=pose.kickFootSide||((index%2===0)?-1:1);
+    if(kicking&&style==='curl'){ roll+=-kfs*0.24*Math.sin(clamp(pose.kickProgress/0.3,0,1)*Math.PI/2)*(1-smooth((pose.kickProgress-0.45)/0.55)); }
+    // Reprise de volée : buste couché sur le côté opposé, jambe qui fouette à l'horizontale.
+    if(acroOn&&acroK===1){ const v=Math.sin(clamp(acroQ/0.3,0,1)*Math.PI/2)*(1-smooth((acroQ-0.55)/0.45)); roll+=-kfs*0.85*v; ho+=0.12*v; }
+    // Retourné : bascule complète vers l'arrière en l'air, ciseau des jambes, réception sur le dos.
+    if(acroOn&&acroK===2){
+      const up=Math.sin(clamp(acroQ/0.42,0,1)*Math.PI/2);
+      pitch+=up*2.45-smooth((acroQ-0.55)/0.45)*0.9; ph=0.95;
+      ho+=Math.sin(Math.min(acroQ,0.6)/0.6*Math.PI/2)*0.95-smooth((acroQ-0.5)/0.5)*1.45;
+    }
     if(Math.abs(roll)+Math.abs(pitch)+Math.abs(ho)+Math.abs(so)+Math.abs(fo)>0.002)
       BR={cp:Math.cos(pitch),sp:Math.sin(pitch),cr:Math.cos(roll),sr:Math.sin(roll),ph,fo,ho,so};
     const bodyPoint=(f,h,side)=>point(f,h,side+bodySide);
@@ -1025,7 +1038,7 @@ export class MatchRenderer3D {
     const touchSide=pose.firstTouchDir>=0?kickFootSide:-kickFootSide;
     const L1=0.37, L2=0.36;
     const sp=clamp(pose.speed/8.5,0,1)*action.gait;
-    const reach=style==='shot'?1.0+pose.kickPower*0.3:style==='lob'?1.05:0.55+pose.kickPower*0.2;
+    const reach=style==='shot'?1.0+pose.kickPower*0.3:style==='curl'?0.95:style==='lob'?1.05:0.55+pose.kickPower*0.2;
     const legAngles=[];
     for(const side of [-1,1]){
       const ph=phase+(side>0?Math.PI:0);
@@ -1052,6 +1065,8 @@ export class MatchRenderer3D {
       if(slideAmt>0){ const lead=side===(pose.slideDir>=0?kickFootSide:-kickFootSide); th+=((lead?0.28:-0.3)-th)*slideAmt; fl+=((lead?0.05:1.55)-fl)*slideAmt; }
       if(rollAmt>0){ th+=((side>0?0.12:-0.12)-th)*rollAmt; fl+=(0.15-fl)*rollAmt; }
       if(skillOn&&isKickLeg){ const a=Math.sin(skillP*Math.PI); th+=(0.45-th)*a; fl+=(0.95-fl)*a; }
+      if(acroOn&&acroK===1){ const v=Math.sin(clamp(acroQ/0.3,0,1)*Math.PI/2)*(1-smooth((acroQ-0.6)/0.4)); if(isKickLeg){ th+=(1.45-th)*v; fl+=(0.08-fl)*v; } else { th+=(-0.05-th)*v; fl+=(0.2-fl)*v; } }
+      if(acroOn&&acroK===2){ const a=smooth(acroQ/0.38), e=1-smooth((acroQ-0.7)/0.3); if(isKickLeg){ th+=((0.3+a*1.75)-th)*e; fl+=(0.1-fl)*e; } else { th+=((1.25-a*0.6)-th)*e; fl+=(0.25-fl)*e; } }
       const fastL=kicking||rollAmt>0.05||slideAmt>0.05?42:18;
       th=sm('th'+side,th,fastL); fl=sm('fl'+side,fl,fastL);
       legAngles.push([side,th,fl,isKickLeg]);
@@ -1063,7 +1078,7 @@ export class MatchRenderer3D {
       const shinA=th-fl;
       let ankF=kneeF+Math.sin(shinA)*L2, ankU=kneeU-Math.cos(shinA)*L2;
       let kF=kneeF,kU=kneeU;
-      const passIn=kicking&&isKickLeg&&style==='pass'?strikeShape:0;
+      const passIn=kicking&&isKickLeg&&(style==='pass'||style==='curl')?strikeShape:0;
       let sideOff=side*(0.115+pose.idle*0.03)-side*passIn*0.07+(skillOn&&isKickLeg?-side*0.22*Math.sin(skillP*Math.PI*2):0);
       if(wOld>0){
         // Tacles glissés, plongeons, chutes : on conserve les poses spécialisées.
@@ -1128,6 +1143,7 @@ export class MatchRenderer3D {
       if(sig==='head'){ al=2.5; be=2.25; ab=0.55; }
       if(sig==='board'){ al=2.75; be=0.25; ab=0.18; }
       if(sig==='clap'){ const w=Math.sin((Number(match.clock)||0)*14+index)*0.12; al=1.25; be=0.9+w; ab=-0.12; }
+      if(acroOn){ const e=acroK===2?1-smooth((acroQ-0.75)/0.25):Math.sin(clamp(acroQ/0.3,0,1)*Math.PI/2)*(1-smooth((acroQ-0.6)/0.4)); const tAl=acroK===2?0.35:(side===kfs?1.1:0.5), tAb=acroK===2?1.25:(side===kfs?0.9:0.6); al+=(tAl-al)*e; be+=(0.3-be)*e; ab+=(tAb-ab)*e; }
       const leadingKeeperArm=player.isGK&&side===diveSide;
       const keeperArmReach=player.isGK?(leadingKeeperArm?action.keeperLeadReach:action.keeperBalanceReach):0;
       const keeperArmOffset=(player.isGK?(leadingKeeperArm?diveSide*keeperArmReach*0.48:-diveSide*keeperArmReach*0.16):0)*(1-rollAmt);

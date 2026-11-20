@@ -150,3 +150,16 @@ console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroul
   assert.equal(d.replay, null, 'pas de ralenti en ligne');
   console.log('CHANCE REPLAY OK — poteaux, arrêts et frappes frôlant le cadre rejoués quand le jeu s arrête');
 }
+{
+  const { withDerivedAttrs, getShotTechnique, getShotTypeSaveFactor } = await import('../public/js/match.js');
+  const artist = withDerivedAttrs({ dri: 90, pas: 88, phy: 60, sho: 80, def: 30 }), stopper = withDerivedAttrs({ dri: 40, pas: 50, phy: 85, sho: 40, def: 85 });
+  assert.ok(artist.tec > 80 && stopper.tec < 50, 'technique dérivée du dribble et de la passe');
+  assert.ok(stopper.hea > artist.hea, 'jeu de tête dérivé du physique et de la défense');
+  assert.equal(withDerivedAttrs({ tec: 77 }).tec, 77, 'une technique fournie est conservée');
+  assert.equal(getShotTechnique({ power: 0.45, distance: 18, keeperOut: 8 }), 'chip', 'gardien sorti : piqué');
+  assert.equal(getShotTechnique({ power: 0.6, distance: 20, keeperOut: 1, technique: 85, shooterY: 6, targetY: -2.5 }), 'curl', 'technicien côté opposé : enroulé');
+  assert.equal(getShotTechnique({ power: 0.95, distance: 20, keeperOut: 1, technique: 85 }), 'standard', 'frappe pleine puissance : pas d enroulé');
+  assert.equal(getShotTechnique({ power: 0.45, distance: 18, keeperOut: 8, setPiece: 'penalty' }), 'standard', 'pas de piqué sur coup de pied arrêté');
+  assert.ok(getShotTypeSaveFactor('chip', 8) < getShotTypeSaveFactor('chip', 1), 'le piqué punit le gardien avancé');
+  console.log('TECHNIQUES OK — technique et jeu de tête par joueur, piqué, enroulé, volée, retourné');
+}

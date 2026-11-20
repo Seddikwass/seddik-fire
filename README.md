@@ -1,5 +1,15 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.43.0 — techniques des joueurs : enroulé, piqué, volée, retourné
+- Correction de fond : la base de joueurs ne contient ni « technique » ni « jeu de tête » ; le moteur s'en servait pourtant (contrôle, précision, enroulé, têtes) avec une valeur par défaut de 50 pour tout le monde. Ces qualités sont désormais calculées pour chaque joueur (technique = dribble + passe, jeu de tête = physique + finition + défense) : un meneur de jeu et un défenseur rugueux ne se comportent plus pareil.
+- Enroulé du plat du pied : tir dosé d'un technicien vers le petit filet opposé, plus précis et plus courbé, avec le buste qui s'incline au moment de la frappe.
+- Piqué : face à un gardien sorti de sa ligne, une frappe dosée devient un lob qui passe au-dessus de lui et retombe sous la barre (très difficile à arrêter pour un gardien avancé).
+- Reprise de volée : un ballon qui arrive à mi-hauteur dans la zone de vérité peut être repris directement (maintenir TIR quand il arrive), le corps couché sur le côté, la jambe qui fouette à l'horizontale.
+- Retourné acrobatique : ballon haut, dos au but, joueur technique : bascule complète vers l'arrière, ciseau des jambes, réception sur le dos (maintenir TIR).
+- L'IA utilise aussi ces gestes selon le profil de ses joueurs : par match en moyenne environ 3,5 enroulés, quelques volées, et de rares piqués et retournés, sans changer l'équilibre buts/tirs.
+- Chaque technique a son effet sur l'arrêt du gardien, son commentaire et sa propre animation (transmise aux ralentis).
+- Tests : qualités dérivées, choix de la technique, difficulté pour le gardien.
+
 ## Version 3.42.0 — filets vivants, traînée du ballon, ralentis des occasions
 - Filets dessinés à chaque image avec un maillage subdivisé : quand le ballon entre, le filet se creuse autour du point d'impact (plus fort sur les frappes puissantes) puis revient en oscillant comme un vrai filet ; il reste enfoncé tant que le ballon pousse le fond. Les panneaux latéraux et le toit du filet sont complets.
 - Traînée lumineuse translucide derrière le ballon sur les frappes puissantes, qui s'affine et s'efface avec la distance.

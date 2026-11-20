@@ -20,6 +20,8 @@ for (let k = 0; k < N; k++) {
   const canvas = { clientWidth: 800, clientHeight: 400, getContext: () => new Proxy({}, { get: () => () => ({ addColorStop() {} }) }) };
   const m = new Match({ canvas, home: C.matchTeam(st, h), away: C.matchTeam(st, a, true), userSide: null, settings: { duration: 5, voice: false, replays: false }, random: seededRandom(20261118 + k * 7919) });
   const orig = m.setRestart.bind(m); m.setRestart = (type, ...r) => { tot.restarts[type] = (tot.restarts[type] || 0) + 1; return orig(type, ...r); };
+  for (const fn of ['chipShot', 'volley']) { const o = m[fn].bind(m); m[fn] = (...args) => { const key = fn === 'volley' ? (args[1] || 'volley') : 'chip'; tot.tech = tot.tech || {}; tot.tech[key] = (tot.tech[key] || 0) + 1; return o(...args); }; }
+  const oShoot = m.shoot.bind(m); m.shoot = (...args) => { const r = oShoot(...args); if (m.ball.shotType === 'curl') { tot.tech = tot.tech || {}; tot.tech.curl = (tot.tech.curl || 0) + 1; } return r; };
   let steps = 0;
   while (!m.ended && steps < 60 * 60 * 30) { if (m.state === 'goal') { m.step(1 / 60); if (m.stateT <= 0) { m.afterGoal(); } } else m.step(1 / 60); if (m.replay) m.skipReplay(); if (m.state === 'fulltime' && m.stateT <= 0) break; steps++; }
   const s = m.stats;

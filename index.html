@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#07080b">
 <title>SUPER SEDDIK &amp; JOUD — 3D street racing</title>
-<meta name="description" content="SUPER SEDDIK &amp; JOUD: free 3D street racing across Tunisia. 18 tracks, 77 vehicles, career, police chases, garage and tuning. 9 languages, playable offline.">
+<meta name="description" content="SUPER SEDDIK &amp; JOUD: free 3D street racing across Tunisia. 26 tracks, 83 vehicles, bike races, career, police chases, garage and tuning. 9 languages, playable offline.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="SUPER SEDDIK &amp; JOUD — 3D street racing">
-<meta property="og:description" content="Race, drift and escape the police on 18 Tunisian tracks. Free, in 9 languages, on phone and computer.">
+<meta property="og:description" content="Race, drift and escape the police on 26 Tunisian tracks. Free, in 9 languages, on phone and computer.">
 <meta property="og:image" content="https://super-joud.onrender.com/icons/icon-512.png">
 <meta property="og:url" content="https://super-joud.onrender.com/">
 <meta name="twitter:card" content="summary">
@@ -1634,6 +1634,16 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 #tags .tag b{font:700 11px "Chakra Petch",sans-serif;color:#fff;text-shadow:0 1px 2px #000}
 #tags .tag::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-4px;border:4px solid transparent;border-top-color:var(--tc,#ff4040)}
 
+/* V224 — course de vélos : 4 modes, choix du vélo */
+#scr-quick .modes{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#scr-quick .mode small{font-size:11.5px}
+@media (max-width:560px){#scr-quick .modes{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+.bikes>div{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.bikes .bk{text-align:start;padding:9px 10px;background:var(--pan);border:1px solid var(--line);border-bottom:3px solid transparent;display:grid;grid-template-columns:26px 1fr;gap:2px 8px;align-items:center}
+.bikes .bk .cls{grid-row:span 2}.bikes .bk b{font:400 italic 13px var(--fh)}.bikes .bk small{color:var(--mut);font-size:11.5px}
+.bikes .bk.on{border-bottom-color:var(--acc);background:rgba(255,122,24,.12)}.bikes .bk.lock{opacity:.55}
+@media (max-width:900px){.bikes>div{grid-template-columns:repeat(3,1fr)}}
+
 </style>
 </head>
 <body>
@@ -1647,7 +1657,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <label class="langs langsel" id="langs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><select id="lang-sel" aria-label="Language · Langue · اللغة"></select></label>
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V223</span>
+    <span id="build-tag" aria-label="Version">V224</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1687,7 +1697,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
   <section id="scr-quick" class="screen">
     <div class="scr-head"><button class="back" data-go="main" data-i18n="back">‹ RETOUR</button><h1 data-i18n="quick">COURSE RAPIDE</h1></div>
     <div class="qwrap">
-      <h3 data-i18n="gameMode">Mode de jeu</h3><div class="modes" id="q-modes"></div>
+      <h3 data-i18n="gameMode">Mode de jeu</h3><div class="modes" id="q-modes"></div><div class="bikes hidden" id="q-bikes"></div>
       <h3 data-i18n="circuit">Circuit</h3><div id="q-track-filters" aria-label="Filtrer les circuits"></div><div class="tracks" id="q-tracks"></div>
       <h3 data-i18n="settings">Réglages</h3>
       <div class="opts">
@@ -2754,6 +2764,7 @@ function loftSE(secs, c, m, ex = 2.4, n = 16, capEnds = true) {
 const WHEELS = {};
 function getWheel(style, r, w) {
   const key = style + '_' + r + '_' + w; if (WHEELS[key]) return WHEELS[key];
+  if (style === 'spk' || style === 'deep' || style === 'bdisc' || style === 'tri') return (WHEELS[key] = R.upload(bikeWheelMB(style, r, w)));
   const mb = new MB(), seg = 32, hw = w / 2, P = (x, a, rr) => [x, Math.cos(a) * rr, Math.sin(a) * rr];
   const tire = [0.055, 0.055, 0.06], wall = [0.085, 0.085, 0.09], rimW = [1, 1, 1], rimD = [0.55, 0.55, 0.55], rec = [0.07, 0.07, 0.075];
   const rr = r * (style === 'dish' ? 0.66 : 0.7);
@@ -3275,7 +3286,7 @@ function buildTruck() {
 }
 
 function finishModel(mb, o) {
-  const hub = hubMB(o.wr, o.ww); for (const w of o.wheels) appendAt(mb, hub, w[0], w[1], w[2]);
+  if (!o.noHub) { const hub = hubMB(o.wr, o.ww); for (const w of o.wheels) appendAt(mb, hub, w[0], w[1], w[2]); }
   o.body = R.upload(mb);
   if (o.interior) {
     // de près : coque sans vitres + intérieur, puis vitres transparentes dessinées après le pilote
@@ -3305,6 +3316,7 @@ const MODEL_BUILDERS = {
   police: () => buildCarModel('sedan', { police: true }), polgt: () => buildCarModel('gt', { police: true }), taxi: () => buildCarModel('sedan', { taxi: true }),
   van: () => buildVan(), louage: () => buildVan([0.8, 0.08, 0.08]), truck: () => buildTruck(), bus: () => buildBus(),
   moto_sport: () => buildMoto('sport'), moto_trail: () => buildMoto('trail'), moto_scoot: () => buildMoto('scoot'),
+  bike_ville: () => buildBike('ville'), bike_bmx: () => buildBike('bmx'), bike_vtt: () => buildBike('vtt'), bike_route: () => buildBike('route'), bike_elec: () => buildBike('elec'), bike_clm: () => buildBike('clm'),
 };
 const MODELS_BUILT = {};
 const MODELS = new Proxy(MODELS_BUILT, {
@@ -3392,6 +3404,150 @@ function buildMoto(kind) {
   }
   return finishModel(mb, { style: 'moto_' + kind, L, W: 0.82, H, wr: r, ww, wheels: [[0, r, zf, 1], [0, r, zr, 0]], exhaust, heads, roofY: H, roofZ: -0.2, tailY: 0.8, rim, bike: kind });
 }
+
+/* =====================================================================
+   V224 — vélos (designs originaux, générés par code) : « bisklet » de ville, BMX, VTT, route, électrique, contre-la-montre
+   Repère : +z vers l'avant, +y vers le haut, sol à y = 0, 1 unité = 1 m
+   ===================================================================== */
+const CYC_PH = 12;
+const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+function bikeWheelMB(style, r, w) {
+  // roue de vélo : pneu au profil arrondi, jante, rayons croisés (ou lenticulaire / bâtons carbone), moyeu
+  const mb = new MB(), seg = 36, hw = w / 2, P = (x, a, rr) => [x, Math.cos(a) * rr, Math.sin(a) * rr];
+  const TIRE = [0.045, 0.045, 0.05], TREAD = [0.026, 0.026, 0.028], CARB = [0.045, 0.045, 0.055], STEEL = [0.72, 0.73, 0.76], HUB = [0.2, 0.2, 0.22];
+  const deep = style === 'bdisc' || style === 'tri' || style === 'deep', RIM = deep ? CARB : [0.58, 0.59, 0.63], rIn = r - w - (deep ? 0.06 : 0.018);
+  const prof = []; for (let k = 0; k <= 6; k++) { const ph = -Math.PI / 2 + k / 6 * Math.PI; prof.push([Math.sin(ph) * hw, r - hw + Math.cos(ph) * hw]); }
+  for (let i = 0; i < seg; i++) {
+    const a0 = i / seg * Math.PI * 2, a1 = (i + 1) / seg * Math.PI * 2;
+    for (let k = 0; k < 6; k++) { const A = prof[k], B = prof[k + 1]; mb.quad(P(A[0], a0, A[1]), P(B[0], a0, B[1]), P(B[0], a1, B[1]), P(A[0], a1, A[1]), w > 0.04 && (k === 2 || k === 3) && i % 2 ? TREAD : TIRE, 0); }
+    for (const sx of [-1, 1]) mb.quad(P(sx * hw * 0.62, a0, r - w * 0.95), P(sx * hw * 0.62, a1, r - w * 0.95), P(sx * hw * 0.3, a1, rIn), P(sx * hw * 0.3, a0, rIn), RIM, 4);
+    mb.quad(P(-hw * 0.3, a0, rIn), P(-hw * 0.3, a1, rIn), P(hw * 0.3, a1, rIn), P(hw * 0.3, a0, rIn), RIM, 4);
+    if (style === 'bdisc') for (const sx of [-1, 1]) mb.quad(P(sx * 0.03, a0, 0.03), P(sx * 0.03, a1, 0.03), P(sx * hw * 0.3, a1, rIn), P(sx * hw * 0.3, a0, rIn), i % 9 === 0 ? [0.16, 0.16, 0.18] : CARB, 4);
+  }
+  if (style === 'tri') for (let k = 0; k < 3; k++) { const a = k / 3 * Math.PI * 2, d = 0.2; for (const sx of [-1, 1]) mb.quad(P(sx * 0.02, a - d, 0.04), P(sx * 0.02, a + d, 0.04), P(sx * 0.008, a + 0.05, rIn), P(sx * 0.008, a - 0.05, rIn), CARB, 4); }
+  if (style === 'spk' || style === 'deep') { const n = style === 'deep' ? 20 : 28; for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, sx = k % 2 ? 1 : -1; bar(mb, P(sx * 0.034, a, 0.026), P(sx * 0.004, a + sx * 0.16, rIn), 0.0026, STEEL, 4, 0.0026, 3); } }
+  bar(mb, [-0.055, 0, 0], [0.055, 0, 0], 0.016, HUB, 4); for (const sx of [-1, 1]) discX(mb, sx * 0.034, 0, 0, 0.032, STEEL, 4, 12, 0.004);
+  return mb;
+}
+const BIKE_G = {
+  ville: { r: 0.34, ww: 0.042, zf: 0.56, zr: -0.53, bb: [0.28, 0.0], st: [0.76, -0.17], ht: [0.8, 0.39, 0.62, 0.45], sd: [0.94, -0.22], tr: 0.02, ratio: 2.5, rim: 'spk', H: 1.12 },
+  bmx: { r: 0.25, ww: 0.05, zf: 0.44, zr: -0.4, bb: [0.29, 0.0], st: [0.58, -0.16], ht: [0.72, 0.33, 0.56, 0.38], sd: [0.66, -0.2], tr: 0.025, ratio: 2.2, rim: 'spk', H: 1.06 },
+  vtt: { r: 0.36, ww: 0.058, zf: 0.57, zr: -0.52, bb: [0.33, 0.03], st: [0.76, -0.15], ht: [0.86, 0.4, 0.68, 0.46], sd: [0.92, -0.19], tr: 0.026, ratio: 2.3, rim: 'spk', H: 1.1 },
+  route: { r: 0.34, ww: 0.026, zf: 0.5, zr: -0.5, bb: [0.27, 0.02], st: [0.8, -0.14], ht: [0.8, 0.4, 0.65, 0.45], sd: [0.93, -0.19], tr: 0.019, ratio: 3.0, rim: 'deep', H: 1.0 },
+  elec: { r: 0.35, ww: 0.05, zf: 0.56, zr: -0.52, bb: [0.3, 0.02], st: [0.76, -0.16], ht: [0.84, 0.4, 0.64, 0.46], sd: [0.93, -0.2], tr: 0.03, ratio: 2.5, rim: 'spk', H: 1.1 },
+  clm: { r: 0.34, ww: 0.024, zf: 0.52, zr: -0.47, bb: [0.27, 0.02], st: [0.78, -0.1], ht: [0.74, 0.42, 0.62, 0.46], sd: [0.92, -0.14], tr: 0.024, ratio: 3.2, rim: 'bdisc', rimF: 'tri', H: 0.98 },
+};
+function buildBike(kind) {
+  const mb = new MB(), P = [1, 1, 1], BLK = [0.035, 0.035, 0.04], ALU = [0.62, 0.63, 0.66], CHR = [0.8, 0.81, 0.84], RUB = [0.06, 0.06, 0.065], BRN = [0.36, 0.2, 0.1], DISC = [0.58, 0.58, 0.6];
+  const G2 = BIKE_G[kind], { r, zf, zr, tr } = G2, BB = [0, G2.bb[0], G2.bb[1]], ST = [0, G2.st[0], G2.st[1]], HT = [0, G2.ht[0], G2.ht[1]], HB = [0, G2.ht[2], G2.ht[3]], SD = [0, G2.sd[0], G2.sd[1]];
+  const tube = (a, b, k = 1, c = P, m = 1) => bar(mb, a, b, tr * k, c, m);
+  // cadre : tube horizontal, diagonal, de selle, de direction, bases et haubans
+  if (kind === 'ville') { tube(lerp3(ST, BB, 0.35), lerp3(HT, HB, 0.55), 1); tube(ST, HT, 0.8); } else tube(ST, HT, kind === 'clm' ? 0.85 : 1);
+  tube(BB, HB, kind === 'elec' ? 1.5 : 1.2); tube(BB, ST, 1.05); tube(HB, HT, 1.4);
+  for (const sx of [-1, 1]) { tube([sx * 0.06, r, zr], [sx * 0.02, BB[1], BB[2] - 0.04], 0.6); tube([sx * 0.06, r, zr], [sx * 0.02, ST[1] - 0.04, ST[2] + 0.02], 0.55); }
+  // fourche (suspendue pour le VTT et le vélo électrique)
+  const susp = kind === 'vtt' || kind === 'elec';
+  for (const sx of [-1, 1]) {
+    if (susp) { tube([sx * 0.065, HB[1] - 0.02, HB[2] + 0.01], [sx * 0.065, r + 0.22, zf - 0.04], 1.05, ALU, 4); tube([sx * 0.065, r + 0.24, zf - 0.04], [sx * 0.065, r, zf], 0.8, BLK, 4); }
+    else tube([sx * 0.045, HB[1], HB[2] + 0.005], [sx * 0.05, r, zf], 0.6, kind === 'ville' || kind === 'bmx' ? CHR : P, kind === 'ville' || kind === 'bmx' ? 4 : 1);
+  }
+  if (susp) mb.box(0, HB[1] - 0.04, HB[2] - 0.02, 0.17, 0.05, 0.06, BLK, 4);
+  // tige de selle et selle
+  bar(mb, ST, [0, SD[1] - 0.03, SD[2] + 0.02], 0.014, kind === 'ville' ? CHR : BLK, 4);
+  if (kind === 'ville') { mb.box(0, SD[1] - 0.03, SD[2], 0.2, 0.07, 0.26, BRN, 0); for (const sx of [-1, 1]) bar(mb, [sx * 0.07, SD[1] - 0.03, SD[2] - 0.1], [sx * 0.07, SD[1] - 0.1, SD[2] - 0.13], 0.008, CHR, 4); }
+  else mb.box(0, SD[1] - 0.02, SD[2], kind === 'bmx' ? 0.13 : 0.12, 0.045, 0.27, BLK, 0);
+  // transmission : plateau, cassette, axe et chaîne (manivelles et pédales tournent avec les jambes du cycliste)
+  discX(mb, 0.075, BB[1], BB[2], kind === 'bmx' ? 0.085 : 0.1, kind === 'clm' || kind === 'route' ? [0.12, 0.12, 0.13] : ALU, 4, 20, 0.004);
+  discX(mb, 0.07, r, zr, 0.05, ALU, 4, 14, 0.008); bar(mb, [-0.07, BB[1], BB[2]], [0.075, BB[1], BB[2]], 0.026, BLK, 4);
+  for (const dy of [1, -1]) bar(mb, [0.075, BB[1] + dy * 0.095, BB[2]], [0.07, r + dy * 0.048, zr], 0.006, [0.25, 0.25, 0.27], 4, 0.006, 4);
+  // potence et cintre selon le type
+  const SE = [0, HT[1] + (kind === 'ville' ? 0.18 : kind === 'bmx' ? 0.12 : 0.05), HT[2] + (kind === 'ville' ? 0.0 : 0.09)];
+  bar(mb, HT, SE, 0.016, kind === 'ville' || kind === 'bmx' ? CHR : BLK, 4);
+  if (kind === 'route') {
+    bar(mb, [-0.21, SE[1], SE[2]], [0.21, SE[1], SE[2]], 0.012, BLK, 4);
+    for (const sx of [-1, 1]) { const a = [sx * 0.21, SE[1], SE[2]], b = [sx * 0.21, SE[1] - 0.03, SE[2] + 0.08], c2 = [sx * 0.21, SE[1] - 0.12, SE[2] + 0.06], d2 = [sx * 0.21, SE[1] - 0.14, SE[2] - 0.03]; bar(mb, a, b, 0.012, BLK, 4); bar(mb, b, c2, 0.012, BLK, 4); bar(mb, c2, d2, 0.012, BLK, 4); mb.box(sx * 0.21, SE[1] - 0.01, SE[2] + 0.05, 0.03, 0.06, 0.06, BLK, 0); }
+  } else if (kind === 'clm') {
+    bar(mb, [-0.2, SE[1], SE[2]], [0.2, SE[1], SE[2]], 0.02, BLK, 4, 0.008);
+    for (const sx of [-1, 1]) { bar(mb, [sx * 0.07, SE[1] + 0.03, SE[2] - 0.02], [sx * 0.06, SE[1] + 0.05, SE[2] + 0.3], 0.011, BLK, 4); mb.box(sx * 0.08, SE[1] + 0.04, SE[2] + 0.02, 0.07, 0.025, 0.12, BLK, 0); }
+  } else if (kind === 'ville') {
+    for (const sx of [-1, 1]) { const a = [sx * 0.04, SE[1], SE[2]], b = [sx * 0.24, SE[1] + 0.02, SE[2] - 0.02], c2 = [sx * 0.29, SE[1] - 0.01, SE[2] - 0.15]; bar(mb, a, b, 0.012, CHR, 4); bar(mb, b, c2, 0.012, CHR, 4); bar(mb, c2, [sx * 0.31, SE[1] - 0.02, SE[2] - 0.25], 0.019, BRN, 0); }
+    discZ(mb, 0.16, SE[1] + 0.035, SE[2] + 0.0, 0.026, CHR, 4, 10);
+  } else {
+    const hw2 = kind === 'vtt' ? 0.37 : kind === 'bmx' ? 0.31 : 0.33;
+    bar(mb, [-hw2, SE[1], SE[2]], [hw2, SE[1], SE[2]], 0.012, kind === 'bmx' ? CHR : BLK, 4);
+    for (const sx of [-1, 1]) bar(mb, [sx * (hw2 - 0.11), SE[1], SE[2]], [sx * hw2, SE[1], SE[2]], 0.018, RUB, 0);
+    if (kind === 'bmx') bar(mb, [-0.13, SE[1] - 0.08, SE[2] - 0.01], [0.13, SE[1] - 0.08, SE[2] - 0.01], 0.01, CHR, 4);
+  }
+  // freins : étriers (route/ville/BMX) ou disques (VTT, électrique)
+  if (susp) { discX(mb, -0.075, r, zf, 0.08, DISC, 4, 16, 0.003); discX(mb, -0.075, r, zr, 0.07, DISC, 4, 16, 0.003); mb.box(-0.085, r + 0.07, zf - 0.05, 0.03, 0.06, 0.06, BLK, 4); }
+  else { mb.box(0, r + r + 0.02, zf - 0.02, 0.07, 0.03, 0.04, BLK, 4); mb.box(0, ST[1] - 0.12, zr + 0.24, 0.07, 0.03, 0.04, BLK, 4); }
+  // accessoires selon le type
+  const mud = (zc, k0, k1) => { let pr = null; for (let k = 0; k <= 10; k++) { const a = k0 + (k1 - k0) * k / 10, q = [0, r + Math.cos(a) * (r + 0.045), zc + Math.sin(a) * (r + 0.045)]; if (pr) bar(mb, pr, q, 0.03, kind === 'ville' ? CHR : BLK, kind === 'ville' ? 4 : 0, 0.007, 4); pr = q; } };
+  if (kind === 'ville' || kind === 'elec') {
+    mud(zf, -0.5, 2.0); mud(zr, -2.4, 0.5);
+    // porte-bagages arrière et béquille
+    mb.box(0, r + 0.33, zr + 0.02, 0.16, 0.012, 0.36, kind === 'ville' ? CHR : BLK, 4);
+    for (const sx of [-1, 1]) bar(mb, [sx * 0.07, r + 0.33, zr + 0.18], [sx * 0.06, r, zr], 0.007, kind === 'ville' ? CHR : BLK, 4);
+    bar(mb, [0.06, BB[1] - 0.02, BB[2] - 0.1], [0.17, 0.02, BB[2] - 0.3], 0.008, CHR, 4);
+    discZ(mb, 0, HT[1] - 0.06, HT[2] + 0.1, 0.035, [1, 0.97, 0.9], 15, 12);
+  }
+  if (kind === 'ville') {
+    // panier en osier, garde-chaîne
+    const bz = zf + 0.14, by = HT[1] - 0.18, WK = [0.62, 0.46, 0.26];
+    mb.box(0, by, bz, 0.34, 0.012, 0.26, WK, 0); for (const sx of [-1, 1]) mb.box(sx * 0.17, by, bz, 0.012, 0.2, 0.26, WK, 0);
+    for (const sz of [-1, 1]) mb.box(0, by, bz + sz * 0.13, 0.34, 0.2, 0.012, WK, 0);
+    for (let k = 1; k < 4; k++) mb.box(0, by + k * 0.05, bz + 0.135, 0.34, 0.008, 0.01, V3.sc(WK, 0.7), 0);
+    bar(mb, [0, by + 0.1, bz - 0.13], [0, HT[1] - 0.02, HT[2] + 0.04], 0.008, CHR, 4);
+    mb.box(0.095, (BB[1] + r) / 2 - 0.05, (BB[2] + zr) / 2 + 0.04, 0.012, 0.12, 0.5, BLK, 1);
+  }
+  if (kind === 'elec') {
+    // batterie dans le diagonal, moteur dans le moyeu arrière, écran au guidon
+    bar(mb, lerp3(BB, HB, 0.18), lerp3(BB, HB, 0.78), 0.048, [0.1, 0.1, 0.12], 4, 0.036);
+    mb.box(0, lerp3(BB, HB, 0.5)[1] + 0.04, lerp3(BB, HB, 0.5)[2], 0.02, 0.02, 0.06, [0.25, 1, 0.5], 2);
+    discX(mb, 0, r, zr, 0.085, [0.15, 0.15, 0.17], 4, 18, 0.045);
+    mb.box(0, SE[1] + 0.02, SE[2] + 0.02, 0.08, 0.012, 0.05, [0.2, 0.7, 1], 2);
+  }
+  if (kind === 'bmx') for (const [zc, sx] of [[zr, 1], [zr, -1], [zf, 1], [zf, -1]]) bar(mb, [sx * 0.05, r, zc], [sx * 0.16, r, zc], 0.019, CHR, 4);
+  if (kind === 'route' || kind === 'clm' || kind === 'vtt') { const a = lerp3(BB, HB, 0.3), b = lerp3(BB, HB, 0.62); bar(mb, [0, a[1] + 0.06, a[2] - 0.01], [0, b[1] + 0.06, b[2] - 0.01], 0.034, kind === 'vtt' ? [0.1, 0.55, 0.25] : [0.92, 0.92, 0.95], 0); }
+  if (kind === 'vtt') bar(mb, lerp3(ST, BB, 0.15), [0, r + 0.12, zr + 0.25], 0.022, [0.85, 0.35, 0.05], 4);
+  // feu arrière rouge sous la selle
+  mb.box(0, SD[1] - 0.14, SD[2] - 0.1, 0.04, 0.05, 0.02, [1, 0.05, 0.03], 5);
+  return finishModel(mb, { style: 'bike_' + kind, L: (zf - zr) + 2 * r + 0.05, W: 0.62, H: G2.H, wr: r, ww: G2.ww, wheels: [[0, r, zf, 1], [0, r, zr, 0]], exhaust: [], heads: [[0, HT[1] - 0.06, HT[2] + 0.12]], roofY: G2.H, roofZ: -0.1, tailY: 0.7, rim: G2.rim, rimF: G2.rimF, bike: 'cyc_' + kind, cyc: { ratio: G2.ratio }, noHub: true });
+}
+// postures des cyclistes (repère du vélo) ; les jambes et le pédalier sont calculés à chaque position de manivelle
+const CYC_POSES = {
+  cyc_ville: { hip: [0, 1.0, -0.22], sh: [0, 1.48, -0.1], head: [0, 1.67, -0.06], hands: [[0.31, 0.97, 0.15], [-0.31, 0.97, 0.15]], cyc: 1, crank: [0.28, 0.0, 0.17] },
+  cyc_bmx: { hip: [0, 0.96, -0.05], sh: [0, 1.36, 0.2], head: [0, 1.52, 0.3], hands: [[0.27, 0.85, 0.42], [-0.27, 0.85, 0.42]], cyc: 1, crank: [0.29, 0.0, 0.175] },
+  cyc_vtt: { hip: [0, 0.98, -0.18], sh: [0, 1.38, 0.2], head: [0, 1.54, 0.31], hands: [[0.33, 0.92, 0.49], [-0.33, 0.92, 0.49]], cyc: 1, crank: [0.33, 0.03, 0.17] },
+  cyc_route: { hip: [0, 0.99, -0.18], sh: [0, 1.33, 0.3], head: [0, 1.44, 0.45], hands: [[0.21, 0.88, 0.55], [-0.21, 0.88, 0.55]], cyc: 1, crank: [0.27, 0.02, 0.17] },
+  cyc_elec: { hip: [0, 0.99, -0.19], sh: [0, 1.44, 0.08], head: [0, 1.6, 0.18], hands: [[0.29, 0.9, 0.49], [-0.29, 0.9, 0.49]], cyc: 1, crank: [0.3, 0.02, 0.17] },
+  cyc_clm: { hip: [0, 0.98, -0.12], sh: [0, 1.15, 0.42], head: [0, 1.25, 0.58], hands: [[0.07, 0.86, 0.76], [-0.07, 0.86, 0.76]], cyc: 1, crank: [0.27, 0.02, 0.17] },
+};
+const CYC_LEG = {};
+function cycLegs(idx, pose, ph) {
+  // jambes du cycliste pour une position de manivelle (12 positions par tour) : cuisse, genou, mollet, chaussure, manivelle et pédale
+  const key = idx + '_' + pose + '_' + ph; if (CYC_LEG[key]) return CYC_LEG[key];
+  const d = DRIVERS[idx] || DRIVERS[0], P = POSES[pose] || POSES.cyc_route, mb = new MB(), suit = hexToRgb(d.suit), skin = hexToRgb(d.skin);
+  const shorts = V3.sc(suit, 0.3), SHOE = [0.9, 0.9, 0.92], SOCK = [0.95, 0.95, 0.96], ALU = [0.62, 0.63, 0.66];
+  const [cy, cz, cl] = P.crank, th = ph / CYC_PH * Math.PI * 2;
+  const bottom = [0, cy - cl + 0.04, cz - 0.03], hp0 = [0, P.hip[1] + 0.02, P.hip[2]];
+  const Lg = Math.hypot(bottom[1] - hp0[1], bottom[2] - hp0[2]) * 1.03 / 2;
+  for (let k = 0; k < 2; k++) {
+    const sx = k ? -1 : 1, a = th + k * Math.PI, pd = [sx * 0.13, cy + Math.cos(a) * cl, cz + Math.sin(a) * cl];
+    bar(mb, [sx * 0.08, cy, cz], [sx * 0.1, pd[1], pd[2]], 0.014, ALU, 4); mb.box(sx * 0.13, pd[1] - 0.012, pd[2], 0.08, 0.024, 0.09, [0.08, 0.08, 0.09], 4);
+    const ft = [sx * 0.12, pd[1] + 0.045, pd[2] - 0.02], hp = [sx * 0.1, hp0[1], hp0[2]];
+    let dz = ft[2] - hp[2], dy = ft[1] - hp[1]; const D = Math.min(Math.hypot(dz, dy), 2 * Lg * 0.999); const l = Math.hypot(dz, dy) || 1; dz /= l; dy /= l;
+    const hgt = Math.sqrt(Math.max(0, Lg * Lg - D * D / 4)), mz = hp[2] + dz * D / 2, my = hp[1] + dy * D / 2;
+    let pz = -dy, py = dz; if (pz < 0) { pz = -pz; py = -py; }
+    const kn = [sx * 0.12, my + py * hgt, mz + pz * hgt], ftE = [sx * 0.12, hp[1] + dy * D, hp[2] + dz * D];
+    bar(mb, hp, kn, 0.078, shorts, 0); bar(mb, lerp3(hp, kn, 0.72), kn, 0.07, skin, 0); bar(mb, kn, ftE, 0.052, skin, 0);
+    sphere(mb, kn[0], kn[1], kn[2], 0.062, skin, 0, -Math.PI / 2, Math.PI / 2, 8);
+    bar(mb, lerp3(kn, ftE, 0.8), ftE, 0.048, SOCK, 0);
+    mb.box(ftE[0], ftE[1] - 0.045, ftE[2] + 0.03, 0.09, 0.07, 0.24, SHOE, 0); mb.box(ftE[0], ftE[1] - 0.05, ftE[2] + 0.03, 0.095, 0.014, 0.25, [0.12, 0.12, 0.13], 4);
+  }
+  return (CYC_LEG[key] = R.upload(mb));
+}
+function cycPh(c) { const x = ((c.crank || 0) / (Math.PI * 2)) % 1; return Math.floor((x < 0 ? x + 1 : x) * CYC_PH) % CYC_PH; }
 
 function buildBus() {
   // bus urbain : caisse aux arêtes arrondies, passages de roues, grandes vitres encadrées, rétroviseurs « oreilles »,
@@ -3809,6 +3965,7 @@ const POSES = {
   trail: { hip: [0, 1.05, -0.24], sh: [0, 1.56, -0.13], head: [0, 1.73, -0.08], hands: [[0.4, 1.19, 0.43], [-0.4, 1.19, 0.43]], knees: [[0.24, 0.9, 0.14], [-0.24, 0.9, 0.14]], feet: [[0.19, 0.46, -0.05], [-0.19, 0.46, -0.05]], helmet: true },
   scoot: { hip: [0, 0.88, -0.32], sh: [0, 1.39, -0.24], head: [0, 1.56, -0.2], hands: [[0.32, 1.02, 0.41], [-0.32, 1.02, 0.41]], knees: [[0.18, 0.9, 0.12], [-0.18, 0.9, 0.12]], feet: [[0.15, 0.31, 0.13], [-0.15, 0.31, 0.13]], helmet: true },
 };
+Object.assign(POSES, CYC_POSES);   // V224 : postures des cyclistes
 const DRV_MESH = {};
 function driverMesh(idx, pose) {
   const key = idx + '_' + pose; if (DRV_MESH[key]) return DRV_MESH[key];
@@ -3819,6 +3976,7 @@ function driverMesh(idx, pose) {
   // torse (combinaison) et bande claire sur la poitrine
   bar(mb, P.hip, P.sh, 0.16, suit, 0, 0.105);
   bar(mb, add(P.hip, [0, 0.2, 0.0]), add(P.sh, [0, -0.08, 0.004]), 0.165, V3.sc(suit, 1.35), 0, 0.02);
+  if (!P.cyc) {
   // combinaison FIA : col, renforts d'épaules, harnais 4 points et boucle centrale
   sphere(mb, 0, P.sh[1] - 0.025, P.sh[2], 0.09, V3.sc(suit, 0.72), 0, -Math.PI / 2, Math.PI / 2, 8);
   for (const sx of [-1, 1]) {
@@ -3842,6 +4000,11 @@ function driverMesh(idx, pose) {
   mb.box(0, P.sh[1] - 0.16, P.sh[2] + 0.095, 0.105, 0.075, 0.018, patch, 4);
   mb.box(0, P.sh[1] - 0.16, P.sh[2] + 0.106, 0.052, 0.038, 0.008, [0.82, 0.84, 0.88], 15);
   mb.box(0, P.sh[1] - 0.255, P.sh[2] + 0.07, 0.22, 0.012, 0.012, seam, 4);
+  } else {
+    // maillot de cycliste : bandes claires, dossard dans le dos
+    bar(mb, add(P.hip, [0, 0.12, 0.0]), add(P.sh, [0, -0.1, 0]), 0.163, V3.sc(suit, 1.5), 0, 0.03);
+    const mid = [0, (P.hip[1] + P.sh[1]) / 2, (P.hip[2] + P.sh[2]) / 2 - 0.12]; mb.box(mid[0], mid[1] - 0.06, mid[2] - 0.02, 0.2, 0.15, 0.012, [0.96, 0.96, 0.96], 0);
+  }
   const hc = P.head;
   bar(mb, P.sh, add(hc, [0, -0.1, -0.01]), 0.045, skin, 0);
   if (P.helmet) {
@@ -3872,6 +4035,13 @@ function driverMesh(idx, pose) {
     if (d.hair === 'cap') { const cc = hexToRgb(d.capC || '#ffb020'); cap(0.114, 0.18, -0.008, 0.016, cc); mb.box(hc[0], hc[1] + 0.06, hc[2] - 0.16, 0.14, 0.015, 0.1, cc, 0); }
     if (d.glasses) mb.box(hc[0], hc[1] + 0.005, hc[2] + 0.096, 0.17, 0.035, 0.02, [0.02, 0.02, 0.025], 4);
   }
+  if (P.cyc) {
+    // casque de vélo profilé (aérations), lunettes de sport et jugulaire
+    sphere(mb, hc[0], hc[1] + 0.035, hc[2] - 0.015, 0.128, helm, 4, 0.05, Math.PI / 2, 14, 0.92, pose === 'cyc_clm' ? 1.5 : 1.2);
+    for (const sx of [-0.05, 0, 0.05]) mb.box(hc[0] + sx, hc[1] + 0.135, hc[2] - 0.01, 0.022, 0.012, 0.13, [0.03, 0.03, 0.035], 0);
+    mb.box(hc[0], hc[1] + 0.01, hc[2] + 0.1, 0.19, 0.04, 0.03, [0.04, 0.05, 0.07], 4); mb.box(hc[0] - 0.03, hc[1] + 0.02, hc[2] + 0.117, 0.06, 0.012, 0.005, [0.6, 0.8, 0.95], 15);
+    for (const sx of [-1, 1]) bar(mb, [hc[0] + sx * 0.1, hc[1] + 0.03, hc[2]], [hc[0] + sx * 0.06, hc[1] - 0.1, hc[2] + 0.05], 0.006, [0.05, 0.05, 0.05], 0);
+  }
   // bras (épaule -> coude -> main gantée)
   for (let k = 0; k < 2; k++) {
     const sx = k ? -1 : 1, s0 = add(P.sh, [sx * 0.19, -0.04, 0]), h = P.hands[k];
@@ -3880,6 +4050,7 @@ function driverMesh(idx, pose) {
     sphere(mb, e[0], e[1], e[2], 0.057, V3.sc(suit, 0.72), 4, -Math.PI / 2, Math.PI / 2, 8);
     mb.box(h[0], h[1], h[2] - 0.018, 0.09, 0.035, 0.075, [0.12, 0.13, 0.15], 4);
     sphere(mb, h[0], h[1], h[2], 0.046, glove, 0, -Math.PI / 2, Math.PI / 2, 8);
+    if (P.cyc) continue;
     const hp = add(P.hip, [sx * 0.1, 0.02, 0]), kn = P.knees[k], ft = P.feet[k];
     bar(mb, hp, kn, 0.075, pants, 0); bar(mb, kn, ft, 0.055, pants, 0);
     sphere(mb, kn[0], kn[1], kn[2], 0.068, V3.sc(suit, 0.72), 4, -Math.PI / 2, Math.PI / 2, 8);
@@ -4038,9 +4209,9 @@ const TRACKS = [
 ];
 // New Tunisian urban circuits: Sousse, Sfax and Djerba.
 TRACKS.push(
- Object.assign({}, TRACKS[0], {id:'sousse',name:'Sousse Marina Run',sub:'Sousse • Marina et centre-ville',theme:'city',seed:103,pts:[[0,-360,1],[0,-80,0],[60,170,2],[170,330,3],[340,360,2],[470,260,1],[500,80,0],[420,-70,1],[520,-230,3],[430,-390,2],[240,-450,1],[80,-430,0]],env:{sky:[0.16,0.3,0.62],hor:[0.72,0.78,0.88],gnd:[0.2,0.24,0.22],fog:[0.55,0.65,0.76],fogDen:0.0019,sunDir:nrm([0.35,0.72,-0.3]),sunCol:[1.22,1.14,1],wet:0,clouds:0.35,sunSize:0.0015,grade:GR([0.012,0.018,0.03],[1.04,1.02,0.98],0.29)},road:[0.14,0.145,0.15],cols:[[0.72,0.68,0.56],[0.64,0.62,0.54],[0.52,0.54,0.53],[0.72,0.68,0.58],[0.56,0.53,0.48],[0.62,0.59,0.52]]}),
- Object.assign({}, TRACKS[0], {id:'sfax',name:'Sfax Industrial GP',sub:'Sfax • Quartier industriel',theme:'city',seed:117,pts:[[0,-420,0],[0,-120,0],[-90,110,1],[-40,330,2],[130,430,2],[350,390,1],[480,240,0],[420,40,0],[560,-130,1],[500,-350,2],[280,-460,1],[90,-500,0]],env:{sky:[0.2,0.25,0.34],hor:[0.62,0.56,0.46],gnd:[0.25,0.23,0.19],fog:[0.52,0.48,0.42],fogDen:0.0022,sunDir:nrm([-0.3,0.68,0.42]),sunCol:[1.08,0.98,0.84],wet:0.15,clouds:0.5,sunSize:0.0012,grade:GR([0.025,0.018,0.012],[1.02,0.98,0.92],0.32)},road:[0.13,0.13,0.135],cols:[[0.52,0.48,0.4],[0.46,0.44,0.39],[0.38,0.39,0.38],[0.58,0.52,0.43],[0.42,0.4,0.36],[0.48,0.45,0.4]]}),
- Object.assign({}, TRACKS[3], {id:'djerba',name:'Djerba Island Sprint',sub:'Djerba • Palmeraie et lagune',theme:'coast',seed:131,pts:[[0,-390,3],[0,-90,4],[80,180,5],[230,350,6],[430,360,5],[560,220,4],[520,40,3],[620,-130,4],[540,-340,5],[340,-470,4],[150,-480,3]],env:{sky:[0.18,0.42,0.82],hor:[0.78,0.82,0.86],gnd:[0.25,0.34,0.3],fog:[0.7,0.77,0.82],fogDen:0.0017,sunDir:nrm([-0.42,0.62,-0.28]),sunCol:[1.3,1.18,0.98],wet:0,clouds:0.25,sunSize:0.0018,grade:GR([0.012,0.025,0.035],[1.06,1.02,0.94],0.28)},road:[0.15,0.15,0.15],cols:[[0.66,0.62,0.48],[0.58,0.57,0.43],[0.48,0.5,0.4],[0.68,0.62,0.48],[0.56,0.5,0.4],[0.62,0.56,0.45]]})
+ Object.assign({}, TRACKS[0], {id:'sousse',name:'Sousse — Marina & Médina',sub:'Sousse • Marina et centre-ville',theme:'city',seed:103,pts:[[0,-360,1],[0,-80,0],[60,170,2],[170,330,3],[340,360,2],[470,260,1],[500,80,0],[420,-70,1],[520,-230,3],[430,-390,2],[240,-450,1],[80,-430,0]],env:{sky:[0.16,0.3,0.62],hor:[0.72,0.78,0.88],gnd:[0.2,0.24,0.22],fog:[0.55,0.65,0.76],fogDen:0.0019,sunDir:nrm([0.35,0.72,-0.3]),sunCol:[1.22,1.14,1],wet:0,clouds:0.35,sunSize:0.0015,grade:GR([0.012,0.018,0.03],[1.04,1.02,0.98],0.29)},road:[0.14,0.145,0.15],cols:[[0.72,0.68,0.56],[0.64,0.62,0.54],[0.52,0.54,0.53],[0.72,0.68,0.58],[0.56,0.53,0.48],[0.62,0.59,0.52]]}),
+ Object.assign({}, TRACKS[0], {id:'sfax',name:'Sfax — Route de Gremda',sub:'Sfax • Quartier industriel',theme:'city',seed:117,pts:[[0,-420,0],[0,-120,0],[-90,110,1],[-40,330,2],[130,430,2],[350,390,1],[480,240,0],[420,40,0],[560,-130,1],[500,-350,2],[280,-460,1],[90,-500,0]],env:{sky:[0.2,0.25,0.34],hor:[0.62,0.56,0.46],gnd:[0.25,0.23,0.19],fog:[0.52,0.48,0.42],fogDen:0.0022,sunDir:nrm([-0.3,0.68,0.42]),sunCol:[1.08,0.98,0.84],wet:0.15,clouds:0.5,sunSize:0.0012,grade:GR([0.025,0.018,0.012],[1.02,0.98,0.92],0.32)},road:[0.13,0.13,0.135],cols:[[0.52,0.48,0.4],[0.46,0.44,0.39],[0.38,0.39,0.38],[0.58,0.52,0.43],[0.42,0.4,0.36],[0.48,0.45,0.4]]}),
+ Object.assign({}, TRACKS[3], {id:'djerba',name:'Djerba — Houmt Souk',sub:'Djerba • Palmeraie et lagune',theme:'coast',seed:131,pts:[[0,-390,3],[0,-90,4],[80,180,5],[230,350,6],[430,360,5],[560,220,4],[520,40,3],[620,-130,4],[540,-340,5],[340,-470,4],[150,-480,3]],env:{sky:[0.18,0.42,0.82],hor:[0.78,0.82,0.86],gnd:[0.25,0.34,0.3],fog:[0.7,0.77,0.82],fogDen:0.0017,sunDir:nrm([-0.42,0.62,-0.28]),sunCol:[1.3,1.18,0.98],wet:0,clouds:0.25,sunSize:0.0018,grade:GR([0.012,0.025,0.035],[1.06,1.02,0.94],0.28)},road:[0.15,0.15,0.15],cols:[[0.66,0.62,0.48],[0.58,0.57,0.43],[0.48,0.5,0.4],[0.68,0.62,0.48],[0.56,0.5,0.4],[0.62,0.56,0.45]]})
 );
 
 /* Circuits tunisiens supplémentaires — tracés de jeu inspirés de lieux réels, non des reproductions routières exactes. */
@@ -4053,10 +4224,22 @@ TRACKS.push(
 
 /* Nouveaux tracés tunisiens : oasis, palmeraies, forêts du Nord et îles. */
 TRACKS.push(
- Object.assign({}, TRACKS[1], {id:'tozeur_oasis',name:'Tozeur — Oasis Run',sub:'Tozeur • Palmeraie et chott',theme:'desert',seed:211,pts:[[0,-430,1],[20,-140,2],[120,100,4],[260,330,5],[460,360,3],[590,190,1],[520,-20,0],[650,-210,2],[510,-410,3],[300,-500,2],[110,-490,1]],env:{sky:[0.22,0.34,0.58],hor:[0.82,0.62,0.38],gnd:[0.38,0.3,0.18],fog:[0.78,0.59,0.38],fogDen:0.0019,sunDir:nrm([-0.55,0.5,0.22]),sunCol:[1.35,1.05,0.72],wet:0,clouds:0.12,sunSize:0.0021,haze:1,dust:[0.82,0.63,0.39],grade:GR([0.025,0.012,0.004],[1.08,0.98,0.86],0.3)},road:[0.2,0.18,0.15],cols:[[0.68,0.5,0.3],[0.62,0.45,0.27],[0.52,0.38,0.23],[0.72,0.56,0.35],[0.56,0.4,0.25],[0.64,0.47,0.29]]}),
+ Object.assign({}, TRACKS[1], {id:'tozeur_oasis',name:'Tozeur — Palmeraie & Chott',sub:'Tozeur • Palmeraie et chott',theme:'desert',seed:211,pts:[[0,-430,1],[20,-140,2],[120,100,4],[260,330,5],[460,360,3],[590,190,1],[520,-20,0],[650,-210,2],[510,-410,3],[300,-500,2],[110,-490,1]],env:{sky:[0.22,0.34,0.58],hor:[0.82,0.62,0.38],gnd:[0.38,0.3,0.18],fog:[0.78,0.59,0.38],fogDen:0.0019,sunDir:nrm([-0.55,0.5,0.22]),sunCol:[1.35,1.05,0.72],wet:0,clouds:0.12,sunSize:0.0021,haze:1,dust:[0.82,0.63,0.39],grade:GR([0.025,0.012,0.004],[1.08,0.98,0.86],0.3)},road:[0.2,0.18,0.15],cols:[[0.68,0.5,0.3],[0.62,0.45,0.27],[0.52,0.38,0.23],[0.72,0.56,0.35],[0.56,0.4,0.25],[0.64,0.47,0.29]]}),
  Object.assign({}, TRACKS[2], {id:'tabarka_forest',name:'Tabarka — Aiguilles & Forêt',sub:'Tabarka • Forêt de chênes et côte rocheuse',theme:'mountain',seed:227,pts:[[0,-410,8],[0,-120,12],[-100,110,22],[-40,340,30],[150,450,36],[360,370,28],[480,190,18],[420,10,14],[570,-160,20],[470,-380,15],[250,-480,10],[70,-470,8]],env:{sky:[0.16,0.36,0.68],hor:[0.52,0.68,0.7],gnd:[0.14,0.24,0.16],fog:[0.48,0.66,0.65],fogDen:0.0025,sunDir:nrm([0.32,0.82,-0.22]),sunCol:[1.12,1.14,1.04],wet:0.12,clouds:0.62,sunSize:0.001,grade:GR([0.0,0.02,0.018],[0.98,1.04,0.96],0.28)},road:[0.13,0.14,0.13],cols:[[0.22,0.34,0.2],[0.19,0.3,0.18],[0.14,0.24,0.15],[0.38,0.36,0.29],[0.34,0.34,0.31],[0.42,0.42,0.38]]}),
- Object.assign({}, TRACKS[3], {id:'kerkennah',name:'Kerkennah — Island Loop',sub:'Kerkennah • Lagunes, plages et salines',theme:'coast',seed:241,pts:[[0,-400,1],[10,-100,1],[100,170,2],[260,360,2],[450,340,1],[580,180,0],[510,0,0],[640,-170,1],[520,-370,2],[320,-480,1],[120,-470,0]],env:{sky:[0.24,0.45,0.78],hor:[0.78,0.83,0.86],gnd:[0.25,0.34,0.3],fog:[0.72,0.79,0.82],fogDen:0.0016,sunDir:nrm([-0.34,0.62,-0.24]),sunCol:[1.28,1.2,1.05],wet:0,clouds:0.18,sunSize:0.0018,grade:GR([0.01,0.024,0.034],[1.05,1.03,0.97],0.28)},road:[0.15,0.15,0.155],cols:[[0.65,0.62,0.49],[0.58,0.57,0.44],[0.48,0.5,0.4],[0.68,0.65,0.52],[0.55,0.52,0.43],[0.62,0.58,0.47]]}),
- Object.assign({}, TRACKS[5], {id:'gafsa_phosphate',name:'Gafsa — Phosphate Sprint',sub:'Gafsa • Mines, collines et pistes',theme:'desert',seed:257,pts:[[0,-420,2],[0,-130,4],[-90,100,8],[-20,330,12],[170,440,14],[390,360,10],[500,180,6],[430,-20,4],[570,-190,7],[460,-400,5],[250,-490,3],[70,-470,2]],env:{sky:[0.2,0.31,0.52],hor:[0.7,0.53,0.35],gnd:[0.31,0.25,0.17],fog:[0.67,0.51,0.35],fogDen:0.0021,sunDir:nrm([-0.52,0.62,0.28]),sunCol:[1.22,1.0,0.75],wet:0,clouds:0.25,sunSize:0.0017,haze:1,dust:[0.78,0.58,0.37],grade:GR([0.025,0.014,0.006],[1.04,0.98,0.88],0.31)},road:[0.18,0.16,0.14],cols:[[0.55,0.42,0.27],[0.5,0.38,0.24],[0.43,0.32,0.2],[0.62,0.49,0.32],[0.48,0.38,0.27],[0.55,0.43,0.3]]})
+ Object.assign({}, TRACKS[3], {id:'kerkennah',name:'Kerkennah — Lagunes & Salines',sub:'Kerkennah • Lagunes, plages et salines',theme:'coast',seed:241,pts:[[0,-400,1],[10,-100,1],[100,170,2],[260,360,2],[450,340,1],[580,180,0],[510,0,0],[640,-170,1],[520,-370,2],[320,-480,1],[120,-470,0]],env:{sky:[0.24,0.45,0.78],hor:[0.78,0.83,0.86],gnd:[0.25,0.34,0.3],fog:[0.72,0.79,0.82],fogDen:0.0016,sunDir:nrm([-0.34,0.62,-0.24]),sunCol:[1.28,1.2,1.05],wet:0,clouds:0.18,sunSize:0.0018,grade:GR([0.01,0.024,0.034],[1.05,1.03,0.97],0.28)},road:[0.15,0.15,0.155],cols:[[0.65,0.62,0.49],[0.58,0.57,0.44],[0.48,0.5,0.4],[0.68,0.65,0.52],[0.55,0.52,0.43],[0.62,0.58,0.47]]}),
+ Object.assign({}, TRACKS[5], {id:'gafsa_phosphate',name:'Gafsa — Mines de phosphate',sub:'Gafsa • Mines, collines et pistes',theme:'desert',seed:257,pts:[[0,-420,2],[0,-130,4],[-90,100,8],[-20,330,12],[170,440,14],[390,360,10],[500,180,6],[430,-20,4],[570,-190,7],[460,-400,5],[250,-490,3],[70,-470,2]],env:{sky:[0.2,0.31,0.52],hor:[0.7,0.53,0.35],gnd:[0.31,0.25,0.17],fog:[0.67,0.51,0.35],fogDen:0.0021,sunDir:nrm([-0.52,0.62,0.28]),sunCol:[1.22,1.0,0.75],wet:0,clouds:0.25,sunSize:0.0017,haze:1,dust:[0.78,0.58,0.37],grade:GR([0.025,0.014,0.006],[1.04,0.98,0.88],0.31)},road:[0.18,0.16,0.14],cols:[[0.55,0.42,0.27],[0.5,0.38,0.24],[0.43,0.32,0.2],[0.62,0.49,0.32],[0.48,0.38,0.27],[0.55,0.43,0.3]]})
+);
+
+/* V224 — huit nouveaux circuits 100 % tunisiens (tracés de jeu inspirés des lieux, avec leurs monuments) */
+TRACKS.push(
+ Object.assign({}, TRACKS[1], {id:'matmata',name:'Matmata — Troglodytes',sub:'Matmata • Maisons troglodytes et cratères',theme:'desert',seed:271,pts:[[0,-420,4],[10,-120,8],[110,120,14],[60,340,18],[230,470,22],[440,420,18],[540,240,12],[470,60,8],[600,-120,12],[560,-340,10],[360,-470,6],[160,-500,4]],env:{sky:[0.2,0.36,0.66],hor:[0.95,0.74,0.52],gnd:[0.52,0.38,0.24],fog:[0.88,0.7,0.52],fogDen:0.0019,sunDir:nrm([-0.4,0.55,0.5]),sunCol:[1.4,1.05,0.7],wet:0,clouds:0.2,sunSize:0.0022,haze:1,dust:[0.82,0.62,0.42],grade:GR([0.02,0.01,0.004],[1.04,0.99,0.9],0.3)},road:[0.2,0.17,0.14]}),
+ Object.assign({}, TRACKS[1], {id:'tataouine',name:'Tataouine — Ksar Ouled Soltane',sub:'Tataouine • Ksour et ghorfas',theme:'desert',seed:283,pts:[[0,-450,2],[0,-150,3],[-110,90,6],[-60,330,10],[120,460,12],[340,430,10],[470,280,7],[400,90,5],[540,-80,8],[500,-320,6],[300,-470,4],[120,-500,2]],env:{sky:[0.14,0.2,0.42],hor:[1.0,0.5,0.26],gnd:[0.48,0.28,0.16],fog:[0.92,0.5,0.32],fogDen:0.0022,sunDir:nrm([0.7,0.12,-0.55]),sunCol:[1.6,0.78,0.38],wet:0,clouds:0.4,sunSize:0.003,haze:1,dust:[0.88,0.56,0.36],grade:GR([0.03,0.008,0.004],[1.05,0.96,0.86],0.32)}}),
+ Object.assign({}, TRACKS[2], {id:'kef',name:'Le Kef — Table de Jugurtha',sub:'Le Kef • Plateaux et kasbah',theme:'mountain',seed:293,pts:[[0,-400,20],[0,-110,26],[-120,120,34],[-70,330,44],[120,450,52],[340,400,46],[460,220,38],[380,40,30],[520,-150,36],[440,-380,28],[230,-480,22],[70,-460,20]],env:{sky:[0.18,0.36,0.7],hor:[0.66,0.72,0.78],gnd:[0.32,0.3,0.2],fog:[0.62,0.68,0.72],fogDen:0.0018,sunDir:nrm([0.4,0.7,0.3]),sunCol:[1.25,1.15,0.98],wet:0,clouds:0.5,sunSize:0.0012,grade:GR([0.01,0.016,0.024],[1.02,1.02,0.97],0.28)}}),
+ Object.assign({}, TRACKS[3], {id:'nabeul',name:'Nabeul — Potiers & Cap Bon',sub:'Nabeul • Souk des potiers et plage',theme:'coast',seed:307,pts:[[0,-380,2],[15,-90,2],[110,160,3],[260,350,3],[460,360,2],[590,210,1],[520,30,1],[640,-150,2],[540,-360,2],[340,-470,1],[140,-460,1]],env:{sky:[0.22,0.42,0.76],hor:[0.8,0.84,0.88],gnd:[0.3,0.34,0.28],fog:[0.74,0.8,0.86],fogDen:0.0016,sunDir:nrm([-0.3,0.7,-0.3]),sunCol:[1.3,1.2,1.04],wet:0,clouds:0.25,sunSize:0.0016,grade:GR([0.01,0.02,0.03],[1.05,1.03,0.98],0.28)}}),
+ Object.assign({}, TRACKS[3], {id:'mahdia',name:'Mahdia — Cap Africa',sub:'Mahdia • Phare, Skifa el Kahla et port de pêche',theme:'coast',seed:311,pts:[[0,-410,3],[0,-120,4],[-90,110,5],[-40,330,6],[150,450,6],[370,420,5],[500,260,4],[430,80,3],[560,-100,3],[480,-330,3],[280,-460,2],[100,-470,2]],env:{sky:[0.2,0.36,0.66],hor:[0.96,0.78,0.6],gnd:[0.3,0.32,0.27],fog:[0.86,0.76,0.66],fogDen:0.0017,sunDir:nrm([0.55,0.32,-0.5]),sunCol:[1.45,1.05,0.72],wet:0,clouds:0.3,sunSize:0.0022,grade:GR([0.025,0.014,0.01],[1.05,1.0,0.92],0.3)}}),
+ Object.assign({}, TRACKS[2], {id:'dougga',name:'Dougga — Cité romaine',sub:'Dougga • Capitole, théâtre et oliveraies',theme:'mountain',seed:317,pts:[[0,-420,30],[0,-140,34],[-100,90,40],[-30,320,46],[160,440,50],[380,400,44],[500,220,38],[420,30,34],[560,-150,38],[470,-380,34],[260,-490,31],[80,-470,30]],env:{sky:[0.2,0.38,0.68],hor:[0.82,0.78,0.7],gnd:[0.36,0.33,0.2],fog:[0.74,0.72,0.66],fogDen:0.0018,sunDir:nrm([-0.5,0.5,0.4]),sunCol:[1.38,1.12,0.84],wet:0,clouds:0.3,sunSize:0.0018,grade:GR([0.02,0.012,0.006],[1.04,1.0,0.92],0.3)}}),
+ Object.assign({}, TRACKS[2], {id:'zaghouan',name:'Zaghouan — Temple des Eaux',sub:'Zaghouan • Temple romain, aqueduc et djebel',theme:'mountain',seed:331,pts:[[0,-430,12],[20,-130,16],[130,100,24],[80,330,32],[260,460,38],[470,410,32],[570,230,24],[490,40,18],[620,-140,22],[540,-370,18],[330,-490,14],[130,-500,12]],env:{sky:[0.16,0.32,0.66],hor:[0.72,0.74,0.76],gnd:[0.34,0.3,0.2],fog:[0.7,0.7,0.7],fogDen:0.0019,sunDir:nrm([-0.45,0.65,0.35]),sunCol:[1.3,1.18,0.98],wet:0,clouds:0.35,sunSize:0.0014,grade:GR([0.015,0.012,0.01],[1.03,1.01,0.95],0.29)}}),
+ Object.assign({}, TRACKS[0], {id:'tunis_jour',name:'Tunis — Avenue Bourguiba',sub:'Tunis • Horloge, cathédrale et médina de jour',theme:'city',seed:337,pts:[[0,-380,1],[0,-60,0],[40,190,1],[150,360,2],[330,420,2],[480,320,1],[500,140,0],[420,0,0],[520,-170,1],[440,-360,2],[260,-440,1],[90,-430,0]],env:{sky:[0.16,0.32,0.64],hor:[0.74,0.78,0.86],gnd:[0.22,0.22,0.22],fog:[0.6,0.66,0.74],fogDen:0.002,sunDir:nrm([0.3,0.7,-0.35]),sunCol:[1.25,1.16,1.0],wet:0,clouds:0.3,sunSize:0.0014,grade:GR([0.01,0.015,0.025],[1.04,1.02,0.98],0.29)},road:[0.14,0.145,0.15],cols:[[0.72,0.68,0.56],[0.64,0.62,0.54],[0.52,0.54,0.53],[0.72,0.68,0.58],[0.56,0.53,0.48],[0.62,0.59,0.52]]})
 );
 
 
@@ -4516,6 +4699,152 @@ function buildTrack(def, quality) {
   if (theme === 'circuit') buildCircuit();
   if (theme === 'port') buildPort();
   if (theme === 'forest') buildForest();
+  buildLandmarks();
+
+  // V224 — monuments et repères tunisiens propres à chaque circuit
+  function buildLandmarks() {
+    const id = def.id, EARTH = [0.66, 0.5, 0.34], WHITE = [0.9, 0.89, 0.86], STONE = [0.74, 0.66, 0.52], DARK = [0.05, 0.045, 0.045], BLUE = [0.08, 0.32, 0.72], TERRA = [0.68, 0.34, 0.18];
+    const spot = (f0, side, off, rr) => { for (let k = 0; k < 70; k++) { const i = Math.floor((((f0 + k * 0.0137) % 1) + 1) % 1 * N), s2 = side || (k % 2 ? 1 : -1), p = objAt(i, s2, off + (k % 4) * 6); if (placeOK(p[0], p[2], rr)) return { p, i, s: s2, y: T.groundY(p[0], p[2]) - 0.3, yaw: hd[i] }; } return null; };
+    const LF = o => { const cs = Math.cos(o.yaw), sn = Math.sin(o.yaw); return (lx, ly, lz) => [o.p[0] + lx * cs + lz * sn, o.y + ly, o.p[2] - lx * sn + lz * cs]; };
+    const flag = (mb, b, h, yaw) => { bar(mb, b, [b[0], b[1] + h, b[2]], 0.08, [0.85, 0.86, 0.88], 4); const q = [b[0], b[1] + h - 2.4, b[2]]; mb.box(q[0], q[1], q[2], 3.6, 2.4, 0.06, [0.86, 0.05, 0.08], 0, yaw); discZ(mb, q[0], q[1] + 1.2, q[2] + 0.04, 0.72, [1, 1, 1], 0, 16); discZ(mb, q[0] + 0.08, q[1] + 1.2, q[2] + 0.06, 0.5, [0.86, 0.05, 0.08], 0, 14); discZ(mb, q[0] + 0.2, q[1] + 1.2, q[2] + 0.07, 0.4, [1, 1, 1], 0, 14); };
+    function minaret(o, h, col, lx = 0, lz = 0) {
+      const mb = ch(rk(o.i)), P = LF(o), c = col || [0.86, 0.8, 0.68], b = P(lx, 0, lz);
+      mb.box(b[0], b[1], b[2], 3.6, h * 0.74, 3.6, c, 18, o.yaw);
+      const t = P(lx, h * 0.74, lz); mb.box(t[0], t[1], t[2], 4.3, 0.5, 4.3, V3.sc(c, 1.06), 18, o.yaw); mb.box(t[0], t[1] + 0.5, t[2], 2.6, h * 0.18, 2.6, c, 18, o.yaw);
+      mb.dome(t[0], t[1] + 0.5 + h * 0.18, t[2], 1.35, 1.5, 1.35, 8, 3, [0.16, 0.5, 0.32], 4, [0.3, 0.7, 0.45]);
+      bar(mb, [t[0], t[1] + 2 + h * 0.18, t[2]], [t[0], t[1] + 3.2 + h * 0.18, t[2]], 0.06, [0.85, 0.72, 0.3], 4);
+      for (let k = 1; k < 4; k++) for (const [ax, az] of [[1.82, 0], [-1.82, 0], [0, 1.82], [0, -1.82]]) { const q = P(lx + ax, k * h * 0.18, lz + az); mb.box(q[0], q[1], q[2], ax ? 0.1 : 0.6, 1.3, az ? 0.1 : 0.6, DARK, 0, o.yaw); }
+    }
+    function mosque(o, scale = 1, col) {
+      const mb = ch(rk(o.i)), P = LF(o), c = col || WHITE, w = 16 * scale, d = 12 * scale, b = P(0, 0, 0);
+      mb.box(b[0], b[1], b[2], w, 6 * scale, d, c, 18, o.yaw); mb.box(b[0], b[1] + 6 * scale, b[2], w + 0.4, 0.4, d + 0.4, V3.sc(c, 1.04), 18, o.yaw);
+      mb.dome(b[0], b[1] + 6.4 * scale, b[2], 4 * scale, 3.6 * scale, 4 * scale, 12, 4, c, 18, V3.sc(c, 1.05));
+      for (let k = -2; k <= 2; k++) { const q = P(k * w * 0.18, 0.6, -o.s * (d / 2 + 0.05)); mb.box(q[0], q[1], q[2], 1.6, 3.2, 0.12, k ? DARK : [0.1, 0.36, 0.3], 0, o.yaw); }
+      minaret(o, 22 * scale, c, w / 2 - 1.8, d / 2 - 1.8);
+    }
+    function troglo(o) {
+      // maison troglodyte de Matmata : cratère de terre percé de portes, encadrements chaulés
+      const mb = ch(rk(o.i)), R0 = 9 + r() * 4, h = 3.2 + r() * 1.5, c = jit(EARTH, r, 0.04), x = o.p[0], z = o.p[2];
+      mb.dome(x, o.y - 0.6, z, R0, h, R0 * (0.8 + r() * 0.3), 14, 4, c, 17, V3.sc(c, 1.08));
+      mb.dome(x, o.y + h - 1.3, z, R0 * 0.45, -1.6, R0 * 0.4, 12, 2, V3.sc(c, 0.6), 17, V3.sc(c, 0.5));
+      for (let k = 0; k < 5; k++) { const a = o.yaw + k / 5 * Math.PI * 2 + r() * 0.4, rx = Math.sin(a), rz = Math.cos(a), q = [x + rx * R0 * 0.93, o.y + 0.1, z + rz * R0 * 0.93];
+        mb.box(q[0], q[1], q[2], 1.5, 2.1, 1.5, WHITE, 0, a); mb.box(q[0] + rx * 0.2, q[1], q[2] + rz * 0.2, 1.05, 1.8, 1.2, DARK, 0, a); if (r() < 0.6) mb.box(q[0] + rx * 0.25, q[1] + 0.05, q[2] + rz * 0.25, 0.9, 1.6, 1.0, BLUE, 0, a); }
+      for (let k = 0; k < 3; k++) { const a = r() * 6.28; addPalm(mb, x + Math.sin(a) * (R0 + 4), o.y, z + Math.cos(a) * (R0 + 4), 5 + r() * 4, r); }
+    }
+    function ksar(o) {
+      // ksar de Tataouine : ghorfas (greniers voûtés) sur trois niveaux autour d'une cour, escaliers extérieurs
+      const mb = ch(rk(o.i)), P = LF(o);
+      for (const side of [-1, 1]) for (let k = 0; k < 7; k++) for (let lv = 0; lv < 3; lv++) {
+        if (lv === 2 && (k * 3 + side) % 4 === 0) continue;
+        const c = jit(EARTH, r, 0.05), q = P(side * 8, lv * 2.4, -11 + k * 3.5);
+        mb.box(q[0], q[1], q[2], 4.2, 2.4, 3.4, c, 17, o.yaw);
+        const dd = P(side * 8 - side * 2.13, lv * 2.4 + 0.35, -11 + k * 3.5); mb.box(dd[0], dd[1], dd[2], 0.08, 1.15, 0.85, k % 3 ? DARK : [0.3, 0.2, 0.12], 0, o.yaw);
+        const bm = P(side * 8 - side * 2.3, lv * 2.4 + 1.8, -11 + k * 3.5 + 0.8); mb.box(bm[0], bm[1], bm[2], 0.5, 0.12, 0.12, [0.32, 0.22, 0.12], 0, o.yaw);
+        if (lv === 2 || (lv === 1 && (k * 3 + side) % 4 === 0)) mb.dome(q[0], q[1] + 2.4, q[2], 1.9, 1.0, 1.9, 8, 2, c, 17, V3.sc(c, 1.06));
+      }
+      for (const side of [-1, 1]) for (let s = 0; s < 6; s++) { const q = P(side * 5.3, s * 0.8, 6 - s * 0.9); mb.box(q[0], q[1], q[2], 1.2, 0.8, 0.9, jit(EARTH, r, 0.04), 17, o.yaw); }
+      const g = P(0, 0, -13.5); mb.box(g[0], g[1], g[2], 12, 4.2, 1.2, jit(EARTH, r, 0.03), 17, o.yaw); const gd = P(0, 0.2, -12.85); mb.box(gd[0], gd[1], gd[2], 2.2, 3, 0.1, DARK, 0, o.yaw);
+    }
+    function mesa(o) {
+      // Table de Jugurtha (Le Kef) : plateau tabulaire aux falaises verticales
+      const mb = ch(rk(o.i)), x = o.p[0], z = o.p[2], R1 = [0.56, 0.48, 0.36], R2 = [0.5, 0.43, 0.32];
+      mb.dome(x, o.y - 3, z, 130, 28, 90, 16, 4, [0.4, 0.38, 0.24], 16, R2);
+      mb.box(x, o.y + 18, z, 118, 22, 78, R1, 17, o.yaw); mb.box(x, o.y + 40, z, 112, 3, 72, [0.42, 0.42, 0.26], 16, o.yaw);
+      for (let k = 0; k < 26; k++) { const a = k / 26 * Math.PI * 2, q = [x + Math.sin(a) * 66, o.y + 14, z + Math.cos(a) * 44]; addRock(mb, q[0], q[1], q[2], 8 + r() * 10, r, jit(R1, r, 0.06)); }
+    }
+    function kasbah(o) {
+      const mb = ch(rk(o.i)), P = LF(o), c = [0.8, 0.7, 0.54], W2 = 34, D2 = 24;
+      for (const [lx, lz, w, d] of [[0, -D2 / 2, W2, 1.6], [0, D2 / 2, W2, 1.6], [-W2 / 2, 0, 1.6, D2], [W2 / 2, 0, 1.6, D2]]) { const q = P(lx, 0, lz); mb.box(q[0], q[1], q[2], w, 7, d, jit(c, r, 0.03), 18, o.yaw);
+        const n = Math.floor(Math.max(w, d) / 2.2); for (let k = 0; k < n; k += 2) { const t = (k + 0.5) / n - 0.5, e = P(lx + (w > d ? t * w : 0), 7, lz + (d > w ? t * d : 0)); mb.box(e[0], e[1], e[2], w > d ? 1 : 1.7, 0.9, d > w ? 1 : 1.7, c, 18, o.yaw); } }
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const q = P(sx * W2 / 2, 0, sz * D2 / 2); mb.box(q[0], q[1], q[2], 4.4, 10, 4.4, V3.sc(c, 0.96), 18, o.yaw); }
+      flag(mb, P(0, 7, 0), 9, o.yaw);
+    }
+    function pottery(o) {
+      // souk des potiers de Nabeul : étals à auvents rayés, jarres, plats peints bleu et jaune
+      const mb = ch(rk(o.i)), P = LF(o), AW = [[0.86, 0.12, 0.1], [0.1, 0.38, 0.75], [0.95, 0.72, 0.15]];
+      for (let k = 0; k < 4; k++) {
+        const lz = (k - 1.5) * 5.4;
+        for (const [ax, az] of [[-1.6, -2.4], [1.6, -2.4], [-1.6, 2.4], [1.6, 2.4]]) { const q = P(ax, 0, lz + az); bar(mb, q, [q[0], q[1] + 2.8, q[2]], 0.06, [0.4, 0.28, 0.16], 0); }
+        for (let s = 0; s < 4; s++) { const q = P(0, 2.8, lz - 1.8 + s * 1.2); mb.box(q[0], q[1], q[2], 3.6, 0.08, 1.2, s % 2 ? [0.95, 0.94, 0.9] : AW[k % 3], 0, o.yaw); }
+        const tb = P(0, 0, lz); mb.box(tb[0], tb[1], tb[2], 2.6, 0.9, 4.2, [0.45, 0.32, 0.2], 0, o.yaw);
+        for (let j = 0; j < 7; j++) { const q = P((r() - 0.5) * 2.2, 0.9, lz + (r() - 0.5) * 3.8), s = 0.2 + r() * 0.22, pc = r() < 0.35 ? TERRA : r() < 0.5 ? [0.12, 0.38, 0.72] : [0.94, 0.86, 0.6]; sphere(mb, q[0], q[1] + s, q[2], s, pc, 0, -Math.PI / 2, Math.PI / 2, 10, 1.35); }
+        for (let j = 0; j < 3; j++) { const q = P(-o.s * 1.9, 1.3 + j * 0.45, lz + (j - 1) * 1.1); sphere(mb, q[0], q[1], q[2], 0.3, j % 2 ? [0.94, 0.84, 0.3] : [0.1, 0.4, 0.74], 0, -Math.PI / 2, Math.PI / 2, 10, 1, 1); }
+        for (let j = 0; j < 4; j++) { const q = P(o.s * 2.4, 0, lz + (j - 1.5) * 1.1), s = 0.45 + r() * 0.2; sphere(mb, q[0], q[1] + s * 1.2, q[2], s, TERRA, 0, -Math.PI / 2, Math.PI / 2, 10, 1.4); }
+      }
+    }
+    function bigJar(o) { const mb = ch(rk(o.i)), b = [o.p[0], o.y, o.p[2]]; mb.box(b[0], b[1], b[2], 4, 1.2, 4, WHITE, 18, o.yaw); sphere(mb, b[0], b[1] + 4.4, b[2], 2.4, TERRA, 0, -Math.PI / 2, Math.PI / 2, 16, 1.35); sphere(mb, b[0], b[1] + 4.6, b[2], 2.44, BLUE, 0, -0.18, 0.18, 16, 1.35); bar(mb, [b[0], b[1] + 7.2, b[2]], [b[0], b[1] + 8.2, b[2]], 0.8, TERRA, 0); }
+    function lighthouse(o) {
+      const mb = ch(rk(o.i)), b = [o.p[0], o.y, o.p[2]];
+      mb.box(b[0], b[1], b[2], 6, 3, 6, WHITE, 18, o.yaw); bar(mb, [b[0], b[1] + 3, b[2]], [b[0], b[1] + 21, b[2]], 1.6, WHITE, 18, 1.6, 14);
+      for (const yy of [9, 15]) bar(mb, [b[0], b[1] + yy, b[2]], [b[0], b[1] + yy + 1.2, b[2]], 1.64, [0.1, 0.12, 0.14], 0, 1.64, 14);
+      mb.box(b[0], b[1] + 21, b[2], 4.2, 0.4, 4.2, [0.15, 0.16, 0.18], 4, o.yaw); bar(mb, [b[0], b[1] + 21.4, b[2]], [b[0], b[1] + 23.4, b[2]], 1.05, [1, 0.92, 0.6], 15, 1.05, 12);
+      mb.dome(b[0], b[1] + 23.4, b[2], 1.3, 1.1, 1.3, 10, 3, [0.7, 0.08, 0.06], 4, [0.85, 0.12, 0.08]);
+    }
+    function skifa(o) {
+      // Skifa el Kahla (Mahdia) : porte fortifiée en pierre, passage voûté, créneaux
+      const mb = ch(rk(o.i)), P = LF(o), b = P(0, 0, 0);
+      mb.box(b[0], b[1], b[2], 18, 13, 10, STONE, 17, o.yaw);
+      for (const sz of [-1, 1]) { const q = P(0, 0, sz * 5.02); mb.box(q[0], q[1], q[2], 4.4, 7, 0.1, DARK, 0, o.yaw); }
+      for (let k = 0; k < 8; k++) { const q = P(-8 + k * 2.3, 13, -4.6); mb.box(q[0], q[1], q[2], 1.2, 1.1, 0.8, STONE, 17, o.yaw); const q2 = P(-8 + k * 2.3, 13, 4.6); mb.box(q2[0], q2[1], q2[2], 1.2, 1.1, 0.8, STONE, 17, o.yaw); }
+      for (const sx of [-1, 1]) { const q = P(sx * 10.5, 0, 0); mb.box(q[0], q[1], q[2], 4, 9, 9, V3.sc(STONE, 0.95), 17, o.yaw); }
+    }
+    function boat(o) {
+      const mb = ch(rk(o.i)), P = LF(o), a = o.yaw + (r() - 0.5) * 0.8, b = P(0, 0.2, 0), hc = r() < 0.5 ? BLUE : [0.85, 0.2, 0.15];
+      mb.box(b[0], b[1], b[2], 2.2, 1.1, 7, WHITE, 0, a); mb.box(b[0], b[1] + 0.75, b[2], 2.26, 0.3, 7.05, hc, 0, a); mb.box(b[0], b[1] + 1.1, b[2] - 0.8, 1.5, 1.2, 2, WHITE, 0, a);
+      bar(mb, [b[0], b[1] + 1.1, b[2]], [b[0], b[1] + 6, b[2]], 0.07, [0.45, 0.32, 0.2], 0); mb.box(b[0], b[1] + 6, b[2], 0.4, 0.05, 0.4, hc, 0, a);
+    }
+    function temple(o, cols = 6) {
+      // temple romain (Temple des Eaux de Zaghouan, Capitole de Dougga) : podium, colonnade, entablement, fronton
+      const mb = ch(rk(o.i)), P = LF(o), C = [0.84, 0.76, 0.62], w = cols * 2.4, d = 14, b = P(0, 0, 0);
+      mb.box(b[0], b[1], b[2], w + 2, 1.8, d + 2, V3.sc(C, 0.92), 17, o.yaw); for (let s = 0; s < 4; s++) { const q = P(0, s * 0.45, -(d / 2 + 1) - 2 + s * 0.5); mb.box(q[0], q[1], q[2], w * 0.6, 0.45, 1, C, 17, o.yaw); }
+      const cella = P(0, 1.8, 2); mb.box(cella[0], cella[1], cella[2], w - 3, 8.2, d - 6, V3.sc(C, 0.97), 17, o.yaw); const dr = P(0, 1.9, 2 - (d - 6) / 2 - 0.05); mb.box(dr[0], dr[1], dr[2], 2.6, 5, 0.1, DARK, 0, o.yaw);
+      for (let k = 0; k < cols; k++) { const lx = (k - (cols - 1) / 2) * 2.4; for (const lz of [-d / 2 + 0.5, -d / 2 + 3]) { if (lz > -d / 2 + 1 && (k > 0 && k < cols - 1)) continue; const q = P(lx, 1.8, lz); bar(mb, q, [q[0], q[1] + 8, q[2]], 0.5, C, 17, 0.5, 10); mb.box(q[0], q[1] + 8, q[2], 1.3, 0.5, 1.3, C, 17, o.yaw); } }
+      const e = P(0, 10.3, -d / 2 + 1.8); mb.box(e[0], e[1], e[2], w + 0.6, 1.3, 4.4, C, 17, o.yaw);
+      const A = P(-w / 2 - 0.3, 11.6, -d / 2 - 0.4), B = P(w / 2 + 0.3, 11.6, -d / 2 - 0.4), T2 = P(0, 14.2, -d / 2 - 0.4); mb.tri(A, B, T2, C, 17);
+      const A2 = P(-w / 2 - 0.3, 11.6, d / 2), B2 = P(w / 2 + 0.3, 11.6, d / 2), T3 = P(0, 14.2, d / 2); mb.tri(A2, B2, T3, C, 17);
+      mb.quad(A, T2, T3, A2, [0.66, 0.42, 0.3], 17); mb.quad(B, T2, T3, B2, [0.66, 0.42, 0.3], 17);
+      for (let k = 0; k < 7; k++) { const q = P((r() - 0.5) * 34, 0, (r() - 0.5) * 26 - d); if (T.roadDist(q[0], q[2], 30) < W + 4) continue; const hh = 0.8 + r() * 3; bar(mb, q, [q[0], q[1] + hh, q[2]], 0.5, C, 17, 0.5, 10); }
+    }
+    function aqueduct(o) {
+      const mb = ch(rk(o.i)), P = LF(o), C = [0.72, 0.6, 0.46];
+      for (let k = 0; k < 14; k++) { const lz = -35 + k * 5.4, h = 9 + Math.sin(k * 0.5) * 1.5, q = P(0, 0, lz); if (T.roadDist(q[0], q[2], 30) < W + 5) continue; mb.box(q[0], q[1], q[2], 2.2, h, 2.2, jit(C, r, 0.05), 17, o.yaw); const t = P(0, h, lz + 2.7); mb.box(t[0], t[1], t[2], 2.4, 1.6, 5.6, C, 17, o.yaw); }
+    }
+    function theatre(o) {
+      const mb = ch(rk(o.i)), C = [0.78, 0.7, 0.56], x = o.p[0], z = o.p[2];
+      for (let row = 0; row < 8; row++) { const R2 = 10 + row * 1.6; for (let k = 0; k <= 16; k++) { const a = o.yaw + Math.PI / 2 + (k / 16) * Math.PI, q = [x + Math.sin(a) * R2, o.y + row * 0.7, z + Math.cos(a) * R2]; mb.box(q[0], q[1], q[2], 2.2, 0.7, 1.6, jit(C, r, 0.04), 17, a); } }
+      mb.box(x, o.y, z, 18, 0.6, 5, V3.sc(C, 0.9), 17, o.yaw);
+    }
+    function clockTower(o) {
+      // horloge de l'avenue Habib-Bourguiba : tour métallique et cadrans lumineux
+      const mb = ch(rk(o.i)), b = [o.p[0], o.y, o.p[2]], G3 = [0.55, 0.58, 0.62];
+      mb.box(b[0], b[1], b[2], 5, 1.2, 5, [0.7, 0.7, 0.72], 18, o.yaw); mb.box(b[0], b[1] + 1.2, b[2], 2.6, 17, 2.6, G3, 4, o.yaw);
+      for (const [dx, dz] of [[0, 1.32], [0, -1.32]]) discZ(mb, b[0] + dx, b[1] + 15, b[2] + dz, 1.0, [1, 0.97, 0.88], 15, 18);
+      for (const dx of [1.32, -1.32]) discX(mb, b[0] + dx, b[1] + 15, b[2], 1.0, [1, 0.97, 0.88], 15, 18, 0.01);
+      mb.dome(b[0], b[1] + 18.2, b[2], 1.6, 2.4, 1.6, 4, 2, G3, 4, [0.7, 0.72, 0.76]);
+      flag(mb, [b[0] + 4, b[1], b[2] + 3], 10, o.yaw);
+    }
+    function cathedral(o) {
+      const mb = ch(rk(o.i)), P = LF(o), C = [0.86, 0.78, 0.62], b = P(0, 0, 0);
+      mb.box(b[0], b[1], b[2], 18, 15, 30, C, 18, o.yaw); for (const sx of [-1, 1]) { const q = P(sx * 7, 0, -14); mb.box(q[0], q[1], q[2], 5, 27, 5, V3.sc(C, 1.03), 18, o.yaw); mb.dome(q[0], q[1] + 27, q[2], 2.6, 3, 2.6, 8, 3, [0.5, 0.52, 0.5], 4, [0.6, 0.62, 0.6]); }
+      const r0 = P(0, 15, 4); mb.dome(r0[0], r0[1], r0[2], 5, 5, 5, 12, 4, C, 18, [0.6, 0.62, 0.6]); const dr = P(0, 0.3, -15.05); mb.box(dr[0], dr[1], dr[2], 3.4, 6, 0.1, [0.25, 0.15, 0.08], 0, o.yaw);
+    }
+    const put = (fn, f0, side, off, rr, ...a) => { const o = spot(f0, side, off, rr); if (o) { fn(o, ...a); (T.lmk || (T.lmk = [])).push([fn.name || 'lm', o.p[0], o.y, o.p[2], o.i, o.s]); } return o; };
+    const sea = -T.inSide, land = T.inSide;
+    if (id === 'matmata') { for (const f of [0.08, 0.27, 0.45, 0.63, 0.82]) put(troglo, f, 0, W + 22, 14); put(o => flag(ch(rk(o.i)), [o.p[0], o.y, o.p[2]], 9, o.yaw), 0.01, 1, W + 6, 1); }
+    if (id === 'tataouine') { for (const f of [0.18, 0.58]) put(ksar, f, 0, W + 30, 18); put(troglo, 0.85, 0, W + 24, 14); }
+    if (id === 'kef') { put(mesa, 0.32, land, 230, 90); put(kasbah, 0.72, 0, W + 34, 24); put(mosque, 0.05, 0, W + 30, 16, 0.8, [0.84, 0.78, 0.66]); }
+    if (id === 'nabeul') { for (const f of [0.14, 0.42, 0.74]) put(pottery, f, land, W + 9, 9); put(bigJar, 0.02, 0, W + 10, 4); put(mosque, 0.56, land, W + 30, 16); }
+    if (id === 'mahdia') { put(lighthouse, 0.38, sea, W + 20, 5); put(skifa, 0.1, land, W + 22, 13); for (const f of [0.5, 0.56, 0.62, 0.7, 0.86]) put(boat, f, sea, W + 13, 5); put(mosque, 0.76, land, W + 30, 16); }
+    if (id === 'dougga') { put(temple, 0.24, 0, W + 34, 18, 4); put(theatre, 0.6, 0, W + 44, 26); }
+    if (id === 'zaghouan') { put(temple, 0.3, 0, W + 34, 18, 6); put(aqueduct, 0.66, 0, W + 40, 38); put(mosque, 0.9, 0, W + 30, 16, 0.8); }
+    if (id === 'tunis_jour') { put(clockTower, 0.04, 0, W + 9, 4); put(cathedral, 0.38, 0, W + 30, 18); put(mosque, 0.7, 0, W + 34, 16, 1.1, [0.86, 0.8, 0.68]); }
+    // mosquées et minarets sur les circuits tunisiens déjà existants
+    if (id === 'kairouan') put(mosque, 0.3, 0, W + 40, 20, 1.5, [0.82, 0.72, 0.56]);
+    if (id === 'sousse' || id === 'monastir' || id === 'sfax') put(mosque, 0.55, 0, W + 40, 16, 1, id === 'sfax' ? [0.86, 0.8, 0.68] : WHITE);
+    if (id === 'djerba') put(mosque, 0.4, 0, W + 28, 14, 0.8, WHITE);
+    if (id === 'tozeur_oasis') put(o => minaret(o, 20, [0.72, 0.5, 0.32]), 0.45, 0, W + 26, 6);
+    if (id === 'gafsa_phosphate') put(ksar, 0.62, 0, W + 34, 18);
+  }
 
   function windowsOnFace(mb, P, hx, hz, h, face, prob, warm) {
     const e = 0.07, fl = 3.6, nf = Math.floor((h - 4.5) / fl);
@@ -5375,10 +5704,10 @@ const AU = {
     for (const [o, mul] of this.o) o.frequency.setTargetAtTime(f * mul, t, 0.025);
     this.ef.frequency.setTargetAtTime(ev ? 2500 : 220 + p.rpm * 1700 * (0.35 + p.load * 0.65), t, 0.04);
     this.rg.gain.setTargetAtTime(p.mute ? 0 : (p.rain || 0) * 0.09, t, 0.2);
-    this.eg.gain.setTargetAtTime(p.mute ? 0 : ev ? (0.03 + p.load * 0.05 + p.speed * 0.05) : (0.07 + p.load * 0.12 + p.rpm * 0.05), t, 0.05);
+    this.eg.gain.setTargetAtTime(p.mute || p.bike ? 0 : ev ? (0.03 + p.load * 0.05 + p.speed * 0.05) : (0.07 + p.load * 0.12 + p.rpm * 0.05), t, 0.05);
     this.wg.gain.setTargetAtTime(p.mute ? 0 : Math.min(0.32, p.speed * p.speed * 0.3), t, 0.1);
     this.sg.gain.setTargetAtTime(p.mute ? 0 : p.skid * 0.16, t, 0.05);
-    this.ng.gain.setTargetAtTime(p.mute ? 0 : (p.nitro ? 0.13 : 0), t, 0.05);
+    this.ng.gain.setTargetAtTime(p.mute || p.bike ? 0 : (p.nitro ? 0.13 : 0), t, 0.05);
     this.sig.gain.setTargetAtTime(p.mute ? 0 : p.siren * 0.09, t, 0.1);
     this.cg.gain.setTargetAtTime(p.mute ? 0 : (p.crowd ? 0.038 : 0), t, 0.45);
     this.chg.gain.setTargetAtTime(p.mute ? 0 : (p.crowd ? 0.012 : 0), t, 0.6);
@@ -6128,6 +6457,11 @@ for (const l in V220_TXT) { const v = V220_TXT[l]; Object.assign(LANGS[l], { o_b
 const CAM_N = 5, inCarCam = () => G.camMode === 2 || G.camMode === 3;
 function camLabel() { return t('camLbl') + ' : ' + t(['o_near', 'o_far', 'o_hood', 'o_bump', 'o_drone'][G.camMode] || 'o_near'); }
 function nextCam() { G.camMode = (G.camMode + 1) % CAM_N; G.cam.vel = null; SAVE.settings.cam = G.camMode; saveGame(); if (G.state === 'race' || G.state === 'countdown') popup(camLabel(), '#9fd3ff'); }
+// V224 — vélos et circuits tunisiens
+const V224_TXT = {"fr": ["Vélos", "Course vélo", "Peloton de vélos, sans circulation. Choisis ton vélo.", "Ton vélo"], "en": ["Bicycles", "Bike race", "A cycling pack, no traffic. Pick your bike.", "Your bike"], "es": ["Bicicletas", "Carrera ciclista", "Pelotón de bicis, sin tráfico. Elige tu bici.", "Tu bici"], "pt": ["Bicicletas", "Corrida de bicicleta", "Pelotão de bicicletas, sem trânsito. Escolha a sua.", "A tua bicicleta"], "de": ["Fahrräder", "Radrennen", "Ein Fahrerfeld ohne Verkehr. Wähle dein Rad.", "Dein Rad"], "it": ["Biciclette", "Gara ciclistica", "Gruppo di bici, senza traffico. Scegli la tua bici.", "La tua bici"], "tr": ["Bisikletler", "Bisiklet yarışı", "Trafiksiz bisiklet grubu. Bisikletini seç.", "Bisikletin"], "ar": ["دراجات هوائية", "سباق دراجات", "مجموعة دراجات هوائية بدون حركة مرور. اختر دراجتك.", "دراجتك"], "tn": ["بسكلات", "كورسة بسكلات", "بسكلات برك، من غير كراهب. اختار البسكلات متاعك.", "البسكلات متاعك"]};
+const V224_TRK = {"matmata": ["Matmata • Maisons troglodytes et cratères", "Matmata • Cave houses and craters", "مطماطة • المساكن الحفرية", "مطماطة • الديار تحت الأرض"], "tataouine": ["Tataouine • Ksar Ouled Soltane et ghorfas", "Tataouine • Ksar Ouled Soltane granaries", "تطاوين • قصر أولاد سلطان والغرف", "تطاوين • قصر أولاد سلطان والغرف"], "kef": ["Le Kef • Table de Jugurtha et kasbah", "Le Kef • Jugurtha’s Table and kasbah", "الكاف • مائدة يوغرطة والقصبة", "الكاف • مايدة يوغرطة والقصبة"], "nabeul": ["Nabeul • Souk des potiers et Cap Bon", "Nabeul • Potters’ souk and Cap Bon", "نابل • سوق الفخّار والوطن القبلي", "نابل • سوق الفخّار والوطن القبلي"], "mahdia": ["Mahdia • Cap Africa, phare et port de pêche", "Mahdia • Cap Africa, lighthouse and fishing port", "المهدية • رأس إفريقيا والمنارة وميناء الصيد", "المهدية • راس افريقيا والفنار والمرسى"], "dougga": ["Dougga • Capitole et théâtre romains", "Dougga • Roman capitol and theatre", "دقة • الكابيتول والمسرح الروماني", "دقة • الكابيتول والمسرح الروماني"], "zaghouan": ["Zaghouan • Temple des Eaux et aqueduc", "Zaghouan • Water Temple and aqueduct", "زغوان • معبد المياه والحنايا", "زغوان • معبد المياه والحنايا"], "tunis_jour": ["Tunis • Avenue Habib-Bourguiba de jour", "Tunis • Habib Bourguiba Avenue by day", "تونس • شارع الحبيب بورقيبة نهاراً", "تونس • شارع بورقيبة في النهار"]};
+for (const l in V224_TXT) { const v = V224_TXT[l]; Object.assign(LANGS[l], { cat_velo: v[0], m_velo: v[1], m_veloD: v[2], q_bike: v[3] }); }
+for (const k in V224_TRK) { const v = V224_TRK[k]; TXT.trk[k] = [v[0], v[1], v[2]]; TN_CONTENT.trk[k] = v[3]; }
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -6174,6 +6508,12 @@ const CARS = [
   { id: 'eclipse_gtx', name: 'Eclipse GTX Electric', cls: 'S', tier: 4, style: 'ev', price: 142000, vmax: 338, acc: 14.1, lat: 27.5, nos: 1.35, desc: 'Supercar électrique à quatre moteurs, couple instantané et motricité intégrale.' },
   { id: 'alpine_xr', name: 'Alpine XR-900', cls: 'S', tier: 4, style: 'sports', price: 138000, vmax: 330, acc: 12.9, lat: 28.1, nos: 1.4, desc: 'Sportive légère de précision, châssis affûté et appui aérodynamique.' },
   // motos (adversaires : motos aussi)
+  { id: 'bisklet', name: 'Bisklet Médina', cls: 'D', tier: 0, cat: 'velo', style: 'bike_ville', price: 0, vmax: 52, acc: 3.4, lat: 17.5, nos: 1.0, mass: 0.14, desc: 'Le vélo tunisien de tous les jours : panier en osier, porte-bagages, sonnette et garde-boue.' },
+  { id: 'bmx_lac', name: 'BMX Lac Freestyle', cls: 'D', tier: 0, cat: 'velo', style: 'bike_bmx', price: 1500, vmax: 56, acc: 5.2, lat: 20, nos: 1.05, mass: 0.12, desc: 'Petit, nerveux et maniable : idéal pour les ruelles de la médina.' },
+  { id: 'vtt_chambi', name: 'Chambi VTT 29', cls: 'C', tier: 1, cat: 'velo', style: 'bike_vtt', price: 3800, vmax: 66, acc: 4.8, lat: 21, nos: 1.08, mass: 0.15, desc: 'VTT à fourche suspendue et gros pneus à crampons : il accroche partout, même en montagne.' },
+  { id: 'route_carthage', name: 'Carthage R1 Route', cls: 'C', tier: 1, cat: 'velo', style: 'bike_route', price: 5200, vmax: 78, acc: 4.6, lat: 19.5, nos: 1.12, mass: 0.11, desc: 'Vélo de route en carbone, cintre de course et jantes hautes : fait pour le sprint.' },
+  { id: 'elec_sahel', name: 'Sahel e-Bike', cls: 'B', tier: 2, cat: 'velo', style: 'bike_elec', price: 7500, vmax: 74, acc: 6.2, lat: 19.5, nos: 1.15, mass: 0.2, desc: 'Vélo à assistance électrique : batterie dans le cadre, moteur dans la roue, départs fulgurants.' },
+  { id: 'clm_jasmin', name: 'Jasmin Chrono CLM', cls: 'A', tier: 3, cat: 'velo', style: 'bike_clm', price: 11000, vmax: 88, acc: 4.9, lat: 18.5, nos: 1.2, mass: 0.1, desc: 'Machine de contre-la-montre : roue lenticulaire, prolongateurs et position aérodynamique.' },
   { id: 'zitouna', name: 'Zitouna 125', cls: 'D', tier: 0, cat: 'moto', style: 'moto_scoot', price: 4000, vmax: 150, acc: 7.6, lat: 20, nos: 1.0, mass: 0.45, desc: 'Scooter de ville.' },
   { id: 'djebel', name: 'Djebel 800', cls: 'B', tier: 2, cat: 'moto', style: 'moto_trail', price: 30000, vmax: 228, acc: 10.2, lat: 21.5, nos: 1.15, mass: 0.55, desc: 'Trail aventure.' },
   { id: 'raad', name: 'Raad 1000 RR', cls: 'S', tier: 4, cat: 'moto', style: 'moto_sport', price: 82000, vmax: 315, acc: 13.4, lat: 24, nos: 1.3, mass: 0.5, desc: 'Sportive de piste.' },
@@ -6248,7 +6588,7 @@ const CARS = [
   { id:'sfax_turbo_89',name:'Sfax Turbo 89',cls:'A',tier:3,cat:'retro',style:'retro80',price:68000,vmax:298,acc:10.4,lat:23,nos:1.24,desc:'Coupé rétro à turbo haute pression.' },
   { id:'carthage_classic_gt',name:'Carthage Classic GT',cls:'A',tier:3,cat:'retro',style:'retro70',price:72000,vmax:304,acc:10.6,lat:23.2,nos:1.26,desc:'Grand tourisme classique restauré et préparé.' },
 ];
-const CATS = ['car', 'moto', 'offroad', 'heavy', 'retro'];
+const CATS = ['car', 'moto', 'velo', 'offroad', 'heavy', 'retro'];
 const catOf = c => c.cat || 'car';
 const tierCars = t => CARS.filter(c => c.tier === t && catOf(c) === 'car');
 const UPG = [{ k: 'eng', name: 'Moteur', desc: 'Vitesse max' }, { k: 'tur', name: 'Turbo', desc: 'Accélération' }, { k: 'tyr', name: 'Pneus', desc: 'Adhérence' }, { k: 'nos', name: 'Nitro', desc: 'Durée et puissance' }, { k: 'aero', name: 'Aérodynamique', desc: 'Vitesse et stabilité' }, { k: 'brk', name: 'Freins sport', desc: 'Puissance de freinage' }];
@@ -6346,17 +6686,18 @@ function mkCar(kind, modelName, paint, o = {}) {
     burnT: 0, burn: false, gear: 1, rpm: 0.5, wreck: false, drv: 0, perk: null, ph: 0.5, state: '', cruise: 0.5, vmax: 0.5, cornerF: 1.5, carName: '', rimS: null, rimC: null, st: null, car: null,
   }, o);
 }
-function prepWheels(c) { const m = c.model; c.wm = getWheel(c.rimS || m.rim, m.wr, m.ww); return c; }
+function prepWheels(c) { const m = c.model; c.wm = getWheel(m.cyc ? m.rim : (c.rimS || m.rim), m.wr, m.ww); if (m.rimF) c.wmF = getWheel(m.rimF, m.wr, m.ww); return c; }
 function placeOnTrack(c, s, d) {
   const T = G.T, a = T.at(s); c.s = T.wrap(s); c.d = d; c.x = a.x + a.rx * d; c.z = a.z + a.rz * d; c.y = a.y; c.h = a.h; c.i = a.i;
   c.trx = a.rx; c.trz = a.rz; c.ttx = a.tx; c.ttz = a.tz;
 }
 function randomPaint() { return hexToRgb(PAINTS[Math.floor(Math.random() * 8)]); }
 
+const velSfx = () => (G.player && G.player.car && catOf(G.player.car) === 'velo') ? '_velo' : '';   // records et fantômes séparés pour les vélos
 function setupRace(cfg) {
   const T = G.T; G.cars = []; G.cfg = cfg; G.time = 0; G.raceT = 0; G.style = 0; G.msgs = []; G.laps = []; G.best = Infinity; G.lapStart = 0;
   G.smoke.clear(); G.glow.clear(); if (G.skids) G.skids.clear(); G.revT = undefined; G.hitFx = 0; G.shake = 0; G.flash = 0; G.steer = 0; G.chase = null; G.wrongT = 0; G.stuckT = 0;
-  const car = CARS.find(c => c.id === SAVE.car) || CARS[0];
+  const car = (cfg.velo && CARS.find(c => c.id === cfg.velo)) || CARS.find(c => c.id === SAVE.car) || CARS[0];
   const p = mkCar('player', car.style, hexToRgb(SAVE.paint[car.id] || '#d81e1e'), { name: t('you'), st: carStats(car, SAVE.upg[car.id]), car });
   // pilote choisi : bonus appliqués aux stats du véhicule
   p.drv = drvIndex(SAVE.driver); const pk = p.perk = perkOf(SAVE.driver);
@@ -6366,7 +6707,7 @@ function setupRace(cfg) {
   G.player = p;
   // V210 — tour de référence : meilleur tour enregistré sur ce circuit (temps et position tous les 20 m)
   G.lapRec = { t: [], x: [], z: [] }; G.delta = null; G.ghostI = 0; G.ghost = null;
-  try { const g = JSON.parse(localStorage.getItem(ghostKey(T.def.id)) || 'null'); if (g && g.lap > 0 && Array.isArray(g.t) && g.t.length > 3) G.ghost = g; } catch (e) { }
+  try { const g = JSON.parse(localStorage.getItem(ghostKey(T.def.id + velSfx())) || 'null'); if (g && g.lap > 0 && Array.isArray(g.t) && g.t.length > 3) G.ghost = g; } catch (e) { }
   const diff = DIFFS[cfg.diff === undefined ? 1 : cfg.diff];
   G.rb = diff.rb;
   const names = AI_NAMES.slice().sort(() => Math.random() - 0.5);
@@ -6396,7 +6737,7 @@ function setupRace(cfg) {
   G.cars.unshift(p);
   const Q = SAVE.settings.quality, TCOL = ['#7a7f86', '#c9c9c9', '#3b4a63', '#6b2a2a', '#2e4d3a', '#e8e4dc', '#1c1c1e', '#8a6d3b', '#a3282c', '#d7d2c4', '#2b5f8a', '#5b5f63'];
   const trafCol = mn => mn === 'taxi' ? [1, 0.8, 0.08] : mn === 'louage' ? [0.94, 0.94, 0.92] : hexToRgb(TCOL[Math.floor(Math.random() * TCOL.length)]);
-  if (cfg.traffic) {
+  if (cfg.traffic && catOf(car) !== 'velo') {
     // V214 — circulation réaliste : berlines, citadines, taxis jaunes, louages, utilitaires, camions, bus, pick-up, 4x4, scooters, motos et voitures anciennes
     const models = ['sedan', 'taxi', 'louage', 'hatch', 'moto_scoot', 'van', 'suv', 'truck', 'sedan', 'retro80', 'bus', 'taxi', 'pickup', 'moto_trail', 'hatch', 'retro70', 'louage', 'coupe'];
     const n = (cfg.mode === 'chase' ? 14 : 10) + (Q === 'ultra' ? 4 : Q === 'high' ? 2 : 0);
@@ -6421,8 +6762,9 @@ function setupRace(cfg) {
   }
   // roues construites avant le départ : aucune construction de maillage (saccade) en pleine course
   for (const c of G.cars) prepWheels(c); prepWheels(p);
-  for (const c of G.cars) if (c.model.bike || c.model.seatM) driverMesh(c.drv, c.model.bike || 'car');
+  for (const c of G.cars) { if (c.model.bike || c.model.seatM) driverMesh(c.drv, c.model.bike || 'car'); if (c.model.cyc) for (let k = 0; k < CYC_PH; k++) cycLegs(c.drv, c.model.bike, k); }
   if (p.model.bike || p.model.seatM) driverMesh(p.drv, p.model.bike || 'car');
+  if (p.model.cyc) for (let k = 0; k < CYC_PH; k++) cycLegs(p.drv, p.model.bike, k);
   if (cfg.mode === 'chase') for (const n of ['police', 'polgt']) getWheel(MODELS[n].rim, MODELS[n].wr, MODELS[n].ww);
   const cam = G.cam; cam.eye = [p.x - Math.sin(p.h) * 9, p.y + 4, p.z - Math.cos(p.h) * 9]; cam.target = [p.x, p.y + 1, p.z]; p.camH = p.h;
   G.countdown = 3.99; G.state = 'countdown'; G.lastBeep = 4; G.introT = 1;
@@ -6799,7 +7141,7 @@ function updateGame(dt) {
       const lt = G.raceT - G.lapStart; G.laps.push(lt); G.lapStart = G.raceT;
       if (G.lapRec.t.length > 3 && (!G.ghost || lt < G.ghost.lap)) {
         G.ghost = { lap: Math.round(lt * 1000) / 1000, t: G.lapRec.t, x: G.lapRec.x, z: G.lapRec.z };
-        try { localStorage.setItem(ghostKey(T.def.id), JSON.stringify(G.ghost)); } catch (e) { }
+        try { localStorage.setItem(ghostKey(T.def.id + velSfx()), JSON.stringify(G.ghost)); } catch (e) { }
       }
       G.lapRec = { t: [], x: [], z: [] }; G.ghostI = 0;
       if (lt < G.best) G.best = lt;
@@ -6823,7 +7165,7 @@ function updateGame(dt) {
   p.gear = p.vfw < -0.5 ? 'R' : gear; p.rpm = rpm;
   let siren = 0;
   if (G.chase) for (const c of G.cars) if (c.kind === 'cop' && !c.wreck) siren = Math.max(siren, clamp(1 - Math.hypot(c.x - p.x, c.z - p.z) / 250, 0, 1));
-  const ap = G.auP || (G.auP = {}); ap.rain = G.env && G.env.rain ? 1 : 0; ap.ev = p.car && p.car.style === 'ev'; ap.rpm = rpm; ap.gear = gear; ap.load = racing ? inp.gas : (inp.rev || 0); ap.speed = Math.min(1.2, sf); ap.skid = (p.sliding || (inp.hand && p.v > 6)) ? Math.min(1, Math.abs(p.vl) / 8 + 0.3) : 0; ap.nitro = p.nitroOn; ap.siren = siren; ap.crowd = racing && G.state === 'race' ? 1 : 0; ap.mute = false;
+  const ap = G.auP || (G.auP = {}); ap.bike = !!p.model.cyc; ap.rain = G.env && G.env.rain ? 1 : 0; ap.ev = p.car && p.car.style === 'ev'; ap.rpm = rpm; ap.gear = gear; ap.load = racing ? inp.gas : (inp.rev || 0); ap.speed = Math.min(1.2, sf); ap.skid = (p.sliding || (inp.hand && p.v > 6)) ? Math.min(1, Math.abs(p.vl) / 8 + 0.3) : 0; ap.nitro = p.nitroOn; ap.siren = siren; ap.crowd = racing && G.state === 'race' ? 1 : 0; ap.mute = false;
   AU.update(ap);
   G.shake *= Math.exp(-dt * 3); G.flash *= Math.exp(-dt * 3); G.hitFx = (G.hitFx || 0) * Math.exp(-dt * 5);
   UI.hud(dt);
@@ -6882,8 +7224,8 @@ function endRace() {
     res.success = ch.result === 'escaped';
     res.reward = res.success ? Math.min(12000, Math.round((1200 + ch.t * 20 + ch.bounty * 0.3) / 10) * 10) : 0;
   }
-  const rec = SAVE.best[G.T.def.id];
-  if (G.best < Infinity && (!rec || G.best < rec)) { SAVE.best[G.T.def.id] = G.best; res.record = true; }
+  const rk2 = G.T.def.id + velSfx(), rec = SAVE.best[rk2];
+  if (G.best < Infinity && (!rec || G.best < rec)) { SAVE.best[rk2] = G.best; res.record = true; }
   res.styleBonus = Math.round(res.style / 10 / 10) * 10;
   if (cfg.event !== undefined) {
     const ev = CAREER[cfg.event];
@@ -6936,7 +7278,7 @@ function emitEffects(dt) {
       const q = localToWorld(M, e[0], e[1], e[2], Q1), q2 = localToWorld(M, e[0], e[1], e[2] - 1, Q2), dx = q2[0] - q[0], dy = q2[1] - q[1], dz = q2[2] - q[2];
       for (let k = 0; k < 2; k++) { const tt = Math.random(); G.glow.emit(q[0], q[1], q[2], c.vx * 0.9 + dx * 6 + rnd(-0.3, 0.3), dy * 6 + rnd(0, 0.4), c.vz * 0.9 + dz * 6 + rnd(-0.3, 0.3), 0.12 + Math.random() * 0.08, 0.35, -1.2, 0.3 + tt * 0.7, 0.45 + tt * 0.3, 1.0 - tt * 0.6, 1, 0.5, 0); }
     }
-    if (c.flame && c.v > 3 && !m.exhaust.length) { localToWorld(M, 0, m.tailY, -m.L / 2 - 0.1, Q1); G.glow.emit(Q1[0], Q1[1], Q1[2], c.vx * 0.9, 0, c.vz * 0.9, 0.15, 0.6, -1, 0.3, 0.7, 1, 0.8, 0.5, 0); }
+    if (c.flame && c.v > 3 && !m.exhaust.length && !m.cyc) { localToWorld(M, 0, m.tailY, -m.L / 2 - 0.1, Q1); G.glow.emit(Q1[0], Q1[1], Q1[2], c.vx * 0.9, 0, c.vz * 0.9, 0.15, 0.6, -1, 0.3, 0.7, 1, 0.8, 0.5, 0); }
   }
 }
 const SX2 = [-1, 1], RAIN_SPRAY = [0.74, 0.77, 0.8];
@@ -7025,7 +7367,7 @@ const DRM = new Float32Array(16);
 function drawCar(c, M, far) {
   const m = c.model;
   R.setPaint(c.paint); R.setBrake(c.brake ? 1 : 0); R.setUnder(c.under || UNDER0);
-  if (m.bike) R.draw(driverMesh(c.drv, m.bike), M); // pilote de moto : toujours visible
+  if (m.bike) { R.draw(driverMesh(c.drv, m.bike), M); if (m.cyc) R.draw(cycLegs(c.drv, m.bike, cycPh(c)), M); } // pilote de moto / cycliste : toujours visible
   if (far) { R.draw(m.far, M); return; }
   // de près : habitacle, pilote au volant et vitres transparentes
   const inside = m.shell && R.detail && !(c.camD > 45);
@@ -7033,17 +7375,17 @@ function drawCar(c, M, far) {
   if (inside) R.draw(driverMesh(c.drv, 'car'), M4.mul(M, m.seatM, DRM));
   const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6), frontSteer = -steer;
   R.setRim(c.rimC || RIM0);
-  const wm = c.wm || (c.wm = getWheel(c.rimS || m.rim, m.wr, m.ww));
+  const wm = c.wm || (c.wm = getWheel(m.cyc ? m.rim : (c.rimS || m.rim), m.wr, m.ww)), wmF = m.rimF ? (c.wmF || (c.wmF = getWheel(m.rimF, m.wr, m.ww))) : wm;
   for (const w of m.wheels) { const speedFactor = clamp(Math.abs(c.v || 0) / 90, 0, 1);
     const baseWheelAngle = frontSteer * (0.72 - 0.12 * speedFactor);
     // Géométrie Ackermann légère : la roue intérieure braque un peu plus que l'extérieure.
     const trackHalf = Math.max(0.55, m.W * 0.39);
     const ackermann = clamp(1 + (w[0] / trackHalf) * Math.sign(baseWheelAngle) * 0.075, 0.91, 1.09);
-    const wheelAngle = baseWheelAngle * ackermann;
+    const wheelAngle = baseWheelAngle * ackermann * (m.cyc ? 0.3 : 1);
     // Débattement visuel différencié entre essieu avant et arrière lors des transferts de charge.
     const bodyPitch = clamp(c.squat || 0, -0.045, 0.045);
     const suspensionTravel = clamp(bodyPitch * (w[3] ? -0.58 : 0.58), -0.026, 0.026);
-    M4.wheelTo(WT, w[0], w[1] + suspensionTravel, w[2], w[3] ? wheelAngle : 0, c.spin); R.draw(wm, M4.mul(M, WT, WO)); }
+    M4.wheelTo(WT, w[0], w[1] + suspensionTravel, w[2], w[3] ? wheelAngle : 0, c.spin); R.draw(w[3] ? wmF : wm, M4.mul(M, WT, WO)); }
   if (inside && m.glass) { R.glassOn(); R.draw(m.glass, M); R.glassOff(); }
 }
 const UNDER0 = [0.05, 0.05, 0.06], RIM0 = [0.78, 0.79, 0.82];
@@ -7073,7 +7415,8 @@ function renderWorld(dtv) {
   R.stats.calls = 0; R.stats.tris = 0;
   pickLights(env);
   const Fx = Math.sin(p.h), Fz = Math.cos(p.h);
-  for (const c of G.cars) { c.spin += c.v * dtv / c.model.wr * (c.kind === 'player' && c.vfw < 0 ? -1 : 1); c.M = carMatrix(c); }
+  for (const c of G.cars) { c.spin += c.v * dtv / c.model.wr * (c.kind === 'player' && c.vfw < 0 ? -1 : 1); c.M = carMatrix(c);
+    if (c.model.cyc && (c.kind === 'player' ? (G.inpO && G.inpO.gas > 0.05 && c.vfw > 0.3) : c.v > 0.4)) c.crank = (c.crank || 0) + c.v * dtv / c.model.wr / c.model.cyc.ratio; }   // le cycliste pédale (roue libre quand le joueur lâche l'accélérateur)
   const maxD = 2.25 / env.fogDen * G.drawMul * 0.9;
   if (env.shadows && R.shadows) {
     const rad = R.shadowSize >= 2048 ? 80 : 60; SHC[0] = p.x + Fx * rad * 0.45; SHC[1] = p.y; SHC[2] = p.z + Fz * rad * 0.45;
@@ -7122,9 +7465,9 @@ function renderWorld(dtv) {
   G.smoke.draw(); G.glow.draw();
   if (env.rain && G.rainSys) { G.rainSys.update(dtv, G.cam.eye); G.rainSys.draw(env.night ? RAIN_N : RAIN_D); }
   const sf = clamp(p.v / p.st.vmax, 0, 1.3), FX = G.fx || (G.fx = {});
-  FX.bloom = env.night ? 1.25 : env.rain ? 0.6 : 0.3; FX.blur = clamp((sf - 0.55) * 0.016, 0, 0.009) + (p.nitroOn ? 0.009 : 0); FX.vig = 0.6; FX.sat = env.rain ? 0.95 : (env.sat || 1.1);
+  FX.bloom = env.night ? 1.25 : env.rain ? 0.6 : 0.3; FX.blur = p.model.cyc ? 0 : clamp((sf - 0.55) * 0.016, 0, 0.009) + (p.nitroOn ? 0.009 : 0);   // vélo : pas de flou de vitesse FX.vig = 0.6; FX.sat = env.rain ? 0.95 : (env.sat || 1.1);
   FX.flash = G.flash; FX.rain = env.rain ? (!inCarCam() ? 1 : 0.6) : 0; FX.time = G.time;
-  FX.grade = env.grade; FX.flare = 1; FX.speed = p.nitroOn ? 1 : clamp((sf - 0.8) * 3, 0, 0.6); FX.haze = env.haze || 0; FX.hit = G.hitFx || 0; FX.nos = p.nitroOn ? 1 : 0;
+  FX.grade = env.grade; FX.flare = 1; FX.speed = p.model.cyc ? (p.nitroOn ? 0.4 : 0) : p.nitroOn ? 1 : clamp((sf - 0.8) * 3, 0, 0.6); FX.haze = env.haze || 0; FX.hit = G.hitFx || 0; FX.nos = p.nitroOn ? 1 : 0;
   R.finish(FX);
 }
 const RAIN_N = [0.62, 0.66, 0.75], RAIN_D = [0.78, 0.8, 0.86];
@@ -7172,7 +7515,7 @@ function renderGarage(dt) {
   const fake = GAR.fake;
   fake.drv = drvIndex(UI.viewDriver || SAVE.driver);
   fake.model = m; fake.paint = rgbOf(UI.viewPaint || SAVE.paint[car.id] || '#d81e1e'); fake.under = rgbOf(neon); fake.rimC = rgbOf(rim.c);
-  if (fake.key !== car.style || fake.rimS !== rim.s) { fake.key = car.style; fake.rimS = rim.s; fake.wm = null; }
+  if (fake.key !== car.style || fake.rimS !== rim.s) { fake.key = car.style; fake.rimS = rim.s; fake.wm = null; fake.wmF = null; }
   if (R.detail) { drawCar(fake, MR); if (fake.under) { R.blendAdd(); R.setUnder(fake.under); R.draw(m.under, MR); } }
   R.blendConst(R.detail ? 0.78 : 1); R.draw(sc.floor); R.blendOff();
   drawCar(fake, M);
@@ -7368,7 +7711,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V223';
+const GAME_VERSION = 'V224';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -7390,7 +7733,7 @@ function detectLang() {
 }
 function defaultSettings() { return { sfx: 80, music: 50, quality: (IS_TOUCH && ((navigator.deviceMemory || 4) <= 3 || (navigator.hardwareConcurrency || 8) <= 4)) ? 'medium' : 'high', dyn: true, fps: false, cam: 0, tags: true, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
-  return { money: 8000, owned: ['sprint'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
+  return { money: 8000, owned: ['sprint', 'bisklet'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
 }
 let SAVE = defaultSave();
 function loadGame() {
@@ -7407,6 +7750,7 @@ function loadGame() {
       SAVE.career = clamp(Number(o.career) || 0, 0, 50);
     }
     SAVE.careerVersion = 2;
+    if (!SAVE.owned.includes('bisklet')) SAVE.owned.push('bisklet');   // V224 : le vélo de ville est offert
     const st = Object.assign(defaultSettings(), o.settings || {}); if (o.settings && o.settings.vol !== undefined && o.settings.sfx === undefined) st.sfx = o.settings.vol; SAVE.settings = st;
     return true;
   } catch (e) { return false; }
@@ -7541,15 +7885,20 @@ const UI = {
   /* ----- course rapide ----- */
   renderQuick() {
     const q = this.q;
-    $('q-modes').innerHTML = ['race', 'tt', 'chase'].map(k => `<button class="mode ${q.mode === k ? 'on' : ''}" data-m="${k}"><b>${t('m_' + k)}</b><small>${t('m_' + k + 'D')}</small></button>`).join('');
+    $('q-modes').innerHTML = ['race', 'velo', 'tt', 'chase'].map(k => `<button class="mode ${q.mode === k ? 'on' : ''}" data-m="${k}"><b>${t('m_' + k)}</b><small>${t('m_' + k + 'D')}</small></button>`).join('');
     $('q-modes').querySelectorAll('button').forEach(b => b.onclick = () => { q.mode = b.dataset.m; if (q.mode === 'chase') q.traffic = 1; this.renderQuick(); });
     const trackFilters=['all','city','desert','mountain','coast','circuit'].map(k=>[k,t('f_'+k)]);
     $('q-track-filters').innerHTML=trackFilters.map(([key,label])=>`<button type="button" data-filter="${key}" class="${(q.trackFilter||'all')===key?'on':''}">${label}</button>`).join('');
     $('q-track-filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{q.trackFilter=b.dataset.filter;this.renderQuick();});
     const visibleTracks=TRACKS.map((d,i)=>({d,i})).filter(x=>(q.trackFilter||'all')==='all'||x.d.theme===(q.trackFilter||'all'));
-    $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><span class="tinfo" role="button" aria-label="${t('ts_info')}">i</span><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small>${trackFacts(d)}<small>${t('record', SAVE.best[d.id] ? fmtT(SAVE.best[d.id]) : '—')}</small></button>`).join('');
+    $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><span class="tinfo" role="button" aria-label="${t('ts_info')}">i</span><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small>${trackFacts(d)}<small>${t('record', SAVE.best[d.id + (q.mode === 'velo' ? '_velo' : '')] ? fmtT(SAVE.best[d.id + (q.mode === 'velo' ? '_velo' : '')]) : '—')}</small></button>`).join('');
     $('q-tracks').querySelectorAll('button').forEach(b => { b.onclick = () => { q.track = +b.dataset.i; this.renderQuick(); }; b.querySelector('.tinfo').onclick = e => { e.stopPropagation(); const ti = +b.dataset.i; openTrackSheet(ti, () => { q.track = ti; this.renderQuick(); }); }; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.i], q.track === +b.dataset.i); });
-    $('q-laps').classList.toggle('hidden', q.mode === 'chase'); $('q-opp').classList.toggle('hidden', q.mode !== 'race'); $('q-diff').classList.toggle('hidden', q.mode !== 'race');
+    { const vb = q.mode === 'velo', bx = $('q-bikes'); bx.classList.toggle('hidden', !vb);
+      if (vb) { const bikes = CARS.filter(c => catOf(c) === 'velo'); if (!q.bike || !SAVE.owned.includes(q.bike)) q.bike = SAVE.owned.includes(SAVE.car) && catOf(CARS.find(c => c.id === SAVE.car) || {}) === 'velo' ? SAVE.car : 'bisklet';
+        bx.innerHTML = `<h3>${t('q_bike')}</h3><div>` + bikes.map(c => { const own = SAVE.owned.includes(c.id); return `<button class="bk ${q.bike === c.id ? 'on' : ''} ${own ? '' : 'lock'}" data-b="${c.id}" ${own ? '' : 'disabled'}><span class="cls mini ${c.cls}">${c.cls}</span><b>${c.name}</b><small>${own ? Math.round(c.vmax * spdU()) + ' ' + (MPH() ? 'mph' : 'km/h') : '🔒 ' + money(c.price)}</small></button>`; }).join('') + '</div>';
+        bx.querySelectorAll('button.bk').forEach(b => b.onclick = () => { q.bike = b.dataset.b; this.renderQuick(); }); } }
+    $('q-traf').classList.toggle('hidden', q.mode === 'velo');
+    $('q-laps').classList.toggle('hidden', q.mode === 'chase'); $('q-opp').classList.toggle('hidden', q.mode !== 'race' && q.mode !== 'velo'); $('q-diff').classList.toggle('hidden', q.mode !== 'race' && q.mode !== 'velo');
     $('q-laps').querySelector('span').textContent = q.laps; $('q-opp').querySelector('span').textContent = q.opp;
     $('q-diff').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === q.diff));
     $('q-traf').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === q.traffic));
@@ -8312,7 +8661,7 @@ function bindInputs() {
   $('q-diff').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.diff = +b.dataset.v; UI.renderQuick(); });
   $('q-traf').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.traffic = +b.dataset.v; UI.renderQuick(); });
   $('q-wx').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.weather = +b.dataset.v; UI.renderQuick(); });
-  $('q-go').onclick = () => { const q = UI.q; UI.startRace({ mode: q.mode, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined }); };
+  $('q-go').onclick = () => { const q = UI.q, vb = q.mode === 'velo'; UI.startRace({ mode: vb ? 'race' : q.mode, velo: vb ? (q.bike || 'bisklet') : undefined, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: vb ? 0 : q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined }); };
   $('p-resume').onclick = () => UI.pause(false);
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };
   $('p-quit').onclick = () => UI.quit();

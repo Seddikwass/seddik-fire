@@ -13,7 +13,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.37.0';
+export const APP_VERSION = '3.38.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -541,7 +541,7 @@ function bindControls(m) {
   const joy = $('#joy'), knob = joy.querySelector('.knob'), zone = $('#joyZone');
   let jid = null, ox = 0, oy = 0; const R = 55;
   const setJ = (dx, dy) => { const d = Math.hypot(dx, dy), k = d > R ? R / d : 1; knob.style.transform = `translate(${dx * k}px,${dy * k}px)`; m.input.jx = dx * k / R; m.input.jy = -dy * k / R; };
-  zone.addEventListener('pointerdown', e => { jid = e.pointerId; zone.setPointerCapture(jid); const r = zone.getBoundingClientRect(); ox = e.clientX; oy = e.clientY; joy.style.left = (e.clientX - r.left) + 'px'; joy.style.top = (e.clientY - r.top) + 'px'; joy.classList.add('act'); setJ(0, 0); A.audioInit(); if (m.ceremony) m.endCeremony(); else if (m.replay) m.skipReplay(); });
+  zone.addEventListener('pointerdown', e => { jid = e.pointerId; zone.setPointerCapture(jid); const r = zone.getBoundingClientRect(); ox = e.clientX; oy = e.clientY; joy.style.left = (e.clientX - r.left) + 'px'; joy.style.top = (e.clientY - r.top) + 'px'; joy.classList.add('act'); setJ(0, 0); A.audioInit(); if (m.ceremony) m.endCeremony(); else if (m.breakShow) m.endBreak(); else if (m.replay) m.skipReplay(); });
   zone.addEventListener('pointermove', e => { if (e.pointerId === jid) setJ(e.clientX - ox, e.clientY - oy); });
   const end = e => { if (e.pointerId === jid) { jid = null; setJ(0, 0); joy.classList.remove('act'); } };
   zone.addEventListener('pointerup', end); zone.addEventListener('pointercancel', end);
@@ -596,11 +596,11 @@ function bindControls(m) {
   }
   m._presetKeys = { Digit1: 'park', Digit2: 'counter', Digit3: 'balanced', Digit4: 'press', Digit5: 'allout' };
   m._setPreset = setPreset;
-  $('#cv').addEventListener('pointerdown', () => { if (m.ceremony) m.endCeremony(); else if (m.replay) m.skipReplay(); });
+  $('#cv').addEventListener('pointerdown', () => { if (m.ceremony) m.endCeremony(); else if (m.breakShow) m.endBreak(); else if (m.replay) m.skipReplay(); });
   // clavier (PC)
   const keys = {};
   const upd = () => { m.input.jx = (keys.ArrowRight || keys.KeyD ? 1 : 0) - (keys.ArrowLeft || keys.KeyA ? 1 : 0); m.input.jy = (keys.ArrowUp || keys.KeyW ? 1 : 0) - (keys.ArrowDown || keys.KeyS ? 1 : 0); m.input.sprint = !!(keys.ShiftLeft || keys.ShiftRight); };
-  m._kd = e => { if (keys[e.code]) return; keys[e.code] = true; upd(); A.audioInit(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootDown(); if (e.code === 'KeyC') m.btnPass(false); if (e.code === 'KeyV') m.btnPass(true); if (e.code === 'KeyQ') m.switchPlayer(); if (m._presetKeys?.[e.code]) m._setPreset(m._presetKeys[e.code]); if (e.code === 'Escape' || e.code === 'KeyP') { m.paused = true; pauseMenu(); } if (m.ceremony && (e.code === 'Enter' || e.code === 'Space')) m.endCeremony(); else if (m.replay && e.code === 'Enter') m.skipReplay(); };
+  m._kd = e => { if (keys[e.code]) return; keys[e.code] = true; upd(); A.audioInit(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootDown(); if (e.code === 'KeyC') m.btnPass(false); if (e.code === 'KeyV') m.btnPass(true); if (e.code === 'KeyQ') m.switchPlayer(); if (m._presetKeys?.[e.code]) m._setPreset(m._presetKeys[e.code]); if (e.code === 'Escape' || e.code === 'KeyP') { m.paused = true; pauseMenu(); } if (m.ceremony && (e.code === 'Enter' || e.code === 'Space')) m.endCeremony(); else if (m.breakShow && (e.code === 'Enter' || e.code === 'Space')) m.endBreak(); else if (m.replay && e.code === 'Enter') m.skipReplay(); };
   m._ku = e => { keys[e.code] = false; upd(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootUp(); if (e.code === 'KeyV') m.input.press = false; };
   addEventListener('keydown', m._kd); addEventListener('keyup', m._ku);
   const od = m.destroy.bind(m); m.destroy = () => {

@@ -113,3 +113,15 @@ console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroul
   assert.ok(xs.every((x, i) => i === 0 || x - xs[i - 1] > 0.6), 'aucun joueur ne se chevauche dans l alignement');
   console.log('CEREMONY OK — 22 joueurs alignés à temps, sans chevauchement');
 }
+{
+  const { Match } = await import('../public/js/match.js');
+  const P = Match.prototype;
+  const mk = (team, rating, goals = 0) => ({ team, rating, goals, assists: 0 });
+  const star = mk(1, 8.1, 2), solid = mk(0, 8.0);
+  const fake = { score: [0, 2], teams: [{ ps: [solid, mk(0, 6.5)] }, { ps: [star, mk(1, 7)] }] };
+  assert.equal(P.getManOfTheMatch.call(fake), star, 'homme du match : note + buts + victoire');
+  const q0 = P.walkOff.call(fake, [-20, -10], 0.1), q1 = P.walkOff.call(fake, [-20, -10], 4), q2 = P.walkOff.call(fake, [-20, -10], 30);
+  assert.ok(q1.y > q0.y && q1.x > q0.x, 'les joueurs marchent vers le tunnel');
+  assert.equal(q2.y, 60, 'arrivés au tunnel, les joueurs disparaissent');
+  console.log('BREAK SHOW OK — sortie vers le tunnel et homme du match');
+}

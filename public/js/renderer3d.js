@@ -233,8 +233,9 @@ function multiply4(a, b) {
 // et resserre le cadre sans perdre les lignes du terrain en format paysage.
 export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   const cam = match.cam || {};
-  if (match.ceremony && typeof match.getCeremonyCamera === 'function') {
-    const c = match.getCeremonyCamera(), safe = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
+  const tvCam = typeof match.getTvCamera === 'function' ? match.getTvCamera() : null;
+  if (tvCam) {
+    const c = tvCam, safe = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
     return { eye: c.eye, target: c.target, zoom: 1, aspect: safe, ballHeight: 0, focusLift: 0, portrait: 0, fovy: safe < 1.15 ? c.fovy * 1.35 : c.fovy, angle: 'ceremony',
       distance: Math.hypot(c.eye[0] - c.target[0], c.eye[1] - c.target[1], c.eye[2] - c.target[2]) };
   }
@@ -946,7 +947,7 @@ export class MatchRenderer3D {
       }
       ellipse(px,pz,1,0,0.33*lift0,0.23*lift0,shade(0.52),0.046,12);
     }
-    if(player===match.selected){
+    if(player===match.selected&&!match.breakShow&&!match.ceremony){
       ring(g,x,0.085,z,0.58,[0.94,0.78,0.24],22,0.045);
       sphere(g,[x,0.13,z],[0.08,0.025,0.08],[1,0.9,0.3],6,3);
     }
@@ -1107,7 +1108,7 @@ export class MatchRenderer3D {
     // Regard : la tête suit le ballon (rotation limitée du cou, lissée dans le temps).
     let lookYaw=0;
     const lb=this._lookBall;
-    if(lb&&!match.ceremony&&rollAmt<0.2&&slideAmt<0.2){
+    if(lb&&!match.ceremony&&!(match.breakShow&&match.breakShow.phases[match.breakShow.idx]?.id!=='clip')&&rollAmt<0.2&&slideAmt<0.2){
       const dxr=lb[0]-x, dzr=-lb[1]-z, lf=dxr*F[0]+dzr*F[2], ls=dxr*S[0]+dzr*S[2];
       if(Math.hypot(lf,ls)>0.6) lookYaw=clamp(Math.atan2(ls,lf),-1.05,1.05);
     }
@@ -1264,7 +1265,7 @@ export class MatchRenderer3D {
     gl.useProgram(this.program);
     gl.uniformMatrix4fv(this.matrixLoc,false,vp);
     // Foule : rythme permanent, explosion de joie après un but, tension sur les occasions.
-    const excite=Math.max(match.ceremony?0.75:match.goalCrowdT>0?1:0,match.ball?.inFlightShot?0.45:0,0.12);
+    const excite=Math.max(match.ceremony?0.75:match.breakShow?0.5:match.goalCrowdT>0?1:0,match.ball?.inFlightShot?0.45:0,0.12);
     this.excite=(this.excite??0.12)+(excite-(this.excite??0.12))*0.08;
     gl.uniform1f(this.timeLoc,(match.clock||0)+(performance.now()/1000)%1000);
     gl.uniform1f(this.exciteLoc,this.excite);

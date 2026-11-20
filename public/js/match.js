@@ -1024,6 +1024,7 @@ export class Match {
     if (this.net) this.net.frame(dt); // match en ligne : l'état vient du serveur
     else if (!this.paused) {
       if (this.ceremony) this.updateCeremony(dt);
+      else if (this.breakShow) this.updateBreak(dt);
       else if (this.replay) this.updateReplay(dt);
       else { if (this.tvWipeT > 0) this.tvWipeT = Math.max(0, this.tvWipeT - dt); this.acc += dt; while (this.acc >= DT) { this.step(DT); this.acc -= DT; } }
     }
@@ -1135,6 +1136,7 @@ export class Match {
 
   // ---------------- simulation ----------------
   step(dt) {
+    if (this.breakShow) return;
     if (this.tickerT > 0) this.tickerT -= dt;
     if (this.msgT > 0) this.msgT -= dt;
     this.goalFxT = Math.max(0, (this.goalFxT || 0) - dt);
@@ -1152,9 +1154,9 @@ export class Match {
       if (this.stateT <= 0) { A.crowd(0.3); this.startReplay(); }
       return;
     }
-    if (this.state === 'halftime') { this.stateT -= dt; if (this.stateT <= 0) { this.half = 2; for (const T of this.teams) T.dir *= -1; this.setupKickoff(1); } return; }
+    if (this.state === 'halftime') { this.stateT -= dt; if (this.stateT <= 0 && this.canShowBreak() && !this._breakDone?.half) { this.startBreak('half'); return; } if (this.stateT <= 0) { this.half = 2; for (const T of this.teams) T.dir *= -1; this.setupKickoff(1); } return; }
     if (this.state === 'shootout') return this.stepShootout(dt);
-    if (this.state === 'fulltime') { this.stateT -= dt; if (this.stateT <= 0 && !this.ended) { if (this.needsShootout()) this.startShootout(); else this.finish(); } return; }
+    if (this.state === 'fulltime') { this.stateT -= dt; if (this.stateT <= 0 && !this.ended) { if (this.needsShootout()) this.startShootout(); else if (this.canShowBreak() && !this._breakDone?.full) this.startBreak('full'); else this.finish(); } return; }
     // horloge
     this.clock += dt;
     const gm = this.clock / this.secondsPerMinute + (this.half === 2 ? 45 : 0);
@@ -2320,6 +2322,7 @@ export class Match {
     const shotInfo = b.inFlightShot?.team === team ? b.inFlightShot : null;
     if (b.inFlightShot?.team === team) this.recordShotOnTarget(b.inFlightShot, b.y, b.z);
     this.score[team]++; this.refSignal('goal', null);
+    (this.highlights = this.highlights || []).push({ frames: this.replayBuf.slice(-96), min: Math.max(1, Math.round(this.minute)), team, name: scorer ? scorer.name : 'c.s.c.', half: this.half });
     const T = this.teams[team];
     let name = scorer ? scorer.name : 'c.s.c.';
     if (scorer) { scorer.goals++; scorer.rating += 1; if (scorer.lastPasser) { scorer.lastPasser.assists++; scorer.lastPasser.rating += 0.5; } }
@@ -2339,6 +2342,150 @@ export class Match {
   }
 
   // ---------------- ralenti ----------------
+  // ---------------- mi-temps et fin de match télévisées ----------------
+  canShowBreak() { return !this.net && !!this.renderer3d && !this.renderer3d.lost && this.settings.ceremony !== false; }
+  startBreak(kind) {
+    const all = [];
+    for (const T of this.teams) for (const p of T.ps) all.push(p);
+    const starts = new Map(all.map(p => [p, [p.x, p.y]]));
+    const clips = (this.highlights || []).filter(h => kind === 'full' || h.half === 1).slice(-4).filter(h => h.frames.length > 20);
+    const motm = kind === 'full' ? this.getManOfTheMatch() : null;
+    const phases = [{ id: 'walk', dur: 4.6 }];
+    clips.forEach((c, k) => phases.push({ id: 'clip', dur: Math.min(3.4, c.frames.length / 30), clip: c, k }));
+    phases.push({ id: 'stats', dur: 4.8 });
+    if (motm) phases.push({ id: 'motm', dur: 5.2 });
+    this.breakShow = { kind, t: 0, idx: 0, pt: 0, phases, starts, clips: clips.length, motm };
+    this.tvWipeT = TV_WIPE;
+    if (this.renderer3d?.officials) this.breakShow.offStarts = this.renderer3d.officials.map(o => [o.x, o.y]);
+  }
+  getManOfTheMatch() {
+    let best = null;
+    for (const T of this.teams) for (const p of T.ps) {
+      if (p.sentOff) continue;
+      const sc = (p.rating || 6) + (p.goals || 0) * 0.4 + (p.assists || 0) * 0.2 + (this.score[p.team] > this.score[1 - p.team] ? 0.3 : 0);
+      if (!best || sc > best.sc) best = { p, sc };
+    }
+    return best ? best.p : null;
+  }
+  updateBreak(dt) {
+    const B = this.breakShow; B.t += dt; B.pt += dt;
+    const ph = B.phases[B.idx];
+    if (B.pt >= ph.dur) {
+      B.idx++; B.pt = 0; this.tvWipeT = TV_WIPE;
+      if (B.idx >= B.phases.length) return this.endBreak();
+    } else if (this.tvWipeT > 0) this.tvWipeT = Math.max(0, this.tvWipeT - dt);
+    this.goalCrowdT = 0.3;
+    const r3 = this.renderer3d;
+    if (r3?.officials && B.offStarts) r3.officials.forEach((o, k) => {
+      const q = this.walkOff(B.offStarts[k], B.t, k * 0.5 - 1);
+      Object.assign(o, { x: q.x, y: q.y, heading: q.heading, vx: q.vx, vy: q.vy, anim: q.anim }); r3._offT = 0;
+    });
+    const cur = B.phases[B.idx];
+    if (B.motm) B.motm.celebrateT = cur.id === 'motm' ? 1.6 : 0;
+  }
+  endBreak() {
+    const B = this.breakShow; if (!B) return;
+    this.breakShow = null; this.goalCrowdT = 0; this.tvWipeT = TV_WIPE;
+    this._breakDone = { ...(this._breakDone || {}), [B.kind]: true };
+    if (B.motm) B.motm.celebrateT = 0;
+    if (this.renderer3d?.officials) this.renderer3d.officials.forEach((o, k) => { o.x = 0; o.y = k === 0 ? 10 : (k === 1 ? -35.1 : 35.1); });
+    this.stateT = 0; // le moteur reprend : 2e mi-temps ou fin du match
+  }
+  // Marche vers le tunnel (0, 35.5) depuis la position au coup de sifflet.
+  walkOff(start, t, laneX = 0) {
+    const to = [laneX * 0.9, 36.5], speed = 3.4;
+    const len = Math.hypot(to[0] - start[0], to[1] - start[1]) || 1, d = Math.min(len, Math.max(0, t - 0.3) * speed), u = d / len;
+    const dir = Math.atan2(to[1] - start[1], to[0] - start[0]), walking = d < len && t > 0.3;
+    return { x: start[0] + (to[0] - start[0]) * u, y: d >= len ? 60 : start[1] + (to[1] - start[1]) * u, heading: dir, vx: walking ? Math.cos(dir) * speed : 0, vy: walking ? Math.sin(dir) * speed : 0, anim: d * 1.55 };
+  }
+  breakFrame() {
+    const B = this.breakShow, ph = B.phases[B.idx] || B.phases[B.phases.length - 1];
+    if (ph.id === 'clip') { const fr = ph.clip.frames; return fr[Math.min(fr.length - 1, Math.floor(B.pt * 30))]; }
+    const f = { b: [0, 0, 0, 0, 0, 0, 0, this.clock], p: [] };
+    for (const T of this.teams) for (const p of T.ps) {
+      let q;
+      if (ph.id === 'motm') q = p === B.motm ? { x: 0, y: 0, heading: -Math.PI / 2, vx: 0, vy: 0, anim: 0 } : { x: 0, y: 60, heading: 0, vx: 0, vy: 0, anim: 0 };
+      else if (p.sentOff) q = { x: 0, y: 60, heading: 0, vx: 0, vy: 0, anim: 0 };
+      else q = this.walkOff(B.starts.get(p) || [p.x, p.y], ph.id === 'walk' ? B.pt : 99, p.team ? 0.7 : -0.7);
+      f.p.push([q.x, q.y, 1, q.anim, q.vx, q.vy, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0.38, q.heading, p.kickFootSide || 1, 0, 0, 1]);
+    }
+    if (ph.id === 'motm') f.b = [1.2, -0.6, 0, 0, 0, 0, 0, this.clock];
+    return f;
+  }
+  getBreakCamera() {
+    const B = this.breakShow, ph = B.phases[B.idx]; if (!ph || ph.id === 'clip') return null;
+    const u = clamp(B.pt / ph.dur, 0, 1);
+    if (ph.id === 'walk') return { eye: [-14 + u * 10, 13 - u * 3, 16 - u * 4], target: [-2 + u * 2, 1, -18 - u * 10], fovy: 0.78 };
+    if (ph.id === 'motm') { const a = -0.55 + u * 1.1; return { eye: [Math.sin(a) * 5.2, 1.6, Math.cos(a) * 5.2], target: [-0.6, 1.05, 0], fovy: 0.6 }; }
+    const a = -2.2 + u * 0.5;
+    return { eye: [Math.cos(a) * 40, 26, -Math.sin(a) * 24], target: [0, 0, 0], fovy: 0.85 };
+  }
+  getTvCamera() { return this.ceremony ? this.getCeremonyCamera() : this.breakShow ? this.getBreakCamera() : null; }
+  drawBreak() {
+    const c = this.c, d = this.dpr, W = this.W, H = this.H, B = this.breakShow, ph = B.phases[B.idx] || B.phases[B.phases.length - 1], T = this.teams;
+    c.save();
+    c.fillStyle = 'rgba(0,0,0,0.55)'; c.fillRect(0, 0, W, 16 * d); c.fillRect(0, H - 16 * d, W, 16 * d);
+    c.fillStyle = 'rgba(7,17,29,0.8)'; this.rr(14 * d, 24 * d, 104 * d, 24 * d, 6 * d); c.fill();
+    c.fillStyle = '#e21b2d'; this.rr(14 * d, 24 * d, 34 * d, 24 * d, 6 * d); c.fill();
+    c.fillStyle = '#fff'; c.font = `900 ${10 * d}px system-ui,Arial`; c.textBaseline = 'middle'; c.textAlign = 'center';
+    c.fillText('FT26', 31 * d, 36 * d); c.textAlign = 'left'; c.fillText(ph.id === 'clip' ? '↺ TEMPS FORTS' : '● EN DIRECT', 54 * d, 36 * d);
+    const title = B.kind === 'half' ? 'MI-TEMPS' : 'FIN DU MATCH';
+    // Bandeau de score, toujours visible en haut au centre.
+    const sw = Math.min(W - 160 * d, 300 * d), sx = (W - sw) / 2, sy = 22 * d, sh = 30 * d;
+    c.fillStyle = 'rgba(7,17,29,0.9)'; this.rr(sx, sy, sw, sh, 7 * d); c.fill();
+    c.fillStyle = '#ffdf45'; this.rr(sx + sw / 2 - 34 * d, sy, 68 * d, sh, 7 * d); c.fill();
+    c.fillStyle = '#07111d'; c.font = `900 ${15 * d}px system-ui,Arial`; c.textAlign = 'center';
+    c.fillText(`${this.score[0]} – ${this.score[1]}`, sx + sw / 2, sy + sh / 2 + 1);
+    c.fillStyle = '#fff'; c.font = `900 ${12 * d}px system-ui,Arial`;
+    c.fillText(T[0].short, sx + sw * 0.2, sy + sh / 2 + 1); c.fillText(T[1].short, sx + sw * 0.8, sy + sh / 2 + 1);
+    c.fillStyle = '#aebbd0'; c.font = `800 ${9 * d}px system-ui,Arial`; c.fillText(title, sx + sw / 2, sy + sh + 10 * d);
+    const lower = (t1, t2) => {
+      const slide = clamp(B.pt / 0.45, 0, 1), k = 1 - Math.pow(1 - slide, 3);
+      const bw = Math.min(W - 40 * d, 470 * d), bh = 50 * d, bx = 20 * d - (1 - k) * (bw + 30 * d), by = H - 16 * d - bh - 14 * d;
+      c.fillStyle = 'rgba(7,17,29,0.9)'; this.rr(bx, by, bw, bh, 8 * d); c.fill();
+      c.fillStyle = '#ffdf45'; c.fillRect(bx, by, 5 * d, bh);
+      c.textAlign = 'left'; c.fillStyle = '#fff'; c.font = `900 ${Math.max(12, 15 * d)}px system-ui,Arial`; c.fillText(t1, bx + 16 * d, by + 18 * d, bw - 30 * d);
+      c.fillStyle = '#aebbd0'; c.font = `700 ${Math.max(9, 11 * d)}px system-ui,Arial`; c.fillText(t2, bx + 16 * d, by + 35 * d, bw - 30 * d);
+    };
+    const scorers = ti => this.events.filter(e => e.type === 'goal' && e.team === ti).map(e => `${e.name} ${e.min}'`).join(', ');
+    if (ph.id === 'walk') lower(`${title} — ${T[0].short} ${this.score[0]} – ${this.score[1]} ${T[1].short}`, [scorers(0), scorers(1)].filter(Boolean).join('   |   ') || 'Les joueurs regagnent les vestiaires');
+    else if (ph.id === 'clip') lower(`⚽ ${ph.clip.min}'  ${ph.clip.name}`, `${T[ph.clip.team].name} — temps fort ${ph.k + 1}/${B.clips}`);
+    else if (ph.id === 'motm' && B.motm) {
+      const p = B.motm, k = clamp(B.pt / 0.5, 0, 1), cw = Math.min(250 * d, W * 0.4), ch = 118 * d, cx = W - cw - 20 * d + (1 - k) * (cw + 40 * d), cy = H * 0.5 - ch / 2;
+      c.fillStyle = 'rgba(7,17,29,0.92)'; this.rr(cx, cy, cw, ch, 10 * d); c.fill();
+      c.fillStyle = '#ffdf45'; this.rr(cx, cy, cw, 26 * d, 10 * d); c.fill(); c.fillRect(cx, cy + 16 * d, cw, 10 * d);
+      c.fillStyle = '#07111d'; c.font = `900 ${11 * d}px system-ui,Arial`; c.textAlign = 'center'; c.fillText('★ HOMME DU MATCH ★', cx + cw / 2, cy + 13 * d);
+      c.fillStyle = '#fff'; c.font = `900 ${16 * d}px system-ui,Arial`; c.fillText(p.name, cx + cw / 2, cy + 46 * d, cw - 20 * d);
+      c.fillStyle = '#aebbd0'; c.font = `700 ${10 * d}px system-ui,Arial`; c.fillText(`${T[p.team].name} • n° ${p.num || ''} • ${p.pos || ''}`, cx + cw / 2, cy + 66 * d, cw - 20 * d);
+      c.fillStyle = '#ffdf45'; c.font = `900 ${20 * d}px system-ui,Arial`; c.fillText((Math.min(10, p.rating || 6)).toFixed(1), cx + cw * 0.25, cy + 94 * d);
+      c.fillStyle = '#fff'; c.font = `800 ${11 * d}px system-ui,Arial`; c.fillText(`⚽ ${p.goals || 0}   🅰 ${p.assists || 0}`, cx + cw * 0.66, cy + 94 * d);
+      c.fillStyle = '#aebbd0'; c.font = `700 ${8 * d}px system-ui,Arial`; c.fillText('NOTE', cx + cw * 0.25, cy + 108 * d);
+    } else if (ph.id === 'stats') {
+      const S = this.stats, poss = S.poss[0] + S.poss[1] || 1;
+      const rows = [
+        ['Possession', Math.round(S.poss[0] / poss * 100) + ' %', Math.round(S.poss[1] / poss * 100) + ' %', S.poss[0] / poss],
+        ['Tirs', S.shots[0], S.shots[1]], ['Tirs cadrés', S.onTarget[0], S.onTarget[1]],
+        ['Passes réussies', S.passOk[0], S.passOk[1]], ['Corners', S.corners[0], S.corners[1]], ['Fautes', S.fouls[0], S.fouls[1]],
+      ];
+      const pw = Math.min(W - 40 * d, 420 * d), rh = 21 * d, phh = 34 * d + rows.length * rh, px = (W - pw) / 2, py = Math.max(64 * d, (H - phh) / 2 + 10 * d);
+      const k = clamp(B.pt / 0.4, 0, 1);
+      c.globalAlpha = k; c.fillStyle = 'rgba(7,17,29,0.92)'; this.rr(px, py, pw, phh, 10 * d); c.fill();
+      c.fillStyle = '#ffdf45'; c.font = `900 ${11 * d}px system-ui,Arial`; c.textAlign = 'center'; c.fillText(`STATISTIQUES — ${title}`, px + pw / 2, py + 16 * d);
+      rows.forEach((r, i) => {
+        const y = py + 36 * d + i * rh, a = Number(String(r[1]).replace(/\D/g, '')) || 0, b2 = Number(String(r[2]).replace(/\D/g, '')) || 0, share = r[3] ?? (a + b2 ? a / (a + b2) : 0.5);
+        c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(px + pw * 0.3, y + 6 * d, pw * 0.4, 4 * d);
+        c.fillStyle = T[0].kit.shirt; c.fillRect(px + pw * 0.5 - pw * 0.2 * share, y + 6 * d, pw * 0.2 * share, 4 * d);
+        c.fillStyle = T[1].kit.shirt === '#ffffff' || T[1].kit.shirt === '#fff' ? '#dfe6ef' : T[1].kit.shirt; c.fillRect(px + pw * 0.5, y + 6 * d, pw * 0.2 * (1 - share), 4 * d);
+        c.fillStyle = '#fff'; c.font = `900 ${12 * d}px system-ui,Arial`;
+        c.textAlign = 'left'; c.fillText(String(r[1]), px + 16 * d, y + 8 * d); c.textAlign = 'right'; c.fillText(String(r[2]), px + pw - 16 * d, y + 8 * d);
+        c.textAlign = 'center'; c.fillStyle = '#aebbd0'; c.font = `700 ${9 * d}px system-ui,Arial`; c.fillText(r[0], px + pw / 2, y - 1 * d);
+      });
+      c.globalAlpha = 1;
+    }
+    c.fillStyle = 'rgba(7,17,29,0.75)'; this.rr(W - 132 * d, H - 16 * d - 38 * d, 116 * d, 24 * d, 12 * d); c.fill();
+    c.fillStyle = '#fff'; c.font = `800 ${9.5 * d}px system-ui,Arial`; c.textAlign = 'center'; c.fillText('Touchez pour passer ›', W - 74 * d, H - 16 * d - 26 * d);
+    c.restore();
+  }
   // ---------------- avant-match télévisé ----------------
   // Survol du stade, sortie du tunnel, alignement face caméra, puis volet et coup d'envoi.
   ceremonyPlan() {
@@ -2774,6 +2921,9 @@ export class Match {
     const ceremony = !!this.ceremony;
     if (host && ceremony !== !!this._ceremonyClass) { this._ceremonyClass = ceremony; host.classList.toggle('replaying', ceremony || !!this.replay); }
     if (ceremony) frame = this.ceremonyFrame();
+    const brk = !!this.breakShow;
+    if (host && brk !== !!this._breakClass) { this._breakClass = brk; host.classList.toggle('replaying', brk || ceremony || !!this.replay); }
+    if (brk) frame = this.breakFrame();
     const bx = frame ? frame.b[0] : this.ball.x, by = frame ? frame.b[1] : this.ball.y;
     const follow = getCameraFollow({
       x: bx, y: by,
@@ -2789,6 +2939,7 @@ export class Match {
         this.renderer3d.render(this, frame);
         c.clearRect(0, 0, W, H);
         if (ceremony) { this.drawCeremony(); this.drawTvWipe(); return; }
+        if (brk) { this.drawBreak(); this.drawTvWipe(); return; }
         this.drawHUD(!!frame, frame);
         if (!frame && this.matchIntroT > 0) this.drawMatchIntro();
         if (!frame && this.goalFxT > 0) this.drawGoalCelebration();

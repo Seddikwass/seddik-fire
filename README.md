@@ -1,5 +1,16 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.38.0 — mi-temps et fin de match télévisées
+- À la mi-temps et au coup de sifflet final, le moteur se fige et une séquence télé démarre (passable d'un toucher, Entrée ou Espace) :
+  1. plan large des joueurs et du trio arbitral qui regagnent le tunnel, bandeau « MI-TEMPS / FIN DU MATCH » avec score et buteurs ;
+  2. temps forts : chaque but est rejoué tel qu'il s'est passé (jusqu'à 4 buts), avec la minute, le buteur et le club ;
+  3. statistiques en direct sur un stade vide survolé : possession, tirs, tirs cadrés, passes réussies, corners, fautes, avec barres aux couleurs des clubs ;
+  4. fin de match : « Homme du match » seul au rond central, bras levés devant le public, caméra en orbite, fiche avec note, buts et passes décisives.
+- Bandeau de score permanent en haut, logo de chaîne, bandes cinéma, volets de transition entre les séquences.
+- L'homme du match combine note, buts, passes décisives et victoire.
+- Désactivable avec le réglage « Cérémonie d'avant-match (TV) » ; absent en ligne, en rendu 2.5D de secours et pendant les tirs au but.
+- Tests : marche vers le tunnel et choix de l'homme du match.
+
 ## Version 3.37.0 — joueurs plus réels, ballon qui roule vraiment
 - Éclairage « retransmission » réservé aux joueurs et au ballon : lumière d'ambiance venant du ciel et reflet vert de la pelouse, liseré lumineux des projecteurs sur les contours (les silhouettes se détachent du terrain), reflet satiné des maillots selon l'angle de la caméra.
 - Regard : chaque joueur tourne la tête vers le ballon (rotation du cou limitée et lissée), visage, cheveux et barbe compris.

@@ -233,6 +233,11 @@ function multiply4(a, b) {
 // et resserre le cadre sans perdre les lignes du terrain en format paysage.
 export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   const cam = match.cam || {};
+  if (match.ceremony && typeof match.getCeremonyCamera === 'function') {
+    const c = match.getCeremonyCamera(), safe = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
+    return { eye: c.eye, target: c.target, zoom: 1, aspect: safe, ballHeight: 0, focusLift: 0, portrait: 0, fovy: safe < 1.15 ? c.fovy * 1.35 : c.fovy, angle: 'ceremony',
+      distance: Math.hypot(c.eye[0] - c.target[0], c.eye[1] - c.target[1], c.eye[2] - c.target[2]) };
+  }
   const plan = replay && match.replay?.segs ? match.replay : null;
   const angle = plan ? plan.segs[plan.seg]?.angle : null;
   const segCam = plan ? plan.segs[plan.seg] : null;
@@ -1138,7 +1143,7 @@ export class MatchRenderer3D {
       this.addPlayer(g,match,player,playerFrame,index);
     }
     if(!frame) this.updateOfficials(match);
-    if(this.officials) for(const o of this.officials) this.addPlayer(g,match,o,null,90+o.k);
+    if(this.officials) for(const o of this.officials) if(o.y<50) this.addPlayer(g,match,o,null,90+o.k);
     const bx=frame?frame.b[0]:match.ball.x,by=frame?frame.b[1]:match.ball.y,bz=frame?frame.b[2]:match.ball.z;
     // L'ombre s'élargit et s'éclaircit à mesure que le ballon prend de la hauteur.
     const ballX=bx,ballZ=-by,ballY=Math.max(0.24,bz+0.24);
@@ -1193,7 +1198,7 @@ export class MatchRenderer3D {
     gl.useProgram(this.program);
     gl.uniformMatrix4fv(this.matrixLoc,false,vp);
     // Foule : rythme permanent, explosion de joie après un but, tension sur les occasions.
-    const excite=Math.max(match.goalCrowdT>0?1:0,match.ball?.inFlightShot?0.45:0,0.12);
+    const excite=Math.max(match.ceremony?0.75:match.goalCrowdT>0?1:0,match.ball?.inFlightShot?0.45:0,0.12);
     this.excite=(this.excite??0.12)+(excite-(this.excite??0.12))*0.08;
     gl.uniform1f(this.timeLoc,(match.clock||0)+(performance.now()/1000)%1000);
     gl.uniform1f(this.exciteLoc,this.excite);

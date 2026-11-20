@@ -32,7 +32,12 @@ await click('[data-a=nav][data-v=settings]'); await shot('16-parametres');
 // match joué
 await click('[data-a=nav][data-v=prematch]'); await shot('17-avant-match');
 await p.selectOption('#pmDur', '3');
-await click('[data-a=playMatch]'); await p.waitForSelector('#cv'); await p.waitForTimeout(2500); await shot('18-match-coup-envoi');
+await click('[data-a=playMatch]'); await p.waitForSelector('#cv'); await p.waitForTimeout(2500); await shot('18-avant-match-tv');
+// Un toucher passe la cérémonie d'avant-match.
+{ const vp0 = p.viewportSize(); await p.mouse.click(vp0.width / 2, vp0.height * 0.35); }
+const cer = await p.evaluate(() => window.__ft26.match.ceremony);
+if (cer) throw new Error('la cérémonie d avant-match ne se passe pas au toucher');
+await p.waitForTimeout(1200); await shot('18b-match-coup-envoi');
 // joystick : glisser vers la droite et passer / tirer
 const vp = p.viewportSize();
 await p.mouse.move(150, vp.height - 100); await p.mouse.down(); await p.mouse.move(220, vp.height - 110, { steps: 5 });
@@ -58,6 +63,7 @@ await click('[data-a=nav][data-v=settings]'); await p.selectOption('select[data-
 await p.selectOption && (await click('[data-a=nav][data-v=settings]'), await p.selectOption('select[data-k=lang]', 'fr'));
 // match rapide spectateur 
 await click('[data-a=nav][data-v=home]'); await click('[data-v=quick]'); await p.selectOption('#qside', '-1'); await p.selectOption('#qdur', '3'); await click('[data-a=quickPlay]');
+await p.waitForTimeout(800); { const vp1 = p.viewportSize(); await p.mouse.click(vp1.width / 2, vp1.height * 0.35); }
 await p.waitForTimeout(6000); await shot('27-match-rapide-ia');
 const q = await p.evaluate(() => { const m = window.__ft26.match; return { min: Math.round(m.minute), score: m.score, shots: m.stats.shots, passes: m.stats.passes, ok: m.stats.passOk }; });
 console.log('IA contre IA après 6 s :', JSON.stringify(q));

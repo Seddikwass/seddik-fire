@@ -101,3 +101,15 @@ console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroul
   assert.ok(star <= 0.72 && poor >= 0.08, 'réussite bornée : jamais garantie, jamais impossible');
   console.log('SKILL MOVE OK — crochet selon dribble, agilité et défense');
 }
+{
+  const { Match, CEREMONY_DUR } = await import('../public/js/match.js');
+  const proto = Match.prototype;
+  const fake = { teams: [0, 1].map(t => ({ ps: Array.from({ length: 16 }, (_, k) => ({ id: t * 100 + k })) })) };
+  const plan = proto.ceremonyPlan.call(fake);
+  assert.equal(plan.slots.length, 22, 'les 22 titulaires participent à la cérémonie');
+  const end = plan.slots.map(s => proto.ceremonyPose.call(fake, s, CEREMONY_DUR - 1.5));
+  assert.ok(end.every(q => !q.walking), 'tout le monde est aligné avant la fin de la séquence');
+  const xs = end.map(q => q.x).sort((a, b) => a - b);
+  assert.ok(xs.every((x, i) => i === 0 || x - xs[i - 1] > 0.6), 'aucun joueur ne se chevauche dans l alignement');
+  console.log('CEREMONY OK — 22 joueurs alignés à temps, sans chevauchement');
+}

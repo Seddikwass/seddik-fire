@@ -8,6 +8,7 @@ import { getMatchFlavor, getGoalCommentKeys, pickLine, fillLine } from './commen
 import { getShootoutStatus, getNextKicker, getShootoutOrder, getAIPenaltyChoice, getPenaltyStrike, getAIKeeperDive, getPenaltyOutcome } from './shootout.js';
 
 export const TV_WIPE = 0.55;
+export const CEREMONY_DUR = 12.2;
 // Plan de réalisation : vue large, derrière le but, puis caméra rapprochée sur la fin de l'action.
 export function buildReplayPlan(frames, attackDir = 1) {
   const n = frames.length, last = frames[n - 1]?.b || [attackDir * 52.5, 0, 0];
@@ -1019,9 +1020,11 @@ export class Match {
     let dt = Math.min(0.1, (now - this.last) / 1000);
     if (!this.paused) this.updateRenderBudget(dt * 1000, now);
     this.last = now;
+    if (this.ceremony === undefined) this.ceremony = (!this.net && this.settings.ceremony !== false && this.renderer3d && this.minute < 1) ? { t: 0 } : null;
     if (this.net) this.net.frame(dt); // match en ligne : l'état vient du serveur
     else if (!this.paused) {
-      if (this.replay) this.updateReplay(dt);
+      if (this.ceremony) this.updateCeremony(dt);
+      else if (this.replay) this.updateReplay(dt);
       else { if (this.tvWipeT > 0) this.tvWipeT = Math.max(0, this.tvWipeT - dt); this.acc += dt; while (this.acc >= DT) { this.step(DT); this.acc -= DT; } }
     }
     this.render();
@@ -2336,6 +2339,106 @@ export class Match {
   }
 
   // ---------------- ralenti ----------------
+  // ---------------- avant-match télévisé ----------------
+  // Survol du stade, sortie du tunnel, alignement face caméra, puis volet et coup d'envoi.
+  ceremonyPlan() {
+    if (this._cerPlan) return this._cerPlan;
+    const lineY = 14, tunnelY = 35.5, slots = [];
+    this.teams.forEach((T, ti) => {
+      const s = ti === 0 ? -1 : 1;
+      T.ps.slice(0, 11).forEach((p, k) => {
+        const start = 1.0 + k * 0.24 + ti * 0.12, from = [s * 1.1, tunnelY], to = [s * (1.7 + k * 0.92), lineY];
+        slots.push({ p, start, from, to, len: Math.hypot(to[0] - from[0], to[1] - from[1]) });
+      });
+    });
+    return (this._cerPlan = { lineY, tunnelY, slots, dur: CEREMONY_DUR });
+  }
+  ceremonyPose(slot, t) {
+    const speed = 4.3, d = clamp((t - slot.start) * speed, 0, slot.len), u = slot.len ? d / slot.len : 1;
+    const x = slot.from[0] + (slot.to[0] - slot.from[0]) * u, y = slot.from[1] + (slot.to[1] - slot.from[1]) * u;
+    const walking = t > slot.start && d < slot.len, arrived = d >= slot.len;
+    const dirH = Math.atan2(slot.to[1] - slot.from[1], slot.to[0] - slot.from[0]);
+    return { x, y, walking, visible: t > slot.start - 0.05, heading: arrived ? -Math.PI / 2 : dirH, vx: walking ? Math.cos(dirH) * speed : 0, vy: walking ? Math.sin(dirH) * speed : 0, anim: d * 1.55 };
+  }
+  ceremonyFrame() {
+    const t = this.ceremony.t, plan = this.ceremonyPlan(), map = new Map(plan.slots.map(s => [s.p, s]));
+    const f = { b: [0, 0, 0, 0, 0, 0, 0, this.clock], p: [] };
+    for (const T of this.teams) for (const p of T.ps) {
+      const sl = map.get(p), q = sl ? this.ceremonyPose(sl, t) : null;
+      // Remplaçants et joueurs pas encore sortis : rangés hors champ sous la tribune.
+      const x = q && q.visible ? q.x : 0, y = q && q.visible ? q.y : 60;
+      f.p.push([x, y, 1, q ? q.anim : 0, q ? q.vx : 0, q ? q.vy : 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0.38, q ? q.heading : -Math.PI / 2, p.kickFootSide || 1, 0, 0, 1]);
+    }
+    return f;
+  }
+  updateCeremony(dt) {
+    const C = this.ceremony; C.t += dt;
+    const plan = this.ceremonyPlan(), t = C.t;
+    // Arbitres en tête du cortège, avec le ballon du match.
+    const r3 = this.renderer3d;
+    if (r3) {
+      if (!r3.officials) r3.updateOfficials(this);
+      r3.officials.forEach((o, k) => {
+        const sl = { start: 0.45 + k * 0.1, from: [(k - 1) * 0.6, plan.tunnelY], to: [k === 0 ? 0 : (k === 1 ? -0.85 : 0.85), plan.lineY], len: 0 };
+        sl.len = Math.hypot(sl.to[0] - sl.from[0], sl.to[1] - sl.from[1]);
+        const q = this.ceremonyPose(sl, t);
+        Object.assign(o, { x: q.visible ? q.x : 0, y: q.visible ? q.y : 60, heading: q.heading, vx: q.vx, vy: q.vy, anim: q.anim });
+      });
+      r3._offT = 0;
+    }
+    this.goalCrowdT = t > 1 && t < 9 ? 0.4 : 0;
+    if (t >= plan.dur) this.endCeremony();
+  }
+  endCeremony() {
+    if (!this.ceremony) return;
+    this.ceremony = null; this.goalCrowdT = 0; this.tvWipeT = TV_WIPE; this.matchIntroT = 0;
+    if (this.renderer3d?.officials) this.renderer3d.officials.forEach((o, k) => { o.x = k ? o.x : 0; o.y = k === 0 ? 10 : o.y < 0 ? -35.1 : 35.1; });
+  }
+  getCeremonyCamera() {
+    const t = this.ceremony ? this.ceremony.t : 0, plan = this.ceremonyPlan();
+    const ease = v => { v = clamp(v, 0, 1); return v * v * (3 - 2 * v); };
+    if (t < 3.6) {
+      // Survol en hélicoptère, toujours au-dessus de la cuvette (jamais dans une tribune).
+      const u = ease(t / 3.6), a = -2.3 + u * 0.75;
+      return { eye: [Math.cos(a) * 44, 36 - u * 12, -Math.sin(a) * 27], target: [0, 1.5, -plan.lineY * 0.45], fovy: 0.82 };
+    }
+    if (t < 8.4) {
+      const u = ease((t - 3.6) / 4.8);
+      return { eye: [7 - u * 4, 3.4 + u * 1.5, -plan.lineY + 12 - u * 3], target: [0, 1.3, -plan.tunnelY + u * (plan.tunnelY - plan.lineY) * 0.85], fovy: 0.78 };
+    }
+    const u = ease((t - 8.4) / (plan.dur - 8.4)), x = -11 + u * 22;
+    return { eye: [x, 1.95, -plan.lineY + 6.2], target: [x * 0.92, 1.35, -plan.lineY], fovy: 0.68 };
+  }
+  drawCeremony() {
+    const c = this.c, d = this.dpr, W = this.W, H = this.H, t = this.ceremony.t, T = this.teams;
+    c.save();
+    // Bandeaux cinéma.
+    c.fillStyle = 'rgba(0,0,0,0.55)'; c.fillRect(0, 0, W, 16 * d); c.fillRect(0, H - 16 * d, W, 16 * d);
+    // Logo de chaîne en haut à gauche.
+    c.fillStyle = 'rgba(7,17,29,0.8)'; this.rr(14 * d, 24 * d, 104 * d, 24 * d, 6 * d); c.fill();
+    c.fillStyle = '#e21b2d'; this.rr(14 * d, 24 * d, 34 * d, 24 * d, 6 * d); c.fill();
+    c.fillStyle = '#fff'; c.font = `900 ${10 * d}px system-ui,Arial`; c.textBaseline = 'middle'; c.textAlign = 'center';
+    c.fillText('FT26', 31 * d, 36 * d); c.textAlign = 'left'; c.fillText('● EN DIRECT', 54 * d, 36 * d);
+    // Bandeau bas (lower third) qui change avec la séquence.
+    const phase = t < 3.6 ? 0 : t < 8.4 ? 1 : 2;
+    const local = phase === 0 ? t : phase === 1 ? t - 3.6 : t - 8.4;
+    const slide = clamp(local / 0.45, 0, 1), k = 1 - Math.pow(1 - slide, 3);
+    const bw = Math.min(W - 40 * d, 470 * d), bh = 50 * d, bx = 20 * d - (1 - k) * (bw + 30 * d), by = H - 16 * d - bh - 14 * d;
+    c.fillStyle = 'rgba(7,17,29,0.9)'; this.rr(bx, by, bw, bh, 8 * d); c.fill();
+    c.fillStyle = '#ffdf45'; c.fillRect(bx, by, 5 * d, bh);
+    const title = phase === 0 ? (T[0].stadium || 'Stade') : phase === 1 ? 'ENTRÉE DES JOUEURS' : `${T[0].short}  ${T[0].formation || ''}   •   ${T[1].short}  ${T[1].formation || ''}`;
+    const sub = phase === 0 ? `${T[0].name}  —  ${T[1].name}` : phase === 1 ? 'Les deux équipes sortent du tunnel, derrière le trio arbitral' : 'Hymne national — les équipes saluent le public';
+    c.textAlign = 'left'; c.fillStyle = '#fff'; c.font = `900 ${Math.max(12, 15 * d)}px system-ui,Arial`;
+    c.fillText(title.toUpperCase(), bx + 16 * d, by + 18 * d, bw - 30 * d);
+    c.fillStyle = '#aebbd0'; c.font = `700 ${Math.max(9, 11 * d)}px system-ui,Arial`;
+    c.fillText(sub, bx + 16 * d, by + 35 * d, bw - 30 * d);
+    // Pastilles de maillot des deux équipes.
+    T.forEach((team, i) => { const cx = bx + bw - 44 * d + i * 22 * d, cy = by + bh / 2; c.fillStyle = team.kit.shirt; c.beginPath(); c.arc(cx, cy, 8 * d, 0, Math.PI * 2); c.fill(); c.strokeStyle = team.kit.trim; c.lineWidth = 2.5 * d; c.stroke(); });
+    c.fillStyle = 'rgba(7,17,29,0.75)'; this.rr(W - 132 * d, by + bh - 24 * d, 116 * d, 24 * d, 12 * d); c.fill();
+    c.fillStyle = '#fff'; c.font = `800 ${9.5 * d}px system-ui,Arial`; c.textAlign = 'center';
+    c.fillText('Touchez pour passer ›', W - 74 * d, by + bh - 12 * d);
+    c.restore();
+  }
   record() {
     if ((this.recT = (this.recT || 0) + 1) % 2) return;
     const f = { b: [this.ball.x, this.ball.y, this.ball.z, this.ball.vx || 0, this.ball.vy || 0, this.ball.vz || 0, this.ball.spin || 0, this.clock], p: [] };
@@ -2668,6 +2771,9 @@ export class Match {
     const host = this.canvas.parentElement;
     if (host && !!this.replay !== !!this._replayClass) { this._replayClass = !!this.replay; host.classList.toggle('replaying', this._replayClass); }
     if (this.replay) { const fr = this.replay.frames, i = Math.floor(this.replay.i); frame = fr[Math.min(i, fr.length - 1)]; }
+    const ceremony = !!this.ceremony;
+    if (host && ceremony !== !!this._ceremonyClass) { this._ceremonyClass = ceremony; host.classList.toggle('replaying', ceremony || !!this.replay); }
+    if (ceremony) frame = this.ceremonyFrame();
     const bx = frame ? frame.b[0] : this.ball.x, by = frame ? frame.b[1] : this.ball.y;
     const follow = getCameraFollow({
       x: bx, y: by,
@@ -2682,6 +2788,7 @@ export class Match {
         this.renderer3d.setQuality(this.autoReduced ? 'low' : this.settings.quality);
         this.renderer3d.render(this, frame);
         c.clearRect(0, 0, W, H);
+        if (ceremony) { this.drawCeremony(); this.drawTvWipe(); return; }
         this.drawHUD(!!frame, frame);
         if (!frame && this.matchIntroT > 0) this.drawMatchIntro();
         if (!frame && this.goalFxT > 0) this.drawGoalCelebration();

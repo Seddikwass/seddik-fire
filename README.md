@@ -1,5 +1,15 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.36.0 — avant-match télévisé
+- Nouvelle séquence d'avant-match (environ 12 s, passable d'un toucher, de la touche Entrée ou Espace), moteur de jeu figé pendant ce temps :
+  1. survol du stade en hélicoptère au-dessus de la cuvette, bandeau avec le nom du stade et l'affiche ;
+  2. sortie du tunnel : le trio arbitral en tête, puis les deux équipes en colonnes qui marchent vers le centre, tribunes en effervescence ;
+  3. alignement face caméra le long de la ligne médiane, travelling latéral au ras des joueurs (numéros, visages, coiffures), bandeau avec les systèmes de jeu.
+- Habillage façon chaîne sportive : logo « FT26 ● EN DIRECT », bandes cinéma, bandeau bas animé à chaque séquence, bouton « Touchez pour passer ».
+- Volet de transition aux couleurs du club au coup d'envoi ; l'ancien panneau de présentation qui recouvrait le début du match disparaît.
+- Réglage « Cérémonie d'avant-match (TV) » dans les Paramètres pour la désactiver. Pas de cérémonie en match en ligne ni en rendu 2.5D de secours.
+- Tests : les 22 titulaires sont alignés à temps et sans chevauchement.
+
 ## Version 3.35.0 — arbitres sur le terrain, éclairage de match nocturne
 - Arbitre central en tenue noire et jaune, qui suit le jeu en diagonale à distance du ballon et regarde l'action.
 - Deux juges de ligne sur les touches (un par moitié de terrain), alignés en permanence sur l'avant-dernier défenseur, comme pour juger le hors-jeu.

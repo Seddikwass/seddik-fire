@@ -1,5 +1,15 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.30.0 — refonte graphique du match
+- Caméra de retransmission rapprochée (≈ 23 m de haut, ≈ 30 m en retrait, angle plus serré) : joueurs environ 2,5 fois plus grands à l'écran.
+- Nouveau stade : tribunes en gradins sur deux anneaux autour des quatre côtés, balcons aux couleurs du club, toits avec rampe lumineuse, angles fermés, ciel nocturne en dégradé.
+- Foule dense et vivante : jusqu'à ~13 000 supporters (haut), ~6 800 (moyen), ~1 700 (bas), aux couleurs de l'équipe à domicile, section visiteurs, écharpes levées, sièges vides ; animation calculée par la carte graphique (aucun coût processeur), qui s'emballe sur les occasions et explose après un but.
+- Pelouse plus naturelle : bandes de tonte franches, nuances fondues, usure devant les buts et au rond central ; brume atmosphérique en profondeur.
+- Panneaux LED lumineux aux couleurs des clubs autour du terrain.
+- Écran de but nettoyé : suppression des faisceaux et silhouettes parasites, plus de texte fantôme « BUT ! », commentaire masqué pendant la bannière ; panneau arrondi et confettis discrets.
+- Interface : commentaire en pastille à accent jaune, annonces (corner, penalty…) en pastille au lieu d'un grand texte brut, mini-carte plus petite avec lignes du terrain, statistiques en direct réservées aux grands écrans pour dégager le terrain sur téléphone.
+- Tests : densité et animation de la foule, budget de sommets du stade.
+
 ## Version 3.29.0 — match en ligne
 - Nouveau mode 🌐 Match en ligne (menu principal) : match de 5 minutes contre un ami, en temps réel.
 - Salon par code de 4 caractères (sans caractères ambigus), bouton de partage ; l'ami entre le code et choisit un autre club ; erreurs claires (code inconnu, salon complet, club déjà pris).

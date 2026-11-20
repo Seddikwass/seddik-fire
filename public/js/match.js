@@ -78,8 +78,9 @@ export function getMatchHudLayout(width, dpr = 1) {
     clockWidth,
     scoreHeight: (compact ? 38 : 44) * scale,
     panelWidth: (teamWidth * 2 + scoreWidth + clockWidth + 16 * scale),
-    statsWidth: compact ? 0 : Math.min(220 * scale, screenWidth * 0.32),
-    statsHeight: compact ? 0 : 76 * scale,
+    // Statistiques en direct seulement sur grand écran (tablette, ordinateur) : sur téléphone le terrain reste dégagé.
+    statsWidth: screenWidth < 1100 * scale ? 0 : Math.min(220 * scale, screenWidth * 0.32),
+    statsHeight: screenWidth < 1100 * scale ? 0 : 76 * scale,
   };
 }
 
@@ -2278,7 +2279,6 @@ export class Match {
     this.goalFxT = 2.2; this.goalFxTeam = team; this.goalFxScorer = scorer ? scorer.name : 'BUT CONTRE SON CAMP';
     for (const p of T.ps) if (!p.sentOff) { p.celebrateT = p === scorer ? 2.2 : 1.55; p.vx *= 0.35; p.vy *= 0.35; }
     this.goalCrowdT = 2.2; this.goalCrowdPulseT = 0;
-    this.banner('BUT ! ' + T.short, 2.2);
     A.netSound(); this.crowdReact('goal', team);
     this.say(getGoalCommentKeys({
       own: !scorer, scorerGoals: scorer?.goals || 1, minute: this.minute, scoreAfter: this.score, team,
@@ -2719,10 +2719,10 @@ export class Match {
     const c = this.c, d = this.dpr, t = this.goalFxT, team = this.teams[this.goalFxTeam];
     const pulse = 0.5 + 0.5 * Math.sin((2.2 - t) * 17);
     c.save();
-    c.fillStyle = `rgba(255,255,255,${0.045 + pulse * 0.055})`; c.fillRect(0, 0, this.W, this.H);
+    c.fillStyle = `rgba(255,255,255,${0.02 + pulse * 0.03})`; c.fillRect(0, 0, this.W, this.H);
     const w = Math.min(this.W - 28 * d, 420 * d), h = 88 * d, x = (this.W - w) / 2, y = this.H * 0.19;
-    c.fillStyle = 'rgba(5,10,18,0.88)'; c.fillRect(x, y, w, h);
-    c.fillStyle = team.kit.shirt; c.fillRect(x, y, 7 * d, h);
+    c.fillStyle = 'rgba(5,10,18,0.9)'; this.rr(x, y, w, h, 14 * d); c.fill();
+    c.fillStyle = team.kit.shirt; this.rr(x, y, 8 * d, h, 4 * d); c.fill();
     c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillStyle = '#fff'; c.font = `900 ${Math.max(24, 36 * d)}px system-ui,Arial`;
     c.fillText('BUUUUT !', this.W / 2, y + 31 * d);
@@ -2732,29 +2732,12 @@ export class Match {
     c.fillStyle = '#fff'; c.font = `700 ${Math.max(10, 12 * d)}px system-ui,Arial`;
     c.fillText(this.goalFxScorer || 'BUT !', this.W / 2, y + 78 * d);
     // confettis légers et déterministes, sans allocations d'images
-    for (let i = 0; i < 28; i++) {
+    for (let i = 0; i < 18; i++) {
       const phase = (i * 2.399 + (2.2 - t) * (1.8 + (i % 5) * 0.25));
       const px = this.W / 2 + Math.cos(phase) * (24 + (2.2 - t) * (35 + i % 7 * 8)) * d;
       const py = y + h + Math.sin(phase * 1.3) * (10 + (2.2 - t) * (18 + i % 6 * 5)) * d;
       c.globalAlpha = Math.max(0, t / 2.2) * 0.85; c.fillStyle = i % 2 ? team.kit.trim : '#fff';
       c.fillRect(px, py, (2 + i % 3) * d, (4 + i % 4) * d);
-    }
-    // Faisceaux lumineux et silhouettes de supporters qui lèvent les bras au but.
-    const flash = 0.5 + 0.5 * Math.sin((2.2 - t) * 11);
-    c.globalAlpha = 0.12 + flash * 0.12;
-    for (let i = 0; i < 4; i++) {
-      const lx = (i + 0.5) * this.W / 4;
-      c.fillStyle = team.kit.trim;
-      c.beginPath(); c.moveTo(lx - 5 * d, 0); c.lineTo(lx + 5 * d, 0);
-      c.lineTo(lx + (i % 2 ? 72 : -72) * d, this.H * 0.46); c.lineTo(lx + (i % 2 ? 34 : -34) * d, this.H * 0.46); c.closePath(); c.fill();
-    }
-    c.globalAlpha = Math.max(0, t / 2.2) * 0.72;
-    for (let i = 0; i < 18; i++) {
-      const px = (i + 0.5) * this.W / 18, base = this.H - (i % 3) * 3 * d;
-      const wave = Math.sin((2.2 - t) * 13 + i * 1.7) * 5 * d;
-      c.strokeStyle = i % 2 ? team.kit.shirt : team.kit.trim; c.lineWidth = 2.5 * d; c.lineCap = 'round';
-      c.beginPath(); c.arc(px, base - 10 * d, 4 * d, Math.PI, 0); c.stroke();
-      c.beginPath(); c.moveTo(px - 2 * d, base - 7 * d); c.lineTo(px - 9 * d + wave, base - 20 * d); c.moveTo(px + 2 * d, base - 7 * d); c.lineTo(px + 9 * d - wave, base - 20 * d); c.stroke();
     }
     c.restore();
   }
@@ -3398,7 +3381,7 @@ export class Match {
     c.fillText(this.state === 'shootout' ? 'TAB' : `${String(min).padStart(2, '0')}'`, clockX + clockW / 2, y0 + h / 2);
     c.restore();
     // Live match centre remains on desktop; on narrow phones the pitch stays clear.
-    if (!isReplay && !layout.compact) {
+    if (!isReplay && layout.statsWidth > 0) {
       const sw = layout.statsWidth, sh = layout.statsHeight, sx = this.W - sw - 12 * d, sy = 12 * d;
       const totalPoss = Math.max(0.01, this.stats.poss[0] + this.stats.poss[1]);
       const poss0 = Math.round(this.stats.poss[0] / totalPoss * 100), poss1 = 100 - poss0;
@@ -3417,16 +3400,27 @@ export class Match {
       c.restore();
     }
     // bandeau commentaire
-    if (this.tickerT > 0 && this.ticker) {
-      c.font = `600 ${13 * d}px system-ui,Arial`; const w = c.measureText(this.ticker).width + 24 * d;
-      c.fillStyle = '#000000b0'; c.fillRect(this.W / 2 - w / 2, y0 + h + 8 * d, w, 26 * d);
-      c.fillStyle = '#fff'; c.fillText(this.ticker, this.W / 2, y0 + h + 21 * d);
+    const celebrating = !isReplay && this.goalFxT > 0;
+    if (this.tickerT > 0 && this.ticker && !celebrating) {
+      c.font = `600 ${12.5 * d}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      const text = this.ticker.length > 90 ? this.ticker.slice(0, 88) + '…' : this.ticker;
+      const w = Math.min(this.W - 40 * d, c.measureText(text).width + 28 * d), ty = y0 + h + 10 * d;
+      c.save(); c.globalAlpha = Math.min(1, this.tickerT / 0.4);
+      c.fillStyle = 'rgba(6,12,22,0.78)'; this.rr(this.W / 2 - w / 2, ty, w, 26 * d, 13 * d); c.fill();
+      c.fillStyle = '#ffe14a'; this.rr(this.W / 2 - w / 2, ty, 4 * d, 26 * d, 2 * d); c.fill();
+      c.fillStyle = '#fff'; c.fillText(text, this.W / 2, ty + 13.5 * d); c.restore();
     }
-    if (this.msgT > 0 && this.msg) {
-      c.font = `900 ${Math.round(this.H * 0.09)}px system-ui,Arial`; c.textAlign = 'center';
-      c.fillStyle = '#000a'; c.fillText(this.msg, this.W / 2 + 3 * d, this.H * 0.36 + 3 * d);
-      c.fillStyle = isReplay ? '#ffe14a' : '#fff'; c.fillText(this.msg, this.W / 2, this.H * 0.36);
+    if (this.msgT > 0 && this.msg && !celebrating) {
+      // Annonce en pastille : lisible sans masquer l'action.
+      const size = Math.max(18, Math.round(Math.min(this.H * 0.07, 40 * d)));
+      c.font = `900 ${size}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      const w = c.measureText(this.msg).width + 44 * d, bh = size * 1.55, by = this.H * 0.3;
+      c.save(); c.globalAlpha = Math.min(1, this.msgT / 0.35);
+      c.fillStyle = 'rgba(6,12,22,0.82)'; this.rr(this.W / 2 - w / 2, by - bh / 2, w, bh, bh / 2); c.fill();
+      c.strokeStyle = isReplay ? '#ffe14a' : 'rgba(255,255,255,0.35)'; c.lineWidth = 1.5 * d; this.rr(this.W / 2 - w / 2, by - bh / 2, w, bh, bh / 2); c.stroke();
+      c.fillStyle = isReplay ? '#ffe14a' : '#fff'; c.fillText(this.msg, this.W / 2, by + 1 * d); c.restore();
     }
+    c.textBaseline = 'alphabetic';
     if (isReplay) {
       const rw = Math.min(280 * d, this.W * 0.7), rx = (this.W - rw) / 2, ry = this.H * 0.48;
       c.fillStyle = '#07111ddd'; c.fillRect(rx, ry, rw, 34 * d);
@@ -3441,10 +3435,12 @@ export class Match {
     // Tirs au but : tableau de séance à la place du radar.
     if (this.state === 'shootout') { this.drawShootoutPanel(); this.drawShootoutAim(); c.textBaseline = 'alphabetic'; return; }
     // radar
-    const mw = 120 * d, mh = 78 * d, mx = this.W / 2 - mw / 2, my = this.H - mh - 8 * d;
-    c.fillStyle = '#0a3d0fcc'; c.fillRect(mx, my, mw, mh); c.strokeStyle = '#ffffff88'; c.lineWidth = 1; c.strokeRect(mx, my, mw, mh);
+    const mw = 96 * d, mh = 62 * d, mx = this.W / 2 - mw / 2, my = this.H - mh - 10 * d;
+    c.fillStyle = 'rgba(6,24,14,0.55)'; this.rr(mx, my, mw, mh, 6 * d); c.fill(); c.strokeStyle = 'rgba(255,255,255,0.45)'; c.lineWidth = 1; this.rr(mx, my, mw, mh, 6 * d); c.stroke();
+    c.beginPath(); c.arc(mx + mw / 2, my + mh / 2, mh * 0.13, 0, Math.PI * 2); c.stroke();
+    c.strokeRect(mx, my + mh * 0.22, mw * 0.16, mh * 0.56); c.strokeRect(mx + mw * 0.84, my + mh * 0.22, mw * 0.16, mh * 0.56);
     c.beginPath(); c.moveTo(mx + mw / 2, my); c.lineTo(mx + mw / 2, my + mh); c.stroke();
-    for (const Tm of T) for (const p of Tm.ps) { if (p.sentOff) continue; c.fillStyle = p === this.selected ? '#ffe14a' : Tm.kit.shirt; c.beginPath(); c.arc(mx + (p.x + HL) / (2 * HL) * mw, my + (HW - p.y) / (2 * HW) * mh, (p === this.selected ? 3.2 : 2.4) * d, 0, 7); c.fill(); }
+    for (const Tm of T) for (const p of Tm.ps) { if (p.sentOff) continue; c.fillStyle = p === this.selected ? '#ffe14a' : Tm.kit.shirt; c.beginPath(); c.arc(mx + (p.x + HL) / (2 * HL) * mw, my + (HW - p.y) / (2 * HW) * mh, (p === this.selected ? 2.8 : 2) * d, 0, 7); c.fill(); }
     const radarBall = frame ? frame.b : [this.ball.x, this.ball.y];
     c.fillStyle = '#fff'; c.beginPath(); c.arc(mx + (radarBall[0] + HL) / (2 * HL) * mw, my + (HW - radarBall[1]) / (2 * HW) * mh, 2 * d, 0, 7); c.fill();
     c.textBaseline = 'alphabetic';

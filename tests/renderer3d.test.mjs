@@ -27,7 +27,7 @@ const actionCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1.09 } }
 assert.ok(actionCamera.distance < closeCamera.distance, 'le zoom d action rapproche progressivement la caméra');
 const replayCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1.09 } }, true);
 assert.equal(replayCamera.zoom, 1.02, 'le ralenti conserve un cadrage stable');
-assert.equal(get3DCameraPose({}, null, 0.8).fovy, 0.92,
+assert.equal(get3DCameraPose({}, null, 0.8).fovy, 0.9,
   'le cadrage vertical s adapte aux écrans étroits');
 const groundCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1 }, ball: { z: 0 } });
 const aerialCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1 }, ball: { z: 8 } });
@@ -265,3 +265,15 @@ const divingKeeperMesh = getPlayer3DModelStats(modelMatch, {
 }, 'high');
 assert.equal(divingKeeperMesh.finite, true, 'le plongeon du gardien garde un maillage fini');
 console.log('3D ACTION MESH OK — corps orienté sur première touche, tête, contact et plongeon gardien');
+
+// Foule 3D : des milliers de supporters animés par le GPU, densité adaptée à la qualité.
+{
+  const teams = [{ kit: { shirt: '#c8102e', trim: '#ffd200' } }, { kit: { shirt: '#ffffff', trim: '#d40000' } }];
+  const lo = get3DStadiumMeshStats({ teams }, 'low'), me = get3DStadiumMeshStats({ teams }, 'medium'), hi = get3DStadiumMeshStats({ teams }, 'high');
+  assert.ok(lo.fans < me.fans && me.fans < hi.fans, 'plus de supporters en qualité supérieure');
+  assert.ok(hi.fans > 5000, 'stade plein en qualité haute : ' + hi.fans);
+  assert.ok(hi.animatedVertices >= hi.fans * 12, 'chaque supporter est animé par le shader');
+  assert.ok(hi.vertexCount < 400000, 'budget de sommets du stade respecté : ' + hi.vertexCount);
+  console.log(`3D CROWD OK — ${lo.fans} / ${me.fans} / ${hi.fans} supporters animés (bas / moyen / haut), ${hi.vertexCount} sommets`);
+}
+

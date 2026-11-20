@@ -22,7 +22,7 @@ const mobileHud = getMatchHudLayout(780, 2);
 assert.equal(mobileHud.compact, true, 'un téléphone paysage reste en tableau de score compact');
 assert.equal(mobileHud.statsWidth, 0, 'les statistiques ne recouvrent pas le terrain sur petit écran');
 assert.ok(mobileHud.panelWidth < 780, 'le panneau de score tient sur un écran mobile');
-const desktopHud = getMatchHudLayout(1600, 2);
+const desktopHud = getMatchHudLayout(2400, 2);
 assert.equal(desktopHud.compact, false, 'un écran large affiche le centre de match');
 assert.ok(desktopHud.statsWidth > 0 && desktopHud.statsHeight > 0, 'les statistiques sont disponibles sur grand écran');
 assert.ok(desktopHud.panelWidth + desktopHud.statsWidth < 1600, 'score et statistiques ne se chevauchent pas sur grand écran');

@@ -103,6 +103,8 @@ export function getPlayer3DPose(player = {}, frame = null) {
     keeperPunch: clamp(keeperPunch / 0.42, 0, 1),
     contact: clamp(contact / 0.22, 0, 1),
     celebrate: clamp(celebrate / 2.2, 0, 1),
+    idle: clamp(1 - speed / 1.2, 0, 1),
+    celebrateHop: celebrate > 0 ? Math.abs(Math.sin(celebrate * 7.5)) * clamp(celebrate / 0.6, 0, 1) * 0.16 : 0,
     diveDir: diveDir || 1,
     slideDir: slideDir || 1,
     kickDir: kickDir || 1,
@@ -161,7 +163,8 @@ export function getPlayer3DActionWeights(pose = {}) {
     punchReach: clamp(Math.max(keeperPunch, dive * 0.54), 0, 1),
     kickPulse: clamp(Math.sin(kickProgress * Math.PI), 0, 1),
     kickWindup: clamp((kick - 0.58) / 0.42, 0, 1),
-    kickFollowThrough: clamp((0.78 - kick) / 0.78, 0, 1),
+    // Suivi de frappe : monte après le contact puis retombe à zéro — jamais de jambe tendue au repos.
+    kickFollowThrough: kick > 0.005 ? clamp((0.78 - kick) / 0.4, 0, 1) * clamp(kick / 0.16, 0, 1) : 0,
     firstTouchPulse: clamp(Math.sin(touchProgress * Math.PI), 0, 1),
     firstTouchAbsorb: clamp(Math.sin(touchProgress * Math.PI) * (1 - touchProgress * 0.24), 0, 1),
     headerDrive: clamp(Math.sin(headerProgress * Math.PI), 0, 1),
@@ -399,6 +402,35 @@ function gradientQuad(out, a, b, c, d, bottom, top) {
 function rectV(out, x0, x1, y0, y1, z, color, facing = 1) { quad(out, [x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z], color, [0, 0, facing]); }
 function rectVZ(out, x, z0, z1, y0, y1, color, facing = 1) { quad(out, [x, y0, z0], [x, y0, z1], [x, y1, z1], [x, y1, z0], color, [facing, 0, 0]); }
 // Supporter : buste et tête tournés vers la pelouse, parfois une écharpe levée.
+const HAIR_COLORS=[[0.03,0.025,0.02],[0.06,0.04,0.03],[0.13,0.08,0.045],[0.24,0.15,0.07],[0.5,0.38,0.2],[0.02,0.02,0.025]];
+function nameHash(text) { let h = 2166136261; for (const ch of String(text || '')) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822507) >>> 0; h ^= h >>> 13; return h >>> 0; }
+export function playerLook(player = {}, index = 0) {
+  const h = nameHash((player.id ?? '') + '|' + (player.name || index));
+  const styles = ['crop', 'crop', 'buzz', 'afro', 'fade', 'long', 'bald', 'quiff'];
+  const style = styles[h % styles.length];
+  const hair = HAIR_COLORS[(h >>> 4) % (style === 'afro' ? 2 : HAIR_COLORS.length)];
+  return { style, hair, beard: ((h >>> 9) % 4) === 0 };
+}
+function addHair(out, bodyPoint, f, bodyY, look, detail) {
+  const c = look.hair, y = bodyY + 0.62;
+  switch (look.style) {
+    case 'bald': break;
+    case 'buzz': sphere(out, bodyPoint(f - 0.035, y + 0.045, 0), [0.15, 0.14, 0.145], c, 9, 5); break;
+    case 'afro': sphere(out, bodyPoint(f - 0.06, y + 0.13, 0), [0.2, 0.15, 0.2], c, 10, 6); break;
+    case 'long':
+      sphere(out, bodyPoint(f - 0.035, y + 0.07, 0), [0.158, 0.12, 0.155], c, 9, 5);
+      sphere(out, bodyPoint(f - 0.1, y - 0.05, 0), [0.07, 0.15, 0.14], c, 7, 4); break;
+    case 'quiff':
+      sphere(out, bodyPoint(f - 0.035, y + 0.06, 0), [0.152, 0.12, 0.148], c, 9, 5);
+      sphere(out, bodyPoint(f + 0.07, y + 0.16, 0), [0.09, 0.06, 0.1], c, 7, 4); break;
+    case 'fade':
+      sphere(out, bodyPoint(f - 0.035, y + 0.09, 0), [0.14, 0.1, 0.135], c, 9, 5); break;
+    default:
+      sphere(out, bodyPoint(f - 0.035, y + 0.065, 0), [0.155, 0.12, 0.152], c, 9, 5);
+      if (detail > 0) sphere(out, bodyPoint(f + 0.1, y + 0.13, 0), [0.05, 0.035, 0.11], c, 6, 3);
+  }
+  if (look.beard && detail > 0) sphere(out, bodyPoint(f + 0.06, y - 0.08, 0), [0.1, 0.07, 0.115], c, 7, 4);
+}
 function spectator(out, x, y, z, facing, shirt, skin, scarf) {
   const sx = facing[0] === 0 ? 1 : 0, sz = facing[0] === 0 ? 0 : 1;
   const off = (u, v, w) => [x + sx * u + facing[0] * w, y + v, z + sz * u + facing[2] * w];
@@ -697,13 +729,15 @@ export class MatchRenderer3D {
     const detail=this.quality.detail;
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
     const build=0.9+physique*0.2;
-    const hair=index%3===0?[0.045,0.035,0.03]:index%3===1?[0.12,0.075,0.045]:[0.025,0.03,0.04];
-    const phase=pose.phase, lift=pose.jump, slide=pose.slide, dive=pose.dive;
+    const look=playerLook(player,index);
+    const hair=look.hair;
+    const phase=pose.phase, lift=pose.jump+pose.celebrateHop, slide=pose.slide, dive=pose.dive;
     const action=getPlayer3DActionWeights(pose);
     const low=clamp(action.slideLunge*0.78+dive*0.52,0,0.88);
     const keeperVertical=player.isGK?dive*clamp(pose.diveHeight,-1,1)*0.19:0;
     const keeperFlightLow=player.isGK?action.diveFlight*0.085+action.diveLanding*0.035:0;
-    const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical-keeperFlightLow+action.headerDrive*0.035+pose.bodyBob;
+    const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical-keeperFlightLow+action.headerDrive*0.035+pose.bodyBob+
+      pose.idle*Math.sin((Number(match.clock)||0)*2.3+index*1.7)*0.009;
     const kickLean=action.kickFollowThrough*(0.105+pose.kickPower*0.055)-action.kickWindup*0.045;
     const lean=pose.lean+pose.accelerationLean+kickLean+action.headerDrive*0.19+
       action.stumble*0.12+action.brace*0.035+(player.isGK?action.diveFlight*0.045:0);
@@ -717,11 +751,12 @@ export class MatchRenderer3D {
     const bodyPoint=(f,h,side)=>point(f,h,side+bodySide);
     const legPoint=(f,h,side)=>point(f,h,side+bodySide*0.48);
     // Ground shadow and captain/user selection halo.
-    const sh=[0.035,0.055,0.045];
-    const shadowY=0.045;
-    for(let i=0;i<14;i++){
-      const a=i/14*Math.PI*2,b=(i+1)/14*Math.PI*2;
-      triangle(g,[x,shadowY,z],[x+Math.cos(a)*0.42,shadowY,z+Math.sin(a)*0.25],[x+Math.cos(b)*0.42,shadowY,z+Math.sin(b)*0.25],sh,[[0,1,0],[0,1,0],[0,1,0]]);
+    // Ombre douce : noyau sombre sous les pieds, halo plus clair étiré vers l'arrière (projecteurs).
+    const up=[[0,1,0],[0,1,0],[0,1,0]];
+    const shadowLayers=[[0.5,0.32,[0.09,0.2,0.1],0.042,0.1],[0.32,0.2,[0.05,0.11,0.06],0.046,0.04]];
+    for(const [rx,rz,col,sy,off] of shadowLayers) for(let i=0;i<14;i++){
+      const a=i/14*Math.PI*2,b=(i+1)/14*Math.PI*2, cx=x+off, cz=z-off*0.6;
+      triangle(g,[cx,sy,cz],[cx+Math.cos(a)*rx,sy,cz+Math.sin(a)*rz],[cx+Math.cos(b)*rx,sy,cz+Math.sin(b)*rz],col,up);
     }
     if(player===match.selected){
       ring(g,x,0.085,z,0.58,[0.94,0.78,0.24],22,0.045);
@@ -762,7 +797,7 @@ export class MatchRenderer3D {
       const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55+kneeLift-action.tackleReach*(isKickLeg?0.13:0),side*0.145);
       const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*(0.08+pose.sprint*0.04)+
         (isKickLeg?action.kickFollowThrough*0.12:0)+(isTouchLeg?action.firstTouchAbsorb*0.065:0);
-      const ankle=legPoint(sw*0.9+kickThrough*0.18,0.13+toeLift+lift*0.25,side*0.16);
+      const ankle=legPoint(sw*0.9+kickThrough*0.18,0.13+toeLift+lift*0.25,side*(0.16+pose.idle*0.035));
       cylinder(g,hip,knee,0.105,shorts,8,0.085);
       sphere(g,knee,[0.09,0.09,0.09],shorts,6,4);
       cylinder(g,knee,ankle,0.066*build,sock,detail===2?10:7,0.052);
@@ -770,7 +805,7 @@ export class MatchRenderer3D {
         ring(g,ankle[0],ankle[1]+0.09,ankle[2],0.071,[0.78,0.08,0.1],12,0.012);
         ring(g,ankle[0],ankle[1]+0.15,ankle[2],0.072,trim,12,0.01);
       }
-      const boot=legPoint(sw*0.95+kickThrough*0.2,ankle[1],side*0.16+0.06);
+      const boot=legPoint(sw*0.95+kickThrough*0.2+0.06,ankle[1],side*(0.16+pose.idle*0.035));
       sphere(g,boot,[0.16,0.075,0.095],dark,detail===2?10:7,detail===2?6:4);
       if(detail>0) {
         sphere(g,[boot[0]+0.045,boot[1]-0.052,boot[2]-0.035],[0.025,0.018,0.022],trim,5,3);
@@ -804,7 +839,7 @@ export class MatchRenderer3D {
     cylinder(g,bodyPoint(lean*0.4,bodyY+0.34,0),bodyPoint(lean*0.4,bodyY+0.48,0),0.075,skin,8);
     const head=bodyPoint(lean*0.43+action.headerDrive*0.19,bodyY+0.62+action.headerDrive*0.045,0);
     sphere(g,head,[0.145,0.175,0.14],skin,detail===2?12:10,detail===2?9:7);
-    sphere(g,bodyPoint(lean*0.43,bodyY+0.735,0),[0.147,0.07,0.142],hair,9,4);
+    addHair(g,bodyPoint,lean*0.43,bodyY,look,detail);
     sphere(g,bodyPoint(lean*0.43,bodyY+0.62,-0.142),[0.035,0.055,0.035],skin,6,4);
     sphere(g,bodyPoint(lean*0.43,bodyY+0.62,0.142),[0.035,0.055,0.035],skin,6,4);
     if(detail>0) {

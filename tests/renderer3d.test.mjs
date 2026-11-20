@@ -277,3 +277,14 @@ console.log('3D ACTION MESH OK — corps orienté sur première touche, tête, c
   console.log(`3D CROWD OK — ${lo.fans} / ${me.fans} / ${hi.fans} supporters animés (bas / moyen / haut), ${hi.vertexCount} sommets`);
 }
 
+
+{
+  const { getPlayer3DPose: P, getPlayer3DActionWeights: W, playerLook } = await import('../public/js/renderer3d.js');
+  const rest = W(P({ x: 0, y: 0, vx: 0, vy: 0, kickT: 0 }));
+  assert.equal(rest.kickFollowThrough, 0, 'au repos, aucune jambe ne reste tendue (bug du grand écart)');
+  const mid = W(P({ kickT: 0.12 }));
+  assert.ok(mid.kickFollowThrough > 0.5, 'le suivi de frappe reste visible juste après le contact');
+  const styles = new Set(Array.from({ length: 40 }, (_, i) => playerLook({ name: 'Joueur ' + i, id: i }, i).style));
+  assert.ok(styles.size >= 5, 'coiffures variées dans un effectif');
+  console.log('3D PLAYER LOOK OK — repos sans grand écart, ' + styles.size + ' coiffures');
+}

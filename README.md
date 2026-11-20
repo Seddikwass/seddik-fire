@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.31.0 — joueurs plus naturels
+- Correction majeure : au repos ou en course, la jambe de frappe de chaque joueur restait tendue en « grand écart ». Le suivi de frappe n'apparaît désormais que juste après une frappe, puis s'efface en douceur.
+- Posture d'attente réaliste : appuis légèrement écartés et respiration discrète quand le joueur est arrêté.
+- Coiffures variées et stables par joueur : courte, rasée, afro, dégradé, longue, banane, crâne rasé, barbe ; six couleurs de cheveux.
+- Ombres au sol plus douces sur deux couches, décalées comme sous les projecteurs, au lieu d'une tache noire.
+- Célébration de but : petits sauts en plus des bras levés.
+- Tests : aucun grand écart au repos, suivi de frappe visible, diversité des coiffures.
+
 ## Version 3.30.0 — refonte graphique du match
 - Caméra de retransmission rapprochée (≈ 23 m de haut, ≈ 30 m en retrait, angle plus serré) : joueurs environ 2,5 fois plus grands à l'écran.
 - Nouveau stade : tribunes en gradins sur deux anneaux autour des quatre côtés, balcons aux couleurs du club, toits avec rampe lumineuse, angles fermés, ciel nocturne en dégradé.

@@ -1,5 +1,15 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.24.0 — tactique en direct
+- Bouton 📋 en match : cinq consignes rapides sans mettre pause (Bloc bas, Contre-attaque, Équilibré, Pressing haut, Tout pour l'attaque) ; touches 1 à 5 au clavier.
+- Menu pause : changement de formation en direct, largeur, ligne défensive, consignes rapides, jauges de fatigue de chaque joueur (cartons et blessures signalés).
+- Changement de formation par affectation optimale (algorithme hongrois) : chaque joueur rejoint la case la plus proche de son poste, latéraux conservés dans leur couloir, aucun défenseur envoyé en attaque ; fonctionne aussi à dix.
+- Conseils de l'adjoint applicables en un geste : blessé, épuisé, averti exposé à l'expulsion (remplaçant au même poste proposé), consigne offensive quand l'équipe est menée, défensive pour préserver une avance ; alerte discrète pendant le jeu pour un joueur blessé ou épuisé.
+- Tes consignes sont appliquées telles quelles : l'IA ne modifie plus en cachette la mentalité de ton équipe selon le score (seules les équipes dirigées par l'IA s'adaptent).
+- Effet mesuré : hauteur moyenne de l'équipe environ 12 m plus haute en « Tout pour l'attaque » qu'en « Bloc bas ».
+- Correction : l'annonce du derby au coup d'envoi n'est plus écrasée par une annonce générique.
+- Nouveau module public/js/tactics.js et tests tests/tactics.test.mjs.
+
 ## Version 3.23.0 — commentaire contextuel et ambiance de stade
 - Nouveau module public/js/commentary.js : commentaire en français, anglais (auparavant le texte français était lu par une voix anglaise) et arabe avec touches de derja tunisienne.
 - Buts commentés selon le contexte : triplé, doublé, but tardif décisif, égalisation, prise d'avantage, penalty, coup franc direct, tête, frappe lointaine, contre son camp, festival offensif.

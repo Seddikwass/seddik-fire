@@ -3,6 +3,7 @@ import { clamp, lerp } from './util.js';
 import { FORMATIONS } from './data.js';
 import * as A from './audio.js';
 import { MatchRenderer3D } from './renderer3d.js';
+import { getFormationAssignment, getFormationBase, applyPreset, getCoachAdvice } from './tactics.js';
 import { getMatchFlavor, getGoalCommentKeys, pickLine, fillLine } from './commentary.js';
 import { getShootoutStatus, getNextKicker, getShootoutOrder, getAIPenaltyChoice, getPenaltyStrike, getAIKeeperDive, getPenaltyOutcome } from './shootout.js';
 
@@ -1159,6 +1160,14 @@ export class Match {
     if (!inFinalThird || holder !== this.pressureTeam) this.pressureTeam = holder;
     this.pressureCd = Math.max(0, (this.pressureCd || 0) - dt);
     if (this.pressureT > 9 && this.pressureCd <= 0) { this.pressureCd = 60; this.say('pressure', { t: this.teams[holder].short }); }
+    // Adjoint : signale une seule fois chaque joueur blessé ou épuisé de l'équipe du joueur humain.
+    if (this.userSide != null && (this.coachT = (this.coachT || 0) + dt) > 6) {
+      this.coachT = 0; this.coachWarned = this.coachWarned || new Set();
+      const T = this.teams[this.userSide];
+      const urgent = getCoachAdvice(T, { minute: this.minute, goalDiff: 0, subsLeft: this.subsLeft[this.userSide] })
+        .find(a => a.type === 'sub' && /blessé|épuisé/.test(a.reason) && !this.coachWarned.has(a.outName));
+      if (urgent) { this.coachWarned.add(urgent.outName); this.ticker = `🧑‍💼 Adjoint : ${urgent.outName} ${urgent.reason} — remplacement conseillé (pause)`; this.tickerT = 5; }
+    }
     // Chants : régulièrement, plus souvent quand l'équipe à domicile mène ou pousse.
     this.nextChantT = (this.nextChantT ?? 30 + this.r() * 20) - dt;
     if (this.nextChantT <= 0) {
@@ -1426,8 +1435,10 @@ export class Match {
     for (const T of this.teams) {
       const goalDiff = this.score[T.side] - this.score[1 - T.side];
       const lateFactor = clamp((this.minute - 58) / 32, 0, 1);
-      const urgency = goalDiff < 0 ? lateFactor * Math.min(1.25, 0.45 + Math.abs(goalDiff) * 0.32) : 0;
-      const protectLead = goalDiff > 0 ? lateFactor * Math.min(0.9, 0.28 + goalDiff * 0.22) : 0;
+      // L'équipe du joueur humain applique exactement ses consignes : pas d'ajustement caché.
+      const coachedByAI = T.side !== this.userSide;
+      const urgency = coachedByAI && goalDiff < 0 ? lateFactor * Math.min(1.25, 0.45 + Math.abs(goalDiff) * 0.32) : 0;
+      const protectLead = coachedByAI && goalDiff > 0 ? lateFactor * Math.min(0.9, 0.28 + goalDiff * 0.22) : 0;
       T.liveMentality = clamp(T.mentality + urgency * 0.85 - protectLead * 0.48, -2, 2);
       T.livePressing = clamp(T.pressing + urgency * 1.2 - protectLead * 0.45, 0, 3);
       const inPoss = possTeam === T.side;
@@ -2520,6 +2531,24 @@ export class Match {
       so.phase = 'result';
     }
     if (so.status.decided && !this.events.some(e => e.type === 'shootout')) this.events.push({ type: 'shootout', min: 120, team: so.status.winner, name: `${so.status.goals[0]}-${so.status.goals[1]} t.a.b.` });
+  }
+  // Changement de formation en direct : chaque joueur rejoint la case qui correspond le mieux à son poste.
+  changeFormation(side, formation) {
+    const T = this.teams[side];
+    if (!T || !formation || T.formation === formation) return false;
+    const slots = getFormationAssignment(T.ps, formation);
+    T.ps.forEach((p, i) => { if (slots[i] >= 0) { const base = getFormationBase(formation, slots[i]); if (base) p.base = base; } });
+    T.formation = formation;
+    this.events.push({ type: 'tactic', min: Math.round(this.minute), team: side, name: `Formation ${formation}` });
+    this.banner(`FORMATION ${formation}`, 1.8);
+    return true;
+  }
+  setTacticPreset(side, key) {
+    const T = this.teams[side];
+    if (!applyPreset(T, key)) return false;
+    T.liveMentality = T.mentality; T.livePressing = T.pressing;
+    this.events.push({ type: 'tactic', min: Math.round(this.minute), team: side, name: key });
+    return true;
   }
   substitute(side, outIdx, benchIdx) {
     const T = this.teams[side];

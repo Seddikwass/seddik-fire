@@ -316,5 +316,25 @@ button:disabled,.btn:disabled{
 /* FT26 v3.3 — couche WebGL du match 3D et HUD au premier plan */
 .match .ft26-3d-canvas { z-index: 0; pointer-events: none; }
 .match #cv { z-index: 1; background: transparent; }
-.match .joyzone, .match .btns, .match .mpause { z-index: 4; }
+.match .joyzone, .match .btns, .match .mpause, .match .mtac { z-index: 4; }
 .match .mload { z-index: 6; }
+
+/* Consignes tactiques en direct */
+.match .mtac{position:absolute;right:max(68px,calc(env(safe-area-inset-right,0px) + 68px));top:max(10px,calc(env(safe-area-inset-top,0px) + 8px));width:48px;height:48px;border-radius:12px;background:#000a;color:#fff;border:1px solid #fff5;font-size:20px}
+.match .tacbar{position:absolute;right:max(12px,calc(env(safe-area-inset-right,0px) + 12px));top:64px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:min(360px,70vw);z-index:5}
+.match .tacbar[hidden]{display:none}
+.match .tacbar button{display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;font-size:13px!important;border-radius:12px;border:1px solid #fff4;background:rgba(6,12,22,.9);color:#fff;font:700 14px system-ui,Arial;text-align:left}
+.match .tacbar button span{font-size:18px}
+.match .tacbar button.on{border-color:#ffe14a;box-shadow:0 0 0 2px #ffe14a55}
+.match.lefty .mtac{right:auto;left:max(68px,calc(env(safe-area-inset-left,0px) + 68px))}
+.presets{margin:8px 0;gap:6px}
+.advice{margin:10px 0;padding:10px;border-radius:12px;background:#ffffff0d;border:1px solid #ffe14a44}
+.advice h4{margin:0 0 6px}
+.adv-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0}
+.adv-row small{opacity:.75}
+.stamina{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 14px;margin-top:8px;font-size:13px}
+.st-row{display:flex;align-items:center;gap:8px}
+.st-row span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-row i{width:70px;height:7px;border-radius:4px;background:linear-gradient(90deg,#2fd36b var(--v),#ffffff22 var(--v))}
+.st-row i.mid{background:linear-gradient(90deg,#ffb020 var(--v),#ffffff22 var(--v))}
+.st-row i.low{background:linear-gradient(90deg,#ff4d4d var(--v),#ffffff22 var(--v))}

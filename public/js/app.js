@@ -1,13 +1,14 @@
 // Football Tunisia 2026 — interface et navigation
 import * as C from './career.js';
 import { Match } from './match.js';
+import { TACTIC_PRESETS, getCoachAdvice } from './tactics.js';
 import * as A from './audio.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.23.0';
+export const APP_VERSION = '3.24.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -430,7 +431,9 @@ VIEWS.account = () => `<div class="page narrow"><div class="ph"><button class="b
  VIEWS.match = () => `<div class="match ${settings.leftHanded ? 'lefty' : ''} ${args.userSide == null ? 'spect' : ''}" style="--bs:${settings.btnScale}"><canvas id="cv" role="img" aria-label="Terrain de football animé, match à onze contre onze. Utilisez les commandes tactiles pour jouer."></canvas>
   <div id="joyZone" class="joyzone" role="group" aria-label="Commande directionnelle : maintenir et glisser pour déplacer le joueur"><div id="joy" class="joy"><div class="knob"></div></div></div>
   <div class="btns"><button id="bShoot" type="button" aria-pressed="false" class="mb shoot">${t('Tir')}</button><button id="bPass" type="button" aria-pressed="false" class="mb pass">${t('Passe')}</button><button id="bThru" type="button" aria-pressed="false" class="mb thru">${t('Profondeur')}</button><button id="bSprint" type="button" aria-pressed="false" class="mb sprint">${t('Sprint')}</button></div>
-  <button id="bPause" class="mpause" aria-label="${t('Pause')}">❚❚</button><div id="mLoad" class="mload">Chargement du match…</div></div>`;
+  <button id="bPause" class="mpause" aria-label="${t('Pause')}">❚❚</button>
+  ${args.userSide != null ? `<button id="bTac" class="mtac" aria-label="Consignes tactiques" aria-expanded="false">📋</button>
+  <div id="tacBar" class="tacbar" hidden role="group" aria-label="Consignes rapides">${Object.entries(TACTIC_PRESETS).map(([k, p]) => `<button type="button" data-preset="${k}"><span>${p.icon}</span>${p.label}</button>`).join('')}</div>` : ''}<div id="mLoad" class="mload">Chargement du match…</div></div>`;
 function startMatchView() {
   const cv = $('#cv'); const ctx = args;
   const m = new Match({
@@ -442,7 +445,6 @@ function startMatchView() {
   $('#mLoad').remove();
   bindControls(m);
   m.start();
-  m.say('kickoff', {}, true);
   A.whistle();
 }
 function bindControls(m) {
@@ -494,11 +496,21 @@ function bindControls(m) {
   window.addEventListener('blur', releaseAll);
   document.addEventListener('visibilitychange', onVisibility);
   $('#bPause').onclick = () => { m.paused = true; pauseMenu(); };
+  // Consignes rapides sans interrompre le jeu.
+  const tacBar = $('#tacBar'), bTac = $('#bTac');
+  const markPreset = () => { const T = m.teams[m.userSide]; tacBar?.querySelectorAll('[data-preset]').forEach(b => b.classList.toggle('on', b.dataset.preset === T?.preset)); };
+  const setPreset = key => { if (m.userSide == null) return; m.setTacticPreset(m.userSide, key); markPreset(); m.banner(TACTIC_PRESETS[key].icon + ' ' + TACTIC_PRESETS[key].label.toUpperCase(), 1.4); };
+  if (bTac && tacBar) {
+    bTac.onclick = () => { tacBar.hidden = !tacBar.hidden; bTac.setAttribute('aria-expanded', String(!tacBar.hidden)); markPreset(); };
+    tacBar.onclick = e => { const b = e.target.closest('[data-preset]'); if (!b) return; setPreset(b.dataset.preset); tacBar.hidden = true; bTac.setAttribute('aria-expanded', 'false'); };
+  }
+  m._presetKeys = { Digit1: 'park', Digit2: 'counter', Digit3: 'balanced', Digit4: 'press', Digit5: 'allout' };
+  m._setPreset = setPreset;
   $('#cv').addEventListener('pointerdown', () => { if (m.replay) m.skipReplay(); });
   // clavier (PC)
   const keys = {};
   const upd = () => { m.input.jx = (keys.ArrowRight || keys.KeyD ? 1 : 0) - (keys.ArrowLeft || keys.KeyA ? 1 : 0); m.input.jy = (keys.ArrowUp || keys.KeyW ? 1 : 0) - (keys.ArrowDown || keys.KeyS ? 1 : 0); m.input.sprint = !!(keys.ShiftLeft || keys.ShiftRight); };
-  m._kd = e => { if (keys[e.code]) return; keys[e.code] = true; upd(); A.audioInit(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootDown(); if (e.code === 'KeyC') m.btnPass(false); if (e.code === 'KeyV') m.btnPass(true); if (e.code === 'KeyQ') m.switchPlayer(); if (e.code === 'Escape' || e.code === 'KeyP') { m.paused = true; pauseMenu(); } if (m.replay && e.code === 'Enter') m.skipReplay(); };
+  m._kd = e => { if (keys[e.code]) return; keys[e.code] = true; upd(); A.audioInit(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootDown(); if (e.code === 'KeyC') m.btnPass(false); if (e.code === 'KeyV') m.btnPass(true); if (e.code === 'KeyQ') m.switchPlayer(); if (m._presetKeys?.[e.code]) m._setPreset(m._presetKeys[e.code]); if (e.code === 'Escape' || e.code === 'KeyP') { m.paused = true; pauseMenu(); } if (m.replay && e.code === 'Enter') m.skipReplay(); };
   m._ku = e => { keys[e.code] = false; upd(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootUp(); if (e.code === 'KeyV') m.input.press = false; };
   addEventListener('keydown', m._kd); addEventListener('keyup', m._ku);
   const od = m.destroy.bind(m); m.destroy = () => {
@@ -525,18 +537,41 @@ function pauseMenu() {
   modal(`<h3>${t('Pause')} — ${m.teams[0].short} ${m.score[0]}-${m.score[1]} ${m.teams[1].short} (${Math.floor(m.minute)}')</h3>
    <div class="row wrap"><button class="btn primary" id="pRes">▶ ${t('Reprendre')}</button>${T ? `<button class="btn" id="pSub">🔁 Remplacements (${m.subsLeft[side]})</button>` : ''}<button class="btn" id="pSim">⚡ Simuler la fin</button><button class="btn danger" id="pQuit">${t('Quitter')}</button></div>
    ${T ? `<label>${t('Mentalité')}<select id="pMen">${[[-2, 'Très défensive'], [-1, 'Défensive'], [0, 'Équilibrée'], [1, 'Offensive'], [2, 'Très offensive']].map(([v, l]) => `<option value="${v}" ${T.mentality === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-   <label>${t('Pressing')}<select id="pPre">${[[0, 'Bas'], [1, 'Moyen'], [2, 'Haut']].map(([v, l]) => `<option value="${v}" ${T.pressing === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>` : ''}
+   <label>${t('Pressing')}<select id="pPre">${[[0, 'Bas'], [1, 'Moyen'], [2, 'Haut']].map(([v, l]) => `<option value="${v}" ${T.pressing === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+   <label>Formation<select id="pForm">${Object.keys(FORMATIONS).map(f => `<option ${T.formation === f ? 'selected' : ''}>${f}</option>`).join('')}</select></label>
+   <label>Largeur<select id="pWid">${[[0, 'Resserrée'], [1, 'Normale'], [2, 'Large']].map(([v, l]) => `<option value="${v}" ${T.width === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+   <label>Ligne défensive<select id="pLine">${[[-1, 'Basse'], [0, 'Normale'], [1, 'Haute']].map(([v, l]) => `<option value="${v}" ${T.line === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+   <div class="row wrap presets">${Object.entries(TACTIC_PRESETS).map(([k, p]) => `<button class="btn small ${T.preset === k ? 'primary' : ''}" data-preset="${k}">${p.icon} ${p.label}</button>`).join('')}</div>
+   ${coachAdviceHTML(m, side)}
+   <div class="stamina">${T.ps.filter(p => !p.sentOff).map(p => `<div class="st-row"><span>${p.num}. ${esc(p.name)}${p.yellow ? ' 🟨' : ''}${p.injured ? ' 🩹' : ''}</span><i style="--v:${Math.round(p.stamina * 100)}%" class="${p.stamina < 0.45 ? 'low' : p.stamina < 0.6 ? 'mid' : ''}"></i></div>`).join('')}</div>` : ''}
    <p class="hint">Stats : tirs ${m.stats.shots[0]}-${m.stats.shots[1]} · cadrés ${m.stats.onTarget[0]}-${m.stats.onTarget[1]} · passes réussies ${m.stats.passOk[0]}/${m.stats.passes[0]} - ${m.stats.passOk[1]}/${m.stats.passes[1]} · fautes ${m.stats.fouls[0]}-${m.stats.fouls[1]}</p>
    <p class="hint">Commandes : joystick (ou flèches/WASD) · Tir maintenu = puissance (Espace) · Passe (C) · Profondeur (V) · Sprint (Maj) · Changer de joueur (Q).</p>`, { locked: true });
   const resume = () => { closeModal(); m.paused = false; m.last = performance.now(); A.audioResume(); };
   $('#pRes').onclick = resume;
   if (T) {
-    $('#pMen').onchange = e => { T.mentality = Number(e.target.value); };
-    $('#pPre').onchange = e => { T.pressing = Number(e.target.value); };
+    $('#pMen').onchange = e => { T.mentality = Number(e.target.value); T.preset = null; };
+    $('#pPre').onchange = e => { T.pressing = Number(e.target.value); T.preset = null; };
+    $('#pForm').onchange = e => { m.changeFormation(side, e.target.value); };
+    $('#pWid').onchange = e => { T.width = Number(e.target.value); T.preset = null; };
+    $('#pLine').onchange = e => { T.line = Number(e.target.value); T.preset = null; };
+    document.querySelectorAll('.presets [data-preset]').forEach(b => b.onclick = () => { m.setTacticPreset(side, b.dataset.preset); pauseMenu(); });
+    document.querySelectorAll('[data-advice]').forEach(b => b.onclick = () => {
+      const a = getCoachAdvice(T, { minute: m.minute, goalDiff: m.score[side] - m.score[1 - side], subsLeft: m.subsLeft[side] })[Number(b.dataset.advice)];
+      if (!a) return;
+      if (a.type === 'sub') { if (m.substitute(side, a.out, a.in)) toast(`${a.outName} → ${a.inName}`, 'ok'); }
+      else if (a.type === 'preset') m.setTacticPreset(side, a.preset);
+      pauseMenu();
+    });
     $('#pSub').onclick = () => subMenu(m, side);
   }
   $('#pSim').onclick = () => { closeModal(); const sh = args.strH || 60, sa = args.strA || 60; m.simulateRest(sh, sa); };
   $('#pQuit').onclick = () => confirmBox(args.career ? 'Quitter le match ? Il sera terminé en simulation rapide pour préserver le calendrier.' : 'Quitter le match ?', () => { if (args.career) { const sh = args.strH || 60, sa = args.strA || 60; m.simulateRest(sh, sa); } else { m.destroy(); match = null; go('home'); } });
+}
+function coachAdviceHTML(m, side) {
+  const T = m.teams[side];
+  const advice = getCoachAdvice(T, { minute: m.minute, goalDiff: m.score[side] - m.score[1 - side], subsLeft: m.subsLeft[side] });
+  if (!advice.length) return '<p class="hint">🧑‍💼 Adjoint : rien à signaler, l\'équipe tient le rythme.</p>';
+  return `<div class="advice"><h4>🧑‍💼 Conseils de l'adjoint</h4>${advice.map((a, i) => `<div class="adv-row"><span>${a.type === 'sub' ? `🔁 ${esc(a.outName)} → ${esc(a.inName)} <small>(${esc(a.reason)})</small>` : `${TACTIC_PRESETS[a.preset].icon} Passer en « ${TACTIC_PRESETS[a.preset].label} » <small>(${esc(a.reason)})</small>`}</span><button class="btn small primary" data-advice="${i}">Appliquer</button></div>`).join('')}</div>`;
 }
 function subMenu(m, side) {
   const T = m.teams[side];

@@ -343,3 +343,4 @@ button:disabled,.btn:disabled{
 .talk-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin:12px 0}
 .talk-opts .btn{min-height:44px}
 .tag.neg{background:#ff4d4d33;color:#ffb3b3}
+.neg-actions{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}

@@ -3,6 +3,7 @@ import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, F
 import { rng, clamp, uid, deepCopy } from './util.js';
 import { quickSim } from './match.js';
 import * as Dr from './dressing.js';
+import * as Tx from './transfers.js';
 
 export const SAVE_VERSION = 3;
 const POS_LIST = ['GK', 'DD', 'DC', 'DG', 'MDC', 'MC', 'MD', 'MG', 'MOC', 'AD', 'AG', 'BU'];
@@ -772,12 +773,22 @@ export function makeOffer(st, pid, offer) {
   if (p.clubId === st.userClub) return { ok: false, msg: 'Ce joueur appartient déjà à votre club.' };
   if (!st.window && p.clubId) return { ok: false, msg: 'Le mercato est fermé (seuls les joueurs libres peuvent signer).' };
   if (st.negotiations.some(n => n.pid === pid && n.status === 'en cours')) return { ok: false, msg: 'Une négociation est déjà en cours pour ce joueur.' };
+  const angry = st.negotiations.find(n => n.pid === pid && n.blockedUntil > st.slot);
+  if (angry) return { ok: false, msg: `${clubName(st, p.clubId)} refuse de discuter après votre dernière offre. Réessayez dans ${angry.blockedUntil - st.slot} semaine(s).` };
+  const previous = st.negotiations.find(n => n.pid === pid && (n.status === 'contre-offre' || n.status === 'contre-offre joueur'));
   const fee = Math.max(0, Math.round(offer.fee || 0)), sb = Math.max(0, Math.round(offer.signing || 0));
   if (offer.type !== 'loan' && fee + sb > uc.budget && !st.settingsGame.allowDebt) return { ok: false, msg: 'Budget insuffisant pour cette offre (solde négatif non autorisé).' };
   const newWages = wagesTotal(st) + (offer.wage || 0) * (offer.type === 'loan' ? (offer.wageShare ?? 1) : 1);
   if (newWages > wageBudget(st) * 1.25) return { ok: false, msg: `La masse salariale dépasserait le plafond (${Math.round(wageBudget(st) * 1.25).toLocaleString('fr-FR')} DT/mois).` };
   if (squad(st, st.userClub).length >= 34) return { ok: false, msg: 'Effectif complet (34 joueurs max).' };
-  const n = { id: uid('t'), pid, from: p.clubId, status: 'en cours', created: st.slot, ...offer, fee, signing: sb, step: 'club' };
+  // Clause libératoire payée : le club vendeur ne peut pas s'y opposer.
+  const clausePaid = offer.type !== 'loan' && p.releaseClause > 0 && p.clubId && fee >= p.releaseClause;
+  if (previous) {
+    // Nouvelle proposition dans la même négociation : le compteur de tours continue.
+    Object.assign(previous, offer, { fee, signing: sb, status: 'en cours', round: (previous.round || 0) + 1, msg: '', clausePaid, step: clausePaid ? 'joueur' : previous.step });
+    return { ok: true, msg: 'Nouvelle proposition transmise.', n: previous };
+  }
+  const n = { id: uid('t'), pid, from: p.clubId, status: 'en cours', created: st.slot, ...offer, fee, signing: sb, step: clausePaid ? 'joueur' : 'club', round: 0, clausePaid };
   // rivalité : offre concurrente
   const r = R(st);
   if (p.ovr > 60 && r() < 0.25) { const rival = Object.values(st.clubs).filter(c => c.div === 1 && c.id !== st.userClub && c.id !== p.clubId).sort(() => r() - 0.5)[0]; n.rival = rival.id; }
@@ -786,7 +797,7 @@ export function makeOffer(st, pid, offer) {
   return { ok: true, msg: 'Offre transmise. Réponse à la prochaine étape du calendrier (ou immédiate pour un joueur libre).', n };
 }
 export function respondNow(st, nid) { const r = R(st); const n = st.negotiations.find(x => x.id === nid); if (n) evalNegotiation(st, n, r); saveR(st, r); return n; }
-function resolveNegotiations(st, r) { for (const n of st.negotiations) if (n.status === 'en cours') evalNegotiation(st, n, r); st.negotiations = st.negotiations.filter(n => n.status === 'en cours' || n.status === 'accord' || st.slot - n.created < 8); }
+function resolveNegotiations(st, r) { for (const n of st.negotiations) if (n.status === 'en cours') evalNegotiation(st, n, r); st.negotiations = st.negotiations.filter(n => n.status === 'en cours' || n.status === 'accord' || n.blockedUntil > st.slot || st.slot - n.created < 8); }
 function evalNegotiation(st, n, r) {
   const p = st.players[n.pid]; if (!p || p.clubId === st.userClub) { n.status = 'annulée'; return; }
   const uc = st.clubs[st.userClub];
@@ -801,21 +812,33 @@ function evalNegotiation(st, n, r) {
       } else {
         let val = n.fee + (n.bonus || 0) * 0.5 + (n.sellOn || 0) / 100 * p.value * 0.4;
         if (n.swap) { const sp = st.players[n.swap]; if (sp) val += valueOf(sp, st.season) * 0.85; }
-        const ratio = val / Math.max(1, ask);
-        if (ratio >= 1 || (ratio > 0.88 && r() < (ratio - 0.88) * 6)) n.step = 'joueur';
-        else if (ratio > 0.7) { n.status = 'contre-offre'; n.counter = ask; n.msg = `${clubName(st, p.clubId)} demande ${ask.toLocaleString('fr-FR')} DT.`; return; }
-        else { n.status = 'refusée'; n.msg = `${clubName(st, p.clubId)} juge l'offre insuffisante.`; return; }
+        // Le club honore toujours sa propre dernière contre-proposition.
+        const d = n.lastCounter && val >= n.lastCounter ? { decision: 'accept' } : Tx.clubDecision({ value: val, ask, round: n.round || 0, roll: r });
+        if (d.decision === 'accept') { n.step = 'joueur'; n.round = 0; }
+        else if (d.decision === 'counter') { n.status = 'contre-offre'; n.counter = d.counter; n.lastCounter = d.counter; n.msg = `${clubName(st, p.clubId)} fait une contre-proposition : ${d.counter.toLocaleString('fr-FR')} DT (tour ${(n.round || 0) + 1}/${Tx.MAX_ROUNDS}).`; return; }
+        else if (d.reason === 'insult') { n.status = 'refusée'; n.blockedUntil = st.slot + 4; n.msg = `${clubName(st, p.clubId)} juge l'offre insultante et rompt les discussions pour 4 semaines.`; return; }
+        else { n.status = 'refusée'; n.msg = `${clubName(st, p.clubId)} met fin aux discussions faute d'accord.`; return; }
       }
     }
   }
   if (n.step === 'joueur') {
     const demand = wageDemand(st, p, n.role);
     const fromRep = p.clubId ? st.clubs[p.clubId]?.rep ?? 50 : 40;
-    let score = (n.wage / demand) * 0.7 + (n.signing / Math.max(1, demand * 6)) * 0.15 + (uc.rep - fromRep) / 120 + ({ cle: 0.12, titulaire: 0.06, rotation: 0, espoir: -0.03 }[n.role] || 0) + (n.years >= 3 && p.age > 28 ? 0.06 : 0);
-    if (n.rival) { const rv = st.clubs[n.rival]; score -= (rv.rep - uc.rep) / 150 + 0.05; }
-    if (n.type === 'loan') score += 0.15;
-    if (score >= 0.95 || r() < (score - 0.75)) { n.status = 'accord'; n.msg = `Accord trouvé avec ${p.name}. Confirmez pour finaliser.`; n.demand = demand; }
-    else { n.status = 'refusée'; n.msg = n.rival && r() < 0.5 ? `${p.name} a préféré l'offre de ${clubName(st, n.rival)}.` : `${p.name} refuse les conditions personnelles (demande ~${demand.toLocaleString('fr-FR')} DT/mois).`; n.demand = demand; }
+    const style = Tx.agentOf(p);
+    // Conditions de l'agent : fixées au premier contact, puis ajustées par ses contre-propositions.
+    n.terms = n.terms || Tx.personalTerms({ demand, style, fee: n.fee || 0, freeAgent: !p.clubId, value: p.value, wantsClause: n.type !== 'loan' && Tx.wantsReleaseClause(p, uc.rep) });
+    if (n.type === 'loan') { n.terms.agentFee = 0; n.terms.releaseClause = 0; n.terms.signing = 0; }
+    let extras = (uc.rep - fromRep) / 120 + ({ cle: 0.12, titulaire: 0.06, rotation: 0, espoir: -0.03 }[n.role] || 0) + (n.years >= 3 && p.age > 28 ? 0.06 : 0);
+    if (n.rival) { const rv = st.clubs[n.rival]; extras -= (rv.rep - uc.rep) / 150 + 0.05; }
+    if (n.type === 'loan') extras += 0.15;
+    const d = Tx.agentDecision({ offer: { wage: n.wage, signing: n.signing, agentFee: n.agentFee || 0, releaseClause: n.releaseClause || 0 }, terms: n.terms, style, extras, round: n.playerRound || 0, roll: r });
+    n.demand = demand; n.agentStyle = style;
+    if (d.decision === 'accept') { n.status = 'accord'; n.msg = `Accord trouvé avec ${p.name} et son agent. Confirmez pour finaliser.`; }
+    else if (d.decision === 'counter') {
+      n.terms = d.counter; n.status = 'contre-offre joueur'; n.playerRound = (n.playerRound || 0) + 1;
+      n.msg = `${Tx.AGENT_STYLES[style].label} : ${d.counter.wage.toLocaleString('fr-FR')} DT/mois, prime ${d.counter.signing.toLocaleString('fr-FR')} DT, commission ${d.counter.agentFee.toLocaleString('fr-FR')} DT${d.counter.releaseClause ? `, clause libératoire ${d.counter.releaseClause.toLocaleString('fr-FR')} DT` : ''} (tour ${n.playerRound}/${Tx.MAX_ROUNDS}).`;
+    }
+    else { n.status = 'refusée'; n.msg = n.rival && r() < 0.5 ? `${p.name} a préféré l'offre de ${clubName(st, n.rival)}.` : `${p.name} et son agent mettent fin aux discussions (salaire visé ~${n.terms.wage.toLocaleString('fr-FR')} DT/mois).`; }
   }
 }
 // confirmation finale (transaction atomique)
@@ -825,7 +848,7 @@ export function confirmTransfer(st, nid) {
   if (st.txLog.some(t => t.nid === nid)) return { ok: false, msg: 'Transaction déjà effectuée (doublon bloqué).' };
   const p = st.players[n.pid], uc = st.clubs[st.userClub];
   if (!p) return { ok: false, msg: 'Joueur introuvable.' };
-  const cost = n.type === 'loan' ? (n.loanFee || 0) : n.fee + n.signing;
+  const cost = n.type === 'loan' ? (n.loanFee || 0) : n.fee + n.signing + (n.agentFee || 0);
   if (cost > uc.budget && !st.settingsGame.allowDebt) return { ok: false, msg: 'Fonds insuffisants au moment de la confirmation.' };
   const from = p.clubId;
   if (n.type === 'loan') {
@@ -834,10 +857,13 @@ export function confirmTransfer(st, nid) {
   } else {
     if (n.fee) ledger(st, -n.fee, 'transferts', `Achat de ${p.name}`);
     if (n.signing) ledger(st, -n.signing, 'transferts', `Prime à la signature de ${p.name}`);
+    if (n.agentFee) ledger(st, -n.agentFee, 'transferts', `Commission d'agent (${p.name})`);
     if (from && st.clubs[from]) st.clubs[from].budget += n.fee;
     if (n.swap) { const sp = st.players[n.swap]; if (sp && sp.clubId === st.userClub) { sp.clubId = from; sp.listed = false; removeFromTactics(st, sp.id); addNews(st, `${sp.name} part à ${clubName(st, from)} dans l'échange.`, 'transfer'); } }
     p.clubId = st.userClub; p.loan = null; p.wage = n.wage; p.contractEnd = st.season + (n.years || 2); p.role = n.role || 'rotation'; p.sellOn = n.sellOn ? { club: from, pct: n.sellOn } : null;
     p.bonusClause = n.bonus || 0;
+    p.releaseClause = n.releaseClause || 0;
+    if (n.clausePaid) addNews(st, `${clubName(st, from)} ne peut s'opposer : la clause libératoire de ${p.name} a été payée.`, 'transfer');
   }
   if (n.type === 'loan') p.wageLoan = n.wage;
   p.listed = false; p.happiness = 75; p.morale = 75;
@@ -857,7 +883,20 @@ function removeFromTactics(st, pid, cid = st.userClub) {
 // offres reçues pour nos joueurs
 function aiOffers(st, r) {
   const mine = squad(st, st.userClub).filter(p => !p.loan || p.loan.to !== st.userClub);
+  // Clauses libératoires : un club riche peut lever la clause sans votre accord.
   for (const p of mine) {
+    if (!p.releaseClause || p.clubId !== st.userClub) continue;
+    const buyer = Object.values(st.clubs).filter(c => c.id !== st.userClub && c.budget >= p.releaseClause && c.rep + 10 >= p.ovr).sort((a, b) => b.rep - a.rep)[0];
+    if (!buyer || !Tx.clauseTriggered({ clause: p.releaseClause, value: p.value, buyerBudget: buyer.budget, ovr: p.ovr, roll: r })) continue;
+    const fee = p.releaseClause;
+    ledger(st, fee, 'transferts', `Clause libératoire de ${p.name} payée par ${buyer.name}`);
+    buyer.budget -= fee; p.clubId = buyer.id; p.listed = false; p.releaseClause = 0;
+    if (p.sellOn && p.sellOn.club) { const cut = Math.round(fee * p.sellOn.pct / 100); ledger(st, -cut, 'transferts', `Pourcentage à la revente (${clubName(st, p.sellOn.club)})`); p.sellOn = null; }
+    st.txLog.push({ pid: p.id, name: p.name, from: st.userClub, to: buyer.id, fee, type: 'clause', season: st.season, slot: st.slot });
+    removeFromTactics(st, p.id);
+    addNews(st, `💥 ${buyer.name} lève la clause libératoire de ${p.name} (${fee.toLocaleString('fr-FR')} DT). Le joueur quitte le club.`, 'transfer');
+  }
+  for (const p of mine.filter(x => x.clubId === st.userClub)) {
     const ch = (p.listed ? 0.25 : 0.03) * (p.ovr > 65 ? 1.5 : 1);
     if (r() < ch) {
       const buyers = Object.values(st.clubs).filter(c => c.id !== st.userClub && c.budget > p.value * 0.6 && c.rep + 15 >= p.ovr);
@@ -1221,4 +1260,23 @@ export function holdTeamMeeting(st, action) {
   const res = Dr.teamMeeting(room.players, action, { recentPoints: pts, room });
   if (res.ok) { uc.cohesion = clamp(uc.cohesion + res.cohesion, 0, 100); st.meetingCd = 4; }
   return res;
+}
+
+// Accepter telle quelle la contre-proposition de l'agent.
+export function acceptAgentCounter(st, nid) {
+  const n = st.negotiations.find(x => x.id === nid);
+  if (!n || n.status !== 'contre-offre joueur' || !n.terms) return { ok: false, msg: 'Aucune contre-proposition à accepter.' };
+  Object.assign(n, { wage: n.terms.wage, signing: n.terms.signing, agentFee: n.terms.agentFee, releaseClause: n.terms.releaseClause, status: 'en cours' });
+  const r = R(st); evalNegotiation(st, n, r); saveR(st, r);
+  return { ok: n.status === 'accord', msg: n.msg, n };
+}
+// Accepter la contre-proposition du club vendeur (indemnité demandée).
+export function acceptClubCounter(st, nid) {
+  const n = st.negotiations.find(x => x.id === nid);
+  if (!n || n.status !== 'contre-offre' || !n.counter) return { ok: false, msg: 'Aucune contre-proposition du club.' };
+  const uc = st.clubs[st.userClub];
+  if (n.counter + (n.signing || 0) > uc.budget && !st.settingsGame.allowDebt) return { ok: false, msg: 'Budget insuffisant pour cette indemnité.' };
+  n.fee = n.counter; n.status = 'en cours'; n.round = (n.round || 0) + 1;
+  const r = R(st); evalNegotiation(st, n, r); saveR(st, r);
+  return { ok: n.status !== 'refusée', msg: n.msg || 'Indemnité acceptée : place aux conditions personnelles.', n };
 }

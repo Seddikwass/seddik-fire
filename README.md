@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.26.0 — mercato en plusieurs tours, agents et clauses
+- Club vendeur : jusqu'à 3 tours de négociation ; contre-propositions dégressives (le club cède un peu plus à chaque tour) ; il honore toujours sa propre contre-offre ; offre insultante (moins de 55 % du prix) = discussions rompues 4 semaines.
+- Agents des joueurs (gourmand, raisonnable, proche du joueur) : salaire, prime à la signature et commission ; au premier contact l'agent annonce ses conditions, puis se rapproche de vos offres selon sa souplesse (3 tours au plus).
+- Clauses libératoires : exigées par les joueurs ambitieux dont le niveau dépasse le club ; inscrites au contrat. Payer la clause d'un joueur court-circuite son club ; un club adverse riche peut lever la clause d'un de vos joueurs si elle est sous-évaluée.
+- Boutons « Accepter » sur les contre-propositions du club et de l'agent, « Négocier » pour ajuster une offre dans le même dossier (compteur de tours conservé), bouton « Payer la clause ».
+- La commission d'agent est débitée à la signature et affichée dans la confirmation ; agent et clause visibles sur la fiche joueur.
+- Nouveau module public/js/transfers.js et tests tests/transfers.test.mjs.
+
 ## Version 3.25.0 — vestiaire vivant
 - Nouvel onglet Effectif › Vestiaire : ambiance du groupe (pondérée par l'influence des leaders et du capitaine), cohésion, joueurs mécontents, temps de jeu réel de chacun comparé à l'attente de son rôle.
 - Attentes de temps de jeu par rôle (joueur clé 75 %, titulaire 55 %, rotation 22 %, espoir 8 %) sur les 8 derniers matchs ; titulaire = 1, entré en jeu = ½, blessés épargnés.

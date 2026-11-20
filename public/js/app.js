@@ -3,13 +3,14 @@ import * as C from './career.js';
 import { Match } from './match.js';
 import { TACTIC_PRESETS, getCoachAdvice } from './tactics.js';
 import * as Dr from './dressing.js';
+import * as Tx from './transfers.js';
 import * as A from './audio.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.25.0';
+export const APP_VERSION = '3.26.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -112,7 +113,7 @@ VIEWS.hub = () => {
   const t1 = C.leagueTable(st, uc.div === 1 ? 'L1' : 'L2'); const pos = t1.findIndex(x => x.id === st.userClub) + 1;
   const row = t1[pos - 1];
   const inj = C.squad(st, st.userClub).filter(p => p.injury).length;
-  const neg = st.negotiations.filter(n => n.status === 'accord' || n.status === 'contre-offre').length + st.offers.filter(o => o.status === 'en attente').length;
+  const neg = st.negotiations.filter(n => n.status === 'accord' || n.status === 'contre-offre' || n.status === 'contre-offre joueur').length + st.offers.filter(o => o.status === 'en attente').length;
   const nextF = ni >= 0 ? C.userFixture(st, ni) : null;
   return `<div class="dash">
    <section class="card next">${nextF ? `<h3>${t('Prochain match')}</h3><small>${C.slotLabel(st, ni)}${ni > st.slot ? ' (après ' + (ni - st.slot) + ' étape(s))' : ''}</small>
@@ -227,7 +228,7 @@ function playerModal(id) {
   const attr = (k, l) => `<span>${l}</span><b>${a[k]}</b>${bar(a[k])}`;
   modal(`<div class="pcard"><div class="phead"><div class="pnum">${p.num || ''}</div><div><h3>${esc(p.name)} <small>${p.nat} · ${p.age} ans · ${p.height} cm · pied ${p.foot.toLowerCase()}</small></h3>
    <p>${p.pos}${p.pos2 ? ' / ' + p.pos2 : ''} · ${esc(C.clubName(st, p.loan ? p.loan.to : p.clubId) || 'Libre')} · <b class="${ovrCls(p.ovr)}">${p.ovr}</b> (pot. ${mine ? p.pot : '~' + p.pot}) · ${fmtMoney(p.value)}</p>
-   <p class="hint">Joueur fictif généré. Contrat jusqu'en juin ${p.contractEnd + 1} · ${fmtMoney(p.wage)}/mois · ${t('Moral')} ${Math.round(p.morale)} · ${t('Forme')} ${Math.round(p.fitness * 100)}%${mine ? ` · ${Dr.PERSONALITIES[Dr.personalityOf(p)].label} · satisfaction ${Math.round(p.happiness)} · temps de jeu ${playShareText(p)}` : ''}</p></div></div>
+   <p class="hint">Joueur fictif généré. ${Tx.AGENT_STYLES[Tx.agentOf(p)].label}${p.releaseClause ? ` · 🔓 clause libératoire ${fmtMoney(p.releaseClause)}` : ''} · Contrat jusqu'en juin ${p.contractEnd + 1} · ${fmtMoney(p.wage)}/mois · ${t('Moral')} ${Math.round(p.morale)} · ${t('Forme')} ${Math.round(p.fitness * 100)}%${mine ? ` · ${Dr.PERSONALITIES[Dr.personalityOf(p)].label} · satisfaction ${Math.round(p.happiness)} · temps de jeu ${playShareText(p)}` : ''}</p></div></div>
    <div class="attrs">${attr('pac', 'Vitesse')}${attr('sho', 'Tir')}${attr('pas', 'Passe')}${attr('dri', 'Dribble')}${attr('def', 'Défense')}${attr('phy', 'Physique')}${attr('gk', 'Gardien')}</div>
    ${p.injury ? `<p class="inj">🩹 ${p.injury.diagnosed ? esc(p.injury.name) + ' (' + p.injury.sev + ')' : 'Blessure (diagnostic en attente)'} — ${Math.ceil(p.injury.left)} sem.</p>` : ''}
    <p class="hint">Saison : ${p.stats.apps} MJ, ${p.stats.goals} buts, ${p.stats.assists} passes D.${p.career.length ? ' · Historique : ' + p.career.slice(-3).map(c => `${c.season} ${C.clubShort(st, c.club)} ${c.apps}MJ/${c.goals}b`).join(', ') : ''}</p>
@@ -289,7 +290,9 @@ VIEWS.transfers = () => {
      <table class="tbl"><thead><tr><th>Joueur</th><th>Club</th><th>Poste</th><th>Âge</th><th>Note</th><th>Pot.</th><th>Prix demandé</th><th>Salaire</th><th>Contrat</th></tr></thead><tbody>
      ${list.map(({ p, est, price }) => `<tr data-a="player" data-id="${p.id}"><td>${esc(p.name)} <small>${p.nat}</small></td><td>${p.clubId ? esc(C.clubShort(st, p.clubId)) : '<em class="tag">libre</em>'}</td><td>${p.pos}</td><td>${p.age}</td><td><b class="${ovrCls(est.ovr)}">${est.ovr}</b></td><td>${est.pot}</td><td>${p.clubId ? fmtShort(price) : '—'}</td><td>${fmtShort(p.wage)}</td><td>${p.contractEnd + 1}</td></tr>`).join('')}</tbody></table>`;
   }
-  if (tab === 'neg') body = st.negotiations.length ? `<table class="tbl"><thead><tr><th>Joueur</th><th>Type</th><th>Offre</th><th>Statut</th><th></th></tr></thead><tbody>${st.negotiations.slice().reverse().map(n => { const p = st.players[n.pid]; return `<tr><td>${esc(p?.name || '?')}</td><td>${n.type === 'loan' ? 'Prêt' : n.swap ? 'Échange' : 'Achat'}</td><td>${fmtShort(n.fee)} + ${fmtShort(n.wage)}/mois${n.sellOn ? ` · ${n.sellOn}% revente` : ''}${n.bonus ? ` · bonus ${fmtShort(n.bonus)}` : ''}</td><td><b>${n.status}</b><br><small>${esc(n.msg || '')}</small></td><td>${n.status === 'accord' ? `<button class="btn small primary" data-a="confirmTx" data-id="${n.id}">Confirmer</button>` : n.status === 'contre-offre' ? `<button class="btn small" data-a="offer" data-id="${n.pid}" data-fee="${n.counter}">Nouvelle offre</button>` : ''}</td></tr>`; }).join('')}</tbody></table>` : '<p class="hint">Aucune négociation. Ouvrez la fiche d\'un joueur du marché pour faire une offre.</p>';
+  if (tab === 'neg') body = st.negotiations.length ? `<table class="tbl"><thead><tr><th>Joueur</th><th>Type</th><th>Offre</th><th>Statut</th></tr></thead><tbody>${st.negotiations.slice().reverse().map(n => { const p = st.players[n.pid]; return `<tr><td>${esc(p?.name || '?')}</td><td>${n.type === 'loan' ? 'Prêt' : n.swap ? 'Échange' : 'Achat'}</td><td>${fmtShort(n.fee)} + ${fmtShort(n.wage)}/mois${n.agentFee ? ` · agent ${fmtShort(n.agentFee)}` : ''}${n.releaseClause ? ` · clause ${fmtShort(n.releaseClause)}` : ''}${n.sellOn ? ` · ${n.sellOn}% revente` : ''}${n.bonus ? ` · bonus ${fmtShort(n.bonus)}` : ''}${n.round || n.playerRound ? ` <small>(tour ${Math.max(n.round || 0, n.playerRound || 0) + 1})</small>` : ''}</td><td><b>${n.status}</b><div class="neg-actions">${n.status === 'accord' ? `<button class="btn small primary" data-a="confirmTx" data-id="${n.id}">Confirmer</button>`
+      : n.status === 'contre-offre' ? `<button class="btn small primary" data-a="acceptClub" data-id="${n.id}">Accepter ${fmtShort(n.counter)}</button> <button class="btn small" data-a="offer" data-id="${n.pid}">Négocier</button>`
+      : n.status === 'contre-offre joueur' ? `<button class="btn small primary" data-a="acceptAgent" data-id="${n.id}">Accepter ses conditions</button> <button class="btn small" data-a="offer" data-id="${n.pid}">Négocier</button>` : ''}</div><small>${esc(n.msg || '')}</small></td></tr>`; }).join('')}</tbody></table>` : '<p class="hint">Aucune négociation. Ouvrez la fiche d\'un joueur du marché pour faire une offre.</p>';
   if (tab === 'recues') { const os = st.offers.filter(o => o.status === 'en attente'); body = os.length ? `<table class="tbl"><tbody>${os.map(o => { const p = st.players[o.pid]; return `<tr><td>${crest(o.club, 22)} ${esc(C.clubName(st, o.club))}</td><td>${esc(p?.name)} (${p?.ovr}, valeur ${fmtShort(p?.value || 0)})</td><td>${o.type === 'loan' ? 'Prêt' : fmtMoney(o.fee)}</td><td><button class="btn small primary" data-a="ansOffer" data-id="${o.id}" data-y="1">Accepter</button><button class="btn small" data-a="ansOffer" data-id="${o.id}" data-c="1">Contre-offre</button><button class="btn small ghost" data-a="ansOffer" data-id="${o.id}">Refuser</button></td></tr>`; }).join('')}</tbody></table>` : '<p class="hint">Aucune offre en attente. Placez des joueurs sur la liste des transferts pour attirer des offres.</p>'; }
   if (tab === 'vente') body = `<table class="tbl"><tbody>${C.squad(st, st.userClub).filter(p => p.clubId === st.userClub).sort((a, b) => b.value - a.value).map(p => `<tr><td>${esc(p.name)}</td><td>${p.ovr}</td><td>${fmtShort(p.value)}</td><td><button class="btn small" data-a="toggleList" data-id="${p.id}">${p.listed ? '✓ À vendre' : 'Mettre en vente'}</button></td></tr>`).join('')}</tbody></table>`;
   if (tab === 'hist') body = st.txLog.length ? `<table class="tbl"><tbody>${st.txLog.slice().reverse().map(x => `<tr><td>${x.season}</td><td>${esc(x.name)}</td><td>${x.type}</td><td>${esc(C.clubShort(st, x.from) || 'libre')} → ${esc(x.to ? C.clubShort(st, x.to) : 'libre')}</td><td>${fmtMoney(x.fee)}</td></tr>`).join('')}</tbody></table>` : '<p class="hint">Aucune transaction.</p>';
@@ -298,27 +301,38 @@ VIEWS.transfers = () => {
 function offerModal(pid, loan, presetFee) {
   const p = st.players[pid];
   const ask = C.askingPrice(st, p), dem = C.wageDemand(st, p, 'rotation');
+  // Négociation en cours : on repart de la dernière offre et des exigences connues.
+  const prev = st.negotiations.find(n => n.pid === pid && (n.status === 'contre-offre' || n.status === 'contre-offre joueur'));
+  const terms = prev?.status === 'contre-offre joueur' ? prev.terms : null;
+  const agent = Tx.AGENT_STYLES[Tx.agentOf(p)];
+  const pre = (k, d) => terms && terms[k] != null ? terms[k] : prev && prev[k] != null ? prev[k] : d;
   const mine = C.squad(st, st.userClub).filter(x => x.clubId === st.userClub);
   modal(`<h3>${loan ? 'Demande de prêt' : 'Offre'} — ${esc(p.name)}</h3>
-   <p class="hint">${p.clubId ? `Prix demandé estimé : <b>${fmtMoney(ask)}</b> · ` : 'Joueur libre · '}Salaire souhaité ~ <b>${fmtMoney(dem)}</b>/mois · Trésorerie : ${fmtMoney(st.clubs[st.userClub].budget)}</p>
+   <p class="hint">${p.clubId ? `Prix demandé estimé : <b>${fmtMoney(ask)}</b> · ` : 'Joueur libre · '}Salaire souhaité ~ <b>${fmtMoney(dem)}</b>/mois · ${agent.label} · Trésorerie : ${fmtMoney(st.clubs[st.userClub].budget)}</p>
+   ${p.releaseClause && p.clubId && !loan ? `<p class="hint">🔓 Clause libératoire : <b>${fmtMoney(p.releaseClause)}</b> — en la payant, ${esc(C.clubName(st, p.clubId))} ne peut pas refuser. <button class="btn small" type="button" id="oPayClause">Payer la clause</button></p>` : ''}
+   ${prev ? `<p class="hint">🔁 Négociation en cours : ${esc(prev.msg || '')}</p>` : ''}
    <div class="form2">
    ${loan ? `<label>Frais de prêt (DT)<input id="oFee" type="number" value="0"></label><label>Part du salaire payée par vous<select id="oShare"><option value="1">100 %</option><option value="0.75">75 %</option><option value="0.5">50 %</option></select></label><label>Option d'achat (DT, 0 = sans)<input id="oOpt" type="number" value="0"></label>`
-    : `<label>Indemnité de transfert (DT)<input id="oFee" type="number" value="${presetFee || (p.clubId ? Math.round(ask * 0.9 / 1000) * 1000 : 0)}"></label>
+    : `<label>Indemnité de transfert (DT)<input id="oFee" type="number" value="${presetFee || (prev?.status === 'contre-offre' ? prev.counter : prev ? prev.fee : (p.clubId ? Math.round(ask * 0.9 / 1000) * 1000 : 0))}"></label>
       <label>Bonus (DT, objectifs)<input id="oBonus" type="number" value="0"></label><label>% à la revente<input id="oSell" type="number" min="0" max="50" value="0"></label>
       <label>Échange (joueur inclus)<select id="oSwap"><option value="">Aucun</option>${mine.map(m => `<option value="${m.id}">${esc(m.name)} (${fmtShort(m.value)})</option>`).join('')}</select></label>`}
-   <label>Salaire mensuel (DT)<input id="oWage" type="number" value="${dem}"></label>
-   <label>Prime à la signature (DT)<input id="oSign" type="number" value="${loan ? 0 : Math.round(dem * 3)}"></label>
+   <label>Salaire mensuel (DT)<input id="oWage" type="number" value="${pre('wage', dem)}"></label>
+   <label>Prime à la signature (DT)<input id="oSign" type="number" value="${pre('signing', loan ? 0 : Math.round(dem * 3))}"></label>
+   ${loan ? '' : `<label>Commission d'agent (DT)<input id="oAgent" type="number" value="${pre('agentFee', 0)}"></label>
+   <label>Clause libératoire (DT, 0 = aucune)<input id="oClause" type="number" value="${pre('releaseClause', 0)}"></label>`}
    <label>Durée du contrat<select id="oYears">${[1, 2, 3, 4, 5].map(y => `<option ${y === 3 ? 'selected' : ''}>${y}</option>`).join('')}</select></label>
    <label>Rôle dans l'équipe<select id="oRole"><option value="cle">Joueur clé</option><option value="titulaire">Titulaire</option><option value="rotation" selected>Rotation</option><option value="espoir">Espoir</option></select></label></div>
    <div class="row end"><button class="btn ghost" data-a="closeModal">${t('Annuler')}</button><button class="btn primary" id="oSend">Envoyer l'offre</button></div>`, { wide: true });
+  if ($('#oPayClause')) $('#oPayClause').onclick = () => { $('#oFee').value = p.releaseClause; toast('Indemnité fixée au montant de la clause.', 'ok'); };
   $('#oSend').onclick = () => {
     const v = id => Number(($(id) || {}).value || 0);
     const offer = loan ? { type: 'loan', loanFee: v('#oFee'), fee: 0, wageShare: v('#oShare') || 1, option: v('#oOpt'), wage: v('#oWage'), signing: v('#oSign'), years: 1, role: $('#oRole').value }
-      : { type: 'achat', fee: v('#oFee'), bonus: v('#oBonus'), sellOn: clamp(v('#oSell'), 0, 50), swap: $('#oSwap').value || null, wage: v('#oWage'), signing: v('#oSign'), years: v('#oYears'), role: $('#oRole').value };
+      : { type: 'achat', fee: v('#oFee'), bonus: v('#oBonus'), sellOn: clamp(v('#oSell'), 0, 50), swap: $('#oSwap').value || null, wage: v('#oWage'), signing: v('#oSign'), agentFee: v('#oAgent'), releaseClause: v('#oClause'), years: v('#oYears'), role: $('#oRole').value };
     if (offer.wage <= 0) return toast('Indiquez un salaire.', 'err');
     const r = C.makeOffer(st, pid, offer);
     if (!r.ok) return toast(r.msg, 'err');
-    if (!p.clubId) C.respondNow(st, r.n.id);
+    // Joueur libre, clause payée ou discussion déjà au stade de l'agent : réponse immédiate.
+    if (!p.clubId || r.n.step === 'joueur') C.respondNow(st, r.n.id);
     closeModal(); save(); toast(r.n.status === 'accord' ? r.n.msg : r.msg, r.n.status === 'refusée' ? 'err' : 'ok');
     go('transfers', { tab: 'neg' });
   };
@@ -698,7 +712,9 @@ const ACT = {
   simMatch: () => { const f = C.userFixture(st); const r = C.advance(st); save(); if (r.user) go('postmatch', { f: r.user.id, res: { hg: r.user.hg, ag: r.user.ag, events: r.user.events || [] } }); else render(); void f; },
   player: el => playerModal(el.dataset.id),
   offer: el => { closeModal(); offerModal(el.dataset.id, !!el.dataset.loan, el.dataset.fee ? Number(el.dataset.fee) : null); },
-  confirmTx: el => { const n = st.negotiations.find(x => x.id === el.dataset.id); const p = st.players[n.pid]; confirmBox(`Confirmer ${n.type === 'loan' ? 'le prêt' : 'le transfert'} de <b>${esc(p.name)}</b> pour ${fmtMoney(n.type === 'loan' ? n.loanFee || 0 : n.fee + n.signing)} et ${fmtMoney(n.wage)}/mois ?`, () => { const r = C.confirmTransfer(st, n.id); toast(r.msg, r.ok ? 'ok' : 'err'); save(); render(); }); },
+  acceptClub: el => { const r = C.acceptClubCounter(st, el.dataset.id); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
+  acceptAgent: el => { const r = C.acceptAgentCounter(st, el.dataset.id); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
+  confirmTx: el => { const n = st.negotiations.find(x => x.id === el.dataset.id); const p = st.players[n.pid]; confirmBox(`Confirmer ${n.type === 'loan' ? 'le prêt' : 'le transfert'} de <b>${esc(p.name)}</b> pour ${fmtMoney(n.type === 'loan' ? n.loanFee || 0 : n.fee + n.signing + (n.agentFee || 0))} (indemnité, prime${n.agentFee ? ' et commission d\'agent' : ''}) et ${fmtMoney(n.wage)}/mois${n.releaseClause ? `, clause libératoire ${fmtMoney(n.releaseClause)}` : ''} ?`, () => { const r = C.confirmTransfer(st, n.id); toast(r.msg, r.ok ? 'ok' : 'err'); save(); render(); }); },
   ansOffer: el => {
     const o = st.offers.find(x => x.id === el.dataset.id);
     if (el.dataset.c) { modal(`<h3>Contre-offre</h3><label>Montant demandé (DT)<input id="coV" type="number" value="${Math.round(o.fee * 1.2)}"></label><div class="row end"><button class="btn primary" id="coOk">Envoyer</button></div>`); $('#coOk').onclick = () => { const v = Number($('#coV').value); closeModal(); confirmBox(`Envoyer une contre-offre à ${fmtMoney(v)} ? En cas d'accord, la vente sera conclue immédiatement.`, () => { const r = C.answerOffer(st, o.id, false, v); toast(r.msg, r.ok ? 'ok' : 'err'); save(); render(); }); }; return; }

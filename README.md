@@ -1,5 +1,17 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.25.0 — vestiaire vivant
+- Nouvel onglet Effectif › Vestiaire : ambiance du groupe (pondérée par l'influence des leaders et du capitaine), cohésion, joueurs mécontents, temps de jeu réel de chacun comparé à l'attente de son rôle.
+- Attentes de temps de jeu par rôle (joueur clé 75 %, titulaire 55 %, rotation 22 %, espoir 8 %) sur les 8 derniers matchs ; titulaire = 1, entré en jeu = ½, blessés épargnés.
+- Personnalités : leader, professionnel, tempérament, discret — elles changent la réaction aux entretiens et au manque de temps de jeu.
+- Entretiens individuels (un tous les 3 matchs) : féliciter, exiger plus, promettre du temps de jeu, rassurer, accepter ou refuser une demande de départ.
+- Promesses suivies sur 5 matchs : tenue = confiance, rompue = forte déception, moral en baisse et cohésion touchée.
+- Réunions d'équipe (une tous les 4 matchs) : motiver, apaiser, hausser le ton — l'effet dépend de l'ambiance et des derniers résultats.
+- Crise de vestiaire quand plusieurs joueurs (dont un cadre) sont mécontents : cohésion et moral s'érodent, actualité dédiée.
+- Le moral pèse désormais sur le rendement en match (−3 % à +2 % sur les attributs).
+- Calibrage : saison simulée sans mauvaise gestion = ambiance bonne, pas de vague de demandes de départ.
+- Nouveau module public/js/dressing.js et tests tests/dressing.test.mjs.
+
 ## Version 3.24.0 — tactique en direct
 - Bouton 📋 en match : cinq consignes rapides sans mettre pause (Bloc bas, Contre-attaque, Équilibré, Pressing haut, Tout pour l'attaque) ; touches 1 à 5 au clavier.
 - Menu pause : changement de formation en direct, largeur, ligne défensive, consignes rapides, jauges de fatigue de chaque joueur (cartons et blessures signalés).

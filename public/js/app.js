@@ -2,13 +2,14 @@
 import * as C from './career.js';
 import { Match } from './match.js';
 import { TACTIC_PRESETS, getCoachAdvice } from './tactics.js';
+import * as Dr from './dressing.js';
 import * as A from './audio.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.24.0';
+export const APP_VERSION = '3.25.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -168,7 +169,7 @@ VIEWS.squad = () => {
   const order = { GK: 0, DD: 1, DC: 2, DG: 3, MDC: 4, MC: 5, MD: 6, MG: 7, MOC: 8, AD: 9, AG: 10, BU: 11 };
   list.sort((a, b) => ('TRJX'.indexOf(role(a)) - 'TRJX'.indexOf(role(b))) || order[a.pos] - order[b.pos]);
   if (tab === 'contrats') list = list.slice().sort((a, b) => a.contractEnd - b.contractEnd);
-  const tabs = [['liste', 'Joueurs'], ['contrats', t('Contrats')], ['entrainement', t('Entraînement')], ['stats', t('Statistiques')]];
+  const tabs = [['liste', 'Joueurs'], ['vestiaire', '🗣️ Vestiaire'], ['contrats', t('Contrats')], ['entrainement', t('Entraînement')], ['stats', t('Statistiques')]];
   let body = '';
   if (tab === 'liste') body = `<p class="hint">T = ${t('Titulaires')} · R = ${t('Remplaçants')} · J = ${t('Jeunes')} · X = ${t('Réserve')}. Touchez un joueur pour sa fiche. <button class="btn small" data-a="autoXI">Composition automatique</button></p>
     <table class="tbl"><thead><tr><th></th><th>#</th><th>Joueur</th><th>Poste</th><th>Âge</th><th>Note</th><th>Pot.</th><th>${t('Forme')}</th><th>${t('Moral')}</th><th>Valeur</th><th></th></tr></thead><tbody>
@@ -183,9 +184,41 @@ VIEWS.squad = () => {
      <p class="hint">Qualité : adjoints ${Math.round(C.staffOf(st, 'assistant').reduce((a, s) => a + s.ability, 0) / Math.max(1, C.staffOf(st, 'assistant').length))}/100 · centre d'entraînement niv. ${uc.infra.training}. Risque de blessure par match : ${Math.round(C.injuryRisk(st, st.userClub) * 100)} %.</p></div>
      <div class="card"><h3>Programmes individuels</h3><table class="tbl"><tbody>${list.filter(p => p.age <= 25).map(p => `<tr><td>${esc(p.name)} (${p.age} ans, ${p.ovr}→${p.pot})</td><td><select data-a="setIndiv" data-id="${p.id}"><option value="">Selon le thème collectif</option>${[['pac', 'Vitesse'], ['sho', 'Tir'], ['pas', 'Passe'], ['dri', 'Dribble'], ['def', 'Défense'], ['phy', 'Physique'], ['gk', 'Gardien']].map(([k, v]) => `<option value="${k}" ${tr.individual[p.id] === k ? 'selected' : ''}>${v}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table></div>`;
   }
+  if (tab === 'vestiaire') body = dressingHTML();
   if (tab === 'stats') body = `<table class="tbl"><thead><tr><th>Joueur</th><th>MJ</th><th>Buts</th><th>Passes D.</th><th>Note moy.</th><th>Clean sheets</th></tr></thead><tbody>${list.slice().sort((a, b) => b.stats.goals - a.stats.goals || b.stats.apps - a.stats.apps).map(p => `<tr data-a="player" data-id="${p.id}"><td>${esc(p.name)}</td><td>${p.stats.apps}</td><td>${p.stats.goals}</td><td>${p.stats.assists}</td><td>${p.stats.apps ? (p.stats.rsum / p.stats.apps).toFixed(1) : '-'}</td><td>${p.pos === 'GK' ? p.stats.cs : ''}</td></tr>`).join('')}</tbody></table>`;
   return `<div class="ph"><h2>${t('Effectif')} <small>(${list.length} joueurs, ${t('Joueurs fictifs').toLowerCase()})</small></h2><div class="tabs">${tabs.map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" data-a="nav" data-v="squad" data-tab="${k}">${l}</button>`).join('')}</div></div>${body}`;
 };
+function moodCls(v) { return v >= 70 ? 'pos' : v >= 45 ? '' : 'neg'; }
+function playShareText(p) { const sh = Dr.playingShare(p); return sh == null ? '—' : Math.round(sh * 100) + ' %'; }
+function dressingHTML() {
+  const room = C.dressingRoom(st), uc = st.clubs[st.userClub];
+  const list = room.players.slice().sort((a, b) => a.happiness - b.happiness);
+  return `<div class="card"><h3>Ambiance du vestiaire : <span class="${moodCls(room.mood)}">${room.label}</span> (${room.mood}/100)</h3>
+   <div class="row wrap"><span>Cohésion ${bar(uc.cohesion)}</span><span>${room.unhappy.length} joueur(s) mécontent(s)</span>${room.crisis ? '<b class="neg">⚠️ Tensions : agissez avant que le groupe ne se fissure.</b>' : ''}</div>
+   <h4>Réunion d'équipe ${room.meetingCd ? `<small>(possible dans ${room.meetingCd} match(s))</small>` : ''}</h4>
+   <div class="row wrap">${Object.entries(Dr.MEETINGS).map(([k, l]) => `<button class="btn small" data-a="meeting" data-k="${k}" ${room.meetingCd ? 'disabled' : ''}>${l}</button>`).join('')}</div>
+   <p class="hint">Motiver fonctionne dans un groupe serein, apaiser quand il est tendu, hausser le ton après de mauvais résultats.</p></div>
+   <table class="tbl"><thead><tr><th>Joueur</th><th>Personnalité</th><th>Rôle</th><th>Temps de jeu</th><th>Satisfaction</th><th>Moral</th><th></th></tr></thead><tbody>
+   ${list.map(p => `<tr><td data-a="player" data-id="${p.id}">${esc(p.name)}${uc.tactics.captain === p.id ? ' <b class="cap">C</b>' : ''}${p.listed === 'demande' ? ' <em class="tag neg">veut partir</em>' : ''}${p.promise ? ` <em class="tag">promesse (${Math.max(0, p.promise.left)} m.)</em>` : ''}</td>
+     <td>${Dr.PERSONALITIES[Dr.personalityOf(p)].label}</td><td>${Dr.ROLE_LABEL[p.role] || p.role} <small>(${Math.round((Dr.ROLE_EXPECT[p.role] ?? 0.2) * 100)} %)</small></td>
+     <td class="${Dr.playingTimeGap(p) < -0.15 ? 'neg' : ''}">${playShareText(p)}</td><td>${bar(p.happiness, 100, 'sm')}</td><td>${bar(p.morale, 100, 'sm')}</td>
+     <td><button class="btn small" data-a="talk" data-id="${p.id}">💬 Discuter</button></td></tr>`).join('')}</tbody></table>
+   <p class="hint">Temps de jeu = part des 8 derniers matchs (titulaire = 1, entré en jeu = ½). Entre parenthèses : l'attente liée au rôle.</p>`;
+}
+function talkModal(id) {
+  const p = st.players[id]; if (!p) return;
+  const kind = Dr.personalityOf(p), can = Dr.canTalk(p);
+  const avg = p.stats.apps ? (p.stats.rsum / p.stats.apps).toFixed(1) : '—';
+  const options = ['praise', 'demand', 'promise', 'reassure'].filter(k => k !== 'promise' || !p.promise);
+  if (p.listed === 'demande') options.push('acceptTransfer', 'refuseTransfer');
+  modal(`<h3>💬 Entretien avec ${esc(p.name)}</h3>
+   <p>${Dr.PERSONALITIES[kind].label} · ${Dr.ROLE_LABEL[p.role] || p.role} · temps de jeu ${playShareText(p)} (attendu ${Math.round((Dr.ROLE_EXPECT[p.role] ?? 0.2) * 100)} %) · note moyenne ${avg}</p>
+   <p>Satisfaction ${bar(p.happiness)} Moral ${bar(p.morale)}</p>
+   ${p.promise ? `<p class="hint">🤝 Promesse en cours : ${Math.round(p.promise.share * 100)} % de titularisations, encore ${Math.max(0, p.promise.left)} match(s).</p>` : ''}
+   ${!can && !p.listed ? '<p class="hint">Un entretien a eu lieu récemment : attendez quelques matchs.</p>' : ''}
+   <div class="talk-opts">${options.map(k => `<button class="btn ${k.includes('Transfer') ? '' : 'small'}" data-a="doTalk" data-id="${p.id}" data-k="${k}" ${!can && !k.includes('Transfer') ? 'disabled' : ''}>${Dr.TALKS[k]}</button>`).join('')}</div>
+   <div class="row end"><button class="btn ghost" data-a="closeModal">${t('Fermer')}</button></div>`);
+}
 function playerModal(id) {
   const p = st.players[id]; if (!p) return;
   const mine = p.clubId === st.userClub || (p.loan && p.loan.to === st.userClub);
@@ -194,7 +227,7 @@ function playerModal(id) {
   const attr = (k, l) => `<span>${l}</span><b>${a[k]}</b>${bar(a[k])}`;
   modal(`<div class="pcard"><div class="phead"><div class="pnum">${p.num || ''}</div><div><h3>${esc(p.name)} <small>${p.nat} · ${p.age} ans · ${p.height} cm · pied ${p.foot.toLowerCase()}</small></h3>
    <p>${p.pos}${p.pos2 ? ' / ' + p.pos2 : ''} · ${esc(C.clubName(st, p.loan ? p.loan.to : p.clubId) || 'Libre')} · <b class="${ovrCls(p.ovr)}">${p.ovr}</b> (pot. ${mine ? p.pot : '~' + p.pot}) · ${fmtMoney(p.value)}</p>
-   <p class="hint">Joueur fictif généré. Contrat jusqu'en juin ${p.contractEnd + 1} · ${fmtMoney(p.wage)}/mois · ${t('Moral')} ${Math.round(p.morale)} · ${t('Forme')} ${Math.round(p.fitness * 100)}%</p></div></div>
+   <p class="hint">Joueur fictif généré. Contrat jusqu'en juin ${p.contractEnd + 1} · ${fmtMoney(p.wage)}/mois · ${t('Moral')} ${Math.round(p.morale)} · ${t('Forme')} ${Math.round(p.fitness * 100)}%${mine ? ` · ${Dr.PERSONALITIES[Dr.personalityOf(p)].label} · satisfaction ${Math.round(p.happiness)} · temps de jeu ${playShareText(p)}` : ''}</p></div></div>
    <div class="attrs">${attr('pac', 'Vitesse')}${attr('sho', 'Tir')}${attr('pas', 'Passe')}${attr('dri', 'Dribble')}${attr('def', 'Défense')}${attr('phy', 'Physique')}${attr('gk', 'Gardien')}</div>
    ${p.injury ? `<p class="inj">🩹 ${p.injury.diagnosed ? esc(p.injury.name) + ' (' + p.injury.sev + ')' : 'Blessure (diagnostic en attente)'} — ${Math.ceil(p.injury.left)} sem.</p>` : ''}
    <p class="hint">Saison : ${p.stats.apps} MJ, ${p.stats.goals} buts, ${p.stats.assists} passes D.${p.career.length ? ' · Historique : ' + p.career.slice(-3).map(c => `${c.season} ${C.clubShort(st, c.club)} ${c.apps}MJ/${c.goals}b`).join(', ') : ''}</p>
@@ -204,7 +237,8 @@ function playerModal(id) {
      <button class="btn small" data-a="toggleList" data-id="${p.id}">${p.listed ? 'Retirer de la liste des transferts' : 'Placer sur la liste des transferts'}</button>
      <button class="btn small" data-a="renew" data-id="${p.id}">${t('Prolonger')}</button>
      ${p.clubId === st.userClub ? `<button class="btn small danger" data-a="release" data-id="${p.id}">Résilier</button>` : ''}
-     <button class="btn small" data-a="setRole" data-id="${p.id}">Rôle : ${p.role}</button>
+     <button class="btn small" data-a="setRole" data-id="${p.id}">Rôle : ${Dr.ROLE_LABEL[p.role] || p.role}</button>
+     <button class="btn small primary" data-a="talk" data-id="${p.id}">💬 Discuter</button>
      ${tac.lineup.includes(p.id) ? '' : `<button class="btn small primary" data-a="toXI" data-id="${p.id}">Faire entrer dans le XI</button>`}`
     : `<button class="btn primary" data-a="offer" data-id="${p.id}">Faire une offre</button><button class="btn" data-a="offer" data-id="${p.id}" data-loan="1">Demander un prêt</button>`}
      <button class="btn ghost" data-a="closeModal">${t('Fermer')}</button></div></div>`, { wide: true });
@@ -681,6 +715,9 @@ const ACT = {
   },
   setCaptain: el => { st.clubs[st.userClub].tactics.captain = el.dataset.id; save(); closeModal(); toast('Nouveau capitaine désigné.', 'ok'); render(); },
   setNumber: el => { const p = st.players[el.dataset.id]; const n = Number(prompt('Numéro de maillot (1-99)', p.num)); if (!n || n < 1 || n > 99) return; if (C.squad(st, st.userClub).some(x => x.num === n && x.id !== p.id)) return toast('Numéro déjà attribué.', 'err'); p.num = n; save(); closeModal(); render(); },
+  talk: el => talkModal(el.dataset.id),
+  doTalk: el => { const r = C.talkToPlayer(st, el.dataset.id, el.dataset.k); save(); toast(r.msg, r.ok ? 'ok' : 'err'); if (r.ok) { closeModal(); render(); } },
+  meeting: el => { const r = C.holdTeamMeeting(st, el.dataset.k); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
   setRole: el => { const p = st.players[el.dataset.id]; const roles = ['cle', 'titulaire', 'rotation', 'espoir', 'jeune']; p.role = roles[(roles.indexOf(p.role) + 1) % roles.length]; save(); playerModal(p.id); },
   toXI: el => { closeModal(); go('tactics', { sel: null, add: el.dataset.id }); toast('Touchez le poste où placer ce joueur.'); args.pending = el.dataset.id; },
   autoXI: () => { C.autoLineup(st, st.userClub); save('Composition automatique appliquée'); render(); },

@@ -1,6 +1,6 @@
 {
   "name": "football-tunisia-2026",
-  "version": "3.24.0",
+  "version": "3.25.0",
   "private": true,
   "description": "Football Tunisia 2026 — jeu de football tunisien (web + Android)",
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/tactics.test.mjs && node tests/commentary.test.mjs && node tests/shootout.test.mjs && node tests/match-flow.test.mjs && node tests/career.test.mjs && node tests/render-scale.test.mjs && node tests/audio-ambience.test.mjs && node tests/match-actions.test.mjs && node tests/match-motion.test.mjs && node tests/renderer3d.test.mjs && node tests/match-sim.mjs 6 && node tests/match-user.mjs 1 1 && node tests/storage-sync.mjs && node tests/api.test.mjs"
+    "test": "node tests/dressing.test.mjs && node tests/tactics.test.mjs && node tests/commentary.test.mjs && node tests/shootout.test.mjs && node tests/match-flow.test.mjs && node tests/career.test.mjs && node tests/render-scale.test.mjs && node tests/audio-ambience.test.mjs && node tests/match-actions.test.mjs && node tests/match-motion.test.mjs && node tests/renderer3d.test.mjs && node tests/match-sim.mjs 6 && node tests/match-user.mjs 1 1 && node tests/storage-sync.mjs && node tests/api.test.mjs"
   },
   "dependencies": {
     "pg": "^8.13.1"

@@ -338,3 +338,8 @@ button:disabled,.btn:disabled{
 .st-row i{width:70px;height:7px;border-radius:4px;background:linear-gradient(90deg,#2fd36b var(--v),#ffffff22 var(--v))}
 .st-row i.mid{background:linear-gradient(90deg,#ffb020 var(--v),#ffffff22 var(--v))}
 .st-row i.low{background:linear-gradient(90deg,#ff4d4d var(--v),#ffffff22 var(--v))}
+
+/* Vestiaire */
+.talk-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin:12px 0}
+.talk-opts .btn{min-height:44px}
+.tag.neg{background:#ff4d4d33;color:#ffb3b3}

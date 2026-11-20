@@ -2,6 +2,7 @@
 import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP } from './data.js';
 import { rng, clamp, uid, deepCopy } from './util.js';
 import { quickSim } from './match.js';
+import * as Dr from './dressing.js';
 
 export const SAVE_VERSION = 3;
 const POS_LIST = ['GK', 'DD', 'DC', 'DG', 'MDC', 'MC', 'MD', 'MG', 'MOC', 'AD', 'AG', 'BU'];
@@ -414,7 +415,9 @@ export function matchTeam(st, id, kitAway = false) {
   if (c) {
     if (id !== st.userClub) { if (!validLineup(st, id)) autoLineup(st, id); } else if (!validLineup(st, id)) repairLineup(st, id);
     const t = c.tactics; const form = FORMATION_POS[t.formation];
-    const mk = p => ({ id: p.id, name: p.name, num: p.num, pos: p.pos, attrs: p.attrs, fitness: p.fitness, instr: t.instr?.[p.id] || '' });
+    // Le moral pèse légèrement sur le rendement réel en match (−3 % à +2 %).
+    const withMorale = p => { const k = Dr.moraleFactor(p.morale ?? 70); const a = {}; for (const [key, v] of Object.entries(p.attrs)) a[key] = typeof v === 'number' ? Math.round(v * k) : v; return a; };
+    const mk = p => ({ id: p.id, name: p.name, num: p.num, pos: p.pos, attrs: withMorale(p), fitness: p.fitness, instr: t.instr?.[p.id] || '' });
     const kitCols = kitAway ? c.away : c.colors;
     return { id, name: c.name, short: c.short, colors: kitCols, kit: { shirt: kitCols[0], trim: kitCols[1], shorts: kitAway ? kitCols[0] : '#f2f2f2' }, formation: t.formation, mentality: t.mentality, pressing: t.pressing, width: t.width, line: t.line, takers: t.takers || {}, stadium: c.stadium, players: t.lineup.map(i => mk(st.players[i])), bench: t.bench.map(i => st.players[i]).filter(Boolean).map(mk), formPos: form };
   }
@@ -531,7 +534,7 @@ export function advance(st, userResult = null) {
     }
     applyResult(st, f, res);
     if (isUser && userResult && userResult.players) applyPlayedStats(st, f, userResult, f.h === st.userClub);
-    if (isUser) { report.user = f; afterUserMatch(st, f, r); }
+    if (isUser) { report.user = f; afterUserMatch(st, f, r, userResult); }
     report.results.push(f);
   }
   for (const p of preSusp) p.suspended = Math.max(0, p.suspended - 1);
@@ -560,8 +563,18 @@ export function advance(st, userResult = null) {
   st.updatedAt = Date.now();
   return report;
 }
-function afterUserMatch(st, f, r) {
+function afterUserMatch(st, f, r, userResult = null) {
   const uc = st.clubs[st.userClub], home = f.h === st.userClub;
+  // Temps de jeu de chaque joueur (titulaire, entré en jeu, non utilisé) pour le vestiaire.
+  {
+    const lineup = uc.tactics.lineup || [];
+    const played = userResult?.players ? userResult.players.filter(pr => pr.minutes > 0).map(pr => pr.id) : lineup;
+    const starters = played.filter(id => lineup.includes(id));
+    // Match simulé : les trois premiers remplaçants entrent habituellement en jeu.
+    const subs = userResult?.players ? played.filter(id => !lineup.includes(id)) : (uc.tactics.bench || []).slice(0, 3);
+    Dr.recordPlayingTime(squad(st, st.userClub), starters.length ? starters : lineup, subs);
+    st.meetingCd = Math.max(0, (st.meetingCd || 0) - 1);
+  }
   const gf = home ? f.hg : f.ag, ga = home ? f.ag : f.hg;
   const won = f.winner ? f.winner === st.userClub : gf > ga, lost = f.winner ? f.winner !== st.userClub : gf < ga;
   const opp = home ? f.a : f.h, oppRep = clubObj(st, opp)?.rep || 60;
@@ -630,9 +643,22 @@ function weekly(st) {
   // contrats : mécontentement
   for (const p of squad(st, st.userClub)) {
     if (p.contractEnd <= st.season && r() < 0.05) { p.happiness = clamp(p.happiness - 6, 0, 100); addNews(st, `${p.name} s'inquiète : son contrat expire en fin de saison.`, 'contract'); }
-    const xi = uc.tactics.lineup.includes(p.id);
-    if (p.role === 'cle' && !xi) p.happiness = clamp(p.happiness - 3, 0, 100);
-    if (p.happiness < 25 && r() < 0.05 && !p.listed) { p.listed = 'demande'; addNews(st, `${p.name} est mécontent et demande à être transféré.`, 'contract'); }
+  }
+  // Vestiaire : temps de jeu attendu selon le rôle, promesses, demandes de départ, ambiance.
+  {
+    const players = squad(st, st.userClub).filter(p => !(p.loan && p.loan.to !== st.userClub));
+    for (const ev of Dr.weeklyHappiness(players)) {
+      if (ev.type === 'promise-kept') addNews(st, `🤝 Promesse tenue : ${ev.p.name} a eu son temps de jeu et vous fait confiance.`, 'contract');
+      else if (ev.type === 'promise-broken') { addNews(st, `💢 Promesse rompue : ${ev.p.name} n'a pas eu le temps de jeu promis. Le vestiaire l'a remarqué.`, 'contract'); uc.cohesion = clamp(uc.cohesion - 4, 0, 100); }
+      else if (ev.type === 'wants-out' && r() < 0.25) { ev.p.listed = 'demande'; addNews(st, `${ev.p.name} est mécontent de son temps de jeu et demande à être transféré.`, 'contract'); }
+    }
+    const room = Dr.dressingRoomState(players, uc.tactics.captain);
+    st.dressingCd = Math.max(0, (st.dressingCd || 0) - 1);
+    if (room.crisis) {
+      uc.cohesion = clamp(uc.cohesion - 1.5, 0, 100);
+      for (const p of players) p.morale = clamp(p.morale - 0.8, 5, 100);
+      if (st.dressingCd <= 0) { st.dressingCd = 4; addNews(st, `⚠️ Vestiaire sous tension : ${room.unhappy.slice(0, 3).map(p => p.name).join(', ')} expriment leur mécontentement.${room.unhappyLeaders.length ? ' Un cadre du vestiaire fait partie des frondeurs.' : ''}`, 'contract'); }
+    } else if (room.mood >= 72) uc.cohesion = clamp(uc.cohesion + 0.4, 0, 100);
   }
   // confiance : assemblée extraordinaire
   if (st.president.trust < 12 && !st.election && r() < 0.3) startElection(st, true);
@@ -1171,4 +1197,28 @@ export function migrate(st) {
   if (!st.v) st.v = 1;
   if (st.v < 3) { st.settingsGame = st.settingsGame || { allowDebt: false }; st.adRewardsToday = st.adRewardsToday || { day: '', n: 0 }; st.v = 3; }
   return st;
+}
+
+// ---------- Vestiaire : actions de l'entraîneur ----------
+export function dressingRoom(st) {
+  const uc = st.clubs[st.userClub];
+  const players = squad(st, st.userClub).filter(p => !(p.loan && p.loan.to !== st.userClub));
+  return { ...Dr.dressingRoomState(players, uc.tactics.captain), players, meetingCd: st.meetingCd || 0 };
+}
+export function talkToPlayer(st, pid, action) {
+  const p = st.players[pid];
+  if (!p || (p.loan ? p.loan.to : p.clubId) !== st.userClub) return { ok: false, msg: 'Joueur introuvable dans votre effectif.' };
+  const r = R(st); const res = Dr.talkTo(p, action, r); saveR(st, r);
+  if (res.ok && action === 'refuseTransfer' && Dr.personalityOf(p) === 'temperament') addNews(st, `${p.name} déplore publiquement le refus de son transfert.`, 'media');
+  return res;
+}
+export function holdTeamMeeting(st, action) {
+  if ((st.meetingCd || 0) > 0) return { ok: false, msg: `Prochaine réunion d'équipe possible dans ${st.meetingCd} match(s).` };
+  const uc = st.clubs[st.userClub];
+  const recent = st.fixtures.filter(f => f.played && (f.h === st.userClub || f.a === st.userClub)).slice(-4);
+  const pts = recent.length ? recent.reduce((a, f) => { const home = f.h === st.userClub, gf = home ? f.hg : f.ag, ga = home ? f.ag : f.hg; const won = f.winner ? f.winner === st.userClub : gf > ga; return a + (won ? 3 : gf === ga && !f.winner ? 1 : 0); }, 0) / recent.length : 1.5;
+  const room = dressingRoom(st);
+  const res = Dr.teamMeeting(room.players, action, { recentPoints: pts, room });
+  if (res.ok) { uc.cohesion = clamp(uc.cohesion + res.cohesion, 0, 100); st.meetingCd = 4; }
+  return res;
 }

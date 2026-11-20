@@ -5,13 +5,14 @@ import { TACTIC_PRESETS, getCoachAdvice } from './tactics.js';
 import * as Dr from './dressing.js';
 import * as Tx from './transfers.js';
 import * as Y from './youth.js';
+import * as CAF from './caf.js';
 import * as A from './audio.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.27.0';
+export const APP_VERSION = '3.28.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -159,8 +160,19 @@ VIEWS.prematch = () => {
    <div class="row center"><button class="btn primary big" data-a="playMatch">🎮 ${t('Jouer')} le match</button><button class="btn big" data-a="simMatch">⚡ Simulation rapide</button></div>
    <div class="row center"><button class="btn small" data-a="nav" data-v="tactics">📋 ${t('Tactique')}</button><button class="btn small" data-a="nav" data-v="squad">👥 ${t('Effectif')}</button>
    <label class="inline">${t('Durée du match')} <select id="pmDur">${[3, 5, 8, 10, 15].map(m => `<option ${m === settings.duration ? 'selected' : ''} value="${m}">${m} min</option>`).join('')}</select></label></div></div>
+   ${prematchExtras(f)}
    <div class="card"><h3>${t('Titulaires')}</h3><div class="xi">${lu.map((p, i) => `<span class="${p.fitness < 0.75 ? 'tired' : ''}"><i>${FORMATION_POS[st.clubs[st.userClub].tactics.formation][i]}</i> ${p.num}. ${esc(p.name)} <b class="${ovrCls(p.ovr)}">${p.ovr}</b></span>`).join('')}</div></div></div>`;
 };
+
+function prematchExtras(f) {
+  const trip = C.nextTrip(st, f), rot = C.rotationAdvice(st);
+  const tired = st.clubs[st.userClub].tactics.lineup.map(id => st.players[id]).filter(p => p && p.fitness < 0.8);
+  let out = '';
+  if (trip) out += `<div class="card"><h3>✈️ Déplacement ${esc(trip.toCity)} ${trip.flag}</h3><p>~${trip.km.toLocaleString('fr-FR')} km depuis Tunis · ~${trip.hours} h de vol · coût ${fmtMoney(trip.cost)} · fatigue du groupe −${Math.round(trip.fatigue * 100)} % après le match.</p></div>`;
+  if (tired.length) out += `<div class="card"><h3>🔄 Rotation conseillée</h3><p>${tired.length} titulaire(s) fatigué(s) : ${tired.map(p => `${esc(p.name)} (${Math.round(p.fitness * 100)} %)`).join(', ')}.</p>
+    ${rot.length ? `<p class="hint">Proposition : ${rot.map(c => `${esc(c.out.name)} → ${esc(c.in.name)}`).join(' · ')}</p><button class="btn primary small" data-a="rotate">Faire tourner l'effectif</button>` : '<p class="hint">Aucun remplaçant frais de niveau comparable sur le banc.</p>'}</div>`;
+  return out;
+}
 
 // ------------------------------------------------------------------ effectif
 VIEWS.squad = () => {
@@ -438,8 +450,9 @@ VIEWS.comps = () => {
   }
   if (tab === 'CL' || tab === 'CC') {
     const K = st.comps[tab];
-    body = `<p class="hint">${esc(K.note)} · 4 groupes de 4, les 2 premiers en quarts ; quarts, demies et finale en aller-retour, sans règle des buts à l'extérieur (à vérifier). Clubs africains : niveaux estimés.</p>
-     <div class="grid2">${K.groups.map((g, gi) => `<div><h4>Groupe ${'ABCD'[gi]}</h4>${tableHTML(C.groupTable(st, tab, gi))}</div>`).join('')}</div>
+    const flagOf = id => CAF.COUNTRIES[st.clubs[id] ? 'TUN' : C.clubObj(st, id)?.country]?.flag || '';
+    body = `<p class="hint">${esc(K.note)} · Tirage par chapeaux selon le niveau, jamais deux clubs du même pays dans un groupe. 4 groupes de 4, les 2 premiers en quarts (premier contre deuxième d'un autre groupe, retour chez le premier), demi-finales en tirage intégral ; matchs aller-retour, sans règle des buts à l'extérieur (à vérifier). Clubs africains : niveaux estimés.</p>
+     <div class="grid2">${K.groups.map((g, gi) => `<div><h4>Groupe ${'ABCD'[gi]} <small>${g.map(flagOf).join(' ')}</small></h4>${tableHTML(C.groupTable(st, tab, gi))}</div>`).join('')}</div>
      ${['QF1', 'QF2', 'SF1', 'SF2', 'F1', 'F2'].map(s => { const fx = st.fixtures.filter(f => f.comp === tab && f.koStage === s); return fx.length ? `<h4>${{ QF1: 'Quarts aller', QF2: 'Quarts retour', SF1: 'Demies aller', SF2: 'Demies retour', F1: 'Finale aller', F2: 'Finale retour' }[s]}</h4><table class="tbl"><tbody>${fx.map(fxRow).join('')}</tbody></table>` : ''; }).join('')}`;
   }
   if (tab === 'SUP') { const fx = st.fixtures.filter(f => f.comp === 'SUP'); body = `<p class="hint">Champion contre vainqueur de la Coupe (ou dauphin), match unique sur terrain neutre — format à confirmer.</p><table class="tbl"><tbody>${fx.map(fxRow).join('')}</tbody></table>`; }
@@ -756,6 +769,7 @@ const ACT = {
   setCaptain: el => { st.clubs[st.userClub].tactics.captain = el.dataset.id; save(); closeModal(); toast('Nouveau capitaine désigné.', 'ok'); render(); },
   setNumber: el => { const p = st.players[el.dataset.id]; const n = Number(prompt('Numéro de maillot (1-99)', p.num)); if (!n || n < 1 || n > 99) return; if (C.squad(st, st.userClub).some(x => x.num === n && x.id !== p.id)) return toast('Numéro déjà attribué.', 'err'); p.num = n; save(); closeModal(); render(); },
   talk: el => talkModal(el.dataset.id),
+  rotate: () => { const ch = C.rotateLineup(st); save(); toast(ch.length ? 'Rotation : ' + ch.map(c => `${c.out.name} → ${c.in.name}`).join(', ') : 'Aucun changement.', ch.length ? 'ok' : 'info'); render(); },
   scoutRegion: el => { const r = C.startScouting(st, el.dataset.k); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
   signProspect: el => { const r = C.signProspect(st, el.dataset.id); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
   rejectProspect: el => { C.rejectProspect(st, el.dataset.id); save(); render(); },

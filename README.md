@@ -1,5 +1,13 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.28.0 — compétitions africaines
+- Tirage des groupes CAF par chapeaux (selon le niveau des clubs) avec protection par pays : jamais deux clubs du même pays dans un groupe (vérifié sur 240 groupes) ; tirage annoncé dans l'actualité, drapeaux des pays dans les groupes.
+- Quarts de finale tirés au sort : premier de groupe contre deuxième d'un autre groupe (et d'un autre pays si possible), retour chez le premier ; demi-finales en tirage intégral ; chaque tirage du club est annoncé.
+- Déplacements selon la distance réelle depuis Tunis (de ~530 km à Tripoli à ~7 000 km à Johannesburg) : coût du voyage, durée de vol, fatigue immédiate et fatigue de voyage qui freine la récupération les semaines suivantes.
+- Avant-match : carte du déplacement et carte « Rotation conseillée » listant les titulaires fatigués, avec un bouton qui fait tourner l'effectif (remplaçant frais au même poste, gardien préservé).
+- Correction d'une faute de français : « déplacement au Caire » au lieu de « à Le Caire ».
+- Nouveau module public/js/caf.js et tests tests/caf.test.mjs.
+
 ## Version 3.27.0 — centre de formation
 - Nouvel écran 🎓 Formation : équipe U19 séparée de l'effectif professionnel (20 places), bourses mensuelles, niveau de l'académie, responsable de la formation et précision des recruteurs.
 - Détection régionale : missions de 3 à 5 semaines dans le Grand Tunis, le Sahel, Sfax et le Centre-Est, le Nord-Ouest, le Sud ou la diaspora ; profils de joueurs propres à chaque région ; talents plus rares et missions plus chères dans la diaspora.

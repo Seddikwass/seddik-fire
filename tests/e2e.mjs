@@ -17,6 +17,9 @@ await click('[data-a=startCareer]'); await p.waitForSelector('.dash'); await sho
 await click('[data-a=nav][data-v=president]'); await click('[data-a=sponsor][data-id=stable]'); await shot('05-president');
 await click('[data-a=nav][data-v=squad]'); await shot('06-effectif');
 await click('tr[data-a=player]'); await shot('07-fiche-joueur'); await click('[data-a=closeModal]');
+await click('[data-v=squad][data-tab=vestiaire]').catch(async () => { await p.click('text=🗣️ Vestiaire'); }); await shot('06b-vestiaire');
+await click('[data-a=nav][data-v=youth]'); await shot('06c-formation');
+await click('[data-a=nav][data-v=comps]'); await p.click('.tabs >> text=Ligue des Champions CAF'); await shot('06d-caf');
 await click('[data-a=nav][data-v=tactics]'); await shot('08-tactique');
 await click('[data-a=nav][data-v=transfers]'); await shot('09-transferts');
 await click('[data-a=nav][data-v=staff]'); await shot('10-staff');

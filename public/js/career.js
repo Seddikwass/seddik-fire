@@ -5,6 +5,7 @@ import { quickSim } from './match.js';
 import * as Dr from './dressing.js';
 import * as Tx from './transfers.js';
 import * as Y from './youth.js';
+import * as K from './caf.js';
 
 export const SAVE_VERSION = 3;
 const POS_LIST = ['GK', 'DD', 'DC', 'DG', 'MDC', 'MC', 'MD', 'MG', 'MOC', 'AD', 'AG', 'BU'];
@@ -142,6 +143,7 @@ export function newCareer(opts) {
   st.rs = r.state();
   st.cafSquads = {};
   setupSeason(st);
+  if (st.cafDrawNews) { addNews(st, st.cafDrawNews, 'comp'); st.cafDrawNews = null; }
   addNews(st, `Bienvenue, ${st.president.name} ! Vous prenez la présidence de ${uc.name}. Objectif fixé : ${OBJECTIVES[st.objective]}.`, 'club');
   addNews(st, `Données : clubs de Ligue 1 ${season}-${season + 1} vérifiés le 16/11/2026. Tous les joueurs et membres du staff sont fictifs.`, 'info');
   return st;
@@ -257,9 +259,15 @@ export function setupSeason(st) {
   const cafPool = CAF_CLUBS.slice().sort((a, b) => b.rep - a.rep);
   const clT = st.caf.cl.filter(id => st.clubs[id]).concat(cafPool.slice(0, 16 - st.caf.cl.length).map(c => c.id));
   const ccT = st.caf.cc.filter(id => st.clubs[id]).concat(cafPool.slice(16 - st.caf.cl.length, 16 - st.caf.cl.length + 16 - st.caf.cc.length).map(c => c.id));
-  const mkGroups = teams => { const sh = teams.slice().sort(() => r() - 0.5); const g = [[], [], [], []]; sh.forEach((t, i) => g[i % 4].push(t)); return g; };
+  // Tirage CAF : chapeaux selon le niveau, pas deux clubs du même pays dans un groupe.
+  const cafInfo = id => st.clubs[id] ? { id, rep: st.clubs[id].rep, country: 'TUN' } : { id, rep: CAF_CLUBS.find(c => c.id === id)?.rep ?? 50, country: CAF_CLUBS.find(c => c.id === id)?.country ?? '?' };
+  const mkGroups = teams => K.drawGroups(teams.map(cafInfo), r).groups.map(g => g.map(t => t.id));
   st.comps.CL = { id: 'CL', name: 'Ligue des Champions CAF', groups: mkGroups(clT), ko: [], stage: 'groups', note: 'Format simplifié : tours préliminaires non modélisés' };
   st.comps.CC = { id: 'CC', name: 'Coupe de la Confédération CAF', groups: mkGroups(ccT), ko: [], stage: 'groups', note: 'Format simplifié : tours préliminaires non modélisés' };
+  for (const comp of ['CL', 'CC']) {
+    const C = st.comps[comp], gi = C.groups.findIndex(g => g.includes(st.userClub));
+    if (gi >= 0) st.cafDrawNews = `🎲 Tirage ${C.name} : groupe ${'ABCD'[gi]} avec ${C.groups[gi].filter(id => id !== st.userClub).map(id => { const c = cafInfo(id); return `${clubName(st, id)} ${K.COUNTRIES[c.country]?.flag || ''}`; }).join(', ')}.`;
+  }
   // créneaux
   const push = (type, data = {}) => st.slots.push({ type, ...data });
   push('SUP');
@@ -366,13 +374,16 @@ function ensureCafKO(st, stage) {
     if (st.fixtures.some(f => f.comp === comp && f.koStage === stage)) continue;
     const r = R(st);
     if (stage === 'QF1') {
-      const q = [];
-      C.groups.forEach((g, gi) => { const t = groupTable(st, comp, gi); q.push(t[0].id, t[1].id); });
+      const q = [], winners = [], runners = [];
+      const info = (id, gi) => ({ id, group: gi, country: st.clubs[id] ? 'TUN' : CAF_CLUBS.find(c => c.id === id)?.country ?? '?' });
+      C.groups.forEach((g, gi) => { const t = groupTable(st, comp, gi); q.push(t[0].id, t[1].id); winners.push(info(t[0].id, gi)); runners.push(info(t[1].id, gi)); });
       C.stage = 'QF';
-      // A1-B2, B1-A2, C1-D2, D1-C2
-      const pairs = [[q[0], q[3]], [q[2], q[1]], [q[4], q[7]], [q[6], q[5]]];
+      // Tirage : premier contre deuxième d'un autre groupe ; aller chez le deuxième, retour chez le premier.
+      const pairs = K.drawQuarters(winners, runners, r).map(p => [p.winner.id, p.runner.id]);
       C.ko = pairs.map(p => ({ stage: 'QF', a: p[1], b: p[0] }));
       pairs.forEach(([a, b]) => st.fixtures.push(fx(comp, 0, b, a, { koStage: 'QF1', tie: a + '|' + b })));
+      const mine = pairs.find(p => p.includes(st.userClub));
+      if (mine) addNews(st, `🎲 Tirage des quarts (${C.name}) : ${clubName(st, mine[0] === st.userClub ? mine[1] : mine[0])}.`, 'comp');
       if (q.includes(st.userClub)) addNews(st, `${C.name} : qualifié pour les quarts de finale !`, 'comp');
     } else if (stage === 'QF2' || stage === 'SF2' || stage === 'F2') {
       const first = stage.replace('2', '1');
@@ -381,7 +392,13 @@ function ensureCafKO(st, stage) {
       const prev = stage === 'SF1' ? 'QF2' : 'SF2';
       const winners = st.fixtures.filter(f => f.comp === comp && f.koStage === prev && f.played).map(f => f.winner);
       C.stage = stage === 'SF1' ? 'SF' : 'F';
-      for (let i = 0; i + 1 < winners.length; i += 2) st.fixtures.push(fx(comp, 0, winners[i], winners[i + 1], { koStage: stage, tie: winners[i] + '|' + winners[i + 1] }));
+      // Demi-finales : tirage intégral ; finale : les deux qualifiés.
+      const country = id => st.clubs[id] ? 'TUN' : CAF_CLUBS.find(c => c.id === id)?.country ?? '?';
+      const pairs = stage === 'SF1' ? K.drawOpen(winners.map(id => ({ id, country: country(id) })), r).map(([a, b]) => [a.id, b.id]) : [[winners[0], winners[1]]].filter(p => p[0] && p[1]);
+      for (const [a, b] of pairs) {
+        st.fixtures.push(fx(comp, 0, a, b, { koStage: stage, tie: a + '|' + b }));
+        if (a === st.userClub || b === st.userClub) addNews(st, `🎲 ${stage === 'SF1' ? 'Tirage des demi-finales' : 'Finale'} (${C.name}) : ${clubName(st, a === st.userClub ? b : a)}.`, 'comp');
+      }
     }
     saveR(st, r);
   }
@@ -604,8 +621,13 @@ function afterUserMatch(st, f, r, userResult = null) {
     ledger(st, Math.round(att * (0.6 + uc.fans.sat / 120)), 'produits dérivés', 'Ventes en tribunes');
     if (uc.infra.lights >= 3) ledger(st, 15000 * uc.infra.lights, 'droits TV', 'Match en nocturne diffusé');
   } else {
-    const travel = f.comp === 'CL' || f.comp === 'CC' ? 90000 : 12000;
-    ledger(st, -travel, 'déplacements', `Déplacement à ${clubShort(st, opp)}`);
+    if ((f.comp === 'CL' || f.comp === 'CC') && !st.clubs[opp]) {
+      // Déplacement continental : coût et fatigue selon la distance depuis Tunis.
+      const trip = K.travelInfo(clubObj(st, opp)?.country);
+      ledger(st, -trip.cost, 'déplacements', `Déplacement ${trip.toCity} (${clubShort(st, opp)}, ~${trip.km.toLocaleString('fr-FR')} km)`);
+      for (const p of squad(st, st.userClub)) if (uc.tactics.lineup.includes(p.id) || uc.tactics.bench.includes(p.id)) { p.fitness = clamp(p.fitness - trip.fatigue, 0.4, 1); p.travelLag = (p.travelLag || 0) + trip.fatigue * 1.6; }
+      if (trip.km >= 4000) addNews(st, `✈️ Retour ${trip.fromCity} : ~${trip.hours} h de vol, le groupe accuse la fatigue du voyage.`, 'club');
+    } else ledger(st, -12000, 'déplacements', `Déplacement à ${clubShort(st, opp)}`);
   }
   if (st.sponsor && st.sponsor.bonus && won) ledger(st, st.sponsor.bonus / 10, 'sponsors', 'Bonus sponsor (victoire)');
   st.lastResult = { f: f.id, gf, ga, won, lost, opp };
@@ -633,7 +655,10 @@ function weekly(st) {
     }
     // récupération
     const rec = 0.05 + ((p.loan ? p.loan.to : p.clubId) === st.userClub ? [0.05, 0.02, -0.01][st.training.intensity] + staffAb(st, 'fitness', 35) / 2000 : 0.02);
-    p.fitness = clamp(p.fitness + rec, 0.4, 1);
+    // Fatigue de voyage : freine la récupération, se résorbe de moitié chaque semaine.
+    const lag = p.travelLag || 0;
+    p.fitness = clamp(p.fitness + rec - lag, 0.4, 1);
+    p.travelLag = lag > 0.004 ? lag * 0.5 : 0;
   }
   // entraînement (club joueur)
   training(st, r);
@@ -1242,6 +1267,7 @@ function endSeason(st) {
   saveR(st, r);
   for (const c of Object.values(st.clubs)) autoLineup(st, c.id);
   setupSeason(st);
+  if (st.cafDrawNews) { addNews(st, st.cafDrawNews, 'comp'); st.cafDrawNews = null; }
   st.objective = st.clubs[st.userClub].div === 2 ? 'maintien' : st.objective;
   if (st.president.mandateEnd < st.season) startElection(st, false);
   addNews(st, `Nouvelle saison ${st.season}-${st.season + 1} ! Fixez vos objectifs et préparez le mercato d'été.`, 'club');
@@ -1412,3 +1438,28 @@ function growYouth(p, r) {
 }
 export function scoutQualityOf(st) { return scoutQuality(st); }
 export function loanedOut(st) { return Object.values(st.players).filter(p => p.loan && p.loan.from === st.userClub); }
+
+// Rotation conseillée : titulaires fatigués remplacés par le meilleur joueur frais au même poste.
+export function rotationAdvice(st, threshold = 0.8) {
+  const uc = st.clubs[st.userClub], t = uc.tactics;
+  const slots = FORMATION_POS[t.formation] || FORMATION_POS['4-3-3'];
+  const lineup = t.lineup.map(id => st.players[id]);
+  const pool = squad(st, st.userClub);
+  return K.rotationPlan(lineup, pool, slots, (p, pos) => ovrOf(p, pos) * posFit(p, pos), threshold);
+}
+export function rotateLineup(st, threshold = 0.8) {
+  const uc = st.clubs[st.userClub], t = uc.tactics;
+  const changes = rotationAdvice(st, threshold);
+  for (const c of changes) {
+    t.lineup[c.index] = c.in.id;
+    t.bench = t.bench.filter(id => id !== c.in.id);
+    if (!t.bench.includes(c.out.id)) t.bench.unshift(c.out.id);
+    t.bench = t.bench.slice(0, 9);
+  }
+  return changes;
+}
+export function nextTrip(st, f) {
+  if (!f || (f.comp !== 'CL' && f.comp !== 'CC') || f.h === st.userClub) return null;
+  const opp = clubObj(st, f.h);
+  return opp && !st.clubs[f.h] ? K.travelInfo(opp.country) : null;
+}

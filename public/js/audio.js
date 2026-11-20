@@ -32,7 +32,7 @@ export function audioInit() {
   src.start();
 }
 export function setAudio(on, vol) { enabled = on; if (vol != null) volume = vol; if (master) master.gain.value = enabled ? volume : 0; }
-export function audioSuspend() { if (ctx && ctx.state === 'running') ctx.suspend(); stopDrums(); }
+export function audioSuspend() { if (ctx && ctx.state === 'running') ctx.suspend(); stopDrums(); stopChant(); }
 export function audioResume() { if (ctx && ctx.state === 'suspended') ctx.resume(); }
 
 export function crowd(level) { // 0..1
@@ -104,6 +104,89 @@ export function startDrums(seconds = 6) {
   sched(); drumTimer = setInterval(sched, 200);
 }
 export function stopDrums() { if (drumTimer) clearInterval(drumTimer); drumTimer = null; }
+// ---------- Réactions du public (synthèse) ----------
+// Souffle collectif « ooooh » : bruit filtré dont la hauteur monte puis retombe.
+export function ooh(strength = 0.7) {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime, dur = 1.4;
+  const len = Math.floor(ctx.sampleRate * dur), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 3.2;
+  f.frequency.setValueAtTime(380, t); f.frequency.linearRampToValueAtTime(620, t + 0.35); f.frequency.linearRampToValueAtTime(300, t + dur);
+  const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1.4 * strength, t + 0.25); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(f).connect(g).connect(master); src.start(t); src.stop(t + dur);
+}
+// Soupir déçu des tribunes (but encaissé par l'équipe à domicile).
+export function groan() {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime, dur = 1.8;
+  const len = Math.floor(ctx.sampleRate * dur), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 2.4;
+  f.frequency.setValueAtTime(520, t); f.frequency.exponentialRampToValueAtTime(190, t + dur);
+  const g = ctx.createGain(); g.gain.setValueAtTime(1.1, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(f).connect(g).connect(master); src.start(t); src.stop(t + dur);
+  if (crowdGain) { crowdGain.gain.cancelScheduledValues(t); crowdGain.gain.setValueAtTime(crowdGain.gain.value, t); crowdGain.gain.linearRampToValueAtTime(0.06, t + 1.2); }
+}
+// Applaudissements : claquements courts répartis aléatoirement.
+export function applause(seconds = 2, density = 45) {
+  if (!ctx || !enabled) return;
+  const t0 = ctx.currentTime, n = Math.floor(seconds * density);
+  const len = Math.floor(ctx.sampleRate * 0.03), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const bus = ctx.createBiquadFilter(); bus.type = 'bandpass'; bus.frequency.value = 1800; bus.Q.value = 0.7;
+  const g = ctx.createGain(); g.gain.value = 0.32; bus.connect(g).connect(master);
+  for (let i = 0; i < n; i++) {
+    const s = ctx.createBufferSource(); s.buffer = buf; s.playbackRate.value = 0.8 + Math.random() * 0.5;
+    const fade = 1 - i / n; const sg = ctx.createGain(); sg.gain.value = 0.3 + fade * 0.7;
+    s.connect(sg).connect(bus); s.start(t0 + Math.random() * seconds);
+  }
+}
+// Sifflets du public : nombreux sifflets aigus désaccordés.
+export function crowdWhistles(seconds = 1.6) {
+  if (!ctx || !enabled) return;
+  const t = ctx.currentTime;
+  const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.028, t + 0.15); g.gain.setValueAtTime(0.028, t + seconds - 0.4); g.gain.linearRampToValueAtTime(0, t + seconds);
+  g.connect(master);
+  for (let i = 0; i < 9; i++) {
+    const o = ctx.createOscillator(); o.type = 'sine';
+    const start = t + Math.random() * 0.35, f0 = 2300 + Math.random() * 1500;
+    o.frequency.setValueAtTime(f0, start); o.frequency.linearRampToValueAtTime(f0 * (0.92 + Math.random() * 0.16), start + seconds * 0.8);
+    const og = ctx.createGain(); og.gain.value = 0.5 + Math.random() * 0.5;
+    o.connect(og).connect(g); o.start(start); o.stop(t + seconds);
+  }
+}
+// Chant des tribunes : claquements de mains en rythme sur la darbouka.
+let chantTimer = null;
+export function chant(seconds = 7) {
+  if (!ctx || !enabled) return;
+  stopChant();
+  const clapLen = Math.floor(ctx.sampleRate * 0.05), clapBuf = ctx.createBuffer(1, clapLen, ctx.sampleRate), cd = clapBuf.getChannelData(0);
+  for (let i = 0; i < clapLen; i++) cd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / clapLen, 2);
+  const clap = (when, gain) => {
+    // Une tribune entière : plusieurs claquements légèrement décalés.
+    for (let k = 0; k < 6; k++) {
+      const s = ctx.createBufferSource(); s.buffer = clapBuf; s.playbackRate.value = 0.85 + Math.random() * 0.3;
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1400 + Math.random() * 600;
+      const g = ctx.createGain(); g.gain.value = gain;
+      s.connect(f).connect(g).connect(master); s.start(when + Math.random() * 0.025);
+    }
+  };
+  const pattern = [0, 0.5, 1.0, 1.25, 1.5]; // clap · clap · clap-clap-clap
+  let t0 = ctx.currentTime + 0.05; const end = t0 + seconds;
+  const sched = () => {
+    while (t0 < ctx.currentTime + 0.6 && t0 < end) {
+      for (const o of pattern) clap(t0 + o, 0.12);
+      t0 += 2;
+    }
+    if (t0 >= end) stopChant();
+  };
+  sched(); chantTimer = setInterval(sched, 200);
+  startDrums(seconds);
+}
+export function stopChant() { if (chantTimer) clearInterval(chantTimer); chantTimer = null; }
 export function click() { if (!ctx || !enabled) return; drum(ctx.currentTime, 900, 0.04, 0.1); }
 
 // ---------- Voix (commentaire) ----------

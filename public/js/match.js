@@ -3,6 +3,7 @@ import { clamp, lerp } from './util.js';
 import { FORMATIONS } from './data.js';
 import * as A from './audio.js';
 import { MatchRenderer3D } from './renderer3d.js';
+import { getMatchFlavor, getGoalCommentKeys, pickLine, fillLine } from './commentary.js';
 import { getShootoutStatus, getNextKicker, getShootoutOrder, getAIPenaltyChoice, getPenaltyStrike, getAIKeeperDive, getPenaltyOutcome } from './shootout.js';
 
 const HL = 52.5, HW = 34, GOAL_W = 3.66, GOAL_H = 2.44, G = 9.81;
@@ -49,32 +50,6 @@ export function getBallShadowMetrics(height = 0) {
   };
 }
 
-const LINES = {
-  fr: {
-    kickoff: ['Coup d\'envoi ! {h} contre {a}.', 'C\'est parti au {st} !'],
-    goal: ['BUT ! {p} trompe le gardien !', 'BUUUT pour {t} ! Signé {p} !', 'Quelle frappe de {p} ! {t} marque !'],
-    save: ['Superbe arrêt de {p} !', 'Le gardien {p} s\'interpose !'],
-    miss: ['Juste à côté !', 'Ça passe au-dessus !', 'Pas cadré.'],
-    post: ['Sur le poteau !'],
-    foul: ['Faute de {p}.', 'Coup franc sifflé.'],
-    yellow: ['Carton jaune pour {p}.'],
-    red: ['Carton rouge ! {p} est expulsé !'],
-    corner: ['Corner pour {t}.'],
-    penalty: ['Penalty pour {t} !'],
-    half: ['C\'est la mi-temps. {h} {sh} - {sa} {a}.'],
-    full: ['Coup de sifflet final ! {h} {sh} - {sa} {a}.'],
-    chance: ['Grosse occasion pour {t} !', '{p} s\'infiltre dans la surface !'],
-    injury: ['{p} est touché, il reste au sol.'],
-    offside: ['Hors-jeu de {p}.', 'Le drapeau se lève : {p} était hors-jeu.'],
-  },
-  ar: {
-    kickoff: ['انطلاق المباراة! {h} ضد {a}.'], goal: ['هدف! {p} يسجل ل{t}!', 'هدددف! رائع من {p}!'], save: ['تصد رائع من {p}!'],
-    miss: ['بجانب القائم!', 'فوق العارضة!'], post: ['القائم!'], foul: ['خطأ من {p}.'], yellow: ['بطاقة صفراء ل{p}.'], red: ['بطاقة حمراء! طرد {p}!'],
-    corner: ['ركنية ل{t}.'], penalty: ['ضربة جزاء ل{t}!'], half: ['نهاية الشوط الأول. {h} {sh} - {sa} {a}.'], full: ['نهاية المباراة! {h} {sh} - {sa} {a}.'],
-    chance: ['فرصة خطيرة ل{t}!'], injury: ['{p} مصاب.'], offside: ['تسلل على {p}.'],
-  },
-};
-LINES.en = LINES.fr;
 
 export function shouldReduceRenderDetail(frameAverageMs, targetFps = 60) {
   const fps = Number.isFinite(targetFps) && targetFps > 0 ? targetFps : 60;
@@ -974,7 +949,7 @@ export class Match {
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
     }));
     return {
-      side, name: t.name, short: t.short, kit: t.kit || { shirt: t.colors[0], trim: t.colors[1], shorts: t.colors[1] },
+      side, id: t.id, name: t.name, short: t.short, kit: t.kit || { shirt: t.colors[0], trim: t.colors[1], shorts: t.colors[1] },
       gkKit: t.gkKit || { shirt: '#2fb84a', trim: '#111', shorts: '#111' },
       ps, bench: (t.bench || []).map(b => ({ ...b })), mentality: t.mentality || 0, pressing: t.pressing ?? 1, formation: t.formation,
       width: t.width ?? 1, line: t.line ?? 0, takers: t.takers || {},
@@ -984,7 +959,7 @@ export class Match {
 
   // ---------------- cycle de vie ----------------
   start() { this.running = true; this.last = performance.now(); A.audioInit(); A.crowd(0.25); requestAnimationFrame(this.loop); }
-  destroy() { this.running = false; window.removeEventListener('resize', this.resize); document.removeEventListener('visibilitychange', this.onVis); this.renderer3d?.dispose(); this.renderer3d = null; A.stopDrums(); A.crowd(0); }
+  destroy() { this.running = false; window.removeEventListener('resize', this.resize); document.removeEventListener('visibilitychange', this.onVis); this.renderer3d?.dispose(); this.renderer3d = null; A.stopDrums(); A.stopChant(); A.crowd(0); }
   resize() {
     const nav = typeof navigator === 'undefined' ? {} : navigator;
     const ratio = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
@@ -1023,15 +998,24 @@ export class Match {
     }
     this.render();
   }
-  lang() { return LINES[this.settings.lang] || LINES.fr; }
-  say(key, vars = {}, priority = false) {
-    const arr = this.lang()[key]; if (!arr) return;
-    let s = arr[Math.floor(this.r() * arr.length)];
+  // Commentaire : clé (ou liste de clés de la plus spécifique à la plus générale).
+  say(keys, vars = {}, priority = false) {
+    this.commentMemory = this.commentMemory || new Map();
+    const line = pickLine(this.settings.lang || 'fr', keys, this.r, this.commentMemory); if (!line) return;
     const T = this.teams;
     const all = { h: T[0].short, a: T[1].short, sh: this.score[0], sa: this.score[1], st: T[0].stadium || 'stade', ...vars };
-    s = s.replace(/\{(\w+)\}/g, (m, k) => all[k] ?? '');
-    this.ticker = s; this.tickerT = 4;
+    const s = fillLine(line.text, all);
+    this.ticker = s; this.tickerT = 4; this.lastCommentKey = line.key;
     if (this.settings.voice) A.speak(s, this.settings.lang, priority);
+  }
+  // Réactions du public : les tribunes soutiennent l'équipe qui reçoit (camp 0).
+  crowdReact(kind, team = 0) {
+    const home = team === 0;
+    if (kind === 'goal') { if (home) { A.roar(); this.nextChantT = 25; } else A.groan(); }
+    else if (kind === 'save') { if (home) A.applause(2.2); else A.ooh(0.8); }
+    else if (kind === 'miss' || kind === 'post') { if (home) A.ooh(kind === 'post' ? 1 : 0.7); else A.applause(1.2, 25); }
+    else if (kind === 'foul') { if (!home) A.crowdWhistles(1.4); }
+    else if (kind === 'card') { if (home) A.crowdWhistles(2.2); else A.applause(1.4, 30); }
   }
   banner(text, t = 2) { this.msg = text; this.msgT = t; }
 
@@ -1070,6 +1054,12 @@ export class Match {
   }
   setupKickoff(team) {
     this.kickTeam = team;
+    if (this.half === 1 && !this.saidKickoff) {
+      this.saidKickoff = true;
+      const flavor = getMatchFlavor(this.teams[0].id, this.teams[1].id);
+      this.say(flavor ? ['kickoff_' + flavor, 'kickoff'] : 'kickoff', {}, true);
+      if (flavor) this.nextChantT = 4;
+    } else if (this.half === 2 && !this.saidSecondHalf) { this.saidSecondHalf = true; this.say('second_half', {}, true); }
     for (const T of this.teams) for (const p of T.ps) {
       const [bx, by] = p.base;
       const nx = p.isGK ? -HL + 1.5 : Math.min(bx * 0.95, -1.5), ny = by * 0.85;
@@ -1086,6 +1076,7 @@ export class Match {
   setRestart(type, team, x, y) {
     this.passInfo = null;
     const T = this.teams[team];
+    if (type === 'corner') this.say('corner', { t: T.short });
     let taker;
     if (type === 'goalkick') taker = T.ps[0];
     else taker = T.ps.filter(p => !p.sentOff && !p.isGK).sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
@@ -1140,7 +1131,7 @@ export class Match {
     if (gm >= limit && !this.ball.inFlightShot) {
       A.whistle(true);
       if (this.half === 1) { this.state = 'halftime'; this.stateT = 2.5; this.clock = 0; this.banner('MI-TEMPS', 2.5); this.say('half', {}, true); }
-      else { this.state = 'fulltime'; this.stateT = 2.5; this.banner('FIN DU MATCH', 2.5); this.say('full', {}, true); }
+      else { this.state = 'fulltime'; this.stateT = 2.5; this.banner('FIN DU MATCH', 2.5); const w = this.score[0] === this.score[1] ? null : this.teams[this.score[0] > this.score[1] ? 0 : 1].short; this.say(w ? ['full_win', 'full'] : ['full_draw', 'full'], { w }, true); if (w && this.score[0] > this.score[1]) A.applause(3.5, 60); else if (w) A.crowdWhistles(2.5); }
       return;
     }
     const own = this.ball.owner ? this.ball.owner.team : this.ball.lastTeam;
@@ -1155,6 +1146,26 @@ export class Match {
     const boxThreat = b.owner && Math.abs(b.owner.x) > 34 && Math.abs(b.owner.y) < 21 ? 0.18 : 0;
     const atk = clamp(0.18 + attackThreat * 0.42 + shotThreat + boxThreat, 0.18, 0.92);
     if ((this.crowdT = (this.crowdT || 0) + dt) > 0.45) { this.crowdT = 0; A.crowd(atk); }
+    this.updateAtmosphere(dt);
+  }
+  // Temps forts du commentaire et chants des tribunes au fil du match.
+  updateAtmosphere(dt) {
+    if (this.state !== 'play') return;
+    if (this.half === 2 && this.minute >= 85 && !this.saidLate) { this.saidLate = true; this.say('late', {}, true); }
+    // Domination : le ballon reste longtemps dans le dernier tiers d'une équipe.
+    const b = this.ball, holder = b.owner?.team ?? b.lastTeam;
+    const inFinalThird = holder != null && (b.x * this.teams[holder].dir) > 17;
+    this.pressureT = inFinalThird && holder === this.pressureTeam ? (this.pressureT || 0) + dt : 0;
+    if (!inFinalThird || holder !== this.pressureTeam) this.pressureTeam = holder;
+    this.pressureCd = Math.max(0, (this.pressureCd || 0) - dt);
+    if (this.pressureT > 9 && this.pressureCd <= 0) { this.pressureCd = 60; this.say('pressure', { t: this.teams[holder].short }); }
+    // Chants : régulièrement, plus souvent quand l'équipe à domicile mène ou pousse.
+    this.nextChantT = (this.nextChantT ?? 30 + this.r() * 20) - dt;
+    if (this.nextChantT <= 0) {
+      const homeLeads = this.score[0] > this.score[1];
+      A.chant(homeLeads ? 9 : 6);
+      this.nextChantT = (homeLeads ? 28 : 45) + this.r() * 25;
+    }
   }
   addTime(h) { return this._add?.[h] ?? ((this._add = this._add || {})[h] = h === 1 ? 1 + Math.floor(this.r() * 2) : 2 + Math.floor(this.r() * 4)); }
 
@@ -1803,6 +1814,7 @@ export class Match {
   }
   shoot(p, power = 0.7, aimY = null) {
     const T = this.teams[p.team], d = T.dir, gx = HL * d;
+    const shotOrigin = { x: p.x, y: p.y, kind: this.setPiece === 'penalty' || this.setPiece === 'freekick' ? this.setPiece : null, distance: Math.hypot(gx - p.x, p.y) };
     const gk = this.teams[1 - p.team].ps[0];
     const movingSpeed = Math.hypot(p.vx, p.vy);
     let pressure = 99;
@@ -1838,7 +1850,7 @@ export class Match {
     // Enroulé plus lisible : la technique du joueur module la courbe du ballon.
     this.ball.spin = clamp(((ty - p.y) / Math.max(8, dist)) * (0.5 + power * 0.65) * skill * (0.65 + (p.a.tec || 50) / 220) * (freeKick ? freeKick.spinBoost : 1), -0.95, 0.95);
     this.ball.shotType = driven ? 'driven' : powerShot ? 'power' : 'placed';
-    this.ball.inFlightShot = { team: p.team, shooter: p, t: 0, type: this.ball.shotType };
+    this.ball.inFlightShot = { team: p.team, shooter: p, t: 0, type: this.ball.shotType, ...shotOrigin };
     this.stats.shots[p.team]++;
     if (this.r() < 0.5) this.say('chance', { t: T.short, p: p.name });
   }
@@ -1909,6 +1921,7 @@ export class Match {
     if (card < 0.04) this.sendOff(p, 'red');
     else if (card < 0.22 || inBox && card < 0.4) { p.yellow++; this.stats.yellows[p.team]++; this.addEvent('yellow', p); this.say('yellow', { p: p.name }); if (p.yellow >= 2) this.sendOff(p, 'red2'); }
     else this.say('foul', { p: p.name });
+    this.crowdReact(card < 0.22 || (inBox && card < 0.4) ? 'card' : 'foul', p.team);
     if (this.r() < 0.03) { victim.injured = true; this.addEvent('injury', victim); this.say('injury', { p: victim.name }, true); }
     if (inBox) { this.banner('PENALTY !', 1.8); this.say('penalty', { t: T.short }, true); this.setRestart('penalty', victim.team, d * (HL - 11), 0); }
     else this.setRestart('freekick', victim.team, clamp(victim.x, -HL + 1, HL - 1), clamp(victim.y, -HW + 1, HW - 1));
@@ -2052,7 +2065,7 @@ export class Match {
     // poteaux / barre
     for (const s of [-1, 1]) {
       if (Math.abs(Math.abs(b.x) - HL) < 0.25 && Math.sign(b.x) === s) {
-        for (const py of [-GOAL_W, GOAL_W]) if (Math.abs(b.y - py) < 0.2 && b.z < GOAL_H) { b.vx *= -0.6; b.vy += (this.r() - 0.5) * 6; this.say('post'); A.kick(0.9); }
+        for (const py of [-GOAL_W, GOAL_W]) if (Math.abs(b.y - py) < 0.2 && b.z < GOAL_H) { b.vx *= -0.6; b.vy += (this.r() - 0.5) * 6; this.say('post'); A.kick(0.9); this.crowdReact('post', b.lastTeam); }
         if (Math.abs(b.y) < GOAL_W && Math.abs(b.z - GOAL_H) < 0.15) { b.vz = -Math.abs(b.vz) * 0.5; b.vx *= -0.5; this.say('post'); }
       }
     }
@@ -2102,12 +2115,12 @@ export class Match {
                   b.last = gk; b.lastTeam = gk.team; b.inFlightShot = null;
                   gk.keeperPunchT = 0.42; gk.keeperCatchT = 0;
                 }
-                gk.rating += 0.4; gk.saveT = 0.75; gk.diveT = Math.max(gk.diveT || 0, 0.5); gk.diveDir = Math.sign(yc - gk.y) || 1; this.say('save', { p: gk.name }); this.addEvent('save', gk);
-                A.crowd(0.82); A.saveSound();
+                gk.rating += 0.4; gk.saveT = 0.75; gk.diveT = Math.max(gk.diveT || 0, 0.5); gk.diveDir = Math.sign(yc - gk.y) || 1; this.say(this.minute >= 85 ? ['save_late', 'save'] : 'save', { p: gk.name }); this.addEvent('save', gk);
+                A.crowd(0.82); A.saveSound(); this.crowdReact('save', gk.team);
                 return;
               }
             }
-          } else if (!shot.missSaid && tcross < 0.15) { shot.missSaid = true; this.say('miss'); }
+          } else if (!shot.missSaid && tcross < 0.15) { shot.missSaid = true; this.say('miss'); if (Math.abs(yc) < GOAL_W + 2.5 && zc < GOAL_H + 1.5) this.crowdReact('miss', shot.team); }
         }
       }
       if (shot && shot.t > 2.5) b.inFlightShot = null;
@@ -2209,7 +2222,7 @@ export class Match {
       b.vx = Math.cos(ang) * sp; b.vy = Math.sin(ang) * sp;
       b.vz = clamp(1.65 + (p.jumpT > 0 ? 0.55 : 0) - Math.abs(p.y) * 0.025, 0.35, 2.3);
       b.spin = clamp((ty - p.y) / 18 * (headingSkill / 100), -0.45, 0.45);
-      b.inFlightShot = { team: p.team, shooter: p, t: 0, type: 'header' };
+      b.inFlightShot = { team: p.team, shooter: p, t: 0, type: 'header', kind: 'header', distance: Math.hypot(HL * this.teams[p.team].dir - p.x, p.y) };
       this.stats.shots[p.team]++;
       p.rating += 0.06;
     } else {
@@ -2233,6 +2246,7 @@ export class Match {
   }
   goal(team) {
     const b = this.ball, scorer = b.last && b.last.team === team ? b.last : null;
+    const shotInfo = b.inFlightShot?.team === team ? b.inFlightShot : null;
     if (b.inFlightShot?.team === team) this.recordShotOnTarget(b.inFlightShot, b.y, b.z);
     this.score[team]++;
     const T = this.teams[team];
@@ -2245,8 +2259,11 @@ export class Match {
     for (const p of T.ps) if (!p.sentOff) { p.celebrateT = p === scorer ? 2.2 : 1.55; p.vx *= 0.35; p.vy *= 0.35; }
     this.goalCrowdT = 2.2; this.goalCrowdPulseT = 0;
     this.banner('BUT ! ' + T.short, 2.2);
-    A.netSound(); A.roar();
-    this.say('goal', { p: name, t: T.short }, true);
+    A.netSound(); this.crowdReact('goal', team);
+    this.say(getGoalCommentKeys({
+      own: !scorer, scorerGoals: scorer?.goals || 1, minute: this.minute, scoreAfter: this.score, team,
+      kind: shotInfo?.kind || null, distance: shotInfo?.distance || 12,
+    }), { p: name, t: T.short }, true);
     this.lastGoalTeam = team;
     if (this.o.onGoal) this.o.onGoal(team);
   }
@@ -2298,7 +2315,7 @@ export class Match {
       phase: 'walk', t: 1.6, kick: null, status: getShootoutStatus([[], []]),
     };
     this.state = 'shootout'; this.replay = null; this.passInfo = null; this.wall = null; this.setPiece = null;
-    this.banner('TIRS AU BUT', 2.2); A.whistle(true); A.crowd(0.6);
+    this.banner('TIRS AU BUT', 2.2); A.whistle(true); A.crowd(0.6); this.say('shootout', {}, true);
     this.prepareShootoutKick();
   }
   prepareShootoutKick() {
@@ -2402,12 +2419,15 @@ export class Match {
     so.kicks[k.team].push(scored);
     so.status = getShootoutStatus(so.kicks);
     so.phase = 'result'; so.t = so.status.decided ? 3.2 : 1.8;
-    if (scored) { this.banner('BUT !', 1.6); A.crowd(1); k.shooter.celebrateT = 1.4; }
-    else if (k.outcome.result === 'saved') { this.banner('ARRÊT !', 1.6); A.saveSound(); k.keeper.saveT = 0.75; }
-    else this.banner(k.outcome.result === 'post' ? 'SUR LE POTEAU !' : 'À CÔTÉ !', 1.6);
+    const vars = { p: k.shooter.name, k: k.keeper.name };
+    if (scored) { this.banner('BUT !', 1.6); A.crowd(1); k.shooter.celebrateT = 1.4; this.say('shootout_goal', vars); if (k.team === 0) A.applause(1.6); else A.groan(); }
+    else if (k.outcome.result === 'saved') { this.banner('ARRÊT !', 1.6); A.saveSound(); k.keeper.saveT = 0.75; this.say('shootout_save', vars, true); this.crowdReact('save', k.keeper.team); }
+    else { this.banner(k.outcome.result === 'post' ? 'SUR LE POTEAU !' : 'À CÔTÉ !', 1.6); this.say('shootout_miss', vars, true); this.crowdReact('miss', k.team); }
     if (so.status.decided) {
       const w = this.teams[so.status.winner];
       this.banner(`${w.short || w.name} QUALIFIÉ !`, 3);
+      this.say('shootout_win', { w: w.short || w.name }, true);
+      if (so.status.winner === 0) A.roar(); else A.groan();
       this.events.push({ type: 'shootout', min: 120, team: so.status.winner, name: `${so.status.goals[0]}-${so.status.goals[1]} t.a.b.` });
     }
   }

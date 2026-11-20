@@ -1,5 +1,14 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.23.0 — commentaire contextuel et ambiance de stade
+- Nouveau module public/js/commentary.js : commentaire en français, anglais (auparavant le texte français était lu par une voix anglaise) et arabe avec touches de derja tunisienne.
+- Buts commentés selon le contexte : triplé, doublé, but tardif décisif, égalisation, prise d'avantage, penalty, coup franc direct, tête, frappe lointaine, contre son camp, festival offensif.
+- Annonces désormais déclenchées : coup d'envoi (derby de la capitale Espérance – Club Africain, chocs entre grands clubs), reprise de la seconde période, corners, dernières minutes, temps forts de domination, arrêts décisifs en fin de match, résultat final (victoire ou nul), tirs au but phrase par phrase.
+- Plus de répétition immédiate de la même phrase.
+- Public synthétisé (aucun enregistrement) : « ooooh » sur les occasions manquées et les poteaux, applaudissements sur les arrêts, sifflets contre les fautes adverses et les cartons reçus, soupir sur un but encaissé, chants rythmés (claquements de mains et darbouka) plus fréquents quand l'équipe à domicile mène.
+- Niveaux sonores mesurés hors ligne dans Chrome : aucune saturation, sifflet de l'arbitre au-dessus des sifflets du public.
+- Tests ajoutés : tests/commentary.test.mjs.
+
 ## Version 3.22.0 — tirs au but jouables
 - Séance de tirs au but jouable à la fin d'un match à élimination directe à égalité : Coupe de Tunisie, Supercoupe, et matchs retour CAF à égalité au cumul.
 - Règles IFAB : tirage au sort, alternance stricte, 5 tirs chacun, fin anticipée dès qu'une équipe ne peut plus revenir, puis mort subite ; tous les joueurs tirent avant qu'un même joueur tire deux fois, gardien en dernier.

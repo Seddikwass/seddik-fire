@@ -1,5 +1,16 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.33.0 — joueurs refaits, gestes réalistes, stade vivant
+- Correction de fond : les volumes du corps (buste, bassin, tête, chaussures) étaient alignés sur les axes du stade et ne tournaient pas avec le joueur (buste « tonneau », chaussures de travers). Ils sont désormais orientés dans le repère du joueur et suivent l'inclinaison du buste.
+- Nouvelles proportions : poitrine, épaules et bassin distincts, short à mi-cuisse avec genoux visibles, chaussettes avec revers, chaussures avec semelle, tête ovale avec coiffure ajustée.
+- Squelette articulé cuisse/tibia et bras/avant-bras (cinématique directe) : foulée naturelle avec flexion du genou au retour de jambe, balancier des bras enfin opposé aux jambes (ils allaient du même côté).
+- Gestes distincts : passe intérieure (pied ouvert, geste court), frappe (jambe d'appui fléchie, jambe de frappe qui traverse haut, buste au-dessus du ballon, bras d'équilibre), lob (buste en arrière), armement visible quand on maintient le bouton de tir, jeu de tête (coudes levés, cambrure en l'air puis coup de buste), touche (ballon au-dessus de la tête puis lancer), célébration bras au ciel.
+- Numéros de maillot corrigés : ils étaient affichés à l'envers (tête en bas) ; petit numéro devant, grand numéro dans le dos, lisibles dans le bon sens.
+- Caméra TV : la caméra ne part plus dans les tribunes sur les ailes ; sur un corner, elle cadre la surface et les joueurs au lieu du drapeau de coin.
+- Stade : panneaux LED animés (balayage lumineux, clignotement après un but), banderoles rayées des supporters sous le balcon, drapeaux au bord des toits qui ondulent avec la foule.
+- Présentation d'avant-match : le bandeau de commentaire ne transparaît plus derrière.
+- Tests : cadrage des corners et des ailes.
+
 ## Version 3.32.0 — ralentis façon télévision
 - Chaque but est rejoué sous trois angles : caméra principale, caméra derrière le but, puis caméra rapprochée au bord du terrain qui accompagne le ballon.
 - Volet de transition animé aux couleurs du club qui a marqué (« FT 26 ») entre les angles, au début et à la fin du ralenti.

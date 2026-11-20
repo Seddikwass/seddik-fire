@@ -902,10 +902,16 @@ export function getCameraFollow(ball = {}, close = false) {
   const lead = close ? 0.035 : clamp(speed / 120, 0, 0.18);
   const threat = clamp((Math.abs(x) - 25) / 26, 0, 1) * clamp(1 - Math.abs(y) / 38, 0.3, 1);
   const zoom = close ? 1 : clamp(1 + threat * 0.055 + (ball.inFlightShot ? 0.035 : 0), 1, 1.09);
+  // Cadrage TV : la caméra panoramique ne suit pas le ballon jusqu'aux tribunes.
+  // Elle comprime la largeur et, près des buts, se recentre sur la surface.
+  const nearGoal = clamp((Math.abs(x) - 34) / 16, 0, 1);
+  let fx = x + vx * lead, fy = (y + vy * lead * 0.65) * (0.66 - nearGoal * 0.24);
+  if (ball.setPiece === 'corner') { fx = Math.sign(x || 1) * 43; fy = Math.sign(y || 1) * 7; }
+  else if (ball.setPiece === 'penalty' || ball.setPiece === 'goalkick') { fy *= 0.5; }
   return {
-    x: clamp(x + vx * lead, -HL + 6, HL - 6),
-    y: clamp(y + vy * lead * 0.65, -HW + 4, HW - 4),
-    zoom,
+    x: clamp(fx, -HL + 6, HL - 6),
+    y: clamp(fy, -HW + 10, HW - 10),
+    zoom: ball.setPiece === 'corner' ? 1.04 : zoom,
   };
 }
 
@@ -1776,7 +1782,7 @@ export class Match {
     if (Math.abs(lateralBallOffset) > 0.055) p.kickFootSide = Math.sign(lateralBallOffset);
     else if (!Number.isFinite(p.kickFootSide) || p.kickFootSide === 0) p.kickFootSide = p.i % 2 === 0 ? -1 : 1;
     b.owner = null; b.vx = vx; b.vy = vy; b.vz = vz; b.z = Math.max(b.z, 0.12); b.last = p; b.lastTeam = p.team;
-    p.kickT = 0.34; p.kickStyle = power >= 0.65 ? 'shot' : 'pass'; p.kickPower = power;
+    p.kickT = 0.34; p.kickStyle = this.setPiece === 'throw' ? 'throw' : vz > 3.2 ? 'lob' : power >= 0.65 ? 'shot' : 'pass'; p.kickPower = power;
     if (Math.hypot(vx, vy) > 0.1) p.heading = Math.atan2(vy, vx);
     p.face = Math.cos(p.heading || 0) >= 0 ? 1 : -1;
     p.kickDir = 1;
@@ -2640,7 +2646,8 @@ export class Match {
       x: bx, y: by,
       vx: frame ? frame.b[3] : this.ball.vx,
       vy: frame ? frame.b[4] : this.ball.vy,
-      inFlightShot: frame ? null : this.ball.inFlightShot
+      inFlightShot: frame ? null : this.ball.inFlightShot,
+      setPiece: frame ? null : this.setPiece
     }, !!frame);
     this.setCamera(follow.x, follow.y, !!frame, follow.zoom);
     if (this.renderer3d && !this.renderer3d.lost) {
@@ -3462,7 +3469,7 @@ export class Match {
       c.restore();
     }
     // bandeau commentaire
-    const celebrating = !isReplay && this.goalFxT > 0;
+    const celebrating = (!isReplay && this.goalFxT > 0) || this.matchIntroT > 0;
     if (this.tickerT > 0 && this.ticker && !celebrating) {
       c.font = `600 ${12.5 * d}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
       const text = this.ticker.length > 90 ? this.ticker.slice(0, 88) + '…' : this.ticker;

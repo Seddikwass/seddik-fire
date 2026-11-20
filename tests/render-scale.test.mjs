@@ -67,3 +67,10 @@ assert.ok(attackCamera.zoom <= 1.09, 'le zoom reste plafonné pour préserver la
 assert.equal(getCameraFollow({ x: 42, y: 1, vx: 16, vy: 0 }, true).zoom, 1, 'un replay conserve son cadrage dédié');
 
 console.log('CAMERA FOLLOW OK — anticipation du ballon et zoom d action progressif');
+{
+  const corner = getCameraFollow({ x: 52, y: 33.5, vx: 0, vy: 0, setPiece: 'corner' });
+  assert.ok(Math.abs(corner.y) < 12 && corner.x > 38, 'sur un corner, la caméra cadre la surface et non la tribune');
+  const wing = getCameraFollow({ x: 0, y: 32, vx: 0, vy: 0 });
+  assert.ok(wing.y < 24, 'sur l aile, la caméra garde le cœur du jeu dans le cadre');
+  console.log('CAMERA TV OK — corners et ailes cadrés');
+}

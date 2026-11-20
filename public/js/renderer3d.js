@@ -214,6 +214,12 @@ export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   const cam = match.cam || {};
   const plan = replay && match.replay?.segs ? match.replay : null;
   const angle = plan ? plan.segs[plan.seg]?.angle : null;
+  const segCam = plan ? plan.segs[plan.seg] : null;
+  if (segCam && Array.isArray(segCam.eye) && Array.isArray(segCam.target)) {
+    const safe = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
+    return { eye: segCam.eye, target: segCam.target, zoom: 1, aspect: safe, ballHeight: 0, focusLift: 0, portrait: 0, fovy: segCam.fovy || 0.5, angle: 'custom',
+      distance: Math.hypot(segCam.eye[0] - segCam.target[0], segCam.eye[1] - segCam.target[1], segCam.eye[2] - segCam.target[2]) };
+  }
   if (angle === 'goal' || angle === 'close') {
     const b = Array.isArray(replay.b) ? replay.b : [0, 0, 0];
     const bx = Number.isFinite(b[0]) ? b[0] : 0, by = Number.isFinite(b[1]) ? b[1] : 0, bz = clamp(Number.isFinite(b[2]) ? b[2] : 0, 0, 10);
@@ -329,6 +335,20 @@ function cylinder(out, a, b, radius, color, segments = 8, radiusTop = radius) {
     quad(out, aa, ba, bb, ab, color, norm3([r0[0] + r1[0], r0[1] + r1[1], r0[2] + r1[2]]));
   }
 }
+function orientedEllipsoid(out, c, fx, uy, sz, rf, ru, rs, color, seg = 8, rings = 6) {
+  const pt = (lat, lon) => {
+    const y = Math.cos(lat), rr = Math.sin(lat), a = rr * Math.cos(lon), b = rr * Math.sin(lon);
+    const p = [c[0] + fx[0] * a * rf + uy[0] * y * ru + sz[0] * b * rs, c[1] + fx[1] * a * rf + uy[1] * y * ru + sz[1] * b * rs, c[2] + fx[2] * a * rf + uy[2] * y * ru + sz[2] * b * rs];
+    const na = a / Math.max(rf, 0.001), ny = y / Math.max(ru, 0.001), nb = b / Math.max(rs, 0.001);
+    return { p, n: norm3([fx[0] * na + uy[0] * ny + sz[0] * nb, fx[1] * na + uy[1] * ny + sz[1] * nb, fx[2] * na + uy[2] * ny + sz[2] * nb]) };
+  };
+  for (let iy = 0; iy < rings; iy++) for (let ix = 0; ix < seg; ix++) {
+    const A = pt(Math.PI * iy / rings, Math.PI * 2 * ix / seg), B = pt(Math.PI * (iy + 1) / rings, Math.PI * 2 * ix / seg);
+    const C = pt(Math.PI * (iy + 1) / rings, Math.PI * 2 * (ix + 1) / seg), D = pt(Math.PI * iy / rings, Math.PI * 2 * (ix + 1) / seg);
+    pushVertex(out, A.p, A.n, color); pushVertex(out, B.p, B.n, color); pushVertex(out, C.p, C.n, color);
+    pushVertex(out, A.p, A.n, color); pushVertex(out, C.p, C.n, color); pushVertex(out, D.p, D.n, color);
+  }
+}
 function sphere(out, center, scale, color, seg = 8, rings = 6) {
   const [cx, cy, cz] = center, [rx, ry, rz] = scale;
   const point = (lat, lon) => {
@@ -359,7 +379,7 @@ const DIGIT_SEGMENTS = {
   '0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc',
   '5': 'afgcd', '6': 'afgecd', '7': 'abc', '8': 'abcdefg', '9': 'abfgcd',
 };
-function addKitNumber(out, point, forward, centerY, number, color, scale = 1) {
+function addKitNumber(out, point, forward, centerY, number, color, scale = 1, facing = 1) {
   const text = String(Math.max(0, Number(number) || 0)).slice(-2);
   const width = 0.095 * scale, height = 0.155 * scale, gap = 0.025 * scale;
   const total = text.length * width + (text.length - 1) * gap;
@@ -374,11 +394,12 @@ function addKitNumber(out, point, forward, centerY, number, color, scale = 1) {
   };
   for (let digitIndex = 0; digitIndex < text.length; digitIndex++) {
     const chars = DIGIT_SEGMENTS[text[digitIndex]] || DIGIT_SEGMENTS['0'];
-    const centerSide = -total/2 + width/2 + digitIndex*(width+gap);
+    // Vu de face, le côté gauche du lecteur est le côté +s du joueur ; dans le dos c'est l'inverse.
+    const centerSide = (-total/2 + width/2 + digitIndex*(width+gap)) * facing;
     for (const key of chars) {
       const [y0,s0,y1,s1] = segments[key];
-      tube(out, point(forward, centerY+y0, centerSide+s0),
-        point(forward, centerY+y1, centerSide+s1), 0.012*scale, color, 5);
+      tube(out, point(forward, centerY-y0, centerSide+s0*facing),
+        point(forward, centerY-y1, centerSide+s1*facing), 0.012*scale, color, 5);
     }
   }
 }
@@ -393,7 +414,7 @@ function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glov
   }
 }
 
-const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; void main(){ vec3 p=aPosition; if(aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
+const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; void main(){ vec3 p=aPosition; if(aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; if(aAnim<0.0){ float w=0.5+0.5*sin(uTime*2.4-(p.x+p.z)*0.45); vColor=aColor*(0.7+0.45*w)+vec3(0.3*uExcite*max(sin(uTime*15.0),0.0)); } gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
 const FS = 'precision mediump float; uniform vec3 uFog; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(48.0,170.0,vDepth)*0.55; color=mix(color,uFog,fog); gl_FragColor=vec4(color,1.0); }';
 
 function compile(gl, type, source) {
@@ -434,25 +455,20 @@ export function playerLook(player = {}, index = 0) {
   const hair = HAIR_COLORS[(h >>> 4) % (style === 'afro' ? 2 : HAIR_COLORS.length)];
   return { style, hair, beard: ((h >>> 9) % 4) === 0 };
 }
-function addHair(out, bodyPoint, f, bodyY, look, detail) {
+// Coiffure posée sur une tête de demi-axes 0.125 (avant) × 0.15 (haut) × 0.112 (côté).
+function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0) {
   const c = look.hair, y = bodyY + 0.62;
+  const E = (df, dy, rf, ru, rs, seg = 9, rings = 5) => ell(bodyPoint(f + df, y + dy, 0), rf, ru, rs, c, seg, rings, tilt);
   switch (look.style) {
     case 'bald': break;
-    case 'buzz': sphere(out, bodyPoint(f - 0.035, y + 0.045, 0), [0.15, 0.14, 0.145], c, 9, 5); break;
-    case 'afro': sphere(out, bodyPoint(f - 0.06, y + 0.13, 0), [0.2, 0.15, 0.2], c, 10, 6); break;
-    case 'long':
-      sphere(out, bodyPoint(f - 0.035, y + 0.07, 0), [0.158, 0.12, 0.155], c, 9, 5);
-      sphere(out, bodyPoint(f - 0.1, y - 0.05, 0), [0.07, 0.15, 0.14], c, 7, 4); break;
-    case 'quiff':
-      sphere(out, bodyPoint(f - 0.035, y + 0.06, 0), [0.152, 0.12, 0.148], c, 9, 5);
-      sphere(out, bodyPoint(f + 0.07, y + 0.16, 0), [0.09, 0.06, 0.1], c, 7, 4); break;
-    case 'fade':
-      sphere(out, bodyPoint(f - 0.035, y + 0.09, 0), [0.14, 0.1, 0.135], c, 9, 5); break;
-    default:
-      sphere(out, bodyPoint(f - 0.035, y + 0.065, 0), [0.155, 0.12, 0.152], c, 9, 5);
-      if (detail > 0) sphere(out, bodyPoint(f + 0.1, y + 0.13, 0), [0.05, 0.035, 0.11], c, 6, 3);
+    case 'buzz': E(-0.012, 0.03, 0.128, 0.13, 0.116); break;
+    case 'afro': E(-0.035, 0.085, 0.16, 0.13, 0.155, 10, 6); break;
+    case 'long': E(-0.025, 0.045, 0.132, 0.12, 0.12); E(-0.085, -0.05, 0.06, 0.12, 0.11, 7, 4); break;
+    case 'quiff': E(-0.025, 0.045, 0.128, 0.12, 0.118); E(0.045, 0.13, 0.075, 0.05, 0.08, 7, 4); break;
+    case 'fade': E(-0.02, 0.075, 0.12, 0.09, 0.105); break;
+    default: E(-0.025, 0.05, 0.13, 0.12, 0.118); if (detail > 0) E(0.07, 0.1, 0.04, 0.03, 0.09, 6, 3);
   }
-  if (look.beard && detail > 0) sphere(out, bodyPoint(f + 0.06, y - 0.08, 0), [0.1, 0.07, 0.115], c, 7, 4);
+  if (look.beard && detail > 0) E(0.055, -0.075, 0.07, 0.06, 0.095, 7, 4);
 }
 function spectator(out, x, y, z, facing, shirt, skin, scarf) {
   const sx = facing[0] === 0 ? 1 : 0, sz = facing[0] === 0 ? 0 : 1;
@@ -611,11 +627,12 @@ export class MatchRenderer3D {
       const bright = c => c.map(v => Math.min(1.35, v * 1.35 + 0.08));
       if (along === 'x') {
         box(g, [cx, 0.55, cz + facing * 0.12], [len, 0.95, 0.22], [0.04,0.05,0.06]);
-        for (let k = 0; k < 4; k++) { const x0 = cx - len / 2 + k * len / 4; rectV(g, x0 + 0.05, x0 + len / 4 - 0.05, 0.12, 0.98, cz - facing * 0.01, k % 2 ? bright(c2) : bright(c1), facing); }
+        currentAnim = -1; for (let k = 0; k < 4; k++) { const x0 = cx - len / 2 + k * len / 4; rectV(g, x0 + 0.05, x0 + len / 4 - 0.05, 0.12, 0.98, cz - facing * 0.01, k % 2 ? bright(c2) : bright(c1), facing); }
       } else {
         box(g, [cx + facing * 0.12, 0.55, cz], [0.22, 0.95, len], [0.04,0.05,0.06]);
-        for (let k = 0; k < 4; k++) { const z0 = cz - len / 2 + k * len / 4; rectVZ(g, cx - facing * 0.01, z0 + 0.05, z0 + len / 4 - 0.05, 0.12, 0.98, k % 2 ? bright(c2) : bright(c1), facing); }
+        currentAnim = -1; for (let k = 0; k < 4; k++) { const z0 = cz - len / 2 + k * len / 4; rectVZ(g, cx - facing * 0.01, z0 + 0.05, z0 + len / 4 - 0.05, 0.12, 0.98, k % 2 ? bright(c2) : bright(c1), facing); }
       }
+      currentAnim = 0;
     };
     for (let i = 0; i < 10; i++) { const x = -48 + i * 10.65; ledBoard(x, -35.6, 'x', 10.3, i, 1); ledBoard(x, 35.6, 'x', 10.3, i + 2, -1); }
     for (const s of [-1, 1]) for (let i = 0; i < 4; i++) ledBoard(s * 55.4, -25 + i * 16.7, 'z', 16, i + 1, -s);
@@ -660,6 +677,15 @@ export class MatchRenderer3D {
           const d = tier.d0 + tier.rows * 0.85 + 0.6, h = tier.h0 + tier.rows * 0.45 + 1.1;
           if (axis === 'x') { box(g, [0, h, sign * d], [len, 1.6, 0.5], [0.07,0.08,0.1]); rectV(g, -len / 2, len / 2, h - 0.5, h + 0.45, sign * (d - 0.26), home.map(v => v * 0.9), -sign); }
           else { box(g, [sign * d, h, 0], [0.5, 1.6, len], [0.07,0.08,0.1]); rectVZ(g, sign * (d - 0.26), -len / 2, len / 2, h - 0.5, h + 0.45, home.map(v => v * 0.9), -sign); }
+          // Banderoles de supporters suspendues au balcon (rayures aux couleurs du club).
+          if (t === 0) for (let k = 0; k < (axis === 'x' ? 5 : 2); k++) {
+            const a0 = -len / 2 + (k + 0.5) * len / (axis === 'x' ? 5 : 2) - 3.5, bw = 7, stripes = 6;
+            for (let q = 0; q < stripes; q++) {
+              const col = (q + k) % 2 ? homeTrim : home, s0 = a0 + q * bw / stripes, s1 = s0 + bw / stripes;
+              if (axis === 'x') rectV(g, s0, s1, h - 2.3, h - 0.55, sign * (d - 0.28), col, -sign);
+              else rectVZ(g, sign * (d - 0.28), s0, s1, h - 2.3, h - 0.55, col, -sign);
+            }
+          }
         }
       }
       // toit : auvent sombre avec rampe lumineuse en façade
@@ -670,6 +696,16 @@ export class MatchRenderer3D {
         box(g, [0, top, sign * (reach + depth / 2)], [len + 8, 0.6, depth], [0.06,0.07,0.09]);
         box(g, [0, top - 0.45, sign * reach], [len + 8, 0.35, 0.4], [1.25,1.18,0.95]);
         box(g, [0, top / 2, sign * (reach + depth)], [len + 8, top, 0.8], [0.09,0.1,0.13]);
+        // Drapeaux sur le bord du toit : la toile ondule avec le rythme de la foule.
+        for (let k = 0; k < 9; k++) {
+          const fx = -len / 2 + 6 + k * (len - 12) / 8, fz = sign * reach;
+          cylinder(g, [fx, top + 0.3, fz], [fx, top + 4.2, fz], 0.06, [0.75,0.77,0.8], 5);
+          currentAnim = 0.5 + rand() * 0.49;
+          const col = k % 2 ? homeTrim : home;
+          quad(g, [fx, top + 2.7, fz], [fx + 2.2, top + 2.8, fz], [fx + 2.2, top + 4.0, fz], [fx, top + 4.15, fz], col, [0, 0, -sign]);
+          quad(g, [fx + 2.2, top + 2.8, fz], [fx, top + 2.7, fz], [fx, top + 4.15, fz], [fx + 2.2, top + 4.0, fz], col, [0, 0, sign]);
+          currentAnim = 0;
+        }
       } else {
         box(g, [sign * (reach + depth / 2), top, 0], [depth, 0.6, len + 8], [0.06,0.07,0.09]);
         box(g, [sign * reach, top - 0.45, 0], [0.4, 0.35, len + 8], [1.25,1.18,0.95]);
@@ -751,7 +787,7 @@ export class MatchRenderer3D {
     const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=[0.86,0.88,0.83];
     const detail=this.quality.detail;
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
-    const build=0.9+physique*0.2;
+    const build=0.98+physique*0.18;
     const look=playerLook(player,index);
     const hair=look.hair;
     const phase=pose.phase, lift=pose.jump+pose.celebrateHop, slide=pose.slide, dive=pose.dive;
@@ -761,9 +797,26 @@ export class MatchRenderer3D {
     const keeperFlightLow=player.isGK?action.diveFlight*0.085+action.diveLanding*0.035:0;
     const bodyY=1.22-low*0.43+lift-action.stumble*0.065+keeperVertical-keeperFlightLow+action.headerDrive*0.035+pose.bodyBob+
       pose.idle*Math.sin((Number(match.clock)||0)*2.3+index*1.7)*0.009;
-    const kickLean=action.kickFollowThrough*(0.105+pose.kickPower*0.055)-action.kickWindup*0.045;
-    const lean=pose.lean+pose.accelerationLean+kickLean+action.headerDrive*0.19+
+    // ---- Intentions de geste : frappe, passe, lob, tête, touche, armement de la frappe ----
+    const style=pose.kickStyle;
+    const kicking=pose.kick>0.005&&style!=='header'&&style!=='throw';
+    const throwing=(pose.kick>0.005&&style==='throw');
+    const holdingThrow=match.setPiece==='throw'&&match.ball?.owner===player;
+    const kp=clamp(pose.kickProgress,0,1);
+    const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+    const windup=(!kicking&&player===match.selected&&match.input?.shooting&&match.ball?.owner===player)
+      ?clamp(Number(match.input.shootHold)||0,0,1):0;
+    // Enveloppe du geste : montée rapide après le contact puis retour au calme.
+    const strikeShape=kicking?Math.sin(clamp(kp/0.3,0,1)*Math.PI/2)*(1-smooth((kp-0.45)/0.55)):0;
+    const hp=clamp(pose.headerProgress,0,1);
+    const heading=pose.header>0.005;
+    const headSnap=heading?Math.sin(clamp(hp/0.22,0,1)*Math.PI/2)*(1-smooth((hp-0.25)/0.75)):0;
+    const airborne=clamp(pose.jump/0.3,0,1);
+    const archPre=!heading?-0.2*airborne:0;
+    const kickLean=kicking?strikeShape*(style==='lob'?-0.13:style==='shot'?0.11+pose.kickPower*0.05:0.05):-windup*0.07;
+    const lean=pose.lean+pose.accelerationLean+kickLean+headSnap*0.4+archPre+
       action.stumble*0.12+action.brace*0.035+(player.isGK?action.diveFlight*0.045:0);
+    const tilt=clamp(lean*1.15,-0.45,0.6);
     // Le gardien accompagne le plongeon avec une translation du buste et des bras
     // dans le sens réel du tir ; les joueurs de champ amortissent les contacts.
     const diveSide=Math.sign(-pose.diveDir*Math.cos(yaw))||1;
@@ -773,7 +826,15 @@ export class MatchRenderer3D {
       (pose.slideDir||1)*action.tackleReach*0.13+pose.turnLean*0.55;
     const bodyPoint=(f,h,side)=>point(f,h,side+bodySide);
     const legPoint=(f,h,side)=>point(f,h,side+bodySide*0.48);
-    // Ground shadow and captain/user selection halo.
+    // Ellipsoïdes orientés dans le repère du joueur (avant, haut, côté), avec inclinaison du buste.
+    const F=[cos,0,sin], S=[-sin,0,cos];
+    const ell=(c,rf,ru,rs,color,seg,rings,t=0,yawOff=0)=>{
+      const cy=Math.cos(yawOff),sy=Math.sin(yawOff);
+      const f0=[F[0]*cy+S[0]*sy,0,F[2]*cy+S[2]*sy], s0=[S[0]*cy-F[0]*sy,0,S[2]*cy-F[2]*sy];
+      const ct=Math.cos(t),st=Math.sin(t);
+      const f1=[f0[0]*ct,-st,f0[2]*ct], u1=[f0[0]*st,ct,f0[2]*st];
+      orientedEllipsoid(g,c,f1,u1,s0,rf,ru,rs,color,seg,rings);
+    };
     // Ombre douce : noyau sombre sous les pieds, halo plus clair étiré vers l'arrière (projecteurs).
     const up=[[0,1,0],[0,1,0],[0,1,0]];
     const shadowLayers=[[0.5,0.32,[0.09,0.2,0.1],0.042,0.1],[0.32,0.2,[0.05,0.11,0.06],0.046,0.04]];
@@ -785,100 +846,146 @@ export class MatchRenderer3D {
       ring(g,x,0.085,z,0.58,[0.94,0.78,0.24],22,0.045);
       sphere(g,[x,0.13,z],[0.08,0.025,0.08],[1,0.9,0.3],6,3);
     }
-    const hipY=0.83-low*0.28+lift-action.headerDrive*0.035;
-    const shoulderY=bodyY+0.22;
-    const torsoCenter=bodyPoint(lean*0.45,bodyY,0);
-    sphere(g,torsoCenter,[0.29*build,0.38-low*0.1,0.205*build],shirt,detail===2?12:9,detail===2?9:7);
-    sphere(g,bodyPoint(lean*0.35,hipY,0),[0.235*build,0.17,0.205*build],shorts,8,5);
-    // Col, bandes d'épaules, finitions de manches et coutures de short.
-    cylinder(g,bodyPoint(lean*0.4,bodyY+0.34,0),bodyPoint(lean*0.4,bodyY+0.39,0),0.105,trim,10,0.11);
-    tube(g,bodyPoint(lean*0.5,bodyY+0.22,-0.2),bodyPoint(lean*0.5,bodyY+0.22,0.2),0.018,trim,6);
-    for(const side of [-1,1]) {
-      tube(g,bodyPoint(lean*0.45,bodyY+0.27,side*0.22),bodyPoint(lean*0.15,bodyY+0.30,side*0.16),0.022,trim,5);
-      if(detail>0) tube(g,bodyPoint(lean*0.25,hipY-0.04,side*0.18),bodyPoint(lean*0.25,hipY-0.13,side*0.18),0.012,trim,5);
+    const hipY=0.83-low*0.28+lift;
+    const shoulderY=bodyY+0.23;
+    const torsoF=lean*0.45;
+    // ---- Buste : poitrine, épaules, bassin (vraies proportions, orientés avec le joueur) ----
+    const hi=detail===2;
+    ell(bodyPoint(torsoF,bodyY+0.03,0),0.135*build,0.3-low*0.08,0.2*build,shirt,hi?12:9,hi?8:6,tilt);
+    ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.2,0),0.13*build,0.12,0.25*build,shirt,hi?12:9,hi?6:5,tilt);
+    ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?10:8,5,tilt*0.5);
+    // Col et bande de taille.
+    cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.31,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.36,0),0.082,trim,hi?10:8,0.088);
+    if(detail>0){
+      ell(bodyPoint(lean*0.32,hipY+0.14,0),0.13*build,0.025,0.205*build,trim,10,3,tilt*0.5);
+      // Écusson sur le cœur.
+      ell(bodyPoint(torsoF+0.128*build+tilt*0.06,bodyY+0.17,-0.09),0.012,0.034,0.028,trim,6,4,tilt);
     }
-    // Insigne de poitrine et numéros lisibles sur le maillot.
-    sphere(g,bodyPoint(0.287,bodyY+0.19,-0.13),[0.026,0.04,0.026],trim,7,5);
-    addKitNumber(g,bodyPoint,0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
-    addKitNumber(g,bodyPoint,-0.292,bodyY+0.015,player.num,trim,detail===0?0.78:1);
-    const kickFootSide=pose.kickFootSide || ((index%2===0)?-1:1);
-    const stride=clamp(0.36+pose.sprint*0.13+action.driveBurst*0.055-action.brakeBrace*0.045,0.28,0.55);
-    const legSwing=Math.sin(phase)*stride*action.gait;
-    const legSwingB=Math.sin(phase+Math.PI)*stride*action.gait;
-    for(const [side,baseSwing] of [[-1,legSwing],[1,legSwingB]]){
-      const isKickLeg=side===kickFootSide;
-      const isTouchLeg=side===(pose.firstTouchDir>=0?kickFootSide:-kickFootSide);
-      const kickBack=isKickLeg?action.kickWindup*0.34:0;
-      const kickThrough=isKickLeg?action.kickFollowThrough*(0.58+pose.kickPower*0.38):0;
-      const touchSweep=isTouchLeg?action.firstTouchAbsorb*pose.firstTouchDir*0.23:0;
-      const tackleSweep=isKickLeg?action.tackleReach*0.55:0;
-      const sw=baseSwing+(isKickLeg?action.kickPulse*0.28:0)-kickBack+kickThrough+touchSweep+tackleSweep;
-      const hip=legPoint(0,hipY,side*0.13);
-      const kneeLift=Math.max(0,Math.sin(phase+(side>0?Math.PI:0)))*pose.sprint*0.13+
-        action.driveBurst*0.055+action.brakeBrace*0.016+
-        (isKickLeg?action.kickPulse*0.11:0)+(isTouchLeg?action.firstTouchAbsorb*0.045:0);
-      const knee=legPoint(sw*0.55,0.46-low*0.15+lift*0.55+kneeLift-action.tackleReach*(isKickLeg?0.13:0),side*0.145);
-      const toeLift=Math.max(0,Math.cos(phase+(side>0?Math.PI:0)))*(0.08+pose.sprint*0.04)+
-        (isKickLeg?action.kickFollowThrough*0.12:0)+(isTouchLeg?action.firstTouchAbsorb*0.065:0);
-      const ankle=legPoint(sw*0.9+kickThrough*0.18,0.13+toeLift+lift*0.25,side*(0.16+pose.idle*0.035));
-      cylinder(g,hip,knee,0.105,shorts,8,0.085);
-      sphere(g,knee,[0.09,0.09,0.09],shorts,6,4);
-      cylinder(g,knee,ankle,0.066*build,sock,detail===2?10:7,0.052);
-      if(detail>0) {
-        ring(g,ankle[0],ankle[1]+0.09,ankle[2],0.071,[0.78,0.08,0.1],12,0.012);
-        ring(g,ankle[0],ankle[1]+0.15,ankle[2],0.072,trim,12,0.01);
-      }
-      const boot=legPoint(sw*0.95+kickThrough*0.2+0.06,ankle[1],side*(0.16+pose.idle*0.035));
-      sphere(g,boot,[0.16,0.075,0.095],dark,detail===2?10:7,detail===2?6:4);
-      if(detail>0) {
-        sphere(g,[boot[0]+0.045,boot[1]-0.052,boot[2]-0.035],[0.025,0.018,0.022],trim,5,3);
-        sphere(g,[boot[0]+0.045,boot[1]-0.052,boot[2]+0.035],[0.025,0.018,0.022],trim,5,3);
-      }
-      // Semelle et petits crampons visibles dans les gros plans.
-    }
-    const armSwing=Math.sin(phase+Math.PI)*(0.29+pose.sprint*0.12)*
-      (1+action.driveBurst*0.16+action.brakeBrace*0.08)*action.gait;
+    // Numéros : petit devant, grand dans le dos (lisible quand le joueur s'éloigne).
+    addKitNumber(g,bodyPoint,torsoF+0.142*build+tilt*0.02,bodyY+0.05,player.num,trim,detail===0?0.6:0.72,-1);
+    addKitNumber(g,bodyPoint,torsoF-0.142*build-tilt*0.02,bodyY+0.06,player.num,trim,detail===0?1:1.25,1);
+    // ---- Jambes : squelette cuisse/tibia (cinématique directe) ----
+    const kickFootSide=pose.kickFootSide||((index%2===0)?-1:1);
+    const touchSide=pose.firstTouchDir>=0?kickFootSide:-kickFootSide;
+    const L1=0.37, L2=0.36;
+    const sp=clamp(pose.speed/8.5,0,1)*action.gait;
+    const reach=style==='shot'?1.0+pose.kickPower*0.3:style==='lob'?1.05:0.55+pose.kickPower*0.2;
+    const legAngles=[];
     for(const side of [-1,1]){
-      // Le bras côté ballon s'allonge ; l'autre reste en contrepoids pour stabiliser le plongeon.
-      const leadingKeeperArm=player.isGK && side===diveSide;
-      const keeperArmReach=player.isGK
-        ? (leadingKeeperArm?action.keeperLeadReach:action.keeperBalanceReach):0;
-      const keeperArmOffset=player.isGK
-        ? (leadingKeeperArm?diveSide*keeperArmReach*0.48:-diveSide*keeperArmReach*0.16):0;
-      const raise=pose.celebrate*0.82+action.headerDrive*0.22+(player.isGK?action.catchReach*0.24:0);
-      const headerOpen=action.headerBrace*0.16;
-      const tackleBalance=action.tackleReach*0.14;
-      const tackleArmSpread=action.tackleArmSpread*0.14;
-      const shoulder=bodyPoint(lean*0.35,shoulderY,side*0.25);
-      const elbow=bodyPoint(armSwing*side*0.75+pose.contactDir*action.brace*0.075,
-        bodyY-0.12+raise*0.4+(player.isGK?(leadingKeeperArm?action.diveFlight*0.13:action.diveLanding*0.035):0)+action.headerDrive*0.04,
-        side*(0.42+headerOpen+tackleBalance+tackleArmSpread)+keeperArmOffset*0.68);
-      const hand=bodyPoint(armSwing*side+pose.kickDir*action.kickFollowThrough*0.07+pose.firstTouchDir*action.firstTouchPulse*0.045,
-        bodyY-0.48+raise+(player.isGK?keeperArmReach*0.12+(leadingKeeperArm?action.diveFlight*0.15:action.diveLanding*0.025):0)+action.headerDrive*0.075+action.tackleArmSpread*0.035,
-        side*(0.48+headerOpen*1.5+tackleBalance*1.4+tackleArmSpread*1.4)+keeperArmOffset*1.25);
+      const ph=phase+(side>0?Math.PI:0);
+      // Foulée : la cuisse balance, le genou plie surtout pendant le retour de la jambe.
+      let th=Math.sin(ph)*(0.08+0.5*sp)*(1-pose.idle*0.85);
+      let fl=0.13+pose.idle*0.06+(0.12+1.05*sp)*Math.pow(Math.max(0,Math.cos(ph+0.35)),1.5)*(1-pose.idle);
+      const isKickLeg=side===kickFootSide;
+      if(kicking){
+        const w=1-smooth((kp-0.7)/0.3);
+        if(isKickLeg){
+          const th1=kp<0.3?0.15+(reach-0.15)*Math.sin(kp/0.3*Math.PI/2):reach*(1-smooth((kp-0.3)/0.7));
+          const fl1=kp<0.3?0.06:0.06+0.5*Math.sin(clamp((kp-0.3)/0.7,0,1)*Math.PI);
+          th=th+(th1-th)*w; fl=fl+(fl1-fl)*w;
+        } else { th=th+(-0.16-th)*w; fl=fl+(0.34-fl)*w; }
+      } else if(windup>0){
+        // Armement : talon remonté derrière, jambe d'appui fléchie.
+        if(isKickLeg){ th+=(-0.5-th)*windup; fl+=(1.5-fl)*windup; }
+        else { th+=(-0.05-th)*windup; fl+=(0.32-fl)*windup; }
+      }
+      if(side===touchSide){ th+=action.firstTouchAbsorb*0.32; fl+=action.firstTouchAbsorb*0.28; }
+      if(airborne>0){ const a=airborne*0.85; th+=((isKickLeg?0.4:-0.08)-th)*a; fl+=((isKickLeg?0.75:1.05)-fl)*a; }
+      if(pose.celebrateHop>0.02){ fl=Math.max(fl,0.5); }
+      legAngles.push([side,th,fl,isKickLeg]);
+    }
+    const sw=Math.sin(phase)*0.36*action.gait;
+    const wOld=clamp(1-action.gait+action.tackleReach*0.8,0,1);
+    for(const [side,th,fl,isKickLeg] of legAngles){
+      const kneeF=Math.sin(th)*L1, kneeU=hipY-Math.cos(th)*L1;
+      const shinA=th-fl;
+      let ankF=kneeF+Math.sin(shinA)*L2, ankU=kneeU-Math.cos(shinA)*L2;
+      let kF=kneeF,kU=kneeU;
+      const passIn=kicking&&isKickLeg&&style==='pass'?strikeShape:0;
+      let sideOff=side*(0.115+pose.idle*0.03)-side*passIn*0.07;
+      if(wOld>0){
+        // Tacles glissés, plongeons, chutes : on conserve les poses spécialisées.
+        const legSw=(side<0?sw:-sw)+(isKickLeg?action.tackleReach*0.55:0);
+        const oK=[legSw*0.55,0.46-low*0.15+lift*0.55-action.tackleReach*(isKickLeg?0.13:0)];
+        const oA=[legSw*0.9,0.13+lift*0.25];
+        kF+=(oK[0]-kF)*wOld; kU+=(oK[1]-kU)*wOld; ankF+=(oA[0]-ankF)*wOld; ankU+=(oA[1]-ankU)*wOld;
+      }
+      ankU=Math.max(ankU,0.075);
+      const hip=legPoint(lean*0.25,hipY,side*0.11);
+      const knee=legPoint(kF,kU,side*0.125);
+      const ankle=legPoint(ankF,ankU,sideOff+side*0.02);
+      const mid=[hip[0]+(knee[0]-hip[0])*0.55,hip[1]+(knee[1]-hip[1])*0.55,hip[2]+(knee[2]-hip[2])*0.55];
+      cylinder(g,hip,mid,0.112*build,shorts,8,0.104*build);
+      cylinder(g,mid,knee,0.088*build,skin,8,0.07);
+      sphere(g,knee,[0.068,0.072,0.068],skin,6,4);
+      const sockTop=[knee[0]+(ankle[0]-knee[0])*0.14,knee[1]+(ankle[1]-knee[1])*0.14,knee[2]+(ankle[2]-knee[2])*0.14];
+      cylinder(g,knee,sockTop,0.07,skin,7,0.07);
+      cylinder(g,sockTop,ankle,0.072*build,sock,hi?10:7,0.05);
+      if(detail>0) ring(g,sockTop[0],sockTop[1],sockTop[2],0.073,trim,10,0.012);
+      // Chaussure : orientée avec le pied, pointe tendue pendant la frappe, ouverte pour la passe intérieure.
+      const footA=(shinA+Math.PI/2)-(kicking&&isKickLeg?0.55*strikeShape:0)-(windup>0&&isKickLeg?0.6*windup:0);
+      const fd=[Math.sin(footA),-Math.cos(footA)];
+      const bootC=legPoint(ankF+fd[0]*0.075,Math.max(0.05,ankU+fd[1]*0.075-0.035),sideOff+side*0.02);
+      ell(bootC,0.13,0.055,0.06,dark,hi?10:7,hi?6:4,-(footA-Math.PI/2),passIn*side*0.9);
+      if(detail>0) ell([bootC[0],bootC[1]+0.02,bootC[2]],0.07,0.012,0.062,trim,6,3,-(footA-Math.PI/2),passIn*side*0.9);
+    }
+    // ---- Bras : épaule/coude/main (balancier opposé aux jambes, gestes d'équilibre) ----
+    const A1=0.27, A2=0.25;
+    const legTh={}; for(const [side,th] of legAngles) legTh[side]=th;
+    for(const side of [-1,1]){
+      let al=-(legTh[side]||0)*0.95*(0.6+sp*0.6), be=0.35+0.95*sp, ab=0.08+sp*0.04;
+      const isKickSide=side===kickFootSide;
+      // Frappe : bras côté frappe en arrière, bras opposé ouvert vers l'avant pour l'équilibre.
+      const kArm=Math.max(strikeShape,windup);
+      if(kArm>0){ const tA=isKickSide?-0.55:0.75, tB=isKickSide?0.45:0.55, tAb=isKickSide?0.4:0.55; al+=(tA-al)*kArm; be+=(tB-be)*kArm; ab+=(tAb-ab)*kArm; }
+      // Tête et saut : coudes levés à hauteur d'épaule pour se grandir.
+      const aer=Math.max(airborne,headSnap);
+      if(aer>0){ al+=(1.3-al)*aer; be+=(0.75-be)*aer; ab+=(0.6-ab)*aer; }
+      if(pose.celebrate>0){ const c=pose.celebrate; al+=(2.75-al)*c; be+=(0.15-be)*c; ab+=(0.35-ab)*c; }
+      if(throwing||holdingThrow){ const t=throwing?kp:0; const c=throwing?1-smooth((kp-0.6)/0.4):1; const ta=2.9-t*1.5; al+=(ta-al)*c; be+=(0.9-t*0.6-be)*c; ab+=(0.12-ab)*c; }
+      const leadingKeeperArm=player.isGK&&side===diveSide;
+      const keeperArmReach=player.isGK?(leadingKeeperArm?action.keeperLeadReach:action.keeperBalanceReach):0;
+      const keeperArmOffset=player.isGK?(leadingKeeperArm?diveSide*keeperArmReach*0.48:-diveSide*keeperArmReach*0.16):0;
+      const gkRaise=player.isGK?action.catchReach*0.24:0;
+      const gkU=player.isGK?(leadingKeeperArm?action.diveFlight*0.13:action.diveLanding*0.035):0;
+      const spread=action.headerBrace*0.16+action.tackleReach*0.14+action.tackleArmSpread*0.14;
+      const sF=torsoF+tilt*0.12, sU=shoulderY, sS=side*0.235*build;
+      const eF=sF+Math.sin(al)*A1*Math.cos(ab*0.6), eU=sU-Math.cos(al)*A1*Math.cos(ab*0.6), eS=sS+side*Math.sin(ab)*A1*0.55;
+      const fa=al+be;
+      let hF=eF+Math.sin(fa)*A2, hU=eU-Math.cos(fa)*A2, hS=eS+side*Math.sin(ab)*A2*0.4;
+      const shoulder=bodyPoint(sF,sU,sS);
+      const elbow=bodyPoint(eF+pose.contactDir*action.brace*0.075,eU+gkRaise*0.4+gkU,eS+side*spread+keeperArmOffset*0.68);
+      const hand=bodyPoint(hF,hU+gkRaise+(player.isGK?keeperArmReach*0.12+gkU*1.1:0),hS+side*spread*1.5+keeperArmOffset*1.25);
+      sphere(g,shoulder,[0.085,0.08,0.085],shirt,7,5);
       addArmPose(g,shoulder,elbow,hand,shirt,skin,trim,detail,!!player.isGK);
     }
-    // Neck, head, hair and subtle ear details.
-    cylinder(g,bodyPoint(lean*0.4,bodyY+0.34,0),bodyPoint(lean*0.4,bodyY+0.48,0),0.075,skin,8);
-    const head=bodyPoint(lean*0.43+action.headerDrive*0.19,bodyY+0.62+action.headerDrive*0.045,0);
-    sphere(g,head,[0.145,0.175,0.14],skin,detail===2?12:10,detail===2?9:7);
-    addHair(g,bodyPoint,lean*0.43,bodyY,look,detail);
-    sphere(g,bodyPoint(lean*0.43,bodyY+0.62,-0.142),[0.035,0.055,0.035],skin,6,4);
-    sphere(g,bodyPoint(lean*0.43,bodyY+0.62,0.142),[0.035,0.055,0.035],skin,6,4);
-    if(detail>0) {
-      // Yeux, pupilles, sourcils et nez orientés vers l'avant du joueur.
-      for(const side of [-1,1]) {
-         sphere(g,bodyPoint(0.128+pose.header*0.11,bodyY+0.665-pose.header*0.045,side*0.052),[0.022,0.018,0.017],[0.94,0.92,0.84],6,4);
-        sphere(g,bodyPoint(0.143+pose.header*0.11,bodyY+0.665-pose.header*0.045,side*0.052),[0.009,0.012,0.009],[0.035,0.03,0.025],5,3);
-        tube(g,bodyPoint(0.125+pose.header*0.11,bodyY+0.70-pose.header*0.045,side*0.08),bodyPoint(0.125+pose.header*0.11,bodyY+0.70-pose.header*0.045,side*0.026),0.012,hair,5);
+    // ---- Cou, tête, coiffure, visage ----
+    const neckF=torsoF+tilt*0.2;
+    cylinder(g,bodyPoint(neckF,bodyY+0.32,0),bodyPoint(neckF+headSnap*0.06,bodyY+0.46,0),0.062,skin,8);
+    const headF=neckF+headSnap*0.13+tilt*0.08, headY=bodyY+0.6-headSnap*0.03;
+    const headTilt=tilt*0.4+headSnap*0.5+archPre*0.6;
+    ell(bodyPoint(headF,headY,0),0.125,0.15,0.112,skin,hi?12:10,hi?9:7,headTilt);
+    ell(bodyPoint(headF-0.005,headY,-0.112),0.03,0.045,0.02,skin,6,4);
+    ell(bodyPoint(headF-0.005,headY,0.112),0.03,0.045,0.02,skin,6,4);
+    addHair(g,(f,h,s)=>bodyPoint(f,h,s),headF,headY-0.62,look,detail,ell,headTilt);
+    if(detail>0){
+      const ff=headF+0.105, fy=headY;
+      for(const side of [-1,1]){
+        ell(bodyPoint(ff,fy+0.035,side*0.045),0.012,0.016,0.019,[0.94,0.92,0.84],6,4,headTilt);
+        ell(bodyPoint(ff+0.01,fy+0.035,side*0.045),0.008,0.01,0.009,[0.035,0.03,0.025],5,3,headTilt);
+        tube(g,bodyPoint(ff,fy+0.07,side*0.075),bodyPoint(ff+0.004,fy+0.074,side*0.022),0.01,hair,5);
       }
-      sphere(g,bodyPoint(0.16+pose.header*0.11,bodyY+0.61-pose.header*0.045,0),[0.03,0.035,0.035],skin,6,4);
-      tube(g,bodyPoint(0.13+pose.header*0.11,bodyY+0.555-pose.header*0.045,-0.035),bodyPoint(0.13+pose.header*0.11,bodyY+0.555-pose.header*0.045,0.035),0.009,[0.22,0.08,0.065],5);
+      ell(bodyPoint(ff+0.025,fy-0.005,0),0.03,0.035,0.022,skin,6,4,headTilt);
+      tube(g,bodyPoint(ff+0.004,fy-0.06,-0.03),bodyPoint(ff+0.004,fy-0.06,0.03),0.008,[0.22,0.08,0.065],5);
     }
-    // Gardien : gants renforcés et bandes de poignets.
-    if(player.isGK) for(const side of [-1,1]) {
-      sphere(g,bodyPoint(0,bodyY-0.47,side*0.49),[0.09,0.07,0.07],trim,detail===2?9:6,4);
-      if(detail>0) tube(g,bodyPoint(0,bodyY-0.41,side*0.47),bodyPoint(0,bodyY-0.48,side*0.49),0.025,shirt,5);
+    // Gardien : gants renforcés.
+    if(player.isGK&&detail>0) for(const side of [-1,1]) {
+      // gants déjà dessinés par addArmPose (glove = true) ; brassard de poignet en couleur maillot
+    }
+    // Brassard de capitaine (numéro 1 de champ le plus capé : on prend le porteur du brassard s'il existe).
+    if(detail>0&&player.captain) {
+      const s=-1, a=bodyPoint(torsoF+0.02,shoulderY-0.1,s*0.3);
+      ring(g,a[0],a[1],a[2],0.08,[0.98,0.78,0.1],10,0.025);
     }
   }
   addCrowdMotion(g, match) {

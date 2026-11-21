@@ -1,0 +1,155 @@
+
+> football-tunisia-2026@3.51.0 test
+> node tests/multiplayer.test.mjs && node tests/caf.test.mjs && node tests/youth.test.mjs && node tests/transfers.test.mjs && node tests/dressing.test.mjs && node tests/tactics.test.mjs && node tests/commentary.test.mjs && node tests/shootout.test.mjs && node tests/match-flow.test.mjs && node tests/career.test.mjs && node tests/render-scale.test.mjs && node tests/audio-ambience.test.mjs && node tests/match-actions.test.mjs && node tests/match-motion.test.mjs && node tests/renderer3d.test.mjs && node tests/match-sim.mjs 6 && node tests/match-user.mjs 1 1 && node tests/storage-sync.mjs && node tests/api.test.mjs
+
+WS FRAMES OK — clé RFC 6455, trames courtes, moyennes et longues
+LOBBY OK — code, erreurs claires, club déjà pris, arrivée de l’adversaire, départ du match
+STATE OK — ~15 états/s, 22 joueurs, commandes reçues
+RECONNECT OK — l’IA prend le relais puis le joueur reprend sa place
+END OK — abandon, résultat envoyé aux deux joueurs, classement en ligne
+GROUP DRAW OK — chapeaux et protection par pays sur 50 tirages
+KNOCKOUT DRAW OK — quarts croisés, demies en tirage intégral
+TRAVEL OK — coût, fatigue et durée selon la distance, tous les pays couverts
+ROTATION OK — fatigués remplacés au même poste, gardien préservé
+CAF CAREER OK — tirages valides, déplacement à Alger, rotation appliquée
+SCOUTING OK — fourchettes, chances de détection, régions, niveau d’académie
+GROWTH OK — académie, âge, prêts selon le temps de jeu
+ACADEMY CAREER OK — détection, signature, promotion, prêts ; progression U19 3,5,5,8 ; prêt 63→64
+CLUB ROUNDS OK — contre-offres dégressives, insulte, patience
+AGENT OK — styles, conditions, contre-propositions, clause exigée
+CAREER MERCATO OK — contre-offres, agent, commission, clause, blocage, dossier suivi
+CLAUSE OK — levée par un club adverse seulement si elle est attractive et finançable
+PLAYING TIME OK — attentes par rôle, blessés épargnés, personnalités
+PROMISES OK — suivi sur 5 matchs, tenue et rompue
+TALKS OK — féliciter, exiger, demandes de départ, délai entre entretiens
+ROOM OK — crise, réunions d’équipe, effet du moral
+CAREER DRESSING OK — saison simulée : 0 demande(s), ambiance Bonne
+PRESETS OK — cinq consignes rapides
+FORMATION OK — affectation optimale, couloirs respectés, à dix aussi
+COACH ADVICE OK — priorités, postes, score et changements restants
+TACTIC EFFECT OK — hauteur moyenne -12.1 m en bloc bas, 0.1 m en attaque totale
+COMMENTARY LANGS OK — français, anglais et arabe complets
+GOAL CONTEXT OK — triplé, fin de match, égalisation, penalty, coup franc, tête, frappe lointaine
+COMMENTARY PICK OK — sans répétition, repli, derby de la capitale
+CROWD AUDIO OK — réactions du public sûres sans contexte audio
+SHOOTOUT RULES OK — alternance, fin anticipée et mort subite
+SHOOTOUT ORDER OK — tireurs classés, joueurs expulsés exclus
+PENALTY MODEL OK — réussite réaliste, arrêts, tirs à côté
+SHOOTOUT MATCH OK — séance jouée, cumul aller-retour et fin simulée
+JOCKEY OK — temporisation côté but à distance de tacle
+TACKLE COMMIT OK — engagement sélectif selon défense, dribble et distance
+INTERCEPTION OK — distance à la trajectoire, vitesse du ballon et lecture défensive
+CARRIER DECISIONS OK — conduite, pression, progression et tempo
+USER CONTROLS OK — changement de joueur côté but, centre contextuel et fautes
+SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroulée et saut du mur
+SKILL MOVE OK — crochet selon dribble, agilité et défense
+CEREMONY OK — 22 joueurs alignés à temps, sans chevauchement
+BREAK SHOW OK — sortie vers le tunnel et homme du match
+WEATHER OK — 4 ambiances, pluie = ballon plus rapide au sol
+CHANCE REPLAY OK — poteaux, arrêts et frappes frôlant le cadre rejoués quand le jeu s arrête
+TECHNIQUES OK — technique et jeu de tête par joueur, piqué, enroulé, volée, retourné
+commentaire ar_tv OK
+TEMPS ADDITIONNEL OK
+Saison 1 : {
+  season: 2026,
+  pos: 4,
+  div: 1,
+  met: false,
+  champion: 'est',
+  cup: 'est',
+  fin: 5626469,
+  trophies: [ 'Supercoupe de Tunisie' ]
+} matchs utilisateur : 39 trophées : [ 'Supercoupe de Tunisie' ]
+Ledger catégories : billetterie, transferts, staff, infrastructures, salaires, déplacements, primes, produits dérivés, droits TV, formation, sponsors
+Élection en cours : false confiance 41.150000000000006
+Saison 2 : {
+  season: 2027,
+  pos: 2,
+  div: 1,
+  met: true,
+  champion: 'ess',
+  cup: 'est',
+  fin: 15069445,
+  trophies: [ 'Coupe de la Confédération CAF' ]
+}
+Élection : true Test (vous) 56.6% | Fedi Dridi 28.7% | Jasser Mansouri 14.7%
+Taille sauvegarde : 807 Ko — durée 413 ms
+OK — tous les tests carrière passent
+REAL SQUADS OK — 5 effectifs réels, numéros uniques, option fictive, maillots réels
+RENDER SCALE OK — qualité et adaptation aux capacités matérielles
+REPLAY ROTATION OK — orientation déterministe et indépendante de l horloge système
+BROADCAST HUD OK — scoreboard adaptatif et statistiques sans chevauchement
+ADAPTIVE DETAIL OK — baisse des effets sous charge et restauration avec marge
+MATCH MATERIALS OK — gazon multi-densité et ombre du ballon en hauteur
+CAMERA FOLLOW OK — anticipation du ballon et zoom d action progressif
+CAMERA TV OK — corners et ailes cadrés
+AUDIO AMBIENCE OK — trois bandes, dynamique de foule et effets synthétisés
+ACTIONS OK — duel aérien prioritaire, tête offensive, poses de replay
+OFFSIDE OK — ligne défensive, ballon, changement de côté et exceptions sur corner
+MOTION OK — orientation, frappe rasante, anticipation gardien et passe
+MATCH FEEL OK — fatigue, conduite en couloir et duels orientés
+PASSING + SHOOTING OK — anticipation des interceptions, précision contextualisée et visée opposée au gardien
+GOALKEEPING OK — portée, placement, hauteur du tir et temps de réaction
+PRESSING SHAPE OK — pressing du porteur et couvertures intérieure/extérieure
+DEFENSIVE MATCHUPS OK — menaces uniques, priorisation et orientation miroir
+ATTACK SUPPORT OK — appels dans le jeu, largeur, appui court et hors-jeu
+KEEPER DIVE OK — extension latérale, prise basse/haute et réaction
+DEFENSIVE MARKING OK — couverture côté but, fermeture de ligne et repères bornés
+KEEPER POSITIONING OK — bissectrice, anticipation et profondeur adaptée
+BODY CONTACT OK — physique, équilibre, fatigue et impulsion différenciée
+TACKLE ANIMATION OK — extension progressive, récupération et valeurs bornées
+PRO MOVEMENT OK — freinage d arrivée, accélération vectorielle, cibles lissées et orientation projetée
+PLAYER PROJECTION OK — silhouette stable de profil et en profondeur
+BALL CONTROL OK — touches dynamiques, maîtrise technique et sprint
+RUNNING CADENCE OK — fréquence de foulée adaptée à l allure
+SHOT ACCOUNTING + KEEPER FOOTWORK OK — cadre réel, anti-double comptage et appuis contextualisés
+TEAMMATE SPACING OK — séparation douce, stabilité et positions superposées
+3D CAMERA OK — cadrage rapproché, suivi du ballon, zoom d action et adaptation mobile
+3D RENDERER CORE OK — profils mobiles, course, tacle, saut, plongeon et ralenti
+3D STADIUM GEOMETRY OK — pelouse, tribunes, filets, projecteurs et coordonnées valides
+3D PLAYER MODELS OK — numéros de maillot, visage, peau, chaussures et profil gardien
+3D ACTION PHASES OK — préparation/frappe/suivi, contrôle orienté, tête et tacle articulé
+3D ACTION POSES OK — première touche, contacts, frappes, prise et plongeon du gardien
+BALL SHADOW + CROWD OK — ombre aérienne progressive et supporters animés
+3D ACTION MESH OK — corps orienté sur première touche, tête, contact et plongeon gardien
+3D CROWD OK — 1843 / 8082 / 16591 supporters animés (bas / moyen / haut), 315816 sommets
+3D PLAYER LOOK OK — repos sans grand écart, 7 coiffures
+REPLAY TV OK — 3 angles (principale, derrière le but, rapprochée)
+OFFICIALS OK — arbitre en diagonale, juges de ligne sur la ligne de hors-jeu
+BALL PANELS OK — 12 pentagones, 19 % de surface sombre
+est 0-1 ca | tirs 2,8 cadrés 0,2 passes 64,59/92,86 poss 168,155 fautes 1,1 corners 0,0 min 94
+css 0-0 ess | tirs 6,3 cadrés 4,1 passes 51,62/77,79 poss 157,153 fautes 1,1 corners 1,0 min 92
+usm 0-1 asm | tirs 3,3 cadrés 1,1 passes 64,68/84,89 poss 152,168 fautes 1,0 corners 1,0 min 94
+ob 2-0 eshs | tirs 6,2 cadrés 4,0 passes 60,41/83,63 poss 176,134 fautes 1,0 corners 1,0 min 92
+est 2-1 ca | tirs 10,5 cadrés 4,3 passes 49,52/73,78 poss 164,156 fautes 1,1 corners 0,0 min 94
+css 0-1 ess | tirs 3,8 cadrés 1,3 passes 52,44/81,67 poss 161,159 fautes 1,0 corners 0,0 min 94
+MOYENNES / match : {
+  goals: '1.3',
+  shots: '9.8',
+  on: '4.0',
+  passes: '158.7',
+  ok: '111.0',
+  fouls: '1.5',
+  corners: '0.5',
+  restarts: { freekick: '2.0', throw: '4.2', goalkick: '4.5', corner: '0.5' },
+  tech: { curl: '1.7', bicycle: '0.2', volley: '0.5' },
+  skillTry: '46.0',
+  skillOk: '18.7'
+}
+PRÉCISION DES FRAPPES : 40.7% (24/59)
+match 1 : vous 0 - 0 IA · tirs 4,6 · passes 37,66/81,90 · poss 159,161
+Total difficulté 1 : 0-0 sur 1 matchs
+synchronisation après connexion OK
+health + en-têtes de sécurité OK {
+  ok: true,
+  version: '3.51.0',
+  commit: 'local',
+  store: 'file',
+  persistent: false,
+  accounts: true,
+  time: '2026-11-21T15:00:25.029Z'
+}
+conflit OK Conflit : une sauvegarde plus récente existe sur le serveur.
+sauvegarde après redémarrage OK (révision 2)
+export + restauration OK
+OK — tous les tests API passent

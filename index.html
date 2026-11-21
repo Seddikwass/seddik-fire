@@ -955,6 +955,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
     <div class="side">
       <div class="card">
         <span class="lbl">Carte</span>
+        <div id="mapHero" class="map-hero" aria-hidden="true"><img id="mapHeroImg" alt="" decoding="async"><span class="mh-grad"></span><span class="mh-tag" id="mapHeroTag"></span><span class="mh-txt"><b id="mapHeroName"></b><small id="mapHeroPoi"></small></span></div>
         <div id="maps" class="chips" role="radiogroup" aria-label="Carte"></div>
         <small id="mapD" class="czn"></small>
       </div>
@@ -1055,7 +1056,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.30</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.31</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -5892,16 +5893,19 @@ let MDcur=MODES.classic,ZTm=1;
 const GUNN=new Set(Object.values(WEAP).map(w=>w.n));
 const MELEEN=new Set(['Poings','Couteau de combat','Machette','Lance de guerre','Hache de guerre','Marteau de guerre','Glaive']),NADEN=new Set(Object.values(NADE).map(x=>x.n));
 function oneTeam(){const t=player.team;if(!t)return alive<=1;for(const e of ents)if(e.alive&&e.team!==t)return false;return true}
-function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();const M=MODES[id];{const md=$('#mapD'),mapId=M.map||stats.map,mm=MAPS[mapId]||MAPS.seddik;if(md)md.textContent=(id==='cup'?'Parcours · '+mm.n+' : ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.'}
+function setMode(id){if(!MODES[id])id='classic';stats.mode=id;saveStats();try{setTimeout(mapHero,0)}catch(_){}const M=MODES[id];{const md=$('#mapD'),mapId=M.map||stats.map,mm=MAPS[mapId]||MAPS.seddik;if(md)md.textContent=(id==='cup'?'Parcours · '+mm.n+' : ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.'}
   $('#modeD').textContent=M.d;const st=document.querySelector('.stamp');if(st)st.textContent=selMap().n+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant');
   const sm=document.querySelector('#play small');if(sm)sm.textContent=selMap().n+' · '+M.n.toLowerCase();
   document.querySelectorAll('#modes .chip').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.m===id)));cupGrid()}
 function buildModes(){const box=$('#modes');box.innerHTML=Object.keys(MODES).map(k=>'<button class="chip" role="radio" data-m="'+k+'" aria-checked="false">'+MODES[k].n+'</button>').join('');
   box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));setMode(stats.mode);buildMaps()}
-function buildMaps(){const box=$('#maps');const glyph={seddik:'🏝️',cote:'🌊',sahara:'🏜️',ville:'🌆',foret:'🌲',hautes:'⛰️',djerba:'🐚',capbon:'🌅',tunis:'🕌',sousse:'⛵',sfax:'🫒',bizerte:'⚓',tabarka:'🌳',gabes:'🌴',tozeur:'🌴',tataouine:'🏰',kef:'🏔️',gafsa:'⛏️',sidibou:'🚪',hammamet:'🏖️',mahdia:'🏛️',kerkennah:'🛶',galite:'🪨'};box.innerHTML=Object.keys(MAPS).map(k=>{const m=MAPS[k];return '<button class="map-card map-'+k+'" role="radio" data-k="'+k+'" aria-checked="false"><span class="map-art" aria-hidden="true"><i>'+ (glyph[k]||'🗺️') +'</i><em>ZONE DE COMBAT</em></span><span class="map-copy"><b>'+m.n+'</b><small>'+m.poi.slice(0,3).join(' · ')+'</small></span><span class="map-check" aria-hidden="true">✓</span></button>'}).join('');
+function buildMaps(){const box=$('#maps');const glyph={seddik:'🏝️',cote:'🌊',sahara:'🏜️',ville:'🌆',foret:'🌲',hautes:'⛰️',djerba:'🐚',capbon:'🌅',tunis:'🕌',sousse:'⛵',sfax:'🫒',bizerte:'⚓',tabarka:'🌳',gabes:'🌴',tozeur:'🌴',tataouine:'🏰',kef:'🏔️',gafsa:'⛏️',sidibou:'🚪',hammamet:'🏖️',mahdia:'🏛️',kerkennah:'🛶',galite:'🪨'};box.innerHTML=Object.keys(MAPS).map(k=>{const m=MAPS[k],bi=mapBiome(k);return '<button class="map-card map-'+k+'" role="radio" data-k="'+k+'" aria-checked="false"><span class="map-art" aria-hidden="true"><img src="thumbs/'+k+'.jpg" alt="" loading="lazy" decoding="async"><span class="map-tag">'+(glyph[k]||'🗺️')+' '+bi+'</span></span><span class="map-copy"><b>'+m.n+'</b><small>'+m.poi.slice(0,3).join(' · ')+'</small></span><span class="map-check" aria-hidden="true">✓</span></button>'}).join('');
   box.querySelectorAll('.map-card').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
 function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mode];return MAPS[(M&&M.map)||stats.map]}
-function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .map-card').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
+function mapBiome(k){const m=MAPS[k]||{},st=m.like||k;if(['djerba','kerkennah','galite','seddik'].includes(k))return'ÎLE';if(m.gen==='desert'||st==='sahara'||['gafsa'].includes(k))return'DÉSERT';if(m.gen==='city'||st==='ville')return'VILLE';if(m.gen==='forest'||st==='foret')return'FORÊT';if(st==='hautes')return'MONTAGNE';return'CÔTE'}
+function mapHero(){const k=stats.mode&&MODES[stats.mode]&&MODES[stats.mode].map||stats.map,m=MAPS[k];if(!m)return;const im=$('#mapHeroImg');if(!im)return;const src='thumbs/'+k+'.jpg';if(!im.src.endsWith(src)){im.classList.remove('on');im.onload=()=>im.classList.add('on');im.src=src;if(im.complete)im.classList.add('on')}
+  $('#mapHeroName').textContent=m.n;$('#mapHeroPoi').textContent=m.poi.length+' lieux · '+m.poi.slice(0,4).join(' · ');$('#mapHeroTag').textContent=mapBiome(k);const c=document.querySelector('#maps .map-card[data-k="'+k+'"]');if(c&&c.parentElement.scrollWidth>c.parentElement.clientWidth){const p=c.parentElement;p.scrollTo({left:c.offsetLeft-p.clientWidth/2+c.clientWidth/2,behavior:reduceMotion?'auto':'smooth'})}}
+function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];try{setTimeout(mapHero,0)}catch(_){}$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .map-card').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
 function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby'){const go=()=>{if(stats.map===id&&MAP.id!==id&&game.mode==='lobby'){genWorld(id);tunisify();markMap()}};Promise.race([gcLoad(id),new Promise(r=>setTimeout(r,1200))]).then(go,go)}markMap();const stamp=document.querySelector('.stamp');if(stamp){const M=MODES[stats.mode]||MODES.classic,active=selMap();stamp.textContent=active.n+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant')}}
 const MPOOL=[
   {id:'kills',n:k=>'Éliminez '+k+' adversaires',g:[2,3,5],xp:[120,180,280],key:'kills'},
@@ -6524,6 +6528,28 @@ body.p3 #game{filter:none}
 /* v2.10 — Seddik, le plus fort */
 #sfRosterGrid .sf-portrait.best{border-color:rgba(255,201,74,.85)!important;box-shadow:0 0 0 1px rgba(255,201,74,.4),0 6px 18px rgba(255,170,40,.25)}
 #sfRosterGrid .sf-portrait.best small{color:#ffd25e}
+
+/* v2.31 — sélection des cartes : vraie image de chaque carte, aperçu grand format, design 2026 */
+#lobby .map-hero{position:relative;display:block;width:100%;aspect-ratio:16/8;margin:10px 0 2px;border-radius:18px;overflow:hidden;background:#141a1f;box-shadow:0 14px 34px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
+#lobby .map-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.04);transition:opacity .45s ease,transform 9s ease-out}
+#lobby .map-hero img.on{opacity:1;transform:scale(1.13)}
+#lobby .map-hero .mh-grad{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,10,14,0) 35%,rgba(8,10,14,.85) 100%),linear-gradient(90deg,rgba(255,120,40,.18),rgba(0,0,0,0) 45%)}
+#lobby .map-hero .mh-tag{position:absolute;left:12px;top:12px;padding:5px 10px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:1.6px;color:#fff;background:rgba(10,14,18,.45);border:1px solid rgba(255,255,255,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#lobby .map-hero .mh-txt{position:absolute;left:14px;right:14px;bottom:11px;display:flex;flex-direction:column;gap:3px}
+#lobby .map-hero .mh-txt b{font:900 21px/1.1 "Saira Stencil One",Impact,sans-serif;letter-spacing:.6px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+#lobby .map-hero .mh-txt small{font-size:11px;color:rgba(255,240,220,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lobby #maps .map-card{min-height:0!important;aspect-ratio:16/11;border-radius:15px!important;border:1px solid rgba(255,255,255,.14)!important;background:#11171c!important;box-shadow:0 8px 20px rgba(0,0,0,.35)!important;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+#lobby #maps .map-art{position:absolute!important;inset:0;height:auto!important;padding:0!important;background:none!important;display:block!important}
+#lobby #maps .map-art img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease;filter:saturate(1.08)}
+#lobby #maps .map-art .map-tag{position:absolute;left:7px;top:7px;padding:3px 7px;border-radius:999px;font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#fff;background:rgba(8,12,16,.55);border:1px solid rgba(255,255,255,.22)}
+#lobby #maps .map-copy{position:absolute!important;left:0;right:0;bottom:0;padding:22px 9px 8px!important;background:linear-gradient(180deg,rgba(8,10,14,0),rgba(8,10,14,.92) 55%)!important}
+#lobby #maps .map-copy b{font-size:12.5px!important;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+#lobby #maps .map-card[aria-checked="true"]{border:2px solid #ffb35c!important;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(255,140,50,.25),0 12px 26px rgba(255,110,30,.28)!important}
+#lobby #maps .map-card[aria-checked="true"] .map-art img{transform:scale(1.07)}
+#lobby #maps .map-check{z-index:2}
+@media (hover:hover){#lobby #maps .map-card:hover .map-art img{transform:scale(1.07)}}
+@media (max-width:760px){#lobby #maps{grid-auto-columns:minmax(150px,44%)!important;padding:4px 2px 8px!important}}
+@media(prefers-reduced-motion:reduce){#lobby .map-hero img,#lobby .map-hero img.on{transition:opacity .2s;transform:none}}
 </style>
 </body>
 </html>

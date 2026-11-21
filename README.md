@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Nouveautés 2.31 — Une vraie image pour chaque carte
+- **Choix de la carte repensé** : chacune des 23 cartes a sa propre image, prise dans la carte elle-même (monuments, maisons, arbres, côte), au lieu du même fond pour toutes.
+- **Grand aperçu** de la carte choisie, avec un léger zoom animé, son nom, son type de terrain et ses lieux.
+- **Cartes à image pleine** avec badge de terrain (Île, Côte, Désert, Ville, Forêt, Montagne), contour lumineux sur la carte choisie et défilement automatique jusqu'à elle.
+
 ## Nouveautés 2.30 — Chaque carte a son architecture et ses monuments
 - **Maisons selon la région** : briques ocre à motifs à Tozeur, ghorfas en argile à Tataouine et Gabès, menzels blanchis à la chaux à Djerba et Kerkennah, blanc et bleu à Sidi Bou Saïd, tuiles rouges à Tabarka, Bizerte et au Kef, pierre grise au Kef, à Gafsa et à La Galite, immeubles coloniaux à Tunis.
 - **Monuments propres à chaque carte** : forts (fort génois de Tabarka, Borj El Kebir à Djerba et Mahdia, Kélibia, Hammamet, Bizerte), kasbahs (Le Kef, Gafsa, Tataouine), ribats de Sousse et Monastir, amphithéâtres (El Jem, Carthage), portes de médina (Skifa Kahla, Bab Bhar, Sfax), horloge de l'avenue Bourguiba, phares, mosquées en briques du Jérid, maison troglodyte de Matmata.

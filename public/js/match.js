@@ -1464,8 +1464,24 @@ export class Match {
       if (sp > 0.3 && Number.isFinite(p.heading)) p.face = Math.cos(p.heading) >= 0 ? 1 : -1;
       if (p.cd > 0) p.cd -= dt; if (p.tackleCd > 0) p.tackleCd -= dt;
       if (p.run > 0) p.run -= dt;
-      if (celebrate) { p.vx *= 0.9; p.vy *= 0.9; }
+      if (celebrate) {
+        const C = this.celeb;
+        if (C && !p.isGK) {
+          // Buteur : sprint vers le poteau de corner ; coéquipiers : le rejoignent et l'entourent ; adversaires : retour tête basse.
+          let tx, ty, spd;
+          if (p === C.scorer) { tx = C.cornerX; ty = C.cornerY; spd = 6.8; }
+          else if (p.team === C.team) { const k = this.teams[p.team].ps.indexOf(p) * 2.39; tx = C.scorer.x + Math.cos(k) * 1.4; ty = C.scorer.y + Math.sin(k) * 1.4; spd = C.t > 0.5 ? 6.2 : 2; }
+          else { tx = p.x - this.teams[p.team].dir * 3; ty = p.y * 0.9; spd = 1.3; }
+          const dx = tx - p.x, dy = ty - p.y, dd = Math.hypot(dx, dy);
+          const want = dd > 0.35 ? Math.min(spd, dd * 2.2) : 0;
+          p.vx += ((dd ? dx / dd * want : 0) - p.vx) * Math.min(1, dt * 5); p.vy += ((dd ? dy / dd * want : 0) - p.vy) * Math.min(1, dt * 5);
+          if (Math.hypot(p.vx, p.vy) > 0.4) p.heading = Math.atan2(p.vy, p.vx);
+          else if (p.team === C.team && p !== C.scorer) p.heading = Math.atan2(C.scorer.y - p.y, C.scorer.x - p.x);
+          if (p.team === C.team) p.celebrateT = Math.max(p.celebrateT, p === C.scorer ? (dd < 1.5 ? 1.2 : 0.75) : (dd < 2.2 ? 1.1 : 0));
+        } else { p.vx *= 0.9; p.vy *= 0.9; }
+      }
     }
+    if (celebrate && this.celeb) this.celeb.t += dt;
     this.updateAirDuels(dt);
     // Contacts corporels : séparation souple, puis transfert d'impulsion
     // lorsque deux adversaires se rencontrent à vitesse réelle.
@@ -2473,7 +2489,10 @@ export class Match {
     if (scorer) { scorer.goals++; scorer.rating += 1; if (scorer.lastPasser) { scorer.lastPasser.assists++; scorer.lastPasser.rating += 0.5; } }
     this.events.push({ type: 'goal', min: Math.max(1, Math.round(this.minute)), team, pid: scorer?.id, name, own: !scorer, assist: scorer?.lastPasser?.name });
     b.vx *= 0.2; b.vy *= 0.2; b.inFlightShot = null;
-    this.state = 'goal'; this.stateT = 2.2;
+    // Avec le rendu 3D : célébration plus longue (course vers le poteau de corner, accolades) ; simulation inchangée sans rendu.
+    const celebLen = this.renderer3d && !this.net ? 4.2 : 2.2;
+    this.state = 'goal'; this.stateT = celebLen;
+    this.celeb = scorer && celebLen > 2.2 ? { scorer, team, t: 0, cornerY: Math.sign(scorer.y || 1) * (HW - 2.2), cornerX: T.dir * (HL - 2.2) } : null;
     this.goalFxT = 2.2; this.goalFxTeam = team; this.goalFxScorer = scorer ? scorer.name : 'BUT CONTRE SON CAMP';
     for (const p of T.ps) if (!p.sentOff) { p.celebrateT = p === scorer ? 2.2 : 1.55; p.vx *= 0.35; p.vy *= 0.35; }
     this.goalCrowdT = 2.2; this.goalCrowdPulseT = 0;
@@ -3095,7 +3114,8 @@ export class Match {
     const brk = !!this.breakShow;
     if (host && brk !== !!this._breakClass) { this._breakClass = brk; host.classList.toggle('replaying', brk || ceremony || !!this.replay); }
     if (brk) frame = this.breakFrame();
-    const bx = frame ? frame.b[0] : this.ball.x, by = frame ? frame.b[1] : this.ball.y;
+    const cel = !frame && this.state === 'goal' && this.celeb ? this.celeb.scorer : null;
+    const bx = frame ? frame.b[0] : cel ? cel.x : this.ball.x, by = frame ? frame.b[1] : cel ? cel.y : this.ball.y;
     const follow = getCameraFollow({
       x: bx, y: by,
       vx: frame ? frame.b[3] : this.ball.vx,

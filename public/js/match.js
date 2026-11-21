@@ -1478,6 +1478,7 @@ export class Match {
           if (Math.hypot(p.vx, p.vy) > 0.4) p.heading = Math.atan2(p.vy, p.vx);
           else if (p.team === C.team && p !== C.scorer) p.heading = Math.atan2(C.scorer.y - p.y, C.scorer.x - p.x);
           if (p.team === C.team) p.celebrateT = Math.max(p.celebrateT, p === C.scorer ? (dd < 1.5 ? 1.2 : 0.75) : (dd < 2.2 ? 1.1 : 0));
+          if (p === C.scorer) p.celebFinal = dd < 3 ? Math.min(1, (p.celebFinal || 0) + dt * 3) : 0;
         } else { p.vx *= 0.9; p.vy *= 0.9; }
       }
     }
@@ -2492,6 +2493,7 @@ export class Match {
     // Avec le rendu 3D : célébration plus longue (course vers le poteau de corner, accolades) ; simulation inchangée sans rendu.
     const celebLen = this.renderer3d && !this.net ? 4.2 : 2.2;
     this.state = 'goal'; this.stateT = celebLen;
+    if (scorer) { scorer.celebKind = ((scorer.num || 0) + this.score[0] + this.score[1]) % 5; scorer.celebFinal = 0; }
     this.celeb = scorer && celebLen > 2.2 ? { scorer, team, t: 0, cornerY: Math.sign(scorer.y || 1) * (HW - 2.2), cornerX: T.dir * (HL - 2.2) } : null;
     this.goalFxT = 2.2; this.goalFxTeam = team; this.goalFxScorer = scorer ? scorer.name : 'BUT CONTRE SON CAMP';
     for (const p of T.ps) if (!p.sentOff) { p.celebrateT = p === scorer ? 2.2 : 1.55; p.vx *= 0.35; p.vy *= 0.35; }
@@ -2808,7 +2810,7 @@ export class Match {
     }
   }
   skipReplay() { if (!this.replay) return; const kind = this.replay.kind; this.replay = null; this.msgT = 0; this.tvWipeT = TV_WIPE; if (kind !== 'chance') this.afterGoal(); }
-  afterGoal() { this.replayBuf = []; this.setupKickoff(1 - this.lastGoalTeam); }
+  afterGoal() { for (const T of this.teams) for (const q of T.ps) q.celebFinal = 0; this.replayBuf = []; this.setupKickoff(1 - this.lastGoalTeam); }
 
   // ---------------- fin ----------------
   finish() {

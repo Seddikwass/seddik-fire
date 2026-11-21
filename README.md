@@ -1,5 +1,8 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.51.0
+- **Gestes de célébration variés** : arrivé au poteau de corner, le buteur termine par une glissade à genoux, l'« avion » bras écartés, le cœur avec les mains, le doigt pointé vers le ciel ou les deux bras levés (choisi selon le joueur et le score).
+
 ## Version 3.50.0
 - **Célébrations réalistes** : après un but, le buteur sprinte vers le poteau de corner, ses coéquipiers le rejoignent et l'entourent pour la célébration collective, les adversaires repartent tête basse ; la caméra suit le buteur (4,2 s avant le ralenti, simulation et matchs en ligne inchangés).
 

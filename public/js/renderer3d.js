@@ -1047,6 +1047,10 @@ export class MatchRenderer3D {
     }
     if(slideAmt>0){ pitch+=1.05*slideAmt; ph=0.8; ho-=0.4*slideAmt; fo+=0.3*slideAmt; }
     if(action.stumble>0){ pitch-=0.32*action.stumble; roll+=(pose.stumbleDir||1)*0.18*action.stumble; }
+    // Célébration finale du buteur : glissade à genoux (1), avion (2), cœur (3), doigt vers le ciel (4).
+    const celF=clamp(Number(player.celebFinal)||0,0,1), celK=player.celebKind|0;
+    if(celF>0&&celK===1){ pitch-=0.32*celF; ho-=0.4*celF; }
+    if(celF>0&&celK===2){ roll+=Math.sin(performance.now()/260)*0.22*celF; }
     if(skillOn){ roll+=pose.skillDir*0.3*Math.sin(skillP*Math.PI*2)*(1-skillP*0.4); }
     const kfs=pose.kickFootSide||((index%2===0)?-1:1);
     if(kicking&&style==='curl'){ roll+=-kfs*0.24*Math.sin(clamp(pose.kickProgress/0.3,0,1)*Math.PI/2)*(1-smooth((pose.kickProgress-0.45)/0.55)); }
@@ -1146,6 +1150,7 @@ export class MatchRenderer3D {
       if(side===touchSide){ th+=action.firstTouchAbsorb*0.32; fl+=action.firstTouchAbsorb*0.28; }
       if(airborne>0){ const a=airborne*0.85; th+=((isKickLeg?0.4:-0.08)-th)*a; fl+=((isKickLeg?0.75:1.05)-fl)*a; }
       if(pose.celebrateHop>0.02){ fl=Math.max(fl,0.5); }
+      if(celF>0&&celK===1){ th+=(0.12-th)*celF; fl+=(1.72-fl)*celF; }
       if(ready>0){ th+=((gkSet?0.42:0.32)-th)*ready; fl+=((gkSet?0.95:0.78)-fl)*ready; }
       if(slideAmt>0){ const lead=side===(pose.slideDir>=0?kickFootSide:-kickFootSide); th+=((lead?0.28:-0.3)-th)*slideAmt; fl+=((lead?0.05:1.55)-fl)*slideAmt; }
       if(rollAmt>0){ th+=((side>0?0.12:-0.12)-th)*rollAmt; fl+=(0.15-fl)*rollAmt; }
@@ -1213,6 +1218,7 @@ export class MatchRenderer3D {
       const aer=Math.max(airborne,headSnap);
       if(aer>0){ al+=(1.3-al)*aer; be+=(0.75-be)*aer; ab+=(0.6-ab)*aer; }
       if(pose.celebrate>0){ const c=pose.celebrate; al+=(2.75-al)*c; be+=(0.15-be)*c; ab+=(0.35-ab)*c; }
+      if(celF>0){ const c=celF; if(celK===2){ al+=(0.12-al)*c; be+=(0.05-be)*c; ab+=(1.5-ab)*c; } else if(celK===3){ al+=(1.05-al)*c; be+=(2.05-be)*c; ab+=(-0.3-ab)*c; } else if(celK===4){ if(side===1){ al+=(3.05-al)*c; be+=(0.02-be)*c; ab+=(0.1-ab)*c; } else { al+=(0.25-al)*c; be+=(0.35-be)*c; ab+=(0.12-ab)*c; } } else if(celK===1){ al+=(2.3-al)*c; be+=(0.15-be)*c; ab+=(0.95-ab)*c; } }
       if(throwing||holdingThrow){ const t=throwing?kp:0; const c=throwing?1-smooth((kp-0.6)/0.4):1; const ta=2.9-t*1.5; al+=(ta-al)*c; be+=(0.9-t*0.6-be)*c; ab+=(0.12-ab)*c; }
       if(ready>0){ al+=((gkSet?0.7:0.55)-al)*ready; be+=((gkSet?0.4:0.75)-be)*ready; ab+=((gkSet?0.85:0.5)-ab)*ready; }
       if(player.isGK&&pose.keeperCatch>0){ const c=pose.keeperCatch; al+=(1.25-al)*c; be+=(0.6-be)*c; ab+=(-0.05-ab)*c; }

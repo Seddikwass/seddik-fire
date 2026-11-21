@@ -1056,7 +1056,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.32</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.33</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1561,8 +1561,8 @@ const STY={
   cabin:{floor:'#9c7b52',wall:'#7a5a38',edge:'#4a3420',roof:'#6b4e30',roof2:'#55391f',door:'#3a2418'},
   hut:{floor:'#b99d6b',wall:'#8e6b3d',edge:'#5a4122',roof:'#b48d50',roof2:'#916d36',door:'#2c6db3'}
 };
-function coastX(y){if(MAP&&MAP.flip)y=WS-y;if(MAP&&MAP.st==='djerba')return 3020+170*Math.sin(y/440)+75*Math.sin(y/130+.7)+45*Math.sin(y/67);if(MAP&&MAP.st==='capbon')return 3090+110*Math.sin(y/280)+90*Math.sin(y/155+2)+22*Math.sin(y/49);return 3160+90*Math.sin(y/310)+45*Math.sin(y/97+1.3)+30*Math.sin(y/53)}
-function isWater(x,y){if(x>PIER.x&&x<PIER.x+PIER.w&&y>PIER.y&&y<PIER.y+PIER.h)return false;return x>coastX(y)||dd2(x,y,LAKE.x,LAKE.y)<LAKE.r*LAKE.r}
+function coastX(y){if(MAP&&MAP.cst){const k=MAP.cst;return k[0]+k[1]*Math.sin(y/k[2]+k[3])+k[4]*Math.sin(y/k[5])+k[6]*Math.exp(-(((y-k[7])/k[8])**2))+k[9]*(y-1800)/1800+28*Math.sin(y/53)+14*Math.sin(y/23+1)}if(MAP&&MAP.flip)y=WS-y;if(MAP&&MAP.st==='djerba')return 3020+170*Math.sin(y/440)+75*Math.sin(y/130+.7)+45*Math.sin(y/67);if(MAP&&MAP.st==='capbon')return 3090+110*Math.sin(y/280)+90*Math.sin(y/155+2)+22*Math.sin(y/49);return 3160+90*Math.sin(y/310)+45*Math.sin(y/97+1.3)+30*Math.sin(y/53)}
+function isWater(x,y){if(x>PIER.x&&x<PIER.x+PIER.w&&y>PIER.y&&y<PIER.y+PIER.h)return false;if(MAP&&(MAP.wat||MAP.isl)){if(MAP.isl)for(const e of MAP.isl)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return false;if(MAP.wat)for(const e of MAP.wat)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return true}return x>coastX(y)||dd2(x,y,LAKE.x,LAKE.y)<LAKE.r*LAKE.r}
 function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=clamp(t,0,1);return Math.hypot(px-ax-dx*t,py-ay-dy*t)}
 function nearRoad(x,y,m){for(const rd of roads)for(let i=0;i<rd.length-1;i++)if(segDist(x,y,rd[i][0],rd[i][1],rd[i+1][0],rd[i+1][1])<m)return true;return false}
 function inRect(x,y,r,p){return x>r.x-p&&x<r.x+r.w+p&&y>r.y-p&&y<r.y+r.h+p}
@@ -1674,20 +1674,155 @@ function layoutPost(){if(!LXF)return;const {pt,rectNC}=LXF;
   {const o=pt(PIER.x+PIER.w/2,1104);PIER.y=o[1]-PIER.h/2;PIER.x=coastX(PIER.y+PIER.h/2)-40}
   LXF=null}
 // port propre à chaque carte : plaisance, pêche, commerce, ou aucun (lacs et chotts de l'intérieur)
-const HARB={cote:'marina',sidibou:'marina',hammamet:'marina',sousse:'marina',seddik:'marina',djerba:'fishing',kerkennah:'fishing',mahdia:'fishing',galite:'fishing',capbon:'fishing',sfax:'cargo',bizerte:'cargo',gabes:'cargo',sahara:'none',tozeur:'none',tataouine:'none',hautes:'none',kef:'none',gafsa:'none'};
+const HARB={cote:'marina',sidibou:'marina',hammamet:'marina',sousse:'marina',seddik:'marina',djerba:'fishing',kerkennah:'fishing',mahdia:'fishing',galite:'fishing',capbon:'fishing',sfax:'cargo',bizerte:'cargo',gabes:'cargo',sahara:'fishing',tozeur:'none',tataouine:'none',hautes:'none',kef:'none',gafsa:'none'};
 function harbStyle(){return HARB[MAP.id]||'marina'}
 // cartes de l'intérieur : chott salé (Jérid, Sud) ou lac de barrage (Nord-Ouest) au lieu de la mer
-const INLAND={sahara:{sea:['#d9e6dc','#b6d3cf','#93b9b8'],shore:'#efe7d6'},tozeur:{sea:['#e3ddd6','#cbbfc4','#a99aa6'],shore:'#f3eee4'},tataouine:{sea:['#d6dccd','#b8c8bb','#97ada3'],shore:'#e8dcc4'},
- hautes:{sea:['#6f9e8c','#4c8076','#33615c'],shore:'#b9a98a'},kef:{sea:['#6a9a86','#467a6e','#2f5a55'],shore:'#b3a385'},gafsa:{sea:['#7aa7a0','#558a85','#3a6866'],shore:'#c4b394'}};
+const INLAND={tozeur:{sea:['#e3ddd6','#cbbfc4','#a99aa6'],shore:'#f3eee4'},tataouine:{sea:['#d6dccd','#b8c8bb','#97ada3'],shore:'#e8dcc4'},
+ kef:{sea:['#6a9a86','#467a6e','#2f5a55'],shore:'#b3a385'},gafsa:{sea:['#7aa7a0','#558a85','#3a6866'],shore:'#c4b394'}};
 for(const k in INLAND)if(MAPS[k])Object.assign(MAPS[k],INLAND[k]);
+/* ===== v2.33 — un plan propre à chaque carte, d'après la géographie et l'histoire réelles ===== */
+// cst : côte [x0, a1, l1, ph, a2, l2, cap, yCap, largeurCap, pente]  (x0 > 3600 : pas de mer à l'est)
+// wat : plans d'eau {x,y,rx,ry,col?} (lacs, lagunes, chotts, mer au nord, à l'ouest ou au sud)
+// isl : îlots {x,y,rx,ry} posés sur la mer ; lake : [x,y,r] ; p : position des 8 lieux (ordre de MAP.poi)
+// f : éléments [type, x, y, ...] ; x négatif = distance depuis la côte
+const SALT=['#efe9e2','#d9d0d0','#c4b7bb'],SALTSH='#f6f1e8';
+const PLANS={
+ cote:{cst:[2950,190,560,0,60,170,0,0,1,0],wat:[{x:2280,y:1560,rx:360,ry:220}],lake:[-900,-900,40],
+  p:[[1820,1560],[-260,620],[-300,1080],[-170,880],[-330,3020],[1480,900],[2250,300],[1950,3200]],
+  f:[['medina',1820,1560,760,600],['village',-300,620,7],['ruins',-330,1120],['village',-200,880,6,'blue'],['resort',-260,3000],['village',1480,900,8],['medina',2250,330,560,440],['medina',1950,3200,620,500],['port',2230],['base',700,2200],['olive',800,1200,600,500],['olive',900,2900,500,400],['farm',1300,2500],['light',-120,1300]]},
+ sahara:{cst:[3480,40,400,0,20,120,-420,3000,520,0],wat:[{x:1450,y:1760,rx:720,ry:320,col:SALT,sh:SALTSH},{x:2350,y:1650,rx:260,ry:140,col:SALT,sh:SALTSH}],lake:[-900,-900,40],
+  p:[[880,1150],[2150,2450],[380,1380],[2250,1150],[-300,2900],[2200,3330],[2450,2950],[1500,380]],
+  f:[['oasis',880,1150,330],['medina',900,950,420,340,'brick'],['oasis',2150,2450,280],['dunes',2100,2850,380],['oasis',380,1380,240],['oasis',2250,1150,230],['village',-320,2850,6],['port',2900],['ksar',2200,3330],['mountain',2550,2850,300],['mine',1500,380],['dunes',800,2950,620],['dunes',1300,2400,300],['base',2700,700]]},
+ hautes:{cst:[3720,0,1,0,0,1,0,0,1,0],wat:[{x:1600,y:-380,rx:2400,ry:560}],lake:[2150,2050,210],
+  p:[[2850,1500],[880,1550],[950,800],[1150,2950],[1850,2700],[1950,1750],[1850,850],[650,420]],
+  f:[['mountain',2950,1350,380],['ruins',2700,1600],['medina',880,1550,560,460,'stone'],['mountain',880,1550,560,1],['fields',950,800,700,420],['village',1150,2950,8],['mountain',650,3150,420],['ruins',1850,2700],['village',1950,1750,7],['fields',1850,850,600,380],['village',650,520,7],['base',2900,2700],['forest',400,900,300]]},
+ djerba:{cst:[3150,120,420,0,50,140,0,0,1,0],wat:[{x:-260,y:1700,rx:640,ry:1900},{x:1500,y:-420,rx:2100,ry:620},{x:1050,y:3900,rx:1500,ry:520}],lake:[-900,-900,40],
+  p:[[2400,560],[2550,1650],[880,2600],[470,1700],[2450,3050],[2780,360],[750,900],[3000,3330]],
+  f:[['medina',2400,600,600,440],['port',650],['village',2550,1650,9],['resort',-230,1500],['resort',-230,2100],['village',880,2600,8,'pottery'],['village',470,1700,6],['village',2450,3050,5],['village',750,900,5],['village',3000,3330,7],['olive',1400,2300,700,600],['oasis',1500,1200,260],['base',1600,1700]]},
+ capbon:{cst:[3000,90,380,0,40,130,0,0,1,-380],wat:[{x:-260,y:650,rx:820,ry:1050},{x:2780,y:1760,rx:110,ry:300,col:['#8fd0c8','#5fb4b0','#3a8f90']}],lake:[-900,-900,40],
+  p:[[2250,2700],[1950,3300],[-260,900],[2100,300],[2550,1750],[-250,1250],[900,700],[1050,2500]],
+  f:[['medina',2250,2700,560,440],['medina',1950,3300,520,400],['port',900],['village',-280,880,6],['mountain',2100,330,300],['village',2450,1750,7],['village',-260,1250,6],['fields',900,700,560,420],['fields',1050,2450,620,420],['orange',1500,1800,700,500],['orange',1300,1200,500,400],['base',1300,1500],['light',-120,260]]},
+ sousse:{cst:[2950,80,500,0,40,140,260,2300,260,0],wat:[],lake:[-900,-900,40],
+  p:[[2050,1500],[-220,520],[-180,2300],[-260,2000],[2300,900],[1150,1700],[1850,2900],[-260,3350]],
+  f:[['medina',2050,1500,640,520],['port',1500],['resort',-220,560],['village',-200,2300,5],['resort',-240,2000],['village',2300,900,8],['olive',1150,1700,700,700],['village',1850,2900,8],['village',-260,3330,6],['olive',800,2700,600,500],['base',800,700]]},
+ sfax:{cst:[2950,110,520,0,40,150,0,0,1,0],isl:[{x:3380,y:1050,rx:200,ry:420}],wat:[{x:2400,y:2650,rx:110,ry:90,col:SALT,sh:SALTSH},{x:2620,y:2650,rx:110,ry:90,col:SALT,sh:SALTSH},{x:2400,y:2860,rx:110,ry:90,col:SALT,sh:SALTSH},{x:2620,y:2860,rx:110,ry:90,col:SALT,sh:SALTSH}],lake:[-900,-900,40],
+  p:[[1980,1700],[-250,1950],[-260,700],[2500,2450],[1650,850],[2200,3300],[3380,1050],[900,1900]],
+  f:[['medina',1980,1700,680,560],['port',1950],['village',-260,700,6],['ruins',2150,2650],['village',1650,850,8],['village',2200,3300,7],['olive',900,1900,800,900],['olive',1300,700,600,500],['olive',1100,2900,700,500],['base',600,800]]},
+ bizerte:{cst:[3050,90,420,0,40,140,0,0,1,0],wat:[{x:1450,y:2150,rx:820,ry:520},{x:-200,y:600,rx:500,ry:900}],lake:[-900,-900,40],
+  p:[[2600,1400],[-200,850],[1050,2950],[2200,700],[-260,2350],[-250,2950],[500,3250],[2550,250]],
+  f:[['medina',2600,1400,520,420],['port',1450],['resort',-200,850],['base',1050,2950],['village',2200,700,8],['village',-280,2350,5],['village',-260,2950,6],['fields',500,3150,600,350],['light',-130,240],['olive',1700,500,500,300]]},
+ gabes:{cst:[2980,90,450,0,40,140,0,0,1,0],wat:[],lake:[-900,-900,40],
+  p:[[2050,1500],[-250,1300],[2500,1700],[1300,2950],[-300,650],[500,1250],[2300,2950],[-250,3300]],
+  f:[['oasis',2050,1500,380],['port',1300],['medina',2500,1750,420,340],['mountain',1300,2950,420],['village',1300,2900,5],['mine',2600,650],['oasis',500,1250,300],['village',2300,2950,7],['village',-260,3300,5],['base',900,2100]]},
+ tozeur:{cst:[3720,0,1,0,0,1,0,0,1,0],wat:[{x:1900,y:3020,rx:1450,ry:560,col:SALT,sh:SALTSH}],lake:[-900,-900,40],
+  p:[[1900,1600],[700,1900],[1900,2350],[1500,500],[800,350],[300,650],[2950,1900],[450,2450]],
+  f:[['oasis',1900,1650,420],['medina',2350,1350,460,360,'brick'],['oasis',700,1900,300],['oasis',2950,1900,260],['mountain',1500,500,330],['oasis',1550,620,140],['mountain',800,350,320],['mountain',300,650,260],['dunes',450,2450,320],['base',2950,800]]},
+ tataouine:{cst:[3720,0,1,0,0,1,0,0,1,0],wat:[],lake:[-900,-900,40],
+  p:[[2200,2500],[900,1800],[700,2700],[1500,1000],[2000,650],[1100,320],[1800,3300],[2900,900]],
+  f:[['ksar',2200,2500],['mountain',900,1800,380],['village',900,1800,5,'ksar'],['mountain',700,2700,330],['mountain',1500,1000,330],['village',1500,1000,5,'ksar'],['ksar',2000,650],['mountain',1100,320,300],['base',1800,3250],['village',2900,900,8,'ksar'],['dunes',3000,2500,500],['dunes',2700,1700,300]]},
+ kef:{cst:[3720,0,1,0,0,1,0,0,1,0],wat:[],lake:[1450,700,230],
+  p:[[1800,1500],[900,2700],[2900,700],[2500,350],[1450,450],[400,1200],[1650,2650],[600,3200]],
+  f:[['medina',1800,1500,560,460,'stone'],['mountain',1800,1500,620,1],['mesa',900,2700,360],['ruins',2900,700],['fields',2500,400,500,300],['village',400,1200,6],['mine',1650,2650],['village',600,3200,6],['forest',2600,1800,380],['base',2800,2400]]},
+ sidibou:{cst:[2980,70,420,0,30,140,180,1300,260,0],wat:[{x:800,y:3050,rx:820,ry:480}],lake:[-900,-900,40],
+  p:[[-280,1300],[-130,1480],[-200,2300],[2050,2400],[-260,600],[-250,200],[-200,1850],[2500,1900]],
+  f:[['village',-300,1250,9,'blue'],['ruins',-200,2300],['ruins',2050,2450],['village',-280,620,8],['resort',-230,220],['port',1850],['village',2500,1900,7],['olive',900,900,600,500],['base',900,1700]]},
+ hammamet:{cst:[2980,160,700,1,40,150,0,0,1,0],wat:[{x:-260,y:300,rx:900,ry:420,col:['#8fd0c8','#5fb4b0','#3a8f90']}],lake:[-900,-900,40],
+  p:[[-300,2300],[-260,3150],[-130,2150],[-280,1100],[2100,1200],[-260,600],[1500,2450],[-250,200]],
+  f:[['medina',-380,2300,460,380],['resort',-240,2850],['resort',-240,3300],['port',3150],['medina',-340,1100,520,420],['village',2100,1200,6,'pottery'],['village',-260,600,6],['village',1500,2450,6],['orange',900,1500,800,700],['orange',1000,2700,600,500],['base',700,3000]]},
+ mahdia:{cst:[2500,40,400,0,20,140,850,1500,270,0],wat:[],lake:[-900,-900,40],
+  p:[[2620,1500],[3220,1470],[3080,1560],[-200,1250],[2900,1500],[2300,700],[1300,2600],[-200,3200]],
+  f:[['medina',2930,1500,460,300],['port',1260],['ruins',3060,1580,'tomb'],['village',2300,700,9],['olive',1300,2600,700,600],['village',1250,2450,6],['ruins',-230,3250],['olive',900,1100,600,500],['base',800,700]]},
+ kerkennah:{cst:[3050,120,380,0,60,120,0,0,1,0],wat:[{x:-260,y:1800,rx:520,ry:2000},{x:1550,y:-380,rx:1900,ry:520},{x:1200,y:1850,rx:900,ry:110},{x:1600,y:3950,rx:1800,ry:520}],lake:[-900,-900,40],
+  p:[[2300,1500],[600,2700],[1800,2450],[-250,650],[1150,2350],[2550,280],[900,1300],[1600,900]],
+  f:[['village',2300,1500,9],['port',650],['village',600,2700,6],['village',1800,2450,7],['village',1150,2350,5],['village',2550,300,5],['ruins',900,1300],['village',1600,900,6],['salt',1800,3250],['salt',600,950],['palms',1300,2900,500],['palms',2000,800,400],['base',2700,2600]]},
+ galite:{cst:[3000,160,300,0,70,110,0,0,1,0],isl:[{x:3380,y:2950,rx:150,ry:170}],wat:[{x:-260,y:1800,rx:820,ry:2200},{x:1600,y:-340,rx:2000,ry:640},{x:1600,y:3960,rx:2000,ry:620}],lake:[-900,-900,40],
+  p:[[-240,1700],[2600,700],[800,1300],[-220,2750],[3380,2950],[1150,2550],[1700,1700],[1500,560]],
+  f:[['port',1700],['village',-260,1650,5],['light',2600,700],['mountain',800,1300,360],['mountain',1150,2550,300],['village',1700,1700,7,'stone'],['mountain',2200,2300,300],['forest',1800,1100,300],['base',2000,2700]]},
+ gafsa:{cst:[3720,0,1,0,0,1,0,0,1,0],wat:[],lake:[2600,1950,70],
+  p:[[2500,1800],[1350,1400],[500,700],[700,1700],[900,2400],[1500,2600],[3000,2500],[2900,700]],
+  f:[['medina',2450,1750,480,380,'stone'],['oasis',2700,2050,260],['mine',1350,1400],['mine',500,700],['mine',700,1750],['mine',900,2400],['mountain',1500,2650,360],['oasis',3000,2500,240],['village',2900,700,6],['base',2000,800]]}};
+function planInit(P){MAP.cst=P.cst;MAP.wat=P.wat||[];MAP.isl=P.isl||[];if(P.lake){LAKE.x=P.lake[0];LAKE.y=P.lake[1];LAKE.r=P.lake[2]}LX.mc=[-2000,-2000];LX.heli=[-2000,-2000];PIER.y=-900;PIER.x=-900}
+function waterAt(x,y){const M=MAP;if(M&&M.isl)for(const e of M.isl)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return false;if(M&&M.wat)for(const e of M.wat)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return true;return false}
+function buildPlan(P){planInit(P);PAVED.length=0;const grz=[];
+  const X=(x,y)=>x<0?coastX(y)+x:x;const rnd=(a,b)=>sr(a,b);
+  const okR=(x,y,w,h,m)=>{m=m??30;if(x<120||y<120||x+w>WS-120||y+h>WS-120)return false;for(const [px,py] of [[x,y],[x+w,y],[x,y+h],[x+w,y+h],[x+w/2,y+h/2]])if(isWater(px,py)||px>coastX(py)-40)return false;for(const b of blds)if(x<b.x+b.w+m&&x+w+m>b.x&&y<b.y+b.h+m&&y+h+m>b.y)return false;return true};
+  const house=(cx,cy,R,st,lab)=>{for(let t=0;t<30;t++){const w=rnd(120,170),h=rnd(100,130),a=SR()*TAU,d=SR()*R,x=cx+Math.cos(a)*d-w/2,y=cy+Math.sin(a)*d-h/2;if(okR(x,y,w,h,70)){return bld(x,y,w,h,st||'med',rdoors(),lab?{label:lab}:undefined)}}return null};
+  const spot=(x,y,w,h)=>{for(let t=0;t<40;t++){const a=t*2.4,d=t?60+t*28:0,nx=x+Math.cos(a)*d,ny=y+Math.sin(a)*d;if(okR(nx-w/2,ny-h/2,w,h,40))return[nx,ny]}return[x,y]};
+  const B={
+   medina(x,y,W,H,kind){x=X(x,y);[x,y]=spot(x,y,W+20,H+20);const x0=x-W/2,y0=y-H/2,T2=22,G=90,st=kind==='brick'||kind==='stone'?'ksar':'ksar';
+     PAVED.push({x:x0,y:y0,w:W,h:H,c:kind==='brick'?'#c99a68':kind==='stone'?'#b9ad94':'#cdb48b',g:36});
+     const seg=(sx,sy,len,hz)=>{const m=len/2;if(hz){wall(sx,sy,m-G/2,T2,st);wall(sx+m+G/2,sy,m-G/2,T2,st)}else{wall(sx,sy,T2,m-G/2,st);wall(sx,sy+m+G/2,T2,m-G/2,st)}};
+     seg(x0,y0,W,1);seg(x0,y0+H-T2,W,1);seg(x0,y0+T2,H-2*T2,0);seg(x0+W-T2,y0+T2,H-2*T2,0);
+     for(const [cx,cy] of [[x0,y0],[x0+W,y0],[x0,y0+H],[x0+W,y0+H]])addSolid({t:'c',x:cx,y:cy,r:24,k:'silo'});
+     const cw=190,ch=165,nx=Math.max(2,Math.floor((W-60)/cw)),ny=Math.max(2,Math.floor((H-60)/ch)),ox=x0+(W-nx*cw)/2,oy=y0+(H-ny*ch)/2;
+     for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){const cxm=ox+i*cw+cw/2,cym=oy+j*ch+ch/2;if(Math.abs(cxm-x)<cw*.6&&Math.abs(cym-y)<ch*.6)continue;if(Math.abs(cxm-x)<50||Math.abs(cym-y)<50)continue;const w=rnd(118,142),h=rnd(100,118);bld(cxm-w/2+rnd(-8,8),cym-h/2+rnd(-6,6),w,h,'med',rdoors())}
+     addSolid({t:'c',x,y,r:26,k:'fount'});if(LX.mc[0]<0)LX.mc=[x,y]},
+   village(x,y,n,kind){x=X(x,y);const lab=kind==='pottery'?'POTERIE':'';for(let i=0;i<n;i++){const b=house(x,y,150+n*28,kind==='ksar'?'hut':'med',i===0?lab:'');if(b&&kind==='blue')b.blueV=1}if(kind==='pottery')for(let i=0;i<10;i++){const a=SR()*TAU,d=rnd(60,200);addSolid({t:'c',x:x+Math.cos(a)*d,y:y+Math.sin(a)*d,r:9,k:'fount'})}
+     roads.push([[x-260,y+rnd(-40,40)],[x,y],[x+260,y+rnd(-40,40)]])},
+   resort(x,y){for(let i=0;i<3;i++){const yy=y-220+i*230,cx=X(x,yy)-130,w=rnd(220,260),h=rnd(120,150);if(okR(cx-w/2,yy-h/2,w,h,40))bld(cx-w/2,yy-h/2,w,h,'med',[['w',.5],['e',.5]],{label:'HÔTEL'})}
+     for(let i=0;i<8;i++){const yy=y-300+i*85;addTree(X(-150,yy)-rnd(0,60),yy,rnd(30,38),'palm')}},
+   port(y){if(PIER.y<0){PIER.y=y-24;PIER.x=coastX(y)-40}const HS=harbStyle(),cx=coastX(y)-420;bld(cx,y-250,300,190,'port',[['w',.5],['e',.5]],{label:HS==='fishing'?'PÊCHE':HS==='cargo'?'DOCK':'MARINA'});bld(cx,y+70,300,190,'port',[['w',.5],['e',.5]]);
+     PAVED.push({x:cx-60,y:y-320,w:coastX(y)-cx+40,h:640,c:'#a6a196',g:70});
+     if(HS==='cargo'){const CC=['#9b4a2c','#2f5f8a','#3f6e45','#c49a2c','#7a2f3a'];for(let yy=y-300;yy<y+300;yy+=64)for(const xx of[coastX(yy)-250,coastX(yy)-130]){if(SR()<.35)continue;if(xx+118+30>coastX(yy))continue;addSolid({t:'r',x:xx,y:yy,w:118,h:46,k:'cont',col:spick(CC)})}}
+     for(let i=0;i<3;i++)crate(cx+rnd(0,250),y+rnd(-30,20))},
+   base(x,y){x=X(x,y);{const q=spot(x+10,y-30,800,600);x=q[0]-10;y=q[1]+30}bld(x-320,y-260,300,220,'mil',[['s',.5],['n',.5]],{mil:1,label:'H-1'});bld(x+20,y-260,300,220,'mil',[['s',.5],['w',.5]],{mil:1,label:'H-2'});
+     bld(x-320,y+80,190,120,'mil',[['n',.5]],{mil:1});bld(x-80,y+80,190,120,'mil',[['n',.5],['e',.5]],{mil:1});
+     PAVED.push({x:x-380,y:y-320,w:780,h:580,c:'#a9a28b',g:80});LX.heli=[x+250,y+150];occ.push({x:x+250,y:y+150,r:84});
+     for(const r of[[x-120,y+20,90,22],[x+140,y+30,22,90]])addSolid({t:'r',x:r[0],y:r[1],w:r[2],h:r[3],k:'bags'});for(let i=0;i<4;i++)crate(x-300+i*120,y-10,true)},
+   ksar(x,y){x=X(x,y);[x,y]=spot(x,y,480,420);const bx=x-230,by=y-200,dx=bx-520,dy=by-2450;bld(bx,by,460,400,'ksar',[['s',.5],['w',.3],['e',.7]],{inner:[[670,2464,14,156],[670,2680,14,156],[820,2464,14,66],[820,2590,14,246],[534,2600,38,14],[632,2600,38,14],[834,2700,36,14],[930,2700,36,14]].map(r=>[r[0]+dx,r[1]+dy,r[2],r[3]])})},
+   oasis(x,y,r){x=X(x,y);grz.push([x,y,r*1.1]);const n=Math.round(r*r/2600);for(let i=0;i<n;i++){const a=SR()*TAU,d=Math.sqrt(SR())*r,px=x+Math.cos(a)*d,py=y+Math.sin(a)*d;if(free(px,py,26))addTree(px,py,rnd(28,36),'palm')}
+     for(let i=0;i<2;i++){const fx=x+rnd(-r*.6,r*.3),fy=y+rnd(-r*.6,r*.3);if(okR(fx,fy,160,110,20))fields.push({x:fx,y:fy,w:160,h:110})}house(x,y,r*.7,'hut');house(x,y,r*.7,'hut')},
+   palms(x,y,r){B.oasis(x,y,r)},
+   olive(x,y,w,h){x=X(x,y);grz.push([x+w/2,y+h/2,Math.max(w,h)*.5]);for(let i=x;i<x+w;i+=92)for(let j=y;j<y+h;j+=92){if(SR()<.12)continue;const px=i+rnd(-8,8),py=j+rnd(-8,8);if(free(px,py,24))addTree(px,py,rnd(24,30),'olive')}},
+   orange(x,y,w,h){B.olive(x,y,w,h)},
+   forest(x,y,r){grz.push([x,y,r]);for(let i=0;i<r*r/3000;i++){const a=SR()*TAU,d=Math.sqrt(SR())*r,px=x+Math.cos(a)*d,py=y+Math.sin(a)*d;if(free(px,py,30))addTree(px,py,rnd(32,44),'pine')}},
+   fields(x,y,w,h){x=X(x,y);const n=Math.max(1,Math.round(w/260));for(let i=0;i<n;i++){const fw=w/n-30,fx=x+i*(w/n);if(okR(fx,y,fw,h,10))fields.push({x:fx,y,w:fw,h:h-rnd(0,80)})}house(x+w/2,y+h+120,120,'farm')},
+   farm(x,y){x=X(x,y);{const q=spot(x+150,y,640,420);x=q[0]-150;y=q[1]}bld(x-130,y-90,260,180,'farm',[['s',.3],['e',.6]],{label:'FERME'});addSolid({t:'c',x:x-170,y:y+130,r:40,k:'silo'});addSolid({t:'c',x:x-75,y:y+150,r:34,k:'silo'});fields.push({x:x+170,y:y-120,w:300,h:240})},
+   mountain(x,y,r,ring){x=X(x,y);const n=ring?26:Math.round(r/14);for(let i=0;i<n;i++){const a=ring?i/n*TAU:SR()*TAU,d=ring?r*rnd(.92,1.08):Math.sqrt(SR())*r,px=x+Math.cos(a)*d,py=y+Math.sin(a)*d,rr=ring?rnd(26,44):rnd(22,62);if(free(px,py,rr))addRock(px,py,rr)}
+     if(!ring)for(let i=0;i<n/3;i++){const a=SR()*TAU,d=Math.sqrt(SR())*r,px=x+Math.cos(a)*d,py=y+Math.sin(a)*d;if(free(px,py,30))addTree(px,py,rnd(28,36),'pine')}},
+   mesa(x,y,r){B.mountain(x,y,r,1);B.mountain(x,y,r*.55,0)},
+   ruins(x,y,kind){x=X(x,y);PAVED.push({x:x-170,y:y-130,w:340,h:260,c:kind==='tomb'?'#e9e4d8':'#cbbd9c',g:30});for(let i=0;i<5;i++)for(let j=0;j<2;j++){const px=x-130+i*65,py=y-70+j*140;if(SR()<.25)continue;addRock(px,py,kind==='tomb'?9:rnd(10,15))}occ.push({x,y,r:150})},
+   mine(x,y){x=X(x,y);[x,y]=spot(x,y,540,420);PAVED.push({x:x-260,y:y-200,w:520,h:400,c:'#8f8c85',g:60});bld(x-240,y-180,260,170,'port',[['s',.5],['e',.5]],{label:'PHOSPHATE'});bld(x+40,y-180,180,130,'port',[['s',.5]],{label:'CPG'});
+     for(let i=0;i<5;i++)addRock(x-200+i*95,y+110,rnd(28,40));addSolid({t:'c',x:x+160,y:y+60,r:40,k:'silo'})},
+   dunes(x,y,r){occ.push({x,y,r})},
+   salt(x,y){for(let i=0;i<3;i++)for(let j=0;j<2;j++)MAP.wat.push({x:x-220+i*220,y:y-100+j*200,rx:95,ry:80,col:SALT,sh:SALTSH})},
+   light(x,y){x=X(x,y);bld(x-60,y-60,120,120,'med',[['w',.5],['s',.5]],{lh:1})}};
+  // ports d'abord (la jetée), puis le reste
+  for(const f of P.f)if(f[0]==='port')B.port(f[1]);
+  for(const f of P.f)if(f[0]!=='port'&&B[f[0]])try{B[f[0]](...f.slice(1))}catch(e){console.warn('plan',f[0],e)}
+  // lieux
+  P.p.forEach((q,i)=>{if(POIS[i]){POIS[i].x=X(q[0],q[1]);POIS[i].y=q[1]}});
+  // routes : arbre couvrant entre les lieux (sans traverser l'eau)
+  const pts=POIS.map(p=>[p.x,p.y]),wet=(a,b)=>{for(let k=1;k<12;k++){const x=a[0]+(b[0]-a[0])*k/12,y=a[1]+(b[1]-a[1])*k/12;if(isWater(x,y)||x>coastX(y)-60)return true}return false},inT=[0],E=[];
+  while(inT.length<pts.length){let best=null;for(const i of inT)for(let j=0;j<pts.length;j++){if(inT.includes(j))continue;const d=Math.hypot(pts[i][0]-pts[j][0],pts[i][1]-pts[j][1])*(wet(pts[i],pts[j])?6:1);if(!best||d<best[0])best=[d,i,j]}if(!best)break;inT.push(best[2]);E.push([best[1],best[2],best[0]])}
+  for(const [i,j] of E){const a=pts[i],b=pts[j];if(wet(a,b))continue;const mx=(a[0]+b[0])/2+(b[1]-a[1])*.12,my=(a[1]+b[1])/2-(b[0]-a[0])*.12;roads.push(isWater(mx,my)?[a,b]:[a,[mx,my],b])}
+  MAP.grz=grz.length?grz:undefined;
+  // maisons isolées et végétation
+  let lone=0,tries=0;while(lone<8&&tries<500){tries++;const x=sr(250,3000),y=sr(250,3350),w=sr(140,170),h=sr(110,130);if(!okR(x,y,w,h,240))continue;let ok=!nearRoad(x+w/2,y+h/2,Math.max(w,h)*.7+30);for(const p of PAVED)if(x<p.x+p.w+60&&x+w+60>p.x&&y<p.y+p.h+60&&y+h+60>p.y)ok=false;for(const o of occ)if(dd2(x+w/2,y+h/2,o.x,o.y)<(o.r+120)**2)ok=false;if(!ok)continue;bld(x,y,w,h,SR()<.7?'med':'farm',rdoors());lone++}
+  const place=(n,rf,fn,gen)=>{let c=0,t=0;while(c<n&&t<n*60){t++;const p=gen(),r=rf();if(!free(p[0],p[1],r))continue;fn(p[0],p[1],r);c++}};
+  place(Math.round(MAP.v[1]*1.7),()=>sr(32,42),(x,y,r)=>addTree(x,y,r,'palm'),()=>{const y=sr(150,WS-150);return[coastX(y)-sr(90,260),y]});
+  place(MAP.v[2],()=>sr(36,50),(x,y,r)=>addTree(x,y,r,'olive'),()=>[sr(100,WS-100),sr(100,WS-100)]);
+  place(MAP.v[3],()=>sr(20,38),(x,y,r)=>addRock(x,y,r),()=>[sr(100,WS-100),sr(100,WS-100)]);
+  place(MAP.v[4],()=>sr(24,32),(x,y,r)=>{bushes.push({x,y,r,c:SR()});occ.push({x,y,r:r*.5})},()=>[sr(100,WS-100),sr(100,WS-100)]);
+  place(45,()=>24,(x,y)=>crate(x-22,y-22),()=>[sr(100,WS-100),sr(100,WS-100)]);
+  finishWorld()}
+// dessin des plans d'eau et des îlots dans le sol
+function drawWaterX(c){const M=MAP;if(!M.wat&&!M.isl)return;
+  for(const e of M.wat||[]){const col=e.col||M.sea||['#3fcfc8','#1586a6','#0e5f86'];c.save();c.beginPath();c.ellipse(e.x,e.y,e.rx,e.ry,0,0,TAU);c.lineWidth=Math.min(60,e.rx*.3);c.strokeStyle=e.sh||M.shore||'#e6d3a6';c.stroke();
+    const g=c.createRadialGradient(e.x,e.y,Math.min(e.rx,e.ry)*.1,e.x,e.y,Math.max(e.rx,e.ry));g.addColorStop(0,col[2]);g.addColorStop(.55,col[1]);g.addColorStop(1,col[0]);c.fillStyle=g;c.fill();
+    if(e.col===SALT){c.clip();c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=2;const R=mulberry32((e.x*7+e.y)|0);for(let i=0;i<e.rx*e.ry/2500;i++){const x=e.x+(R()-.5)*e.rx*2,y=e.y+(R()-.5)*e.ry*2;c.beginPath();c.moveTo(x,y);c.lineTo(x+R()*30-15,y+R()*30-15);c.stroke()}}
+    else{c.strokeStyle='rgba(255,255,255,.45)';c.lineWidth=4;c.stroke()}c.restore()}
+  for(const e of M.isl||[]){c.save();c.beginPath();c.ellipse(e.x,e.y,e.rx,e.ry,0,0,TAU);c.lineWidth=46;c.strokeStyle=M.shore||'#e6d3a6';c.stroke();c.fillStyle=M.base;c.fill();c.clip();const R=mulberry32(e.x|0);for(let i=0;i<40;i++){const x=e.x+(R()-.5)*e.rx*2,y=e.y+(R()-.5)*e.ry*2,r=20+R()*50;c.fillStyle=R()<.5?M.gr:M.dk;c.beginPath();c.arc(x,y,r,0,TAU);c.fill()}c.restore()}}
+
 function genWorld(mid){
   if(!MAPS[mid]){const M=MODES[stats.mode];mid=(M&&M.map)||(MAPS[stats.map]?stats.map:'seddik')}
-  MAP=MAPS[mid];MAP.id=mid;MAP.st=MAP.like||mid;MAP.flip=0;PIER.y=1080;LXF=null;LX.mc=[MC.x,MC.y];LX.heli=[1420,760];
+  MAP=MAPS[mid];MAP.id=mid;MAP.st=MAP.like||mid;MAP.flip=0;MAP.cst=null;MAP.wat=null;MAP.isl=null;PIER.y=1080;LXF=null;LX.mc=[MC.x,MC.y];LX.heli=[1420,760];
   for(const a of[walls,solids,trees,bushes,crates,blds,roads,fields,occ])a.length=0;
   for(let i=0;i<POIS.length;i++){POIS[i].n=MAP.poi[i];POIS[i].x=POI0[i].x;POIS[i].y=POI0[i].y}
   PAVED.length=0;for(const o of PAVED0)PAVED.push({...o});Object.assign(LAKE,LAKE0);XTRA={parks:[],pools:[],gas:null};
   SR=mulberry32(MAP.seed);
   if(MAP.gen){PIER.x=coastX(1104)-40;PAVED.length=0;if(MAP.gen==='city')genCity();else genForest();finishWorld();return}
+  if(PLANS[MAP.id]){buildPlan(PLANS[MAP.id]);return}
   layoutInit();
   PIER.x=coastX(1104)-40;
   roads.push([[900,1000],[1250,1280],[1330,1760]]);
@@ -2036,7 +2171,7 @@ function relief(c){if(MAP.gen==='city')return;const id=MAP.st,N=id==='sahara'?28
   c.clip(land,'evenodd');c.globalCompositeOperation='soft-light';c.globalAlpha=id==='sahara'?.75:.9;c.imageSmoothingEnabled=true;c.drawImage(cv2,0,0,WS,WS);c.restore()}
 /* ===== cache du sol (IndexedDB) : la carte n'est dessinée qu'une fois par appareil ===== */
 const GC={m:new Map(),h:''};
-function gcHash(){if(GC.h)return GC.h;let h=2166136261;try{const src=buildGround.toString()+genWorld.toString()+(typeof decoCity==='function'?decoCity.toString():'')+(typeof gradeCanvas==='function'?gradeCanvas.toString():'');for(let i=0;i<src.length;i++){h^=src.charCodeAt(i);h=Math.imul(h,16777619)}}catch(e){}return GC.h=(h>>>0).toString(36)}
+function gcHash(){if(GC.h)return GC.h;let h=2166136261;try{const src=JSON.stringify(PLANS)+buildPlan.toString()+drawWaterX.toString()+buildGround.toString()+genWorld.toString()+(typeof decoCity==='function'?decoCity.toString():'')+(typeof gradeCanvas==='function'?gradeCanvas.toString():'');for(let i=0;i<src.length;i++){h^=src.charCodeAt(i);h=Math.imul(h,16777619)}}catch(e){}return GC.h=(h>>>0).toString(36)}
 function gKey(mid){const gs=stats.quality==='eco'?.55:stats.quality==='mid'?.72:.8;return mid+'|'+gs+'|'+gcHash()}
 function gcDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open('sf-ground',1);r.onupgradeneeded=()=>r.result.createObjectStore('g');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
 async function gcBundled(k){if(!adsNative())return null;try{const f=k.replace(/\|/g,'_');const jp=fetch('ground/'+f+'.json').then(j=>j.ok?j.json():[]).catch(()=>[]);const r=await fetch('ground/'+f+'.jpg');if(!r.ok)return null;const blob=await r.blob();const lamps=await jp;return {blob,lamps}}catch(e){return null}}
@@ -2194,7 +2329,7 @@ function buildGround(){LAMPS=[];GS=stats.quality==='eco'?.55:stats.quality==='mi
     for(let i=0;i<80;i++){const y=Rs()*WS,x=coastX(y)+70+Rs()*420,r=30+Rs()*120,gr=c.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(10,60,64,.16)');gr.addColorStop(.7,'rgba(10,60,64,.06)');gr.addColorStop(1,'rgba(10,46,44,0)');c.fillStyle=gr;c.beginPath();c.ellipse(x,y,r,r*.62,Rs()*3,0,TAU);c.fill()}
     c.lineCap='round';for(let i=0;i<1100;i++){const y=Rs()*WS,cx=coastX(y),x=cx+40+Rs()*Math.max(60,WS-cx),l=30+Rs()*90;c.strokeStyle=Rs()<.5?'rgba(255,255,255,.07)':'rgba(0,22,40,.08)';c.lineWidth=2+Rs()*2;c.beginPath();c.moveTo(x,y-l/2);c.quadraticCurveTo(x+(Rs()-.5)*10,y,x+(Rs()-.5)*4,y+l/2);c.stroke()}
     c.restore()}
-  decoShore(c,sea);c.lineWidth=5;c.strokeStyle='rgba(255,255,255,.5)';c.stroke(sea);
+  decoShore(c,sea);c.lineWidth=5;c.strokeStyle='rgba(255,255,255,.5)';c.stroke(sea);drawWaterX(c);
   {const Rk=mulberry32(5150),rock=(x,y,r,wet,light)=>{c.fillStyle='rgba(20,30,30,.28)';c.beginPath();c.ellipse(x+r*.35,y+r*.4,r*1.05,r*.8,.4,0,TAU);c.fill();
       const g=c.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r*1.1);g.addColorStop(0,light?'#d6d0c4':'#5a5754');g.addColorStop(.55,light?'#a59e92':'#2f2d2b');g.addColorStop(1,light?'#6e675d':'#161514');c.fillStyle=g;c.beginPath();
       for(let k=0;k<9;k++){const a=k/9*TAU,rr=r*(.78+Rk()*.3);k?c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr*.85):c.moveTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr*.85)}c.closePath();c.fill();

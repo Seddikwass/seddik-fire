@@ -1,4 +1,4 @@
-// Football Tunisia 2026 — interface et navigation
+// SEDDIK LEAGUE — interface et navigation
 import * as C from './career.js';
 import { Match } from './match.js';
 import { TACTIC_PRESETS, getCoachAdvice } from './tactics.js';
@@ -14,7 +14,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp, jerseySVG } from './util.js';
 
-export const APP_VERSION = '3.51.0';
+export const APP_VERSION = '3.52.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -71,7 +71,7 @@ const VIEWS = {};
 VIEWS.home = () => {
   const has = !!S.loadLocal();
   return `<div class="title"><div class="title-bg"><i class="beam l"></i><i class="beam r"></i><i class="stands"></i><i class="pitch3d"></i><i class="glow"></i></div><div class="title-in">
-   <div class="logo"><span class="ball">⚽</span><span class="season-tag">SAISON ${SEASON_LABEL}</span><h1>FOOTBALL <b>TUNISIA</b> <i>2026</i></h1><p>Ligue 1 · Coupe de Tunisie · CAF · Gestion de club</p></div>
+   <div class="logo"><img class="brand-mark" src="brand/mark.svg" alt="" width="64" height="64"><span class="season-tag">SAISON ${SEASON_LABEL}</span><h1>SEDDIK <b>LEAGUE</b></h1><p>Le football tunisien, version premium · Ligue 1 · Coupe · CAF</p></div>
    <div class="menu">
     ${has ? `<button class="btn big primary" data-a="continue">▶ ${t('Continuer')}</button>` : ''}
     <button class="btn big ${has ? '' : 'primary'}" data-a="nav" data-v="newCareer">🏆 ${t('Nouvelle carrière')}</button>
@@ -79,7 +79,7 @@ VIEWS.home = () => {
     <button class="btn big" data-a="nav" data-v="online">🌐 Match en ligne</button>
     <div class="row"><button class="btn" data-a="nav" data-v="settingsHome">⚙ ${t('Paramètres')}</button><button class="btn" data-a="nav" data-v="account">👤 ${t('Compte')}</button></div>
    </div>
-   <p class="fine">v${APP_VERSION} · données ${DATA_VERSION} (vérifiées le ${VERIFIED_ON}) · ${settings.realNames === false ? 'joueurs fictifs' : 'effectifs réels des 5 grands clubs (relevés le 21/11/2026)'} · <a href="privacy.html" target="_blank">Confidentialité</a></p>
+   <p class="fine">v${APP_VERSION} · données ${DATA_VERSION} (vérifiées le ${VERIFIED_ON}) · ${settings.realNames === false ? 'joueurs fictifs' : 'effectifs réels de 5 clubs + dernier onze des 16 clubs (snapshot du 22/11/2026, à revalider)'} · <a href="privacy.html" target="_blank">Confidentialité</a></p>
   </div></div>`;
 };
 VIEWS.newCareer = () => {
@@ -174,7 +174,8 @@ function kitFor(id, mode) { const k = C.clubKit(id, mode); if (k) return k; cons
 function kitDuel(h, a) {
   const mode = C.awayKitMode(h, a), kh = kitFor(h, false), ka = kitFor(a, mode);
   const lbl = mode === false ? 'domicile' : mode === true ? 'extérieur' : 'third';
-  return `<div class="kitduel"><figure>${jerseySVG(kh, 70, 10)}<figcaption>Domicile</figcaption></figure><span class="vsx">VS</span><figure>${jerseySVG(ka, 70, 10)}<figcaption>${lbl === 'third' ? '3e maillot' : 'Maillot ' + lbl}</figcaption></figure></div>`;
+  const xiNote = id => { const t = C.clubObj(st, id)?.tactics; return t?.realXI && settings.realNames !== false ? `<div class="xinote">📋 <b>${esc(C.clubObj(st, id).short || id)}</b> : onze du dernier match — ${esc(t.realXI)} · source ${esc(t.realXISource || '')} · <i>à revalider</i></div>` : ''; };
+  return `${xiNote(h)}${xiNote(a)}<div class="kitduel"><figure>${jerseySVG(kh, 70, 10)}<figcaption>Domicile</figcaption></figure><span class="vsx">VS</span><figure>${jerseySVG(ka, 70, 10)}<figcaption>${lbl === 'third' ? '3e maillot' : 'Maillot ' + lbl}</figcaption></figure></div>`;
 }
 function prematchExtras(f) {
   const trip = C.nextTrip(st, f), rot = C.rotationAdvice(st);
@@ -197,9 +198,9 @@ VIEWS.squad = () => {
   if (tab === 'contrats') list = list.slice().sort((a, b) => a.contractEnd - b.contractEnd);
   const tabs = [['liste', 'Joueurs'], ['vestiaire', '🗣️ Vestiaire'], ['contrats', t('Contrats')], ['entrainement', t('Entraînement')], ['stats', t('Statistiques')]];
   let body = '';
-  if (tab === 'liste') body = `<p class="hint">T = ${t('Titulaires')} · R = ${t('Remplaçants')} · J = ${t('Jeunes')} · X = ${t('Réserve')}. Touchez un joueur pour sa fiche. <button class="btn small" data-a="autoXI">Composition automatique</button></p>
+  if (tab === 'liste') body = `${tac.realXI && settings.realNames !== false ? `<p class="xinote">📋 Onze de départ réel : ${esc(tac.realXI)} · source ${esc(tac.realXISource || '')} · <i>à revalider sur la feuille de match officielle</i></p>` : ''}<p class="hint">T = ${t('Titulaires')} · R = ${t('Remplaçants')} · J = ${t('Jeunes')} · X = ${t('Réserve')}. Touchez un joueur pour sa fiche. <button class="btn small" data-a="autoXI">Composition automatique</button></p>
     <table class="tbl"><thead><tr><th></th><th>#</th><th>Joueur</th><th>Poste</th><th>Âge</th><th>Note</th><th>Pot.</th><th>${t('Forme')}</th><th>${t('Moral')}</th><th>Valeur</th><th></th></tr></thead><tbody>
-    ${list.map(p => `<tr data-a="player" data-id="${p.id}" class="${p.injury ? 'inj' : ''}"><td><span class="role r${role(p)}">${role(p)}</span></td><td>${p.num}</td><td>${esc(p.name)}${tac.captain === p.id ? ' <b class="cap">C</b>' : ''}${p.loan && p.loan.to === st.userClub ? ' <em class="tag">prêt</em>' : ''}${p.listed ? ' <em class="tag">transférable</em>' : ''}</td><td>${p.pos}${p.pos2 ? '/' + p.pos2 : ''}</td><td>${p.age}</td><td><b class="${ovrCls(p.ovr)}">${p.ovr}</b></td><td>${p.pot}</td><td>${bar(p.fitness * 100, 100, 'sm')}</td><td>${bar(p.morale, 100, 'sm')}</td><td>${fmtShort(p.value)}</td><td>${p.injury ? '🩹' : p.suspended ? '🟥' : ''}</td></tr>`).join('')}</tbody></table>`;
+    ${list.map(p => `<tr data-a="player" data-id="${p.id}" class="${p.injury ? 'inj' : ''}"><td><span class="role r${role(p)}">${role(p)}</span></td><td>${p.num}</td><td>${esc(p.name)}${tac.captain === p.id ? ' <b class="cap">C</b>' : ''}${p.loan && p.loan.to === st.userClub ? ' <em class="tag">prêt</em>' : ''}${p.listed ? ' <em class="tag">transférable</em>' : ''}</td><td>${p.pos}${p.pos2 ? '/' + p.pos2 : ''}${p.posEstimated ? ' <em class="tag" title="Poste non fourni par la source : estimé par le jeu, à valider">estimé</em>' : ''}</td><td>${p.age}</td><td><b class="${ovrCls(p.ovr)}">${p.ovr}</b></td><td>${p.pot}</td><td>${bar(p.fitness * 100, 100, 'sm')}</td><td>${bar(p.morale, 100, 'sm')}</td><td>${fmtShort(p.value)}</td><td>${p.injury ? '🩹' : p.suspended ? '🟥' : ''}</td></tr>`).join('')}</tbody></table>`;
   if (tab === 'contrats') body = `<table class="tbl"><thead><tr><th>Joueur</th><th>Note</th><th>Salaire</th><th>Fin</th><th>Rôle</th><th>Satisfaction</th><th></th></tr></thead><tbody>
     ${list.filter(p => !p.loan || p.loan.to !== st.userClub).map(p => `<tr><td>${esc(p.name)}</td><td>${p.ovr}</td><td>${fmtMoney(p.wage)}</td><td class="${p.contractEnd <= st.season ? 'neg' : ''}">juin ${p.contractEnd + 1}</td><td>${p.role}</td><td>${bar(p.happiness, 100, 'sm')}</td><td><button class="btn small" data-a="renew" data-id="${p.id}">${t('Prolonger')}</button></td></tr>`).join('')}</tbody></table>`;
   if (tab === 'entrainement') {
@@ -791,7 +792,7 @@ function postHTML(hn, an, hg, ag, res, f = null) {
   const teamName = side => side === 0 ? hn : an;
   return `<div class="card center post"><small>${t('Fin du match')}</small><div class="score">${esc(hn)} <b>${hg} - ${ag}</b> ${esc(an)}</div>${f && f.pens ? `<p>Tirs au but : ${f.pens[0]}-${f.pens[1]}</p>` : (!f && res.pens ? `<p>Tirs au but : ${res.pens[0]}-${res.pens[1]}</p>` : '')}${f && f.agg ? `<p>Cumul : ${f.agg[0]}-${f.agg[1]}</p>` : ''}${f && f.attendance ? `<p class="hint">${f.attendance.toLocaleString('fr-FR')} spectateurs</p>` : ''}
    ${mvp ? `<section class="mvp-card"><small>🏆 JOUEUR DU MATCH</small><h3>${esc(mvp.name || 'Joueur')}</h3><b>${Number(mvp.rating || 0).toFixed(1)}/10</b><p>${esc(teamName(mvp.team))} · ${mvp.goals || 0} but(s) · ${mvp.assists || 0} passe(s) décisive(s)</p></section>` : ''}
-   <ul class="events">${ev.map(e => `<li class="${e.team ? 'r' : 'l'}">${e.min}' ${{ goal: '⚽', yellow: '🟨', red: '🟥', injury: '🩹', sub: '🔁', shootout: '🎯' }[e.type]} ${esc(e.name)}${e.assist ? ` <small>(passe ${esc(e.assist)})</small>` : ''}${e.outName ? ` <small>↔ ${esc(e.outName)}</small>` : ''}</li>`).join('')}</ul>
+   <ul class="events">${ev.map(e => `<li class="${e.team ? 'r' : 'l'}">${e.min}' ${{ goal: '⚽', goal_var: '❌⚽', yellow: '🟨', red: '🟥', injury: '🩹', sub: '🔁', shootout: '🎯', var: '📺' }[e.type] || ''} ${esc(e.name || (e.type === 'var' ? 'VAR' : ''))}${e.type === 'goal_var' ? ' <small>(annulé par la VAR)</small>' : ''}${e.type === 'var' ? ` <small>VAR : ${e.decision === 'penalty_cancelled' ? 'penalty annulé' : 'but refusé, hors-jeu'}</small>` : ''}${e.assist && e.type === 'goal' ? ` <small>(passe ${esc(e.assist)})</small>` : ''}${e.outName ? ` <small>↔ ${esc(e.outName)}</small>` : ''}</li>`).join('')}</ul>
    ${s ? statBars(s) : ''}
    ${players.length ? `<h3 class="section-title">Notes des joueurs</h3><table class="tbl player-ratings"><thead><tr><th>Joueur</th><th>Équipe</th><th>Min.</th><th>B</th><th>P.D.</th><th>Note</th></tr></thead><tbody>${players.slice(0, 12).map(p => `<tr><td>${esc(p.name || 'Joueur')}${p.red ? ' 🟥' : ''}${p.yellow ? ' 🟨' : ''}</td><td>${esc(teamName(p.team))}</td><td>${p.minutes || 0}</td><td>${p.goals || 0}</td><td>${p.assists || 0}</td><td><b>${Number(p.rating || 0).toFixed(1)}</b></td></tr>`).join('')}</tbody></table>` : ''}</div>`;
 }
@@ -874,7 +875,7 @@ const ACT = {
   joinRoom: () => { const id = onlineIdentity(); if (!id) return; const code = ($('#olCode')?.value || '').trim().toUpperCase(); if (code.length !== 4) return toast('Entrez le code à 4 caractères.', 'err'); onlineConnect().send({ t: 'join', code, ...id }); },
   leaveOnline: () => { online?.conn?.close(); online = null; setOnlineSession(null); render(); },
   resumeOnline: () => onlineResume(),
-  shareCode: async () => { const text = `Rejoins-moi sur Football Tunisia 2026 : match en ligne, code ${online?.code} — ${location.origin}`; try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Invitation copiée.', 'ok'); } } catch (e) {} },
+  shareCode: async () => { const text = `Rejoins-moi sur SEDDIK LEAGUE : match en ligne, code ${online?.code} — ${location.origin}`; try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Invitation copiée.', 'ok'); } } catch (e) {} },
   rotate: () => { const ch = C.rotateLineup(st); save(); toast(ch.length ? 'Rotation : ' + ch.map(c => `${c.out.name} → ${c.in.name}`).join(', ') : 'Aucun changement.', ch.length ? 'ok' : 'info'); render(); },
   scoutRegion: el => { const r = C.startScouting(st, el.dataset.k); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },
   signProspect: el => { const r = C.signProspect(st, el.dataset.id); save(); toast(r.msg, r.ok ? 'ok' : 'err'); render(); },

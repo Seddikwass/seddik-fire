@@ -1,6 +1,6 @@
 # Fiche Google Play — proposition
 
-**Nom** : Football Tunisia 2026
+**Nom** : SEDDIK LEAGUE
 **Description courte (80 car.)** : Football tunisien : jouez vos matchs et présidez votre club jusqu'au titre !
 
 **Description complète** :

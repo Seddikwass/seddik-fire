@@ -1,4 +1,13 @@
-# ⚽ Football Tunisia 2026
+# ⚽ SEDDIK LEAGUE
+
+> Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
+
+## Version 3.52.0 — SEDDIK LEAGUE
+- **Nouveau nom et nouvelle identité** : SEDDIK LEAGUE partout (accueil, chargement, manifeste, application Android, panneaux du stade), logo et icônes originaux. Identifiant Android, URL et sauvegardes conservés.
+- **VAR réelle** : hors-jeu serrés manqués par l'arbitre assistant puis repris par la VAR (but annulé, score et résumé corrigés, lignes de hors-jeu au ralenti), penalty sifflé à tort revu en coup franc, contrôle de routine de chaque but.
+- **Hors-jeu en match** : les passeurs ne perçoivent plus toujours un hors-jeu de quelques centimètres.
+- **Dernier onze réel des 16 clubs** (snapshot du 22/11/2026) avec match, date, source et statut « à revalider » ; postes estimés signalés dans l'effectif.
+- Documentation : `docs/AUDIT-SEDDIK-LEAGUE.md`, `docs/LICENCES-ASSETS.md`, `docs/DEMANDE-AUTORISATION-COMMENTATEURS.md`.
 
 ## Version 3.51.0
 - **Gestes de célébration variés** : arrivé au poteau de corner, le buteur termine par une glissade à genoux, l'« avion » bras écartés, le cœur avec les mains, le doigt pointé vers le ciel ou les deux bras levés (choisi selon le joueur et le score).

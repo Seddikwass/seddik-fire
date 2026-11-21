@@ -1,7 +1,7 @@
 {
-  "name": "Football Tunisia 2026",
-  "short_name": "FT 2026",
-  "description": "Jeu de football tunisien : matchs 3D WebGL, Ligue 1, Coupe de Tunisie, CAF et gestion de club.",
+  "name": "SEDDIK LEAGUE",
+  "short_name": "SEDDIK LEAGUE",
+  "description": "SEDDIK LEAGUE — le football tunisien en version premium : matchs 3D WebGL, Ligue 1, Coupe de Tunisie, CAF et gestion de club.",
   "id": "/",
   "start_url": "/?source=pwa",
   "scope": "/",

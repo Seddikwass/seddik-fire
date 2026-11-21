@@ -888,6 +888,9 @@ export function getShotTargetY(keeperY = 0, shooterY = 0, aimY = null) {
   return side * depth;
 }
 
+// VAR : l'arbitre assistant peut laisser passer un hors-jeu très serré (marge < 55 cm) ; la VAR le reprend si l'action finit en but.
+export const AR_TIGHT_MARGIN = 0.55;
+export function varHash(a, b) { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); }
 export function getOffsideDecision(attacker, ball, defenders = [], direction = 1) {
   const dir = direction < 0 ? -1 : 1;
   const defenderLines = defenders
@@ -1282,6 +1285,18 @@ export class Match {
   addTime(h) { return this._add?.[h] ?? ((this._add = this._add || {})[h] = h === 1 ? 1 + Math.floor(this.r() * 2) : 2 + Math.floor(this.r() * 4)); }
 
   stepRestart(dt) {
+    const VR = this.varReview;
+    if (VR) VR.age = (VR.age || 0) + dt;
+    if (VR && VR.age > 4.2) {
+      // Visionnage au bord du terrain : la faute était hors de la surface → coup franc.
+      this.varReview = null;
+      this.events.push({ type: 'var', min: Math.max(1, Math.round(this.minute)), team: VR.team, decision: 'penalty_cancelled', reason: 'foul_outside_box' });
+      this.varDecision = { t: this.clock, text: `PENALTY ANNULÉ — faute ${Math.max(10, Math.round(VR.dist * 100))} cm hors de la surface` };
+      if (this.varCheck) { this.varCheck.decided = true; this.varCheck.t = performance.now() - 6300; }
+      this.banner('VAR : COUP FRANC', 2); this.ticker = 'VAR : après visionnage, la faute est hors de la surface — coup franc.'; this.tickerT = 5;
+      this.setRestart('freekick', VR.team, clamp(VR.x, -HL + 1, HL - 1), clamp(VR.y, -HW + 1, HW - 1));
+      return;
+    }
     const R = this.restart, b = this.ball;
     this.stateT -= dt;
     // placement des joueurs
@@ -1891,7 +1906,9 @@ export class Match {
       if (t.run > 0) score += 4;
       if (t.isGK) score -= 12;
       // Un partenaire déjà hors-jeu n'est pas une option : passe annulée par l'arbitre.
-      if (getOffsideDecision(t, this.ball, opp, d).offside) score -= 40;
+      { const od = getOffsideDecision(t, this.ball, opp, d);
+        // Hors-jeu de quelques dizaines de centimètres : le passeur ne le voit pas toujours (selon sa vision de jeu).
+        if (od.offside) { const m = od.playerProgress - od.line; if (m > 1.1 || varHash(t.x * 1.3 + this.clock, t.y + m) < 0.35 + (p.a.pas || 60) / 250) score -= 40; } }
       if (!best || score > best.score) best = { p: t, score, through: th, tx, ty };
     }
     return best;
@@ -1938,14 +1955,20 @@ export class Match {
     const restartExempt = ['corner', 'goalkick', 'throw'].includes(this.setPiece);
     this.kickBall(p, Math.cos(ang) * speed + p.vx * 0.1, Math.sin(ang) * speed + p.vy * 0.1, vz, 0.4);
     this.stats.passes[p.team]++;
-    const offsidePlayers = restartExempt ? [] : T.ps.filter(candidate =>
-      candidate !== p && !candidate.isGK && !candidate.sentOff &&
-      getOffsideDecision(candidate, this.ball, this.teams[1 - p.team].ps, d).offside
-    );
+    const offsidePlayers = [], missedOffside = [];
+    if (!restartExempt) for (const candidate of T.ps) {
+      if (candidate === p || candidate.isGK || candidate.sentOff) continue;
+      const od = getOffsideDecision(candidate, this.ball, this.teams[1 - p.team].ps, d);
+      if (!od.offside) continue;
+      const margin = od.playerProgress - od.line;
+      // hors-jeu serré : l'assistant ne lève pas le drapeau une fois sur deux (décision déterministe)
+      if (margin < AR_TIGHT_MARGIN && varHash(candidate.x * 3.1 + this.clock, candidate.y - margin * 17) < 0.5) missedOffside.push({ p: candidate, margin, line: od.line * d, x: candidate.x, y: candidate.y });
+      else offsidePlayers.push(candidate);
+    }
     this.passInfo = {
       from: p, to: t, team: p.team, t: 0,
       tx: p.x + Math.cos(ang) * dist, ty: p.y + Math.sin(ang) * dist,
-      offsidePlayers
+      offsidePlayers, missedOffside
     };
     if (p.team === this.userSide && this.userSide != null) this.select(t);
   }
@@ -2128,13 +2151,16 @@ export class Match {
     A.whistle();
     const T = this.teams[victim.team], d = T.dir;
     const inBox = victim.x * d > HL - 16.5 && Math.abs(victim.y) < 20.16;
+    // Faute juste devant la surface (< 1 m) : l'arbitre se trompe une fois sur deux et siffle penalty ; la VAR corrigera.
+    const nearBox = !inBox && victim.x * d > HL - 17.5 && Math.abs(victim.y) < 20.16 && varHash(victim.x + this.clock, victim.y * 1.7) < 0.5;
     const card = this.r();
     if (card < 0.04) this.sendOff(p, 'red');
     else if (card < 0.22 || inBox && card < 0.4) { p.yellow++; this.stats.yellows[p.team]++; this.addEvent('yellow', p); this.say('yellow', { p: p.name }); if (p.yellow >= 2) this.sendOff(p, 'red2'); }
     else this.say('foul', { p: p.name });
     this.crowdReact(card < 0.22 || (inBox && card < 0.4) ? 'card' : 'foul', p.team);
     if (this.r() < 0.03) { victim.injured = true; this.addEvent('injury', victim); this.say('injury', { p: victim.name }, true); }
-    if (inBox) { if (this.refCall?.type === 'foul') this.refSignal('penalty', victim); this.banner('PENALTY !', 1.8); this.say('penalty', { t: T.short }, true); this.setRestart('penalty', victim.team, d * (HL - 11), 0); }
+    if (inBox || nearBox) { if (this.refCall?.type === 'foul') this.refSignal('penalty', victim); this.banner('PENALTY !', 1.8); this.say('penalty', { t: T.short }, true); this.setRestart('penalty', victim.team, d * (HL - 11), 0);
+      if (nearBox) { this.varReview = { t: this.clock, team: victim.team, x: victim.x, y: victim.y, dist: HL - 16.5 - victim.x * d }; this.stateT = 7.5; if (!this.net) this.varCheck = { t: performance.now() - 2300, reason: 'Penalty — faute dans la surface ?', decided: false, overturn: true, review: true }; } }
     else this.setRestart('freekick', victim.team, clamp(victim.x, -HL + 1, HL - 1), clamp(victim.y, -HW + 1, HW - 1));
   }
   sendOff(p, why) {
@@ -2371,6 +2397,9 @@ export class Match {
         b.last = best; b.lastTeam = best.team; return;
       }
       const prevTeam = b.lastTeam, pi = this.passInfo;
+      { const mo = this.passInfo?.missedOffside?.find(o => o.p === best);
+        if (mo && this.passInfo.t < 3) this.varWatch = { team: best.team, offender: best.name, x: mo.x, y: mo.y, line: mo.line, margin: mo.margin, t0: this.clock };
+        else if (this.varWatch && best.team !== this.varWatch.team) this.varWatch = null; }
       b.owner = best; b.last = best; b.inFlightShot = null; best.touches++;
       // Première touche : amorti plus propre pour les techniciens, plus fuyant
       // sous pression et sur les ballons très rapides.
@@ -2504,26 +2533,38 @@ export class Match {
       kind: shotInfo?.kind || null, distance: shotInfo?.distance || 12,
     }), { p: name, t: T.short }, true);
     this.lastGoalTeam = team;
+    // VAR réelle : si l'action est née d'un hors-jeu non signalé (même possession, < 15 s), le but sera annulé après vérification.
+    const W = this.varWatch; this.varWatch = null;
+    this.pendingVar = W && W.team === team && this.clock - W.t0 < 15 ? { kind: 'offside', team, ...W, scorerId: scorer?.id ?? null } : null;
     // VAR : vérification automatique d'environ un but sur trois (affichage TV, le but est confirmé).
-    if (!this.net) { const h = Math.floor(this.clock * 13.7 + this.score[0] * 3 + this.score[1] * 5) % 3; this.varCheck = h === 0 ? { t: performance.now(), reason: Math.floor(this.clock) % 2 ? 'Hors-jeu possible' : 'Faute possible dans l\'action' } : null; }
+    if (!this.net) this.varCheck = { t: performance.now(), reason: this.pendingVar ? 'Hors-jeu possible' : 'Contrôle de routine', decided: false, overturn: !!this.pendingVar };
     if (this.o.onGoal) this.o.onGoal(team);
   }
   // Bandeau VAR pendant le ralenti : vérification puis décision.
   drawVar() {
     const V = this.varCheck; if (!V) return;
-    const age = (performance.now() - V.t) / 1000; if (age > 9.5) { this.varCheck = null; return; }
-    if (age < 2.2) return; // laisse passer la célébration
-    const c = this.c, d = this.dpr, done = age > 6.2, k = Math.min(1, (age - 2.2) / 0.3, (9.5 - age) / 0.4);
-    const text = done ? '✓ BUT VALIDÉ' : `VÉRIFICATION — ${V.reason}`;
-    c.save(); c.globalAlpha = k; c.font = `800 ${11 * d}px system-ui,Arial`; c.textBaseline = 'middle'; c.textAlign = 'left';
+    const age = (performance.now() - V.t) / 1000;
+    if (V.decided ? age > 9.5 : age > 40) { this.varCheck = null; return; }
+    if (!V.decided && age < 2.2) return; // laisse passer la célébration
+    const c = this.c, d = this.dpr, done = !!V.decided, bad = done && V.overturn;
+    const k = done ? Math.min(1, (9.5 - age) / 0.4) : Math.min(1, (age - 2.2) / 0.3);
+    const text = !done ? `VÉRIFICATION — ${V.reason}` : bad ? `✗ ${this.varDecision?.text || 'DÉCISION ANNULÉE'}` : '✓ BUT VALIDÉ';
+    c.save(); c.globalAlpha = Math.max(0, k); c.font = `800 ${11 * d}px system-ui,Arial`; c.textBaseline = 'middle'; c.textAlign = 'left';
     const tw = c.measureText(text).width, w = tw + 70 * d, h = 28 * d, x = this.W / 2 - w / 2, y = Math.max(62 * d, this.H * 0.2);
     c.fillStyle = 'rgba(6,12,22,0.9)'; this.rr(x, y, w, h, 6 * d); c.fill();
-    c.fillStyle = done ? '#1fbf5a' : '#1a5fd6'; this.rr(x, y, 46 * d, h, 6 * d); c.fill();
+    c.fillStyle = !done ? '#1a5fd6' : bad ? '#d62839' : '#1fbf5a'; this.rr(x, y, 46 * d, h, 6 * d); c.fill();
     c.fillStyle = '#fff'; c.font = `900 ${12 * d}px system-ui,Arial`; c.textAlign = 'center'; c.fillText('VAR', x + 23 * d, y + h / 2 + 0.5 * d);
-    c.font = `800 ${11 * d}px system-ui,Arial`; c.textAlign = 'left'; c.fillStyle = done ? '#8ff0b0' : '#fff';
+    c.font = `800 ${11 * d}px system-ui,Arial`; c.textAlign = 'left'; c.fillStyle = !done ? '#fff' : bad ? '#ffb3ba' : '#8ff0b0';
     c.fillText(text, x + 56 * d, y + h / 2 + 0.5 * d);
     if (!done) { const bw = (w - 56 * d - 10 * d), pr = ((age - 2.2) / 4) % 1; c.fillStyle = '#ffffff22'; c.fillRect(x + 56 * d, y + h - 4 * d, bw, 2 * d); c.fillStyle = '#4da3ff'; c.fillRect(x + 56 * d, y + h - 4 * d, bw * pr, 2 * d); }
     c.restore();
+  }
+  // Lignes de hors-jeu tracées pendant le ralenti (défenseur en bleu, attaquant en rouge), comme à la télé.
+  drawVarLines() {
+    const V = this.pendingVar; if (!V || !this.replay) return;
+    const c = this.c, d = this.dpr;
+    const line = (x, col) => { const a = this.screenPoint(x, -HW, 0.02), b2 = this.screenPoint(x, HW, 0.02); if (!a || !b2) return; c.strokeStyle = col; c.lineWidth = 2.4 * d; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke(); };
+    c.save(); c.globalAlpha = 0.9; line(V.line, '#3d8bff'); line(V.x, '#ff3b4d'); c.restore();
   }
 
   // ---------------- ralenti ----------------
@@ -2810,7 +2851,36 @@ export class Match {
     }
   }
   skipReplay() { if (!this.replay) return; const kind = this.replay.kind; this.replay = null; this.msgT = 0; this.tvWipeT = TV_WIPE; if (kind !== 'chance') this.afterGoal(); }
-  afterGoal() { for (const T of this.teams) for (const q of T.ps) q.celebFinal = 0; this.replayBuf = []; this.setupKickoff(1 - this.lastGoalTeam); }
+  afterGoal() {
+    for (const T of this.teams) for (const q of T.ps) q.celebFinal = 0; this.replayBuf = [];
+    const V = this.pendingVar; this.pendingVar = null;
+    if (this.varCheck) { this.varCheck.decided = true; this.varCheck.t = performance.now() - 6300; }
+    if (V) return this.applyVarOverturn(V);
+    this.setupKickoff(1 - this.lastGoalTeam);
+  }
+  // But annulé par la VAR : score, buteur, passeur, résumé et note corrigés ; coup franc indirect pour la défense à l'endroit du hors-jeu.
+  applyVarOverturn(V) {
+    const team = V.team;
+    this.score[team] = Math.max(0, this.score[team] - 1);
+    for (let i = this.events.length - 1; i >= 0; i--) {
+      const e = this.events[i];
+      if (e.type === 'goal' && e.team === team) {
+        e.type = 'goal_var'; e.varReason = 'offside';
+        const all = this.teams[team].ps, sc = all.find(p => p.id === e.pid);
+        if (sc) { sc.goals = Math.max(0, sc.goals - 1); sc.rating -= 1; }
+        if (e.assist) { const as = all.find(p => p.name === e.assist); if (as) { as.assists = Math.max(0, as.assists - 1); as.rating -= 0.5; } }
+        break;
+      }
+    }
+    if (this.highlights?.length && this.highlights[this.highlights.length - 1].team === team) this.highlights.pop();
+    this.stats.offsides[team] = (this.stats.offsides[team] || 0) + 1;
+    this.varDecision = { t: this.clock, text: `BUT REFUSÉ — hors-jeu de ${V.offender} (${Math.max(1, Math.round(V.margin * 100))} cm)` };
+    this.events.push({ type: 'var', min: Math.max(1, Math.round(this.minute)), team, name: V.offender, decision: 'goal_disallowed', reason: 'offside', margin: V.margin });
+    this.banner('VAR : BUT REFUSÉ', 2.2); this.say('offside', { p: V.offender }, true);
+    this.ticker = `VAR : but refusé, hors-jeu de ${V.offender} (${Math.max(1, Math.round(V.margin * 100))} cm)`; this.tickerT = 5;
+    this.crowdReact('foul', team);
+    this.setRestart('freekick', 1 - team, clamp(V.x, -HL + 1, HL - 1), clamp(V.y, -HW + 1, HW - 1));
+  }
 
   // ---------------- fin ----------------
   finish() {
@@ -3181,7 +3251,7 @@ export class Match {
     c.fillStyle = '#e6bd62'; c.fillRect(x + 18 * d, y + 31 * d, w - 36 * d, 2 * d);
     c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillStyle = '#e6bd62'; c.font = `900 ${Math.max(10, 12 * d)}px system-ui,Arial`;
-    c.fillText('PRÉSENTATION DES ÉQUIPES  •  FOOTBALL TUNISIA 2026', mid, y + 18 * d);
+    c.fillText('PRÉSENTATION DES ÉQUIPES  •  SEDDIK LEAGUE', mid, y + 18 * d);
     // Drapeau tunisien stylisé, dessiné en vectoriel pour rester net sur mobile.
     const flagX = mid - 13 * d, flagY = y + 43 * d, flagW = 26 * d, flagH = 17 * d;
     c.fillStyle = '#e21b2d'; c.fillRect(flagX, flagY, flagW, flagH);
@@ -3286,7 +3356,7 @@ export class Match {
     x.restore();
     this.crowdTex = cv;
     const ad = document.createElement('canvas'); ad.width = 2048; ad.height = 40; const a = ad.getContext('2d');
-    const boards = [['#0b3d91', '#fff', 'FOOTBALL TUNISIA 2026'], ['#e70013', '#fff', 'تونس • TUNISIE'], ['#111', '#f5c400', 'JASMIN SPORT'], ['#0f7b3c', '#fff', 'SAHEL • SFAX • TUNIS'], ['#fff', '#e70013', 'قرطاج 2026'], ['#5b2c83', '#fff', 'DJERBA AIR'], ['#f39200', '#111', 'HARISSA ENERGY'], ['#1d1d1d', '#fff', 'KAIROUAN TELECOM']];
+    const boards = [['#0b3d91', '#fff', 'SEDDIK LEAGUE'], ['#e70013', '#fff', 'تونس • TUNISIE'], ['#111', '#f5c400', 'JASMIN SPORT'], ['#0f7b3c', '#fff', 'SAHEL • SFAX • TUNIS'], ['#fff', '#e70013', 'قرطاج 2026'], ['#5b2c83', '#fff', 'DJERBA AIR'], ['#f39200', '#111', 'HARISSA ENERGY'], ['#1d1d1d', '#fff', 'KAIROUAN TELECOM']];
     for (let i = 0; i < 8; i++) { const [bg, fg, tx] = boards[i]; a.fillStyle = bg; a.fillRect(i * 256, 0, 256, 40); a.fillStyle = fg; a.font = 'bold 22px Arial'; a.textAlign = 'center'; a.fillText(tx, i * 256 + 128, 28); }
     this.adTex = ad;
   }
@@ -4043,6 +4113,7 @@ export class Match {
       c.fillStyle = '#fff'; c.fillText(text, this.W / 2 + 10 * d, ty + 13.5 * d); c.restore();
     }
     this.drawAddedBoard(isReplay, y0 + h);
+    if (isReplay) this.drawVarLines();
     this.drawVar();
     if (this.msgT > 0 && this.msg && !celebrating) {
       // Annonce en pastille : lisible sans masquer l'action.

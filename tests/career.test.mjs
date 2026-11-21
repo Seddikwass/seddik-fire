@@ -76,7 +76,13 @@ console.log('OK — tous les tests carrière passent');
   assert.notEqual(C.awayKitMode('ca', 'ess'), false, 'CA vs ESS (rouge) : changement');
   // Onze réel du dernier match appliqué à la création de carrière.
   { const st2 = C.newCareer({ clubId: 'ca', seed: 5 });
-    for (const [cid, R] of Object.entries(D.REAL_XI)) assert.deepEqual(st2.clubs[cid].tactics.lineup.map(id => st2.players[id].name), R.xi, `XI réel ${cid}`);
+    assert.equal(Object.keys(D.REAL_XI).length, 16, '16 clubs avec leur dernier onze');
+    for (const [cid, R] of Object.entries(D.REAL_XI)) {
+      assert.deepEqual(st2.clubs[cid].tactics.lineup.map(id => st2.players[id].name).sort(), [...R.xi].sort(), `XI réel ${cid}`);
+      assert.ok(R.source && R.url && R.date && R.status === 'official', `provenance ${cid}`);
+      assert.equal(new Set(R.xi).size, 11, `11 joueurs distincts ${cid}`);
+      const gk = st2.players[st2.clubs[cid].tactics.lineup[0]]; assert.equal(gk.pos, 'GK', `gardien ${cid}`);
+    }
     const stF = C.newCareer({ clubId: 'ca', seed: 5, realNames: false });
     assert.ok(!stF.clubs.est.tactics.realXI, 'option fictive : pas de XI réel'); }
   for (const h of Object.keys(D.KIT_DESIGNS)) for (const a of Object.keys(D.KIT_DESIGNS)) if (h !== a) {

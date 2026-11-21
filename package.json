@@ -1,8 +1,8 @@
 {
   "name": "football-tunisia-2026",
-  "version": "3.51.0",
+  "version": "3.52.0",
   "private": true,
-  "description": "Football Tunisia 2026 — jeu de football tunisien (web + Android)",
+  "description": "SEDDIK LEAGUE — le football tunisien en version premium (web + Android)",
   "type": "module",
   "main": "server.js",
   "engines": {

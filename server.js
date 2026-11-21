@@ -1,4 +1,4 @@
-// Football Tunisia 2026 — serveur web + API (Node.js, sans framework)
+// SEDDIK LEAGUE (ex-Football Tunisia 2026) — serveur web + API (Node.js, sans framework)
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';

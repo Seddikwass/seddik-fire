@@ -1,4 +1,4 @@
-# Application Android — Football Tunisia 2026
+# Application Android — SEDDIK LEAGUE
 
 ## Architecture
 - **Capacitor 8** : le jeu web (`public/`) est embarqué dans l'application (fonctionne **hors ligne**, sans attendre le serveur Render).

@@ -151,7 +151,7 @@ export function newCareer(opts) {
       st.players[p.id] = p;
     }
     // Joueurs réels restants (listes plus longues que le gabarit) : ajoutés à l'effectif à leur poste.
-    if (pool) while (pool.length && Object.values(st.players).filter(x => x.clubId === c.id).length < 40) {
+    if (pool) while (pool.length && Object.values(st.players).filter(x => x.clubId === c.id).length < 44) {
       const e = pool.shift();
       const pos = e.pos || (e.g === 'G' ? 'GK' : e.g === 'D' ? 'DC' : e.g === 'M' ? 'MC' : 'BU');
       const p = genPlayer(r, pos, target + r.int(-6, 2), c.id, season, { rep: c.rep });
@@ -211,7 +211,7 @@ export function autoLineup(st, cid) {
   const order = form.map((pos, i) => ({ pos, i })).sort((a, b) => (a.pos === 'GK' ? -1 : 0) - (b.pos === 'GK' ? -1 : 0));
   for (const { pos, i } of order) {
     let best = null, bs = -1;
-    for (const p of pool) { if (used.has(p.id)) continue; const s = ovrOf(p, pos) * posFit(p, pos) * (0.85 + 0.15 * p.fitness) * (p.xi ? 1.1 : 1); if (s > bs) { bs = s; best = p; } }
+    for (const p of pool) { if (used.has(p.id)) continue; const s = ovrOf(p, pos) * posFit(p, pos) * (0.85 + 0.15 * p.fitness) * (typeof p.xi === 'number' ? p.xi : p.xi ? 1.1 : 1); if (s > bs) { bs = s; best = p; } }
     if (best) { used.add(best.id); lineup[i] = best.id; }
   }
   t.lineup = lineup;
@@ -227,11 +227,13 @@ export function applyRealXI(st, cid) {
   const c = st.clubs[cid], t = c.tactics, sq = squad(st, cid);
   const ids = R.xi.map(n => sq.find(p => p.name === n)?.id);
   if (ids.some(id => !id)) return false;
-  for (const id of ids) st.players[id].xi = true;
-  t.formation = R.formation; t.lineup = ids;
-  t.bench = sq.filter(p => !ids.includes(p.id) && available(p)).sort((a, b) => b.ovr - a.ovr).slice(0, 9).map(p => p.id);
-  t.realXI = R.match;
-  return true;
+  // La source ne donne pas toujours les postes : le jeu place les 11 titulaires réels sur les postes de la formation du club.
+  for (const id of ids) st.players[id].xi = 10;
+  autoLineup(st, cid);
+  for (const id of ids) { const p = st.players[id]; p.xi = true; if (R.posEstimated?.includes(p.name)) p.posEstimated = true; }
+  const placed = t.lineup.filter(id => ids.includes(id)).length;
+  t.realXI = `${R.match} (${R.date})`; t.realXISource = R.source; t.realXIPlaced = placed;
+  return placed === 11;
 }
 // remplace uniquement les titulaires indisponibles (blessés, suspendus, partis) en gardant les choix de l'utilisateur
 export function repairLineup(st, cid) {
@@ -528,7 +530,7 @@ export function applyResult(st, f, res) {
   const r = R(st);
   f.hg = res.hg; f.ag = res.ag; f.played = true;
   if (res.stats) f.stats = res.stats;
-  if (res.events) f.events = res.events.filter(e => e.type === 'goal' || e.type === 'red' || e.type === 'yellow' || e.type === 'injury').slice(0, 30);
+  if (res.events) f.events = res.events.filter(e => e.type === 'goal' || e.type === 'red' || e.type === 'yellow' || e.type === 'injury' || e.type === 'var' || e.type === 'goal_var').slice(0, 30);
   // tirs au but si nécessaire
   if (f.ko && f.hg === f.ag) {
     const ph = 3 + Math.floor(r() * 3), pa = ph + (r() < 0.5 ? 1 : -1);

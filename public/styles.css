@@ -123,7 +123,7 @@ main{overflow:auto;padding:12px;padding-right:max(12px,env(safe-area-inset-right
 .match.spect .joyzone,.match.spect .btns{display:none}
 
 
-/* Football Tunisia 2026 — modern broadcast / stadium visual refresh */
+/* SEDDIK LEAGUE — modern broadcast / stadium visual refresh */
 :root{
   --bg:#070b13;--bg2:#0d1422;--card:#111c2d;--line:#263b50;
   --tx:#f4f7fb;--mut:#a8b8c9;--red:#d71920;--red2:#f02d38;
@@ -176,7 +176,7 @@ main{background:radial-gradient(ellipse at 80% 0%,#1a2c401c,transparent 42%)}
 }
 
 
-/* Football Tunisia 2026 — full-time awards and player ratings */
+/* SEDDIK LEAGUE — full-time awards and player ratings */
 .post .mvp-card{margin:18px auto;padding:18px 16px;max-width:520px;border:1px solid rgba(231,190,75,.48);border-radius:16px;background:linear-gradient(135deg,rgba(34,42,57,.98),rgba(11,19,32,.98));box-shadow:0 12px 32px rgba(0,0,0,.2);color:#fff}
 .post .mvp-card small{color:#f3cc66;font-weight:900;letter-spacing:.12em}
 .post .mvp-card h3{margin:8px 0 3px;font-size:1.35rem}
@@ -395,3 +395,10 @@ button:disabled,.btn:disabled{
 .sb-bar{display:flex;gap:3px;height:6px;margin-top:4px}
 .sb-bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#b30f1f,#e8323f)}
 .sb-bar i:last-child{background:linear-gradient(90deg,#2d6bea,#5d95ff)}
+/* v3.52 : identité SEDDIK LEAGUE */
+#splash img.sb{width:72px;height:72px;animation:pulse 1.6s ease-in-out infinite;border-radius:18px;box-shadow:0 10px 30px #0008}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.logo .brand-mark{display:block;width:64px;height:64px;margin:0 auto 6px;border-radius:16px;box-shadow:0 12px 30px #000a,0 0 0 1px #ffffff14}
+.logo h1 b{color:#ff3348}
+@media (orientation:landscape) and (max-height:540px){.title-in .logo .brand-mark{margin:0 0 4px;width:48px;height:48px}}
+.xinote{font-size:11px;color:#aebbd0;margin:4px 0;line-height:1.35}.xinote i{color:#ffcf5a;font-style:normal}

@@ -185,3 +185,37 @@ console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroul
   assert.match(m.ticker, /additionnel/, 'annonce du temps additionnel');
   console.log('TEMPS ADDITIONNEL OK');
 }
+
+// VAR réelle : un but issu d'un hors-jeu non signalé est annulé (score, buteur, résumé) et la défense obtient un coup franc.
+{
+  const C = await import('../public/js/career.js');
+  const st = C.newCareer({ clubId: 'est', seed: 4 });
+  const canvas = { clientWidth: 800, clientHeight: 400, getContext: () => new Proxy({}, { get: () => () => ({ addColorStop() {} }) }) };
+  let seed = 11; const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 0x100000000; };
+  const m = new Match({ canvas, home: C.matchTeam(st, 'est'), away: C.matchTeam(st, 'ca', true), userSide: null, settings: { duration: 3, voice: false, replays: false }, random });
+  for (let i = 0; i < 120; i++) m.step(1 / 60);
+  const scorer = m.teams[0].ps[9]; m.ball.last = scorer;
+  m.varWatch = { team: 0, offender: scorer.name, x: m.teams[0].dir * 30, y: 5, line: m.teams[0].dir * 29.7, margin: 0.3, t0: m.clock };
+  const goalsBefore = scorer.goals;
+  m.goal(0);
+  assert.equal(m.score[0], 1, 'but d abord accordé');
+  assert.ok(m.pendingVar && m.pendingVar.kind === 'offside', 'VAR en attente');
+  m.afterGoal();
+  assert.equal(m.score[0], 0, 'VAR : but annulé');
+  assert.equal(scorer.goals, goalsBefore, 'but retiré au buteur');
+  assert.ok(m.events.some(e => e.type === 'var' && e.decision === 'goal_disallowed'), 'événement VAR');
+  assert.ok(!m.events.some(e => e.type === 'goal' && e.team === 0), 'plus de but dans le résumé');
+  assert.equal(m.restart?.type, 'freekick'); assert.equal(m.restart?.team, 1, 'coup franc pour la défense');
+  // But sans hors-jeu : validé.
+  m.varWatch = null; m.goal(0); m.afterGoal(); assert.equal(m.score[0], 1, 'but validé sans hors-jeu');
+  // Penalty sifflé à tort (faute 40 cm hors de la surface) : annulé après visionnage, coup franc.
+  const d = m.teams[1].dir, att = m.teams[1].ps[9], def = m.teams[0].ps[3];
+  att.x = d * (52.5 - 16.9); att.y = 3; let ok = false;
+  for (let k = 0; k < 40 && !ok; k++) { att.y = 3 + k * 0.37; m.state = 'play'; m.foul(def, att); ok = !!m.varReview; }
+  assert.ok(ok, 'faute près de la surface : penalty sifflé puis revu');
+  assert.equal(m.restart.type, 'penalty');
+  for (let i = 0; i < 60 * 5 && m.varReview; i++) m.step(1 / 60);
+  assert.equal(m.restart.type, 'freekick', 'VAR : penalty transformé en coup franc');
+  assert.ok(m.events.some(e => e.type === 'var' && e.decision === 'penalty_cancelled'));
+  console.log('VAR OK');
+}

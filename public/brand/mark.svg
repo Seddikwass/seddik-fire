@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12203d"/><stop offset="1" stop-color="#070c18"/></linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff3348"/><stop offset="1" stop-color="#b8081c"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe680"/><stop offset="1" stop-color="#e0a800"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- anneau : terrain vu du ciel -->
+  <circle cx="256" cy="256" r="178" fill="none" stroke="url(#red)" stroke-width="30"/>
+  <circle cx="256" cy="256" r="146" fill="none" stroke="#ffffff22" stroke-width="3"/>
+  <!-- monogramme S : deux arcs opposés, comme une trajectoire de ballon brossée -->
+  <path d="M332 176c-18-26-48-40-84-40-50 0-86 26-86 66 0 36 26 52 80 64l18 4c34 8 46 17 46 34 0 22-24 38-58 38-36 0-62-16-74-44" fill="none" stroke="#ffffff" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- ballon en fin de trajectoire -->
+  <circle cx="352" cy="352" r="30" fill="#fff"/>
+  <path d="M352 336l14 10-5 17h-18l-5-17z" fill="#12203d"/>
+  <!-- étoile -->
+  <path d="M378 128l9 19 21 3-15 15 4 21-19-10-19 10 4-21-15-15 21-3z" fill="url(#gold)"/>
+</svg>

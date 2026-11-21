@@ -1,4 +1,4 @@
-// Football Tunisia 2026 — WebGL 3D match renderer (no external runtime dependencies).
+// SEDDIK LEAGUE — WebGL 3D match renderer (no external runtime dependencies).
 // The match simulation remains deterministic and shared with the 2D fallback.
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, Number.isFinite(v) ? v : lo));
 const mix = (a, b, t) => a + (b - a) * t;

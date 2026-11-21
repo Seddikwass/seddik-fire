@@ -1689,7 +1689,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V227</span>
+    <span id="build-tag" aria-label="Version">V228</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -3692,7 +3692,7 @@ function radioCrew(driver) {
 }
 // Consignes de l'équipe. Ce bloc JSON est lu tel quel par la compilation GitHub pour enregistrer
 // chaque phrase en fichier audio (audio/radio/<langue>-<situation>.mp3) : le texte et la voix restent identiques.
-const RADIO_LINES = /*RADIO_LINES_BEGIN*/{"wrong": {"fr": "SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.", "en": "SPOTTER: Wrong way! Slow down and turn around safely.", "ar": "المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.", "tn": "المراقب: راك ماشي بالعكس! نقص في السرعة وارجع للمسار."}, "edge": {"fr": "INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.", "en": "ENGINEER: You are near the track edge. Ease off and return smoothly.", "ar": "المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.", "tn": "المهندس: قربت تخرج على الطريق. نقص شوية وارجع بالراحة."}, "nitro": {"fr": "STRATÈGE : réserve ton nitro pour la sortie du prochain virage.", "en": "STRATEGIST: Nitro is low. Save it for the exit of the next turn.", "ar": "الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.", "tn": "الاستراتيجي: النيترو قربت توفى. خلّي شوية للخروج من الفيراج الجاي."}, "slide": {"fr": "INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.", "en": "ENGINEER: Reduce steering input and gently stabilize the car.", "ar": "المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.", "tn": "المهندس: نقص شوية من الدوران وثبّت الكروسة بالراحة."}, "pack": {"fr": "STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.", "en": "STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.", "ar": "الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.", "tn": "الاستراتيجي: ما زلت تلحق في المنافسين. استغلّ الهواء وحضّر روحك للتجاوز."}, "tt": {"fr": "INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.", "en": "RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.", "ar": "مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.", "tn": "مهندس السباق: حافظ على النسق. فرمل بالراحة وارجع للبنزين بكري."}, "chase": {"fr": "ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.", "en": "CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.", "ar": "فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.", "tn": "فريق المطاردة: رد بالك من الرادار وواصل تجري. خذ الفيراجات بنظافة باش تبعّد البوليس."}, "clear": {"fr": "SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.", "en": "SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.", "ar": "المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.", "tn": "المراقب: الطريق قدّامك واضح. ركّز في الفرملة واخرج مليح من الفيراج."}, "go": {"fr": "ÉQUIPE : feu vert ! Bon départ, reste propre au premier virage.", "en": "TEAM: Green light! Good start, keep it clean into turn one.", "ar": "الفريق: انطلق! بداية جيدة، حافظ على نظافة المنعرج الأول.", "tn": "الفريق: يزّي انطلق! بداية باهية، ادخل الفيراج الأول بالراحة."}, "gain": {"fr": "STRATÈGE : bien joué, tu gagnes une place ! Continue comme ça.", "en": "STRATEGIST: Nice move, you gained a place! Keep it up.", "ar": "الاستراتيجي: أحسنت، ربحت مركزاً! واصل هكذا.", "tn": "الاستراتيجي: برافو، ربحت بلاصة! زيد هكّا."}, "lose": {"fr": "STRATÈGE : tu viens de perdre une place. Reste calme, tu vas la reprendre.", "en": "STRATEGIST: You lost a place. Stay calm, you will get it back.", "ar": "الاستراتيجي: خسرت مركزاً. حافظ على هدوئك وسترجعه.", "tn": "الاستراتيجي: خسرت بلاصة. ما تقلقش، توّا ترجّعها."}, "lead": {"fr": "ÉQUIPE : tu es en tête ! Garde le rythme et protège la trajectoire intérieure.", "en": "TEAM: You're leading! Keep the pace and protect the inside line.", "ar": "الفريق: أنت في المقدمة! حافظ على النسق واحمِ المسار الداخلي.", "tn": "الفريق: راك الأول! حافظ على النسق وسكّر الداخل."}, "last": {"fr": "INGÉNIEUR : dernier tour ! Donne tout, garde le nitro pour la ligne droite finale.", "en": "ENGINEER: Final lap! Give it everything, save nitro for the last straight.", "ar": "المهندس: اللفة الأخيرة! أعطِ كل ما لديك واحتفظ بالنيترو للخط المستقيم الأخير.", "tn": "المهندس: آخر دورة! عطي الكل وخلّي النيترو للخط الأخير."}, "best": {"fr": "INGÉNIEUR : meilleur tour personnel ! Superbe rythme.", "en": "ENGINEER: Personal best lap! Superb pace.", "ar": "المهندس: أفضل لفة لك! نسق رائع.", "tn": "المهندس: أحسن دورة متاعك! نسق هايل."}, "hit": {"fr": "INGÉNIEUR : gros choc ! Redresse doucement et repars.", "en": "ENGINEER: Big hit! Straighten up gently and go again.", "ar": "المهندس: اصطدام قوي! عدّل السيارة بهدوء وانطلق من جديد.", "tn": "المهندس: ضربة قوية! صلّح الكروسة بالراحة وارجع جري."}, "cops": {"fr": "ÉQUIPE POURSUITE : la police est juste derrière ! Change de trajectoire et accélère.", "en": "CHASE TEAM: Police right behind you! Switch lines and floor it.", "ar": "فريق المطاردة: الشرطة خلفك مباشرة! غيّر المسار وتسارع.", "tn": "فريق المطاردة: الحاكم وراك طول! بدّل الطريق وزيد."}, "win": {"fr": "ÉQUIPE : victoire ! Bravo champion, la Tunisie est fière de toi !", "en": "TEAM: Victory! Well done, champion!", "ar": "الفريق: فوز! برافو يا بطل، تونس فخورة بك!", "tn": "الفريق: ربحت! برافو يا بطل، تونس فخورة بيك!"}, "podium": {"fr": "ÉQUIPE : sur le podium ! Très belle course.", "en": "TEAM: On the podium! Great race.", "ar": "الفريق: على منصّة التتويج! سباق رائع.", "tn": "الفريق: في البوديوم! كورسة باهية برشا."}, "bike": {"fr": "COACH : relance fort en sortie de virage et reste dans la roue de ton adversaire.", "en": "COACH: Sprint hard out of the corners and stay on your rival's wheel.", "ar": "المدرّب: انطلق بقوة عند الخروج من المنعرج وابقَ خلف منافسك.", "tn": "الكوتش: زيد بالقوة في الخروج من الفيراج وابقى ورا المنافس."}, "rain": {"fr": "INGÉNIEUR : piste mouillée, freine plus tôt et évite les bandes blanches.", "en": "ENGINEER: Wet track, brake earlier and avoid the white lines.", "ar": "المهندس: الطريق مبلّل، افرمل مبكراً وتجنّب الخطوط البيضاء.", "tn": "المهندس: الطريق فازگة، فرمل بكري وبعّد على الخطوط البيضاء."}, "night": {"fr": "SPOTTER : course de nuit, regarde loin dans tes phares et anticipe les virages.", "en": "SPOTTER: Night race, look far ahead in your headlights and anticipate the turns.", "ar": "المراقب: سباق ليلي، انظر بعيداً في ضوء المصابيح وتوقّع المنعرجات.", "tn": "المراقب: كورسة في الليل، شوف بعيد في الضو وحضّر روحك للفيراجات."}}/*RADIO_LINES_END*/;
+const RADIO_LINES = /*RADIO_LINES_BEGIN*/{"wrong": {"fr": "SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.", "en": "SPOTTER: Wrong way! Slow down and turn around safely.", "ar": "المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.", "tn": "المراقب: راك ماشي بالعكس! نقص في السرعة وارجع للمسار."}, "edge": {"fr": "INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.", "en": "ENGINEER: You are near the track edge. Ease off and return smoothly.", "ar": "المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.", "tn": "المهندس: قربت تخرج على الطريق. نقص شوية وارجع بالراحة."}, "nitro": {"fr": "STRATÈGE : réserve ton nitro pour la sortie du prochain virage.", "en": "STRATEGIST: Nitro is low. Save it for the exit of the next turn.", "ar": "الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.", "tn": "الاستراتيجي: النيترو قربت توفى. خلّي شوية للخروج من الفيراج الجاي."}, "slide": {"fr": "INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.", "en": "ENGINEER: Reduce steering input and gently stabilize the car.", "ar": "المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.", "tn": "المهندس: نقص شوية من الدوران وثبّت الكروسة بالراحة."}, "pack": {"fr": "STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.", "en": "STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.", "ar": "الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.", "tn": "الاستراتيجي: ما زلت تلحق في المنافسين. استغلّ الهواء وحضّر روحك للتجاوز."}, "tt": {"fr": "INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.", "en": "RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.", "ar": "مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.", "tn": "مهندس السباق: حافظ على النسق. فرمل بالراحة وارجع للبنزين بكري."}, "chase": {"fr": "ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.", "en": "CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.", "ar": "فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.", "tn": "فريق المطاردة: رد بالك من الرادار وواصل تجري. خذ الفيراجات بنظافة باش تبعّد البوليس."}, "clear": {"fr": "SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.", "en": "SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.", "ar": "المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.", "tn": "المراقب: الطريق قدّامك واضح. ركّز في الفرملة واخرج مليح من الفيراج."}, "go": {"fr": "ÉQUIPE : feu vert ! Bon départ, reste propre au premier virage.", "en": "TEAM: Green light! Good start, keep it clean into turn one.", "ar": "الفريق: انطلق! بداية جيدة، حافظ على نظافة المنعرج الأول.", "tn": "الفريق: يزّي انطلق! بداية باهية، ادخل الفيراج الأول بالراحة."}, "gain": {"fr": "STRATÈGE : bien joué, tu gagnes une place ! Continue comme ça.", "en": "STRATEGIST: Nice move, you gained a place! Keep it up.", "ar": "الاستراتيجي: أحسنت، ربحت مركزاً! واصل هكذا.", "tn": "الاستراتيجي: برافو، ربحت بلاصة! زيد هكّا."}, "lose": {"fr": "STRATÈGE : tu viens de perdre une place. Reste calme, tu vas la reprendre.", "en": "STRATEGIST: You lost a place. Stay calm, you will get it back.", "ar": "الاستراتيجي: خسرت مركزاً. حافظ على هدوئك وسترجعه.", "tn": "الاستراتيجي: خسرت بلاصة. ما تقلقش، توّا ترجّعها."}, "lead": {"fr": "ÉQUIPE : tu es en tête ! Garde le rythme et protège la trajectoire intérieure.", "en": "TEAM: You're leading! Keep the pace and protect the inside line.", "ar": "الفريق: أنت في المقدمة! حافظ على النسق واحمِ المسار الداخلي.", "tn": "الفريق: راك الأول! حافظ على النسق وسكّر الداخل."}, "last": {"fr": "INGÉNIEUR : dernier tour ! Donne tout, garde le nitro pour la ligne droite finale.", "en": "ENGINEER: Final lap! Give it everything, save nitro for the last straight.", "ar": "المهندس: اللفة الأخيرة! أعطِ كل ما لديك واحتفظ بالنيترو للخط المستقيم الأخير.", "tn": "المهندس: آخر دورة! عطي الكل وخلّي النيترو للخط الأخير."}, "best": {"fr": "INGÉNIEUR : meilleur tour personnel ! Superbe rythme.", "en": "ENGINEER: Personal best lap! Superb pace.", "ar": "المهندس: أفضل لفة لك! نسق رائع.", "tn": "المهندس: أحسن دورة متاعك! نسق هايل."}, "hit": {"fr": "INGÉNIEUR : gros choc ! Redresse doucement et repars.", "en": "ENGINEER: Big hit! Straighten up gently and go again.", "ar": "المهندس: اصطدام قوي! عدّل السيارة بهدوء وانطلق من جديد.", "tn": "المهندس: ضربة قوية! صلّح الكروسة بالراحة وارجع جري."}, "cops": {"fr": "ÉQUIPE POURSUITE : la police est juste derrière ! Change de trajectoire et accélère.", "en": "CHASE TEAM: Police right behind you! Switch lines and floor it.", "ar": "فريق المطاردة: الشرطة خلفك مباشرة! غيّر المسار وتسارع.", "tn": "فريق المطاردة: الحاكم وراك طول! بدّل الطريق وزيد."}, "win": {"fr": "ÉQUIPE : victoire ! Bravo champion, la Tunisie est fière de toi !", "en": "TEAM: Victory! Well done, champion!", "ar": "الفريق: فوز! برافو يا بطل، تونس فخورة بك!", "tn": "الفريق: ربحت! برافو يا بطل، تونس فخورة بيك!"}, "podium": {"fr": "ÉQUIPE : sur le podium ! Très belle course.", "en": "TEAM: On the podium! Great race.", "ar": "الفريق: على منصّة التتويج! سباق رائع.", "tn": "الفريق: في البوديوم! كورسة باهية برشا."}, "bike": {"fr": "COACH : relance fort en sortie de virage et reste dans la roue de ton adversaire.", "en": "COACH: Sprint hard out of the corners and stay on your rival's wheel.", "ar": "المدرّب: انطلق بقوة عند الخروج من المنعرج وابقَ خلف منافسك.", "tn": "الكوتش: زيد بالقوة في الخروج من الفيراج وابقى ورا المنافس."}, "rain": {"fr": "INGÉNIEUR : piste mouillée, freine plus tôt et évite les bandes blanches.", "en": "ENGINEER: Wet track, brake earlier and avoid the white lines.", "ar": "المهندس: الطريق مبلّل، افرمل مبكراً وتجنّب الخطوط البيضاء.", "tn": "المهندس: الطريق فازگة، فرمل بكري وبعّد على الخطوط البيضاء."}, "night": {"fr": "SPOTTER : course de nuit, regarde loin dans tes phares et anticipe les virages.", "en": "SPOTTER: Night race, look far ahead in your headlights and anticipate the turns.", "ar": "المراقب: سباق ليلي، انظر بعيداً في ضوء المصابيح وتوقّع المنعرجات.", "tn": "المراقب: كورسة في الليل، شوف بعيد في الضو وحضّر روحك للفيراجات."}, "n_aziz": {"fr": "Seddik !", "en": "Seddik!", "ar": "صدّيق!", "tn": "صدّيق!"}, "n_rania": {"fr": "Joud !", "en": "Joud!", "ar": "جود!", "tn": "جود!"}, "n_skander": {"fr": "Skander !", "en": "Skander!", "ar": "سكندر!", "tn": "سكندر!"}, "n_yosra": {"fr": "Emna !", "en": "Emna!", "ar": "آمنة!", "tn": "آمنة!"}, "n_fares": {"fr": "Dali !", "en": "Dali!", "ar": "دالي!", "tn": "دالي!"}, "n_ines": {"fr": "Nour !", "en": "Nour!", "ar": "نور!", "tn": "نور!"}, "n_omar": {"fr": "Nouh !", "en": "Nouh!", "ar": "نوح!", "tn": "نوح!"}, "n_salma": {"fr": "Molka !", "en": "Molka!", "ar": "ملكة!", "tn": "ملكة!"}, "n_nader": {"fr": "Mazen !", "en": "Mazen!", "ar": "مازن!", "tn": "مازن!"}, "n_maya": {"fr": "Rayhane !", "en": "Rayhane!", "ar": "ريحان!", "tn": "ريحان!"}, "n_kais": {"fr": "Haroun !", "en": "Haroun!", "ar": "هارون!", "tn": "هارون!"}, "n_lina": {"fr": "Yasmine !", "en": "Yasmine!", "ar": "ياسمين!", "tn": "ياسمين!"}, "n_mehdi": {"fr": "Aziz !", "en": "Aziz!", "ar": "عزيز!", "tn": "عزيز!"}, "n_amira": {"fr": "Joseph !", "en": "Joseph!", "ar": "جوزيف!", "tn": "جوزيف!"}, "n_walid": {"fr": "Yassine !", "en": "Yassine!", "ar": "ياسين!", "tn": "ياسين!"}, "n_rim": {"fr": "Arafet !", "en": "Arafet!", "ar": "عرفات!", "tn": "عرفات!"}, "attack": {"fr": "STRATÈGE : il est à portée ! Prends l’aspiration et attaque au prochain freinage.", "en": "STRATEGIST: He's within reach! Take the slipstream and attack at the next braking zone.", "ar": "الاستراتيجي: المنافس في متناولك! استفد من تيار الهواء وهاجم عند الفرملة القادمة.", "tn": "الاستراتيجي: راهو قريب! خوذ الهواء متاعو وهاجم في الفرانة الجاية."}, "defend": {"fr": "SPOTTER : voiture juste derrière toi ! Ferme la porte à l’intérieur.", "en": "SPOTTER: Car right behind you! Close the door on the inside.", "ar": "المراقب: سيارة خلفك مباشرة! أغلق المسار الداخلي.", "tn": "المراقب: كرهبة وراك طول! سكّر عليه من الداخل."}, "half": {"fr": "INGÉNIEUR : mi-course. Le moteur est en forme, garde ce rythme.", "en": "ENGINEER: Halfway. The engine is in good shape, keep this pace.", "ar": "المهندس: منتصف السباق. المحرك في حالة جيدة، حافظ على هذا النسق.", "tn": "المهندس: نص الكورسة. الموتور لاباس، حافظ على النسق هذا."}, "final": {"fr": "ÉQUIPE : dernière ligne droite ! Pied au plancher jusqu’à la ligne !", "en": "TEAM: Final straight! Flat out to the line!", "ar": "الفريق: الخط المستقيم الأخير! دوس حتى خط الوصول!", "tn": "الفريق: آخر خط! دوس للآخر حتى للوصول!"}, "nitrofull": {"fr": "STRATÈGE : ton nitro est plein, utilise-le dans cette ligne droite !", "en": "STRATEGIST: Your nitro is full, use it on this straight!", "ar": "الاستراتيجي: النيترو ممتلئ، استعمله في هذا الخط المستقيم!", "tn": "الاستراتيجي: النيترو معبّي، استعملو في الخط هذا!"}, "drift": {"fr": "SPOTTER : magnifique dérapage ! Le public est debout !", "en": "SPOTTER: Beautiful drift! The crowd is on its feet!", "ar": "المراقب: انزلاق رائع! الجمهور واقف يصفّق!", "tn": "المراقب: درفت هايل! الجمهور الكل واقف!"}, "clean": {"fr": "INGÉNIEUR : tour parfait, sans la moindre touchette. Bravo !", "en": "ENGINEER: Perfect lap, not a single touch. Well done!", "ar": "المهندس: لفة مثالية بدون أي احتكاك. أحسنت!", "tn": "المهندس: دورة نظيفة، حتى لمسة. برافو!"}, "gain_b": {"fr": "SPOTTER : dépassement réussi ! Le public tunisien est en feu !", "en": "SPOTTER: Great overtake! The Tunisian crowd is on fire!", "ar": "المراقب: تجاوز ناجح! الجمهور التونسي مشتعل!", "tn": "المراقب: فاتو بنظافة! الجمهور التونسي شعّل!"}, "lose_b": {"fr": "INGÉNIEUR : pas de panique, il reste du temps. Soigne tes sorties de virage.", "en": "ENGINEER: No panic, there's time left. Focus on your corner exits.", "ar": "المهندس: لا داعي للقلق، ما زال هناك وقت. ركّز على الخروج من المنعرجات.", "tn": "المهندس: ما تتقلقش، مازال الوقت. ركّز في الخروج من الفيراجات."}, "lead_b": {"fr": "ÉQUIPE : toujours en tête ! Ne regarde pas derrière, roule propre.", "en": "TEAM: Still leading! Don't look back, keep it clean.", "ar": "الفريق: ما زلت في المقدمة! لا تنظر للخلف وقُد بنظافة.", "tn": "الفريق: مازلت الأول! ما تخزرش لتالي، سوق بنظافة."}}/*RADIO_LINES_END*/;
 const radioLang = () => LANG === 'tn' ? 'tn' : LANG === 'ar' ? 'ar' : LEN() ? 'en' : 'fr';
 function radioSituation() {
   const p = G.player, d = Math.abs(p.d), kmh = Math.round(Math.abs(p.vfw) * 3.6);
@@ -3706,13 +3706,15 @@ function radioSituation() {
   return 'clear';
 }
 // V227 — coach vocal automatique : départ, places gagnées ou perdues, tête de course, dernier tour, meilleur tour, choc, police, pluie, nuit, arrivée
-const COACH = { t: -99, lap: 1, rank: 0, best: Infinity, hit: 0, said: {}, tip: 0 };
-function coachReset() { Object.assign(COACH, { t: -99, lap: 1, rank: 0, best: Infinity, hit: 0, said: {}, tip: 0 }); }
+const COACH = { t: -99, lap: 1, rank: 0, best: Infinity, hit: 0, said: {}, tip: 0, lapHit: 0, slideT: 0, nitroT: 0 };
+function coachReset() { Object.assign(COACH, { t: -99, lap: 1, rank: 0, best: Infinity, hit: 0, said: {}, tip: 0, lapHit: 0, slideT: 0, nitroT: 0 }); }
 function coachSay(key, prio) {
   if (SAVE.settings.coach === false || !RADIO_LINES[key]) return false;
   const now = G.time || 0; if (!prio && now - COACH.t < 7) return false; COACH.t = now;
+  if (RADIO_LINES[key + '_b'] && Math.random() < 0.5) key = key + '_b';   // variantes : l'équipe ne répète pas toujours la même phrase
   G.radioKey = key; const lang = radioLang();
-  try { playCrewClip(key, lang).then(ok => { if (!ok) speakCrewAdvice(RADIO_LINES[key][lang]); }); } catch (e) { }
+  try { playCrewClip(key, lang, crewNameKey()).then(ok => { if (!ok) speakCrewAdvice(crewName() + ', ' + RADIO_LINES[key][lang]); }); } catch (e) { }
+  try { $('radio-message').textContent = crewName() + ' — ' + RADIO_LINES[key][lang]; } catch (e) { }
   try { const box = $('radio-team'); box.classList.remove('radio-ping'); void box.offsetWidth; box.classList.add('radio-ping'); } catch (e) { }
   return true;
 }
@@ -3722,20 +3724,31 @@ function coachTick() {
   if (!COACH.said.go && rt > 0.4) { COACH.said.go = 1; coachSay('go', true); return; }
   if (cfg.mode !== 'chase') {
     const lap = clamp(Math.floor(p.progress / T.L) + 1, 1, cfg.laps);
-    if (lap > COACH.lap) { COACH.lap = lap; if (lap === cfg.laps && cfg.laps > 1) { coachSay('last', true); return; } }
+    if (lap > COACH.lap) { const clean = COACH.lapHit === p.lastHit; COACH.lap = lap; COACH.lapHit = p.lastHit; if (lap === cfg.laps && cfg.laps > 1) { coachSay('last', true); return; } if (clean && coachSay('clean')) return; }
+    const total = cfg.laps * T.L;
+    if (!COACH.said.half && p.progress > total * 0.5 && cfg.laps >= 2) { COACH.said.half = 1; if (coachSay('half')) return; }
+    if (!COACH.said.fin && p.progress > total - 320) { COACH.said.fin = 1; coachSay('final', true); return; }
     if (G.best < COACH.best) { const first = COACH.best === Infinity; COACH.best = G.best; if (!first && coachSay('best')) return; }
   }
   if (cfg.mode === 'race' && rt > 6) {
     const rk = rankOf(p);
     if (COACH.rank && rk !== COACH.rank) { const k = rk < COACH.rank ? (rk === 1 ? 'lead' : 'gain') : 'lose'; COACH.rank = rk; if (coachSay(k)) return; }
     COACH.rank = rk;
+    // duels : rival juste devant (attaque) ou juste derrière (défense)
+    let ahead = 1e9, behind = 1e9; for (const c of G.cars) if (c.kind === 'ai' && !c.finished) { const d = c.progress - p.progress; if (d > 0) ahead = Math.min(ahead, d); else behind = Math.min(behind, -d); }
+    if (ahead < 16 && ahead > 3 && G.time - (COACH.said.atkT || -99) > 25) { COACH.said.atkT = G.time; if (coachSay('attack')) return; }
+    if (behind < 9 && behind > 1.5 && G.time - (COACH.said.defT || -99) > 25) { COACH.said.defT = G.time; if (coachSay('defend')) return; }
   }
+  if (p.sliding && p.v > 18) COACH.slideT += 1 / 30; else COACH.slideT = Math.max(0, COACH.slideT - 1 / 15);
+  if (COACH.slideT > 1.4 && G.time - (COACH.said.drT || -99) > 30) { COACH.said.drT = G.time; COACH.slideT = 0; if (coachSay('drift')) return; }
+  if (p.nitro >= 0.99 && p.v > 28 && !p.nitroOn) COACH.nitroT += 1 / 30; else COACH.nitroT = 0;
+  if (COACH.nitroT > 10 && G.time - (COACH.said.niT || -99) > 45) { COACH.said.niT = G.time; COACH.nitroT = 0; if (coachSay('nitrofull')) return; }
   if (p.lastHit > COACH.hit + 0.01) { COACH.hit = p.lastHit; if ((G.time - (COACH.said.hitT || -99)) > 20 && p.v < p.st.vmax * 0.5) { COACH.said.hitT = G.time; if (coachSay('hit')) return; } }
   if (cfg.mode === 'chase' && G.chase) { let dm = 1e9; for (const c of G.cars) if (c.kind === 'cop' && !c.wreck) dm = Math.min(dm, Math.hypot(c.x - p.x, c.z - p.z)); if (dm < 22 && G.time - (COACH.said.copT || -99) > 16) { COACH.said.copT = G.time; if (coachSay('cops')) return; } }
   if (!COACH.said.wx && rt > 12) { COACH.said.wx = 1; if (G.env && G.env.rain) { coachSay('rain'); return; } if (G.env && G.env.night) { coachSay('night'); return; } }
   if (p.model && p.model.cyc && rt - COACH.tip > 38) { COACH.tip = rt; coachSay('bike'); }
 }
-function radioAdvice() { G.radioKey = radioSituation(); return RADIO_LINES[G.radioKey][radioLang()]; }
+function radioAdvice() { G.radioKey = radioSituation(); return crewName() + ' — ' + RADIO_LINES[G.radioKey][radioLang()]; }
 
 /* V212 — voix de l'équipe enregistrée : fichiers audio joués par le moteur son du jeu, avec un filtre « radio ».
    Ne dépend plus du moteur vocal du téléphone (absent ou défaillant sur certains appareils) ; ce dernier reste en secours. */
@@ -3746,20 +3759,24 @@ function crewClipList() {
     .then(j => { CREW_CLIPS.list = new Set((j && Array.isArray(j.files)) ? j.files : []); return CREW_CLIPS.list; });
   return CREW_CLIPS.loading;
 }
-async function playCrewClip(key, lang) {
+async function crewBuf(ctx, file) {
+  let buf = CREW_CLIPS.buf[file]; if (buf) return buf;
+  const r = await fetch('audio/radio/' + file); if (!r.ok) return null;
+  const data = await r.arrayBuffer();
+  buf = await new Promise((ok, ko) => { const pr = ctx.decodeAudioData(data, ok, ko); if (pr && pr.catch) pr.catch(ko); });
+  return (CREW_CLIPS.buf[file] = buf);
+}
+const crewNameKey = () => 'n_' + (SAVE.driver || 'aziz');
+const crewName = () => (DRIVERS.find(d => d.id === SAVE.driver) || DRIVERS[0]).name;
+async function playCrewClip(key, lang, preKey) {
   try {
     if (!key || !window.fetch) return false;
     const file = lang + '-' + key + '.mp3';
     const list = await crewClipList(); if (!list.has(file)) return false;
     AU.init(); const ctx = AU.ctx; if (!ctx) return false;
     if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (e) { } }
-    let buf = CREW_CLIPS.buf[file];
-    if (!buf) {
-      const r = await fetch('audio/radio/' + file); if (!r.ok) return false;
-      const data = await r.arrayBuffer();
-      buf = await new Promise((ok, ko) => { const pr = ctx.decodeAudioData(data, ok, ko); if (pr && pr.catch) pr.catch(ko); });
-      CREW_CLIPS.buf[file] = buf;
-    }
+    const buf = await crewBuf(ctx, file); if (!buf) return false;
+    const preFile = preKey ? lang + '-' + preKey + '.mp3' : null, pre = preFile && list.has(preFile) ? await crewBuf(ctx, preFile).catch(() => null) : null;
     if (CREW_CLIPS.playing) { try { CREW_CLIPS.playing.stop(); } catch (e) { } }
     const t0 = ctx.currentTime + 0.12, vol = Math.max(0.35, (SAVE.settings.sfx === undefined ? 80 : SAVE.settings.sfx) / 100);
     // chaîne « radio » : bande passante téléphonique + légère saturation
@@ -3772,7 +3789,8 @@ async function playCrewClip(key, lang) {
     if (AU.nb) { const n = ctx.createBufferSource(); n.buffer = AU.nb; const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 0.7; const ng = ctx.createGain();
       ng.gain.setValueAtTime(0.0001, ctx.currentTime); ng.gain.linearRampToValueAtTime(0.16 * vol, ctx.currentTime + 0.02); ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05);
       n.connect(bp); bp.connect(ng); ng.connect(ctx.destination); n.start(ctx.currentTime, Math.random()); n.stop(t0 + 0.08); }
-    const src = ctx.createBufferSource(); src.buffer = buf; src.connect(hp); src.start(t0);
+    let tm = t0; if (pre) { const ps = ctx.createBufferSource(); ps.buffer = pre; ps.connect(hp); ps.start(t0); tm = t0 + pre.duration + 0.12; }
+    const src = ctx.createBufferSource(); src.buffer = buf; src.connect(hp); src.start(tm);
     CREW_CLIPS.playing = src;
     // la musique baisse pendant que l'équipe parle
     try { if (MUS.g) { MUS.g.gain.setTargetAtTime(MUS.g.gain.value * 0.35, ctx.currentTime, 0.08); } } catch (e) { }
@@ -3783,7 +3801,7 @@ async function playCrewClip(key, lang) {
 }
 function crewSpeak(message) {
   const key = G.radioKey, lang = radioLang();
-  playCrewClip(key, lang).then(ok => { if (!ok) speakCrewAdvice(message); });
+  playCrewClip(key, lang, crewNameKey()).then(ok => { if (!ok) speakCrewAdvice(crewName() + ', ' + message); });
 }
 // Radio équipe : confirmation réelle du moteur natif Android, pas seulement de l'envoi.
 let RADIO_TTS_UNLOCKED = false;
@@ -4125,6 +4143,8 @@ function driverMesh(idx, pose) {
     mb.box(hc[0] + 0.055, hc[1] - 0.017, hc[2] + 0.142, 0.038, 0.006, 0.006, [0.42, 0.65, 0.78], 15);
     mb.box(hc[0], hc[1] + 0.119, hc[2] + 0.025, 0.026, 0.008, 0.12, [0.92, 0.94, 0.98], 4);
     mb.box(hc[0], hc[1] + 0.105, hc[2] - 0.005, 0.035, 0.012, 0.105, [0.94, 0.95, 0.98], 15);
+    // drapeau tunisien peint sur chaque côté du casque
+    for (const sx of [-1, 1]) { const fx = hc[0] + sx * 0.141; mb.box(fx, hc[1] + 0.03, hc[2] - 0.04, 0.006, 0.04, 0.06, [0.86, 0.05, 0.08], 0); discX(mb, fx + sx * 0.0035, hc[1] + 0.05, hc[2] - 0.04, 0.012, [1, 1, 1], 0, 10, 0.002); discX(mb, fx + sx * 0.005, hc[1] + 0.05, hc[2] - 0.042, 0.008, [0.86, 0.05, 0.08], 0, 10, 0.002); }
     for (const sx of [-1, 1]) {
       mb.box(sx * 0.126 + hc[0], hc[1] - 0.015, hc[2] + 0.015, 0.012, 0.052, 0.035, [0.16, 0.17, 0.19], 4);
       sphere(mb, sx * 0.132 + hc[0], hc[1] - 0.025, hc[2] + 0.035, 0.012, [0.72, 0.74, 0.78], 4, -Math.PI / 2, Math.PI / 2, 6);
@@ -4150,6 +4170,8 @@ function driverMesh(idx, pose) {
     mb.box(hc[0], hc[1] + 0.01, hc[2] + 0.1, 0.19, 0.04, 0.03, [0.04, 0.05, 0.07], 4); mb.box(hc[0] - 0.03, hc[1] + 0.02, hc[2] + 0.117, 0.06, 0.012, 0.005, [0.6, 0.8, 0.95], 15);
     for (const sx of [-1, 1]) bar(mb, [hc[0] + sx * 0.1, hc[1] + 0.03, hc[2]], [hc[0] + sx * 0.06, hc[1] - 0.1, hc[2] + 0.05], 0.006, [0.05, 0.05, 0.05], 0);
   }
+  // écusson tunisien sur l'épaule gauche de la combinaison
+  { const sp = [P.sh[0] + 0.2, P.sh[1] - 0.06, P.sh[2]]; mb.box(sp[0] + 0.012, sp[1], sp[2], 0.012, 0.06, 0.09, [0.86, 0.05, 0.08], 0); discX(mb, sp[0] + 0.02, sp[1] + 0.03, sp[2], 0.017, [1, 1, 1], 0, 10, 0.002); discX(mb, sp[0] + 0.022, sp[1] + 0.03, sp[2] - 0.002, 0.012, [0.86, 0.05, 0.08], 0, 10, 0.002); }
   // bras (épaule -> coude -> main gantée)
   for (let k = 0; k < 2; k++) {
     const sx = k ? -1 : 1, s0 = add(P.sh, [sx * 0.19, -0.04, 0]), h = P.hands[k];
@@ -4260,6 +4282,7 @@ ${eyes}
 <path d="M44 57.2 Q47 55.9 50 56.6 Q53 55.9 56 57.2 Q53 58.1 50 58 Q47 58.1 44 57.2 Z" fill="url(#${id}l)"/>
 <path d="M44.4 57.4 Q50 61.4 55.6 57.4 Q50 59.2 44.4 57.4 Z" fill="${shade(sk, 0.82)}"/><path d="M47.6 59.2 Q50 60 52.4 59.2" stroke="#fff" stroke-width=".55" opacity=".35" fill="none"/>
 <path d="M44 57.3 Q50 58.7 56 57.3" stroke="${shade(sk, 0.42)}" stroke-width=".7" fill="none" stroke-linecap="round"/>
+<g transform="translate(21 85.5)"><rect width="11" height="7.4" rx=".8" fill="#e70013" stroke="#fff" stroke-opacity=".5" stroke-width=".35"/><circle cx="5.5" cy="3.7" r="2.45" fill="#fff"/><circle cx="5.3" cy="3.7" r="1.9" fill="#e70013"/><circle cx="5.75" cy="3.7" r="1.55" fill="#fff"/><path d="M6.35 3.15 L6.55 3.6 L7.05 3.6 L6.65 3.9 L6.8 4.35 L6.35 4.08 L5.92 4.35 L6.06 3.9 L5.66 3.6 L6.16 3.6 Z" fill="#e70013"/></g>
 <rect width="100" height="100" fill="url(#${id}b)" opacity="0" /><rect width="100" height="100" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="10" filter="url(#${id}bk)"/>
 <rect x=".75" y=".75" width="98.5" height="98.5" fill="none" stroke="${he}" stroke-opacity=".55" stroke-width="1.5" rx="2"/>
 </svg>`;
@@ -4823,6 +4846,13 @@ function buildTrack(def, quality) {
       const ii = i % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side];
       for (const u of [-4.5, 0, 4.5]) { const c0 = pos(i, side * (baseD + 8.6), 6.2); const q = [c0[0] + tg[0] * u, c0[1], c0[2] + tg[2] * u]; bar(mb, [q[0], q[1] - 6, q[2]], [q[0], q[1] + 1.2, q[2]], 0.06, [0.8, 0.8, 0.82], 4, 0.06, 6); crowdFlag(mb, [q[0] + tg[0] * 1.1, q[1], q[2] + tg[2] * 1.1], 2.2, 1.45, tg, nr); }
     }
+  }
+  // V228 — grand drapeau tunisien peint sur l'asphalte, juste après la ligne de départ
+  { const mb = ch(rk(5)), i0 = 4, i1 = 9, wl = Math.min(W * 0.62, 5.5), up = 0.045;
+    mb.quad(pos(i0, -wl, up), pos(i0, wl, up), pos(i1, wl, up), pos(i1, -wl, up), [0.8, 0.04, 0.07], 0);
+    const c = pos(Math.round((i0 + i1) / 2), 0, up + 0.004), ii = Math.round((i0 + i1) / 2), ax = [rx[ii], 0, rz[ii]], az = [tx[ii], 0, tz[ii]], H2 = Math.min(wl, (i1 - i0) * ds / 2);
+    const disc = (cu, cv, rr, col, k) => { for (let j = 0; j < 20; j++) { const a0 = j / 20 * 6.2832, a1 = (j + 1) / 20 * 6.2832, Q = (a, r2) => [c[0] + ax[0] * (cu + Math.cos(a) * r2) + az[0] * (cv + Math.sin(a) * r2), c[1] + k * 0.003, c[2] + ax[2] * (cu + Math.cos(a) * r2) + az[2] * (cv + Math.sin(a) * r2)]; mb.tri([c[0] + ax[0] * cu + az[0] * cv, c[1] + k * 0.003, c[2] + ax[2] * cu + az[2] * cv], Q(a0, rr), Q(a1, rr), col, 0); } };
+    disc(0, 0, H2 * 0.5, [0.96, 0.95, 0.92], 1); disc(0, -H2 * 0.04, H2 * 0.38, [0.8, 0.04, 0.07], 2); disc(0, H2 * 0.07, H2 * 0.31, [0.96, 0.95, 0.92], 3); disc(0, H2 * 0.18, H2 * 0.12, [0.8, 0.04, 0.07], 4);
   }
   // portique de départ
   {
@@ -8260,7 +8290,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V227';
+const GAME_VERSION = 'V228';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),

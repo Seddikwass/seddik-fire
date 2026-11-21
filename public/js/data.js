@@ -225,31 +225,38 @@ export const REAL_XI = {
 };
 // Maillots domicile vérifiés (footballkitarchive / footyheadlines, saisons 2024-25 → 2026-27).
 export const KIT_DESIGNS = {
-  est: { pattern: 'stripes', shirt: '#d4141c', alt: '#f7c600', trim: '#111111', shorts: '#111111', socks: '#d4141c', stripes: 10 },
+  est: { pattern: 'stripes', shirt: '#d4141c', alt: '#f7c600', sep: '#111111', trim: '#111111', shorts: '#111111', socks: '#d4141c', stripes: 18 },
   ca: { pattern: 'hoops', shirt: '#e30613', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#ffffff', hoops: 7 },
-  css: { pattern: 'stripes', shirt: '#111111', alt: '#ffffff', trim: '#ffffff', shorts: '#111111', socks: '#111111', stripes: 10 },
+  css: { pattern: 'stripes', shirt: '#111111', alt: '#ffffff', sleeves: '#ffffff', trim: '#111111', shorts: '#111111', socks: '#111111', stripes: 12 },
   ess: { pattern: 'plain', shirt: '#c8102e', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#c8102e' },
   usm: { pattern: 'centerStripe', shirt: '#ffffff', alt: '#1d4fa3', sleeves: '#1d4fa3', trim: '#d4af37', shorts: '#1d4fa3', socks: '#ffffff' },
-  st: { pattern: 'stripes', shirt: '#b5121b', alt: '#0f7b3c', trim: '#ffffff', shorts: '#ffffff', socks: '#b5121b', stripes: 8 },
-  esz: { pattern: 'stripes', shirt: '#d71920', alt: '#f6c400', trim: '#f6c400', shorts: '#f6c400', socks: '#d71920', stripes: 10 },
-  esm: { pattern: 'stripes', shirt: '#c8161d', alt: '#f4c20d', trim: '#f4c20d', shorts: '#c8161d', socks: '#c8161d', stripes: 8 },
+  st: { pattern: 'stripes', shirt: '#b5121b', alt: '#0f7b3c', trim: '#ffffff', shorts: '#ffffff', socks: '#b5121b', stripes: 14 },
+  esz: { pattern: 'stripes', shirt: '#d71920', alt: '#f6c400', trim: '#f6c400', shorts: '#f6c400', socks: '#d71920', stripes: 18 },
+  esm: { pattern: 'stripes', shirt: '#c8161d', alt: '#f4c20d', trim: '#f4c20d', shorts: '#c8161d', socks: '#c8161d', stripes: 14 },
   jso: { pattern: 'chestBand', shirt: '#1d3f9a', alt: '#f2c200', trim: '#f2c200', shorts: '#1d3f9a', socks: '#1d3f9a' },
-  usbg: { pattern: 'stripes', shirt: '#ffd400', alt: '#151515', trim: '#151515', shorts: '#151515', socks: '#ffd400', stripes: 10 },
-  asm: { pattern: 'stripes', shirt: '#f4c20d', alt: '#0e7a3a', trim: '#0e7a3a', shorts: '#0e7a3a', socks: '#f4c20d', stripes: 10 },
+  usbg: { pattern: 'stripes', shirt: '#ffd400', alt: '#151515', trim: '#151515', shorts: '#151515', socks: '#ffd400', stripes: 18 },
+  asm: { pattern: 'stripes', shirt: '#f4c20d', alt: '#0e7a3a', trim: '#0e7a3a', shorts: '#0e7a3a', socks: '#f4c20d', stripes: 18 },
   cab: { pattern: 'plain', shirt: '#f5d000', alt: '#111111', trim: '#111111', shorts: '#111111', socks: '#f5d000' },
   ob: { pattern: 'checkers', shirt: '#d71a21', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#d71a21' },
   eshs: { pattern: 'plain', shirt: '#f2c500', alt: '#151515', trim: '#151515', shorts: '#151515', socks: '#f2c500' },
   psse: { pattern: 'plain', shirt: '#0d6e3a', alt: '#f0f0f0', trim: '#f0f0f0', shorts: '#f0f0f0', socks: '#0d6e3a' },
-  cshl: { pattern: 'stripes', shirt: '#0b7a3b', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#0b7a3b', stripes: 10 },
+  cshl: { pattern: 'stripes', shirt: '#0b7a3b', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#0b7a3b', stripes: 18 },
+};
+// 3e maillots 2026-27 connus (Footy Headlines) ; sinon un 3e maillot neutre est utilisé.
+export const KIT_DESIGNS_THIRD = {
+  ca: { pattern: 'plain', shirt: '#141414', alt: '#e30613', trim: '#e30613', shorts: '#141414', socks: '#141414' },
+  css: { pattern: 'plain', shirt: '#cfe6f2', alt: '#111111', trim: '#111111', shorts: '#cfe6f2', socks: '#cfe6f2' },
+  ess: { pattern: 'plain', shirt: '#141414', alt: '#c9ccd2', trim: '#c9ccd2', shorts: '#141414', socks: '#141414' },
+  cshl: { pattern: 'plain', shirt: '#5b2a86', alt: '#ffffff', trim: '#ffffff', shorts: '#5b2a86', socks: '#5b2a86' },
 };
 // Maillots extérieur (portés seulement en cas de conflit de couleurs, comme en vrai).
 export const KIT_DESIGNS_AWAY = {
-  est: { pattern: 'plain', shirt: '#ffffff', alt: '#d4141c', trim: '#d4141c', shorts: '#ffffff', socks: '#ffffff' },
+  est: { pattern: 'plain', shirt: '#1a2340', alt: '#d4141c', trim: '#f7c600', shorts: '#1a2340', socks: '#1a2340' },
   ca: { pattern: 'plain', shirt: '#ffffff', alt: '#e30613', trim: '#e30613', shorts: '#e30613', socks: '#ffffff' },
-  css: { pattern: 'plain', shirt: '#ffffff', alt: '#111111', trim: '#111111', shorts: '#ffffff', socks: '#ffffff' },
+  css: { pattern: 'plain', shirt: '#151515', alt: '#ffffff', trim: '#ffffff', shorts: '#151515', socks: '#151515' },
   ess: { pattern: 'plain', shirt: '#ffffff', alt: '#c8102e', trim: '#c8102e', shorts: '#ffffff', socks: '#ffffff' },
-  usm: { pattern: 'plain', shirt: '#1d4fa3', alt: '#ffffff', trim: '#ffffff', shorts: '#1d4fa3', socks: '#1d4fa3' },
-  st: { pattern: 'sash', shirt: '#ffffff', alt: '#0f7b3c', alt2: '#b5121b', trim: '#0f7b3c', shorts: '#ffffff', socks: '#ffffff' },
+  usm: { pattern: 'centerStripe', shirt: '#1c1c1e', alt: '#3a3a3e', trim: '#ffffff', shorts: '#1c1c1e', socks: '#1c1c1e' },
+  st: { pattern: 'plain', shirt: '#0c5a2e', alt: '#b5121b', sleeves: '#b5121b', trim: '#ffffff', shorts: '#0c5a2e', socks: '#0c5a2e' },
   esz: { pattern: 'plain', shirt: '#ffffff', alt: '#d71920', trim: '#d71920', shorts: '#ffffff', socks: '#ffffff' },
   esm: { pattern: 'plain', shirt: '#ffffff', alt: '#c8161d', trim: '#c8161d', shorts: '#ffffff', socks: '#ffffff' },
   jso: { pattern: 'stripes', shirt: '#ffffff', alt: '#1d3f9a', trim: '#f2c200', shorts: '#ffffff', socks: '#ffffff', stripes: 14 },

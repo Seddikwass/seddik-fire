@@ -1,5 +1,9 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.49.0
+- **Maillots 2026-27** (sources Footy Headlines) : EST domicile à rayures rouge/jaune plus fines et extérieur bleu marine ; CSS domicile rayé noir/blanc à manches blanches et extérieur noir ; ST extérieur vert foncé à manches rouges ; USM extérieur noir ; 3e maillots réels du CA (noir), CSS (bleu glacier), ESS (noir) et CSHL (violet).
+- **Joueurs plus athlétiques** : silhouette en V (poitrine large, taille fine), cuisses plus musclées, avant-bras plus épais, mains plus fines, mâchoire et menton (visage plus adulte), ceinture du short affinée.
+
 ## Version 3.48.0
 - **Stade « bowl » moderne** : les quatre virages sont désormais des tribunes en arc remplies de supporters (fini les blocs pleins dans les angles), toit et rampe lumineuse continus, deux écrans géants sous le toit, pylônes d'éclairage déplacés derrière l'enceinte.
 - **VAR** : environ un but sur trois passe en vérification (hors-jeu ou faute possible) pendant le ralenti, puis « ✓ BUT VALIDÉ ».

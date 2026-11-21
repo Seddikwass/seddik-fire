@@ -1,5 +1,5 @@
 // Moteur de carrière : saisons, compétitions, finances, transferts, staff, médical, élections.
-import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, REAL_SQUADS, REAL_XI, KIT_DESIGNS, KIT_DESIGNS_AWAY } from './data.js';
+import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, REAL_SQUADS, REAL_XI, KIT_DESIGNS, KIT_DESIGNS_AWAY, KIT_DESIGNS_THIRD } from './data.js';
 import { rng, clamp, uid, deepCopy } from './util.js';
 import { quickSim } from './match.js';
 import * as Dr from './dressing.js';
@@ -485,6 +485,7 @@ const THIRD_KITS = [
   { pattern: 'plain', shirt: '#f07c1a', alt: '#111111', trim: '#111111', shorts: '#111111', socks: '#f07c1a', third: true },
 ];
 export function clubKit(id, mode = false) {
+  if ((mode === 'third' || mode === 0) && KIT_DESIGNS_THIRD[id]) return { ...KIT_DESIGNS_THIRD[id], third: true };
   if (mode === 'third' || typeof mode === 'number') return { ...THIRD_KITS[Number(mode) || 0] };
   const d = mode ? KIT_DESIGNS_AWAY[id] : KIT_DESIGNS[id];
   return d ? { ...d } : null;

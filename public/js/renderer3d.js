@@ -391,8 +391,9 @@ export function kitPatternColor(kit, shirt, alt, alt2 = alt) {
   const pattern = kit?.pattern;
   if (!pattern || pattern === 'plain') return shirt;
   const n = Number(kit.stripes || kit.hoops) || (pattern === 'hoops' ? 7 : 10);
+  const sep = kit.sep ? parseColor(kit.sep, null) : null;
   return (a, y, b) => {
-    if (pattern === 'stripes') { const lon = Math.atan2(b, a); return Math.floor((lon / (Math.PI * 2) + 0.5) * n + 0.5) % 2 ? alt : shirt; }
+    if (pattern === 'stripes') { const lon = Math.atan2(b, a), u = (lon / (Math.PI * 2) + 0.5) * n + 0.5, f = u - Math.floor(u); if (sep && (f < 0.035 || f > 0.965)) return sep; return Math.floor(u) % 2 ? alt : shirt; }
     if (pattern === 'hoops') return Math.floor((y + 1) / 2 * n) % 2 ? alt : shirt;
     if (pattern === 'centerStripe') return Math.abs(b) < 0.34 ? alt : shirt;
     if (pattern === 'chestBand') return y > 0.08 && y < 0.46 ? alt : shirt;
@@ -510,13 +511,13 @@ function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glov
   else {
     const cuff = [shoulder[0] + (elbow[0] - shoulder[0]) * 0.52, shoulder[1] + (elbow[1] - shoulder[1]) * 0.52, shoulder[2] + (elbow[2] - shoulder[2]) * 0.52];
     cylinder(out, shoulder, cuff, 0.108, sleeve, 8, 0.092);
-    cylinder(out, cuff, elbow, 0.07, skin, 7, 0.06);
+    cylinder(out, cuff, elbow, 0.075, skin, 7, 0.064);
     if (detail > 0) { const k = 0.07, c2 = [cuff[0] - (elbow[0] - shoulder[0]) * k, cuff[1] - (elbow[1] - shoulder[1]) * k, cuff[2] - (elbow[2] - shoulder[2]) * k]; cylinder(out, c2, cuff, 0.1, trim, 8, 0.096); }
   }
-  cylinder(out, elbow, hand, glove || longSleeve ? 0.07 : 0.06, glove || longSleeve ? sleeve : skin, 7, 0.045);
+  cylinder(out, elbow, hand, glove || longSleeve ? 0.07 : 0.062, glove || longSleeve ? sleeve : skin, 7, 0.042);
   if (detail > 0) {
     sphere(out, elbow, [0.066,0.066,0.066], glove || longSleeve ? sleeve : skin, 6, 4);
-    sphere(out, hand, glove ? [0.095,0.075,0.08] : [0.07,0.075,0.07], glove ? trim : skin, 7, 4);
+    sphere(out, hand, glove ? [0.095,0.075,0.08] : [0.048,0.062,0.04], glove ? trim : skin, 7, 4);
   } else {
     sphere(out, hand, [0.07,0.075,0.07], glove ? trim : skin, 6, 4);
   }
@@ -1103,13 +1104,14 @@ export class MatchRenderer3D {
     const hi=detail===2;
     // Rotation des épaules opposée au bassin pendant la course.
     const twist=-Math.sin(phase)*0.22*clamp(pose.speed/8.5,0,1)*action.gait*(1-pose.idle)*(pose.kick>0.005?0:1);
-    ell(bodyPoint(torsoF,bodyY+0.03,0),0.135*build,0.3-low*0.08,0.2*build,shirtPat,hi?20:12,hi?10:7,tilt,twist*0.5);
-    ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.2,0),0.13*build,0.12,0.25*build,kit?.sleeves?sleeveCol:shirtPat,hi?20:12,hi?6:5,tilt,twist);
+    // Silhouette athlétique en V : taille fine, poitrine et épaules larges.
+    ell(bodyPoint(torsoF,bodyY+0.03,0),0.128*build,0.3-low*0.08,0.18*build,shirtPat,hi?20:12,hi?10:7,tilt,twist*0.5);
+    ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.19,0),0.135*build,0.14,0.27*build,kit?.sleeves?sleeveCol:shirtPat,hi?20:12,hi?6:5,tilt,twist);
     ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?10:8,5,tilt*0.5);
     // Col et bande de taille.
     cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.31,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.36,0),0.082,trim,hi?10:8,0.088);
     if(detail>0){
-      ell(bodyPoint(lean*0.32,hipY+0.14,0),0.13*build,0.025,0.205*build,trim,10,3,tilt*0.5);
+      ell(bodyPoint(lean*0.32,hipY+0.13,0),0.122*build,0.022,0.172*build,trim,10,3,tilt*0.5);
       // Écusson sur le cœur.
       ell(bodyPoint(torsoF+0.128*build+tilt*0.06,bodyY+0.17,-0.09),0.012,0.034,0.028,trim,6,4,tilt);
     }
@@ -1175,10 +1177,10 @@ export class MatchRenderer3D {
       const knee=legPoint(kF,kU,side*0.125);
       const ankle=legPoint(ankF,ankU,sideOff+side*0.02);
       const mid=[hip[0]+(knee[0]-hip[0])*0.55,hip[1]+(knee[1]-hip[1])*0.55,hip[2]+(knee[2]-hip[2])*0.55];
-      cylinder(g,hip,mid,0.112*build,shorts,8,0.104*build);
+      cylinder(g,hip,mid,0.122*build,shorts,8,0.112*build);
       if(detail>0&&!player.isOfficial) cylinder(g,legPoint(lean*0.25,hipY+0.04,side*0.205*build),[mid[0]+(legPoint(0,0,side*0.1)[0]-legPoint(0,0,0)[0]),mid[1],mid[2]+(legPoint(0,0,side*0.1)[2]-legPoint(0,0,0)[2])],0.016,trim,4,0.014);
       const legSkin=player.longPants?shorts:skin;
-      cylinder(g,mid,knee,player.longPants?0.1:0.088*build,legSkin,8,player.longPants?0.085:0.07);
+      cylinder(g,mid,knee,player.longPants?0.1:0.098*build,legSkin,8,player.longPants?0.085:0.072);
       sphere(g,knee,[0.068,0.072,0.068],legSkin,6,4);
       const sockTop=[knee[0]+(ankle[0]-knee[0])*0.14,knee[1]+(ankle[1]-knee[1])*0.14,knee[2]+(ankle[2]-knee[2])*0.14];
       cylinder(g,knee,sockTop,0.07,legSkin,7,0.07);
@@ -1286,6 +1288,9 @@ export class MatchRenderer3D {
         tube(g,headPoint(ff,fy+0.07,side*0.075),headPoint(ff+0.004,fy+0.074,side*0.022),0.01,hair,5);
       }
       ellH(headPoint(ff+0.025,fy-0.005,0),0.03,0.035,0.022,skin,6,4,headTilt);
+      // Mâchoire et pommettes : visage moins rond, plus adulte.
+      ellH(headPoint(headF+0.008,headY-0.075,0),0.108,0.065,0.096,skin,8,5,headTilt);
+      ellH(headPoint(headF+0.085,headY-0.115,0),0.032,0.028,0.04,skin,6,4,headTilt);
       tube(g,headPoint(ff+0.004,fy-0.06,-0.03),headPoint(ff+0.004,fy-0.06,0.03),0.008,[0.22,0.08,0.065],5);
     }
     // Gardien : gants renforcés.

@@ -69,7 +69,7 @@ console.log('OK — tous les tests carrière passent');
   assert.equal(Object.values(off.players).filter(p => p.real).length, 0, 'option désactivée : uniquement des joueurs fictifs');
   const t = C.matchTeam(st, 'ca', false);
   assert.equal(t.kit.pattern, 'hoops', 'Club Africain à domicile : maillot à cerceaux rouges et blancs');
-  assert.equal(C.matchTeam(st, 'est', true).kit.shirt, '#ffffff', 'à l extérieur : maillot extérieur blanc');
+  assert.equal(C.matchTeam(st, 'est', true).kit.shirt, '#1a2340', 'à l extérieur : maillot extérieur bleu marine 2026-27');
   // Conflit de couleurs : le visiteur garde son maillot domicile s'il n'y a pas de conflit, sinon extérieur / troisième.
   assert.equal(C.awayKitMode('css', 'cab'), false, 'CSS (noir/blanc) vs CAB (jaune) : pas de conflit');
   assert.equal(C.awayKitMode('est', 'esz'), true, 'EST vs ESZ (rouge/jaune) : maillot extérieur');

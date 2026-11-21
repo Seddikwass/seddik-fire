@@ -1681,6 +1681,18 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 @media (max-width:900px){.seg .swl{display:none}.seg .swc{margin:0}}
 #hud{zoom:var(--hudz,1)}
 
+/* V231 — ma voix */
+#myvoice{position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.84);backdrop-filter:blur(4px);padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+#myvoice.hidden{display:none}
+.mv-help{margin:6px 0 2px;color:#cfd6df;font:600 12.5px var(--fb)}.mv-count{margin:0 0 8px;color:var(--acc2);font:800 12px var(--fb)}
+.mv-list{display:flex;flex-direction:column;gap:5px}
+.mv-row{display:grid;grid-template-columns:1fr 40px 40px 40px;gap:6px;align-items:center;padding:6px 8px;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+.mv-row span{font:600 12.5px var(--fb);color:#e9eef5;line-height:1.3}.mv-row.ok{border-color:rgba(99,219,140,.4);background:rgba(99,219,140,.07)}
+.mv-row button{height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#fff;font-size:15px}
+.mv-row button:disabled{opacity:.3}.mv-row .mv-rec{color:#ff5050}.mv-row.rec{border-color:#ff5050;box-shadow:0 0 14px rgba(255,60,60,.35)}.mv-row.rec .mv-rec{background:#ff3b3b;color:#fff;animation:pulse 1s infinite}
+.mv-foot{display:flex;justify-content:flex-end;margin-top:10px}
+.mvbtn{padding:8px 14px}
+
 </style>
 </head>
 <body>
@@ -1695,7 +1707,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V230</span>
+    <span id="build-tag" aria-label="Version">V231</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1815,6 +1827,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 <div id="results" class="overlay"><div class="box wide" id="res-body"></div></div>
 <div id="trk-sheet" class="hidden" role="dialog"></div>
 <div id="prog" class="hidden" role="dialog"></div>
+<div id="myvoice" class="hidden" role="dialog"></div>
 <div id="fest" class="hidden" role="dialog" aria-live="polite"><canvas id="fest-cv"></canvas><div class="fest-card" id="fest-card"></div></div>
 <div id="confirm" class="overlay"><div class="box"><p id="cf-text"></p><div class="row"><button id="cf-no" data-i18n="cancel">Annuler</button><button id="cf-yes" class="cta" data-i18n="confirm">CONFIRMER</button></div></div></div>
 <div id="rotate" class="overlay"><div class="rotic"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 40a24 24 0 0 0 20 16M52 24A24 24 0 0 0 36 8" fill="none" stroke="#ff7a18" stroke-width="3"/></svg></div><p data-i18n="rotate">Tourne ton téléphone en mode paysage pour mieux jouer.</p><button id="rot-ok" data-i18n="rotateOk">Continuer quand même</button></div>
@@ -3778,11 +3791,13 @@ async function playCrewClip(key, lang, preKey) {
   try {
     if (!key || !window.fetch) return false;
     const file = lang + '-' + key + '.mp3';
-    const list = await crewClipList(); if (!list.has(file)) return false;
     AU.init(); const ctx = AU.ctx; if (!ctx) return false;
     if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (e) { } }
-    const buf = await crewBuf(ctx, file); if (!buf) return false;
-    const preFile = preKey ? lang + '-' + preKey + '.mp3' : null, pre = preFile && list.has(preFile) ? await crewBuf(ctx, preFile).catch(() => null) : null;
+    const list = await crewClipList();
+    let buf = await myvBuf(ctx, lang + '-' + key).catch(() => null);   // ma voix d'abord
+    if (!buf) { if (!list.has(file)) return false; buf = await crewBuf(ctx, file); } if (!buf) return false;
+    let pre = preKey ? await myvBuf(ctx, lang + '-' + preKey).catch(() => null) : null;
+    if (!pre && preKey && list.has(lang + '-' + preKey + '.mp3')) pre = await crewBuf(ctx, lang + '-' + preKey + '.mp3').catch(() => null);
     if (CREW_CLIPS.playing) { try { CREW_CLIPS.playing.stop(); } catch (e) { } }
     const t0 = ctx.currentTime + 0.12, vol = Math.max(0.35, (SAVE.settings.sfx === undefined ? 80 : SAVE.settings.sfx) / 100);
     // chaîne « radio » : bande passante téléphonique + légère saturation
@@ -4804,7 +4819,7 @@ function buildTrack(def, quality) {
         const d = side * (baseD + (stadium ? row * 1.65 : row * 1.15));
         const pp = pos(i, d, stadium ? 0.95 + row * 0.62 : 0.7 + row * 0.72);
         const x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
-        fan(mb, x, y, z, i, n, row, side);
+        fan(mb, x, y, z, i, n, row, side); if ((n + row) % 4 === 0) (T.fans || (T.fans = [])).push(x, y + 1.35, z);
       }
       if (Math.floor(i / crowdStep) % 3 === 0) {
         const ii = i % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side], c0 = pos(i, side * (baseD + (stadium ? 1.4 : 0.9)), stadium ? 3.4 : 2.9);
@@ -4848,7 +4863,7 @@ function buildTrack(def, quality) {
       for (let row = 0; row < 5; row++) { const p = pos(i, side * (baseD + row * 1.6), 0.5 + row * 0.6); mb.box(p[0], p[1], p[2], 2.0, 0.46, 15, [0.86, 0.86, 0.84], 18, hd[i]); }
       for (let row = 0; row < 5; row++) for (let n = 0; n < 11; n++) {
         const along = (n - 5) * 1.3 + (row % 2) * 0.35, pp = pos(i, side * (baseD + row * 1.6), 0.93 + row * 0.6), x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
-        crowdFan(mb, x, y, z, i, n, row, side, skin, shirts, hair);
+        crowdFan(mb, x, y, z, i, n, row, side, skin, shirts, hair); if ((n + row) % 3 === 0) (T.fans || (T.fans = [])).push(x, y + 1.35, z);
       }
       const ii = i % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side];
       for (const u of [-4.5, 0, 4.5]) { const c0 = pos(i, side * (baseD + 8.6), 6.2); const q = [c0[0] + tg[0] * u, c0[1], c0[2] + tg[2] * u]; bar(mb, [q[0], q[1] - 6, q[2]], [q[0], q[1] + 1.2, q[2]], 0.06, [0.8, 0.8, 0.82], 4, 0.06, 6); crowdFlag(mb, [q[0] + tg[0] * 1.1, q[1], q[2] + tg[2] * 1.1], 2.2, 1.45, tg, nr); }
@@ -7052,6 +7067,59 @@ function applyLook() {
   root.style.setProperty('--acc', c[0]); root.style.setProperty('--acc2', c[1]);
   root.style.setProperty('--hudz', s.hudsz === 'small' ? '0.88' : s.hudsz === 'big' ? '1.08' : '1');
 }
+// V231 — ma voix : le joueur enregistre lui-même les consignes de l'équipe (stockées sur l'appareil)
+const V231_TXT = {"fr": ["Ma voix pour l'équipe radio", "Enregistrer", "Ma voix pour les conseils de l'équipe", "Appuie sur ⏺, lis la phrase à voix haute, puis appuie sur ⏹ (6 s maximum). Les phrases que tu n'enregistres pas gardent la voix de l'équipe.", "Exporter mes enregistrements", "Micro refusé ou indisponible : autorise le micro pour le jeu.", "{0} / {1} phrases enregistrées", "Fichier exporté. Envoie-le pour mettre ta voix dans le jeu pour tous les joueurs.", "Ton prénom"], "en": ["My voice for the team radio", "Record", "My voice for the team's tips", "Press ⏺, read the line out loud, then press ⏹ (6 s max). Lines you do not record keep the team voice.", "Export my recordings", "Microphone blocked or unavailable: allow the microphone for the game.", "{0} / {1} lines recorded", "File exported. Send it to put your voice in the game for every player.", "Your name"], "es": ["Mi voz para la radio del equipo", "Grabar", "Mi voz para los consejos del equipo", "Pulsa ⏺, lee la frase en voz alta y pulsa ⏹ (6 s máx.). Las frases no grabadas conservan la voz del equipo.", "Exportar mis grabaciones", "Micrófono bloqueado o no disponible: permite el micrófono para el juego.", "{0} / {1} frases grabadas", "Archivo exportado. Envíalo para poner tu voz en el juego para todos.", "Tu nombre"], "pt": ["A minha voz para o rádio da equipa", "Gravar", "A minha voz para as dicas da equipa", "Toque em ⏺, leia a frase em voz alta e toque em ⏹ (máx. 6 s). As frases não gravadas mantêm a voz da equipa.", "Exportar as minhas gravações", "Microfone bloqueado ou indisponível: permita o microfone para o jogo.", "{0} / {1} frases gravadas", "Ficheiro exportado. Envie-o para pôr a sua voz no jogo para todos.", "O teu nome"], "de": ["Meine Stimme für den Teamfunk", "Aufnehmen", "Meine Stimme für die Teamtipps", "Drücke ⏺, lies den Satz laut vor und drücke ⏹ (max. 6 s). Nicht aufgenommene Sätze behalten die Teamstimme.", "Meine Aufnahmen exportieren", "Mikrofon blockiert oder nicht verfügbar: erlaube das Mikrofon für das Spiel.", "{0} / {1} Sätze aufgenommen", "Datei exportiert. Schicke sie, um deine Stimme für alle ins Spiel zu bringen.", "Dein Name"], "it": ["La mia voce per la radio del team", "Registra", "La mia voce per i consigli del team", "Premi ⏺, leggi la frase ad alta voce, poi premi ⏹ (max 6 s). Le frasi non registrate mantengono la voce del team.", "Esporta le mie registrazioni", "Microfono bloccato o non disponibile: consenti il microfono per il gioco.", "{0} / {1} frasi registrate", "File esportato. Invialo per mettere la tua voce nel gioco per tutti.", "Il tuo nome"], "tr": ["Takım telsizi için sesim", "Kaydet", "Takım ipuçları için sesim", "⏺ tuşuna bas, cümleyi yüksek sesle oku, sonra ⏹ tuşuna bas (en fazla 6 sn). Kaydetmediğin cümleler takım sesini korur.", "Kayıtlarımı dışa aktar", "Mikrofon engellendi veya yok: oyun için mikrofona izin ver.", "{0} / {1} cümle kaydedildi", "Dosya dışa aktarıldı. Sesini herkes için oyuna eklemek üzere gönder.", "Adın"], "ar": ["صوتي في راديو الفريق", "تسجيل", "صوتي لنصائح الفريق", "اضغط ⏺ واقرأ الجملة بصوت عالٍ ثم اضغط ⏹ (6 ثوانٍ كحد أقصى). الجمل غير المسجّلة تحتفظ بصوت الفريق.", "تصدير تسجيلاتي", "الميكروفون مرفوض أو غير متاح: اسمح باستعمال الميكروفون للعبة.", "{0} / {1} جملة مسجّلة", "تم تصدير الملف. أرسله لإضافة صوتك إلى اللعبة لكل اللاعبين.", "اسمك"], "tn": ["صوتي في راديو الفريق", "سجّل", "صوتي لنصايح الفريق", "انزل على ⏺، اقرا الجملة بصوت عالي، وبعد انزل على ⏹ (6 ثواني ماكس). الجمل اللي ما تسجّلهمش يقعدو بصوت الفريق.", "صدّر التسجيلات متاعي", "الميكرو ممنوع ولا مش موجود: خلّي اللعبة تستعمل الميكرو.", "{0} / {1} جملة مسجّلة", "الفيشي تصدّر. ابعثو باش نحطّو صوتك في اللعبة للناس الكل.", "اسمك"]};
+for (const l in V231_TXT) { const v = V231_TXT[l]; Object.assign(LANGS[l], { o_myvoice: v[0], mv_open: v[1], mv_title: v[2], mv_help: v[3], mv_export: v[4], mv_mic: v[5], mv_count: v[6], mv_exported: v[7], mv_name: v[8] }); }
+const MYV = { db: null, cache: {}, keys: null, rec: null };
+function myvDB() { return MYV.db || (MYV.db = new Promise((ok, ko) => { try { const r = indexedDB.open('superjoud_voice', 1); r.onupgradeneeded = () => r.result.createObjectStore('clips'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); } catch (e) { ko(e); } })); }
+async function myvKeys() { if (MYV.keys) return MYV.keys; try { const db = await myvDB(); return await new Promise(ok => { const q = db.transaction('clips').objectStore('clips').getAllKeys(); q.onsuccess = () => ok(MYV.keys = new Set(q.result)); q.onerror = () => ok(MYV.keys = new Set()); }); } catch (e) { return (MYV.keys = new Set()); } }
+async function myvGet(id) { const db = await myvDB(); return new Promise(ok => { const q = db.transaction('clips').objectStore('clips').get(id); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); }); }
+async function myvPut(id, blob) { const db = await myvDB(); await new Promise(ok => { const tx = db.transaction('clips', 'readwrite'); tx.objectStore('clips').put(blob, id); tx.oncomplete = ok; tx.onerror = ok; }); (await myvKeys()).add(id); delete MYV.cache[id]; }
+async function myvDel(id) { const db = await myvDB(); await new Promise(ok => { const tx = db.transaction('clips', 'readwrite'); tx.objectStore('clips').delete(id); tx.oncomplete = ok; tx.onerror = ok; }); (await myvKeys()).delete(id); delete MYV.cache[id]; }
+async function myvBuf(ctx, id) {
+  if (MYV.cache[id]) return MYV.cache[id];
+  const keys = await myvKeys(); if (!keys.has(id)) return null;
+  const blob = await myvGet(id); if (!blob) return null;
+  const ab = await blob.arrayBuffer(); const buf = await new Promise((ok, ko) => { const pr = ctx.decodeAudioData(ab, ok, ko); if (pr && pr.catch) pr.catch(ko); });
+  return (MYV.cache[id] = buf);
+}
+function myvLines() { const lang = radioLang(); return ['n_' + (SAVE.driver || 'aziz'), ...Object.keys(RADIO_LINES).filter(k => !k.startsWith('n_'))].map(k => ({ k, lang, id: lang + '-' + k, txt: k.startsWith('n_') ? (DRIVERS.find(d => d.id === SAVE.driver) || DRIVERS[0]).name + ' !' : RADIO_LINES[k][lang] })); }
+async function openMyVoice() {
+  const el = $('myvoice'), lines = myvLines(), keys = await myvKeys();
+  const draw = () => {
+    const n = lines.filter(l => keys.has(l.id)).length;
+    el.innerHTML = `<div class="pg-box mv-box"><div class="ts-head"><div><small>🎙 ${t('o_myvoice')}</small><h2>${t('mv_title')}</h2></div><button class="ts-x" aria-label="${t('pg_close')}">✕</button></div>
+<p class="mv-help">${t('mv_help')}</p><p class="mv-count">${t('mv_count', n, lines.length)}</p>
+<div class="mv-list">${lines.map((l, i) => `<div class="mv-row ${keys.has(l.id) ? 'ok' : ''}" data-i="${i}"><span>${i === 0 ? '<b>' + t('mv_name') + '</b> · ' : ''}${esc(l.txt)}</span><button class="mv-rec" aria-label="${t('mv_open')}">⏺</button><button class="mv-play" ${keys.has(l.id) ? '' : 'disabled'}>▶</button><button class="mv-del" ${keys.has(l.id) ? '' : 'disabled'}>🗑</button></div>`).join('')}</div>
+<div class="mv-foot"><button class="ghost mv-exp" ${n ? '' : 'disabled'}>⬇ ${t('mv_export')}</button></div></div>`;
+    el.querySelector('.ts-x').onclick = close;
+    el.querySelectorAll('.mv-row').forEach(row => { const l = lines[+row.dataset.i];
+      row.querySelector('.mv-rec').onclick = () => recLine(l, row);
+      row.querySelector('.mv-play').onclick = async () => { G.radioKey = l.k; AU.init(); const b = await myvBuf(AU.ctx, l.id).catch(() => null); if (b) { const sN = AU.ctx.createBufferSource(); sN.buffer = b; sN.connect(AU.ctx.destination); sN.start(); } };
+      row.querySelector('.mv-del').onclick = async () => { await myvDel(l.id); draw(); }; });
+    el.querySelector('.mv-exp').onclick = exportVoice;
+  };
+  const close = () => { if (MYV.rec) try { MYV.rec.stop(); } catch (e) { } el.classList.add('hidden'); el.innerHTML = ''; };
+  async function recLine(l, row) {
+    if (MYV.rec) { try { MYV.rec.stop(); } catch (e) { } return; }
+    let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); } catch (e) { toast(t('mv_mic')); return; }
+    const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || '';
+    const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined), parts = [];
+    MYV.rec = rec; row.classList.add('rec'); row.querySelector('.mv-rec').textContent = '⏹';
+    rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); };
+    rec.onstop = async () => { stream.getTracks().forEach(tk => tk.stop()); MYV.rec = null; if (parts.length) { await myvPut(l.id, new Blob(parts, { type: rec.mimeType || mime || 'audio/webm' })); } draw(); };
+    rec.start(); setTimeout(() => { if (MYV.rec === rec) rec.stop(); }, 6000);
+  }
+  async function exportVoice() {
+    const out = { game: 'super-seddik-joud', version: GAME_VERSION, driver: SAVE.driver, clips: {} };
+    for (const l of lines) if (keys.has(l.id)) { const b = await myvGet(l.id); if (b) { const ab = new Uint8Array(await b.arrayBuffer()); let bin = ''; for (let i = 0; i < ab.length; i += 0x8000) bin += String.fromCharCode.apply(null, ab.subarray(i, i + 0x8000)); out.clips[l.id] = { type: b.type, data: btoa(bin) }; } }
+    const blob = new Blob([JSON.stringify(out)], { type: 'application/json' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'super-seddik-joud-ma-voix.json'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    toast(t('mv_exported'));
+  }
+  draw(); el.classList.remove('hidden');
+}
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#o-myv')) openMyVoice(); });
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -7519,6 +7587,7 @@ function physPlayer(c, dt, inp) {
       const loss = clamp(1 - imp * 0.022, 0.55, 0.995); c.vx *= loss; c.vz *= loss;
       let dh = wrapPi(A.h - c.h); if (Math.abs(dh) > Math.PI / 2) dh = wrapPi(dh + Math.PI);
       c.h += dh * clamp(imp * 0.02, 0, 0.3);
+      if (imp > 0.8 && imp <= 2.5 && c.v > 8 && Math.random() < 0.6) { const px = c.x + A.rx * sg * c.W / 2, pz = c.z + A.rz * sg * c.W / 2; for (let k = 0; k < 3; k++) G.glow.emit(px, c.y + 0.35, pz, c.vx * 0.6 + rnd(-1.5, 1.5), rnd(0.5, 2.5), c.vz * 0.6 + rnd(-1.5, 1.5), rnd(0.15, 0.3), 0.09, 0, 1, 0.66, 0.25, 1, 1.5, 9); }   // frottement : quelques étincelles
       if (imp > 2.5) {
         const px = c.x + A.rx * sg * c.W / 2, pz = c.z + A.rz * sg * c.W / 2;
         for (let k = 0; k < Math.min(25, imp * 2); k++) G.glow.emit(px, c.y + 0.5, pz, c.vx * 0.5 + rnd(-3, 3), rnd(1, 5), c.vz * 0.5 + rnd(-3, 3), rnd(0.2, 0.5), 0.12, 0, 1, 0.6, 0.2, 1, 1.5, 9);
@@ -7648,6 +7717,7 @@ function collide(a, b) {
       const o = pl === a ? b : a;
       if (G.time - pl.lastHit > 0.2) { AU.hit(imp); pl.lastHit = G.time; buzz(imp); }
       o.lastHit = G.time;
+      { const mx = (a.x + b.x) / 2, my = Math.max(a.y, b.y) + 0.45, mz = (a.z + b.z) / 2; for (let k = 0; k < Math.min(18, imp * 2); k++) G.glow.emit(mx, my, mz, (a.vx + b.vx) * 0.25 + rnd(-3, 3), rnd(1, 4), (a.vz + b.vz) * 0.25 + rnd(-3, 3), rnd(0.2, 0.45), 0.11, 0, 1, 0.62, 0.22, 1, 1.5, 9); }
       G.shake = Math.min(1, G.shake + imp * 0.06); G.hitFx = Math.max(G.hitFx || 0, Math.min(0.7, imp * 0.045));
       const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
       for (let k = 0; k < Math.min(20, imp * 2); k++) G.glow.emit(mx, a.y + 0.6, mz, rnd(-4, 4), rnd(1, 5), rnd(-4, 4), rnd(0.2, 0.45), 0.12, 0, 1, 0.65, 0.25, 1, 1.5, 9);
@@ -7861,6 +7931,7 @@ function carMatrix(c) {
 function localToWorld(M, x, y, z, o) { o = o || [0, 0, 0]; o[0] = M[0] * x + M[4] * y + M[8] * z + M[12]; o[1] = M[1] * x + M[5] * y + M[9] * z + M[13]; o[2] = M[2] * x + M[6] * y + M[10] * z + M[14]; return o; }
 const Q1 = [0, 0, 0], Q2 = [0, 0, 0], Q3 = [0, 0, 0];
 function emitEffects(dt) {
+  try { emitDetails(dt); } catch (e) { }
   const p = G.player, env = G.env || {}, lights = env.night || env.rain, sk = G.skids;
   for (const c of G.cars) {
     const d2 = (c.x - p.x) ** 2 + (c.z - p.z) ** 2; if (d2 > 160 * 160) { if (sk) for (let k = 0; k < 4; k++) sk.stop(c.uid * 8 + k); continue; }
@@ -7890,6 +7961,20 @@ function emitEffects(dt) {
   }
 }
 const SX2 = [-1, 1], RAIN_SPRAY = [0.74, 0.77, 0.8];
+// V231 — détails de course : flashs d'appareils photo dans la foule, disques de frein incandescents, poussière et herbe hors piste
+function emitDetails(dt) {
+  const p = G.player, T = G.T, env = G.env || {}; if (!p || !T || G.state !== 'race' && G.state !== 'countdown') return;
+  if (T.fans && T.fans.length > 2 && Math.random() < (env.night ? 0.55 : 0.3)) for (let k = 0; k < 4; k++) {
+    const j = (Math.random() * T.fans.length / 3 | 0) * 3, fx = T.fans[j], fz = T.fans[j + 2];
+    if ((fx - p.x) ** 2 + (fz - p.z) ** 2 < 120 * 120) { G.glow.emit(fx, T.fans[j + 1], fz, 0, 0, 0, 0.09, 0.55, -2, 1, 1, 1, env.night ? 1 : 0.85, 1, 0); break; }
+  }
+  const M = p.M || carMatrix(p), m = p.model;
+  if (p.brake && p.v > 30 && !m.cyc) for (const w of m.wheels) if (w[3]) { localToWorld(M, w[0] * 0.92, w[1], w[2], Q1); G.glow.emit(Q1[0], Q1[1], Q1[2], p.vx, 0, p.vz, 0.06, 0.26, 0, 1, 0.32, 0.05, 0.5, 1, 0); }
+  if (T.lim && Math.abs(p.d || 0) > T.lim - 0.4 && p.v > 7) {
+    const th = T.def.theme, c = th === 'desert' ? [0.82, 0.66, 0.46] : th === 'city' ? [0.55, 0.55, 0.55] : th === 'coast' ? [0.86, 0.8, 0.66] : [0.44, 0.42, 0.3];
+    for (const w of m.wheels) if (!w[3] && Math.random() < 0.7) { localToWorld(M, w[0], 0.1, w[2], Q1); G.smoke.emit(Q1[0], Q1[1], Q1[2], p.vx * 0.2 + rnd(-1, 1), rnd(0.6, 1.8), p.vz * 0.2 + rnd(-1, 1), rnd(0.6, 1.1), 0.7, 2.8, c[0], c[1], c[2], 0.4, 1, 0); }
+  }
+}
 
 /* ---------------- caméra ---------------- */
 function updateCamera(dt, inp) {
@@ -8326,7 +8411,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V230';
+const GAME_VERSION = 'V231';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -8551,6 +8636,7 @@ const UI = {
       row(t('o_cam'), seg('cam', [[0, t('o_near')], [1, t('o_far')], [2, t('o_hood')], [3, t('o_bump')], [4, t('o_drone')]])),
       row(t('o_tags'), seg('tags', [[true, t('yes')], [false, t('no')]])),
       row(t('o_coach'), seg('coach', [[true, t('yes')], [false, t('no')]])),
+      row(t('o_myvoice'), `<button class="ghost mvbtn" id="o-myv">🎙 ${t('mv_open')}</button>`),
       row(t('o_rline'), seg('rline', [[true, t('yes')], [false, t('no')]])),
       row(t('o_vibe'), seg('vibe', [[true, t('yes')], [false, t('no')]])),
       row(t('o_color'), seg('uicol', Object.keys(UI_COLORS).map(k => [k, `<i class="swc" style="background:${UI_COLORS[k][0]}"></i><span class="swl">${t('c_' + k)}</span>`]))),

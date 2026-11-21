@@ -17,7 +17,7 @@ VOICES = {
     'ar': 'ar/ar_JO/kareem/medium/ar_JO-kareem-medium',
 }
 VOICE_OF = {'fr': 'fr', 'en': 'en', 'ar': 'ar', 'tn': 'ar'}
-SALT = 'radio-v2'
+SALT = 'radio-v3'
 
 def lines():
     html = (ROOT / 'index.html').read_text(encoding='utf-8')
@@ -68,7 +68,7 @@ def main():
             if not voice: continue
             wav = work / f'{lang}-{situation}.wav'
             mp3 = OUT / f'{lang}-{situation}.mp3'
-            subprocess.run(['piper', '--model', str(work / (voice + '.onnx')), '--output_file', str(wav), '--length_scale', '1.02' if situation.startswith('n_') else '0.93', '--sentence_silence', '0.05' if situation.startswith('n_') else '0.18'],
+            subprocess.run(['piper', '--model', str(work / (voice + '.onnx')), '--output_file', str(wav), '--length_scale', '1.12' if situation.startswith('n_') else '0.93', '--sentence_silence', '0.05' if situation.startswith('n_') else '0.18'],
                            input=spoken(text).encode('utf-8'), check=True, capture_output=True)
             subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', str(wav),
                             '-af', 'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,loudnorm=I=-15:TP=-1.5:LRA=7',

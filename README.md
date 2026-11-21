@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Nouveautés 2.34 — Chaque carte se reconnaît en partie, la radio t'appelle par ton nom
+- **La radio de l'équipe t'appelle par ton prénom** : « Wassim, la zone se referme… », dans toutes les langues, à l'écrit et à la voix (une fois sur deux pour les conseils courants, toujours pour les messages importants).
+- **Panneaux d'entrée bleu et blanc** devant chaque lieu de la carte (Médina de Sousse, Ksar Ouled Soltane, Chott el-Jérid…), posés au sol.
+- **Arrivée dans un lieu** : le nom du lieu et de la carte s'affiche sur le côté (« 📍 Médina de Sousse · Sousse & Monastir »).
+- **Vraies dunes du Sahara** (barkhanes avec face éclairée, face d'avalanche ombrée et rides) : Grand Erg, Douz, Ong Jemel, Tataouine.
+- **Image plus claire** : vignette, étalonnage et teinte du sol allégés, voile de sable et brouillard réduits de moitié.
+
 ## Nouveautés 2.33 — Un plan entièrement différent pour chaque carte, d'après la géographie réelle
 - **18 plans dessinés à la main** : chaque carte a sa côte, ses plans d'eau et ses lieux placés comme dans la réalité.
 - **Géographie réelle** : Chott el-Jérid au sud de Tozeur, lac de Bizerte, presqu'île de Mahdia (Cap Afrique), Djerba entourée par la mer avec Zarzis sur le continent, chenal entre les deux îles de Kerkennah, îlot de Kerkennah au large de Sfax, île de La Galite avec Galiton, lac de Tunis à Carthage, presqu'île du Cap Bon, côte nord de Tabarka sur les hautes terres, lagune de Korba, salines de Thyna, Grand Erg et oasis du Sud.

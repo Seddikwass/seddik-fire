@@ -228,18 +228,25 @@ export function voiceAvailable() {
   if ('speechSynthesis' in window) return 'navigateur';
   return null;
 }
-export function speak(text, lang = 'fr', priority = false) {
+export function speak(text, lang = 'fr', priority = false, opts = {}) {
   if (!voiceOn || !enabled) return;
   const now = performance.now();
-  if (!priority && now - lastSpoke < 3500) return;
-  lastSpoke = now;
-  const tag = lang === 'ar' ? 'ar-TN' : lang === 'en' ? 'en-GB' : 'fr-FR';
-  if (nativeTts) { nativeTts.speak({ text, lang: tag, rate: 1.1 }).catch(() => {}); return; }
+  if (!priority && !opts.queue && now - lastSpoke < 3500) return;
+  if (!opts.queue) lastSpoke = now;
+  const base = String(lang).slice(0, 2);
+  const tag = lang === 'ar_tv' ? 'ar-SA' : base === 'ar' ? 'ar-TN' : base === 'en' ? 'en-GB' : 'fr-FR';
+  // Intonation : plus aiguë et rapide sur les buts, plus posée pour le consultant.
+  const mood = opts.mood, tv = lang === 'ar_tv';
+  const rate = mood === 'goal' ? (tv ? 1.22 : 1.16) : mood === 'high' ? 1.16 : mood === 'analyst' ? 0.98 : 1.1;
+  const pitch = mood === 'goal' ? (tv ? 1.35 : 1.2) : mood === 'high' ? 1.12 : mood === 'analyst' ? 0.82 : 1;
+  if (nativeTts) { nativeTts.speak({ text, lang: tag, rate, pitch, queue: !!opts.queue }).catch(() => {}); return; }
   if (!('speechSynthesis' in window)) return;
   try {
-    if (priority) speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text); u.lang = tag; u.rate = 1.12; u.volume = volume;
-    const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith(lang));
+    if (priority && !opts.queue) speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = tag; u.rate = rate; u.pitch = pitch; u.volume = volume;
+    const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith(base));
+    // Consultant : une deuxième voix si l'appareil en a plusieurs.
+    const v = mood === 'analyst' && vs.length > 1 ? vs[1] : (vs.find(v => v.lang.toLowerCase() === tag.toLowerCase()) || vs[0]);
     if (v) u.voice = v;
     speechSynthesis.speak(u);
   } catch (e) {}

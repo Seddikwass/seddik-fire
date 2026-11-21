@@ -8,12 +8,13 @@ import * as Y from './youth.js';
 import * as CAF from './caf.js';
 import * as Online from './online.js';
 import * as A from './audio.js';
+import { COMMENTARY_STYLES } from './commentary.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.45.0';
+export const APP_VERSION = '3.46.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -490,6 +491,7 @@ function settingsHTML() {
   const va = A.voiceAvailable();
   return `<div class="card"><h3>${t('Paramètres')}</h3><div class="form2">
    <label>${t('Langue')}${sel('lang', [['fr', 'Français'], ['ar', 'العربية'], ['en', 'English (partiel)']])}</label>
+   <label>${t('Commentaire du match')}${sel('commentary', COMMENTARY_STYLES)}</label>
    <label>${t('Son')}${sel('sound', [[true, 'Activé'], [false, 'Coupé']])}</label>
    <label>Volume<input type="range" min="0" max="1" step="0.1" value="${settings.volume}" data-a="setting" data-k="volume"></label>
    <label>${t('Commentaires vocaux')} <small>(${va ? 'synthèse ' + va : 'non disponible sur cet appareil — commentaires texte uniquement'})</small>${sel('voice', [[true, 'Activés'], [false, 'Texte seulement']])}</label>
@@ -529,7 +531,7 @@ function startMatchView() {
   const cv = $('#cv'); const ctx = args;
   const m = new Match({
     canvas: cv, home: ctx.home, away: ctx.away, userSide: ctx.userSide, knockout: ctx.knockout || null,
-    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: settings.quality, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
+    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: settings.quality, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), commentary: settings.commentary || 'auto', replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
     onEnd: res => onMatchEnd(res), onPause: () => pauseMenu(),
   });
   match = m;

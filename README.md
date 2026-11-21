@@ -1,5 +1,11 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.46.0
+- **Onze de départ réel** du dernier match officiel (presse tunisienne, 7 novembre 2026) pour l'Espérance, le Club Africain, le CS Sfaxien et l'Étoile du Sahel : formation 4-3-3 et titulaires appliqués à la création de la carrière et en match rapide.
+- **Commentaire « Arabe – soirée TV »** : nouvelles phrases arabes enflammées (« قووووول »), noms des clubs en arabe, intonation plus aiguë et rapide sur les buts, réaction d'un consultant après chaque but (deuxième voix si l'appareil en possède). Réglage « Commentaire du match » indépendant de la langue du jeu.
+- **Scorebug 2026** : capsule de score qui flashe aux couleurs du buteur, pastilles maillot, bandes aux couleurs des clubs, point « direct » pulsé, indicateur REPLAY ; bandeau commentaire avec micro ; Match Center déplacé pour ne plus chevaucher les boutons.
+- Android : la voix native gère aussi la hauteur de voix et la file d'attente.
+
 ## Version 3.45.0
 - **Maillots corrigés pour les 16 clubs de Ligue 1** (domicile + extérieur) d'après les tenues 2024-25 → 2026-27 : ES Zarzis et ES Métlaoui en rayures rouge/jaune, JS Omrane en bleu avec bande jaune, US Ben Guerdane rayé jaune/noir, AS Marsa rayé jaune/vert, Olympique de Béja en damier rouge/blanc, CA Bizertin et ES Hammam-Sousse en jaune/noir, CS Hammam-Lif rayé vert/blanc, Stade Tunisien en blanc avec écharpe vert/rouge à l'extérieur.
 - Nouveaux motifs 3D : bande de poitrine, damier, écharpe diagonale.

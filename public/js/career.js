@@ -1,5 +1,5 @@
 // Moteur de carrière : saisons, compétitions, finances, transferts, staff, médical, élections.
-import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, REAL_SQUADS, KIT_DESIGNS, KIT_DESIGNS_AWAY } from './data.js';
+import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, REAL_SQUADS, REAL_XI, KIT_DESIGNS, KIT_DESIGNS_AWAY } from './data.js';
 import { rng, clamp, uid, deepCopy } from './util.js';
 import { quickSim } from './match.js';
 import * as Dr from './dressing.js';
@@ -151,7 +151,7 @@ export function newCareer(opts) {
       st.players[p.id] = p;
     }
     // Joueurs réels restants (listes plus longues que le gabarit) : ajoutés à l'effectif à leur poste.
-    if (pool) while (pool.length && Object.values(st.players).filter(x => x.clubId === c.id).length < 36) {
+    if (pool) while (pool.length && Object.values(st.players).filter(x => x.clubId === c.id).length < 40) {
       const e = pool.shift();
       const pos = e.pos || (e.g === 'G' ? 'GK' : e.g === 'D' ? 'DC' : e.g === 'M' ? 'MC' : 'BU');
       const p = genPlayer(r, pos, target + r.int(-6, 2), c.id, season, { rep: c.rep });
@@ -160,6 +160,7 @@ export function newCareer(opts) {
     }
     for (let i = 0; i < 3; i++) { const p = genPlayer(r, r.pick(POS_LIST.slice(1)), target - 10, c.id, season, { youth: true }); p.num = 40 + i; while (usedNums.has(p.num) || reserved.has(p.num)) p.num++; usedNums.add(p.num); p.role = 'jeune'; st.players[p.id] = p; }
     autoLineup(st, c.id);
+    if (pool) applyRealXI(st, c.id);
   }
   // agents libres
   for (let i = 0; i < 45; i++) { const p = genPlayer(r, r.pick(POS_LIST), r.int(48, 66), null, season, { rep: 50 }); p.contractEnd = season; st.players[p.id] = p; }
@@ -210,7 +211,7 @@ export function autoLineup(st, cid) {
   const order = form.map((pos, i) => ({ pos, i })).sort((a, b) => (a.pos === 'GK' ? -1 : 0) - (b.pos === 'GK' ? -1 : 0));
   for (const { pos, i } of order) {
     let best = null, bs = -1;
-    for (const p of pool) { if (used.has(p.id)) continue; const s = ovrOf(p, pos) * posFit(p, pos) * (0.85 + 0.15 * p.fitness); if (s > bs) { bs = s; best = p; } }
+    for (const p of pool) { if (used.has(p.id)) continue; const s = ovrOf(p, pos) * posFit(p, pos) * (0.85 + 0.15 * p.fitness) * (p.xi ? 1.1 : 1); if (s > bs) { bs = s; best = p; } }
     if (best) { used.add(best.id); lineup[i] = best.id; }
   }
   t.lineup = lineup;
@@ -219,6 +220,18 @@ export function autoLineup(st, cid) {
   const sh = lineup.map(id => st.players[id]).filter(Boolean).sort((a, b) => b.attrs.sho - a.attrs.sho)[0];
   const ps = lineup.map(id => st.players[id]).filter(Boolean).sort((a, b) => b.attrs.pas - a.attrs.pas)[0];
   t.takers = { penalty: sh?.id, freekick: ps?.id, corner: ps?.id };
+}
+// Onze réel du dernier match : formation + titulaires par nom ; les titulaires réels gardent un léger bonus de sélection.
+export function applyRealXI(st, cid) {
+  const R = REAL_XI[cid]; if (!R) return false;
+  const c = st.clubs[cid], t = c.tactics, sq = squad(st, cid);
+  const ids = R.xi.map(n => sq.find(p => p.name === n)?.id);
+  if (ids.some(id => !id)) return false;
+  for (const id of ids) st.players[id].xi = true;
+  t.formation = R.formation; t.lineup = ids;
+  t.bench = sq.filter(p => !ids.includes(p.id) && available(p)).sort((a, b) => b.ovr - a.ovr).slice(0, 9).map(p => p.id);
+  t.realXI = R.match;
+  return true;
 }
 // remplace uniquement les titulaires indisponibles (blessés, suspendus, partis) en gardant les choix de l'utilisateur
 export function repairLineup(st, cid) {

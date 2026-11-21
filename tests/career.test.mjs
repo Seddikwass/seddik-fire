@@ -74,6 +74,11 @@ console.log('OK — tous les tests carrière passent');
   assert.equal(C.awayKitMode('css', 'cab'), false, 'CSS (noir/blanc) vs CAB (jaune) : pas de conflit');
   assert.equal(C.awayKitMode('est', 'esz'), true, 'EST vs ESZ (rouge/jaune) : maillot extérieur');
   assert.notEqual(C.awayKitMode('ca', 'ess'), false, 'CA vs ESS (rouge) : changement');
+  // Onze réel du dernier match appliqué à la création de carrière.
+  { const st2 = C.newCareer({ clubId: 'ca', seed: 5 });
+    for (const [cid, R] of Object.entries(D.REAL_XI)) assert.deepEqual(st2.clubs[cid].tactics.lineup.map(id => st2.players[id].name), R.xi, `XI réel ${cid}`);
+    const stF = C.newCareer({ clubId: 'ca', seed: 5, realNames: false });
+    assert.ok(!stF.clubs.est.tactics.realXI, 'option fictive : pas de XI réel'); }
   for (const h of Object.keys(D.KIT_DESIGNS)) for (const a of Object.keys(D.KIT_DESIGNS)) if (h !== a) {
     assert.ok(!C.kitsClash(C.clubKit(h, false), C.clubKit(a, C.awayKitMode(h, a))), `maillots distincts ${h}-${a}`);
   }

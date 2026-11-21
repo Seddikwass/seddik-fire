@@ -4,7 +4,7 @@ import { FORMATIONS } from './data.js';
 import * as A from './audio.js';
 import { MatchRenderer3D } from './renderer3d.js';
 import { getFormationAssignment, getFormationBase, applyPreset, getCoachAdvice } from './tactics.js';
-import { getMatchFlavor, getGoalCommentKeys, pickLine, fillLine } from './commentary.js';
+import { getMatchFlavor, getGoalCommentKeys, pickLine, fillLine, commentaryLang, TEAM_AR } from './commentary.js';
 import { getShootoutStatus, getNextKicker, getShootoutOrder, getAIPenaltyChoice, getPenaltyStrike, getAIKeeperDive, getPenaltyOutcome } from './shootout.js';
 
 export const TV_WIPE = 0.55;
@@ -1071,12 +1071,19 @@ export class Match {
   // Commentaire : clé (ou liste de clés de la plus spécifique à la plus générale).
   say(keys, vars = {}, priority = false) {
     this.commentMemory = this.commentMemory || new Map();
-    const line = pickLine(this.settings.lang || 'fr', keys, this.r, this.commentMemory); if (!line) return;
-    const T = this.teams;
+    const lang = commentaryLang(this.settings.commentary, this.settings.lang || 'fr');
+    const line = pickLine(lang, keys, this.r, this.commentMemory); if (!line) return;
+    const T = this.teams, ar = lang.startsWith('ar');
     const all = { h: T[0].short, a: T[1].short, sh: this.score[0], sa: this.score[1], st: T[0].stadium || 'stade', ...vars };
-    const s = fillLine(line.text, all);
+    if (ar) for (const k of Object.keys(all)) { const tm = T.find(x => x.short === all[k]); if (tm && TEAM_AR[tm.id]) all[k] = TEAM_AR[tm.id]; }
+    let s = fillLine(line.text, all);
+    if (ar) s = s.replace(/(^|[\s!،.])لال/g, '$1لل'); // ل + الترجي → للترجي
     this.ticker = s; this.tickerT = 4; this.lastCommentKey = line.key;
-    if (this.settings.voice) A.speak(s, this.settings.lang, priority);
+    if (!this.settings.voice) return;
+    const hype = /^goal/.test(line.key) ? 'goal' : /^(save|post|penalty|red|chance)/.test(line.key) ? 'high' : null;
+    A.speak(s, lang, priority, { mood: hype });
+    // Style TV : le consultant réagit après un but.
+    if (lang === 'ar_tv' && hype === 'goal') { const an = pickLine(lang, 'analyst', this.r, this.commentMemory); if (an) A.speak(an.text, lang, false, { mood: 'analyst', queue: true }); }
   }
   // Réactions du public : les tribunes soutiennent l'équipe qui reçoit (camp 0).
   crowdReact(kind, team = 0) {
@@ -3863,33 +3870,59 @@ export class Match {
     const awayLabel = String(T[1].short || T[1].name).slice(0, layout.compact ? 5 : 9);
     const teamW = layout.teamWidth, scoreW = layout.scoreWidth, clockW = layout.clockWidth;
     const scoreX = x0 + teamW, awayX = scoreX + scoreW, clockX = awayX + teamW;
+    // Scorebug 2026 : verre sombre, pastilles maillot (motif réel), score en capsule, horloge « LIVE ».
     c.save();
-    c.shadowColor = 'rgba(0,0,0,0.42)'; c.shadowBlur = 14 * d; c.shadowOffsetY = 3 * d;
+    c.shadowColor = 'rgba(0,0,0,0.45)'; c.shadowBlur = 16 * d; c.shadowOffsetY = 4 * d;
     const panel = c.createLinearGradient(x0, y0, x0, y0 + h);
-    panel.addColorStop(0, 'rgba(12,22,35,0.96)'); panel.addColorStop(1, 'rgba(4,10,18,0.94)');
-    this.rr(x0, y0, layout.panelWidth, h, 9 * d);
-    c.fillStyle = panel; c.fill();
+    panel.addColorStop(0, 'rgba(22,30,46,0.94)'); panel.addColorStop(0.5, 'rgba(10,16,28,0.95)'); panel.addColorStop(1, 'rgba(4,8,16,0.95)');
+    this.rr(x0, y0, layout.panelWidth, h, h / 2.6); c.fillStyle = panel; c.fill();
     c.shadowBlur = 0; c.shadowOffsetY = 0;
-    c.strokeStyle = 'rgba(255,255,255,0.2)'; c.lineWidth = Math.max(1, d);
-    this.rr(x0, y0, layout.panelWidth, h, 9 * d); c.stroke();
-    c.fillStyle = T[0].kit.shirt; c.fillRect(x0, y0 + 5 * d, 4 * d, h - 10 * d);
-    c.fillStyle = T[1].kit.shirt; c.fillRect(awayX + teamW - 4 * d, y0 + 5 * d, 4 * d, h - 10 * d);
+    // reflet supérieur
+    c.save(); this.rr(x0, y0, layout.panelWidth, h, h / 2.6); c.clip();
+    const gloss = c.createLinearGradient(0, y0, 0, y0 + h * 0.55); gloss.addColorStop(0, 'rgba(255,255,255,0.16)'); gloss.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = gloss; c.fillRect(x0, y0, layout.panelWidth, h * 0.55);
+    // fines bandes aux couleurs des clubs, en bas de chaque nom
+    c.fillStyle = T[0].kit.shirt; c.fillRect(x0, y0 + h - 3 * d, teamW, 3 * d);
+    c.fillStyle = T[0].kit.alt || T[0].kit.trim || '#fff'; c.fillRect(x0 + teamW * 0.7, y0 + h - 3 * d, teamW * 0.3, 3 * d);
+    c.fillStyle = T[1].kit.shirt; c.fillRect(awayX, y0 + h - 3 * d, teamW, 3 * d);
+    c.fillStyle = T[1].kit.alt || T[1].kit.trim || '#fff'; c.fillRect(awayX, y0 + h - 3 * d, teamW * 0.3, 3 * d);
+    c.restore();
+    c.strokeStyle = 'rgba(255,255,255,0.22)'; c.lineWidth = Math.max(1, d);
+    this.rr(x0, y0, layout.panelWidth, h, h / 2.6); c.stroke();
+    // pastilles maillot (couleur principale + secondaire en diagonale)
+    const chip = (cx, kit) => {
+      const r = h * 0.26; c.save(); c.beginPath(); c.arc(cx, y0 + h / 2, r, 0, Math.PI * 2); c.clip();
+      c.fillStyle = kit.shirt || '#888'; c.fillRect(cx - r, y0 + h / 2 - r, r * 2, r * 2);
+      if (kit.pattern && kit.pattern !== 'plain') { c.fillStyle = kit.alt || kit.trim || '#fff'; for (let i = -2; i <= 2; i += 2) c.fillRect(cx + i * r * 0.36 - r * 0.17, y0 + h / 2 - r, r * 0.34, r * 2); }
+      else { c.fillStyle = kit.trim || '#fff'; c.fillRect(cx - r, y0 + h / 2 - r, r * 2, r * 0.32); }
+      c.restore(); c.strokeStyle = 'rgba(255,255,255,0.75)'; c.lineWidth = 1.2 * d; c.beginPath(); c.arc(cx, y0 + h / 2, r, 0, Math.PI * 2); c.stroke();
+    };
+    const chipPad = h * 0.42;
+    chip(x0 + chipPad, T[0].kit); chip(awayX + teamW - chipPad, T[1].kit);
     c.textBaseline = 'middle'; c.textAlign = 'center';
     c.fillStyle = '#f3f6fb'; c.font = `800 ${(layout.compact ? 9.5 : 11) * d}px system-ui,Arial`;
-    c.fillText(homeLabel, x0 + teamW / 2, y0 + h / 2);
-    c.fillText(awayLabel, awayX + teamW / 2, y0 + h / 2);
-    c.fillStyle = 'rgba(255,255,255,0.09)'; c.fillRect(scoreX + 2 * d, y0 + 5 * d, scoreW - 4 * d, h - 10 * d);
-    c.fillStyle = '#fff'; c.font = `900 ${(layout.compact ? 17 : 20) * d}px system-ui,Arial`;
-    c.fillText(`${this.score[0]}  –  ${this.score[1]}`, scoreX + scoreW / 2, y0 + h / 2);
-    const clockGrad = c.createLinearGradient(clockX, y0, clockX + clockW, y0 + h);
-    clockGrad.addColorStop(0, '#f13a45'); clockGrad.addColorStop(1, '#a90d1b');
-    c.fillStyle = clockGrad; c.fillRect(clockX, y0, clockW, h);
-    c.fillStyle = '#fff'; c.font = `900 ${(layout.compact ? 10 : 12) * d}px system-ui,Arial`;
-    c.fillText(this.state === 'shootout' ? 'TAB' : `${String(min).padStart(2, '0')}'`, clockX + clockW / 2, y0 + h / 2);
+    c.fillText(homeLabel, x0 + chipPad + (teamW - chipPad) / 2 + 2 * d, y0 + h / 2, teamW - chipPad * 2);
+    c.fillText(awayLabel, awayX + (teamW - chipPad) / 2 - 2 * d, y0 + h / 2, teamW - chipPad * 2);
+    // capsule du score : flash à la couleur de l'équipe qui vient de marquer
+    const flash = this.goalFxT > 0 ? Math.min(1, this.goalFxT / 1.5) : 0;
+    const sx0 = scoreX + 3 * d, sw0 = scoreW - 6 * d, sy0 = y0 + 4 * d, sh0 = h - 8 * d;
+    this.rr(sx0, sy0, sw0, sh0, sh0 / 2.4);
+    if (flash > 0) { c.fillStyle = this.teams[this.lastGoalTeam ?? 0]?.kit?.shirt || '#c8102e'; c.globalAlpha = 0.45 + 0.55 * flash * (0.6 + 0.4 * Math.sin(performance.now() / 90)); c.fill(); c.globalAlpha = 1; }
+    else { const sg = c.createLinearGradient(0, sy0, 0, sy0 + sh0); sg.addColorStop(0, '#ffffff'); sg.addColorStop(1, '#dfe5ee'); c.fillStyle = sg; c.fill(); }
+    c.fillStyle = flash > 0 ? '#fff' : '#0b1220'; c.font = `900 ${(layout.compact ? 16 : 19) * d}px system-ui,Arial`;
+    c.fillText(String(this.score[0]), sx0 + sw0 * 0.27, y0 + h / 2 + 0.5 * d);
+    c.fillText(String(this.score[1]), sx0 + sw0 * 0.73, y0 + h / 2 + 0.5 * d);
+    c.globalAlpha = 0.5; c.fillRect(sx0 + sw0 / 2 - 0.75 * d, sy0 + sh0 * 0.3, 1.5 * d, sh0 * 0.4); c.globalAlpha = 1;
+    // horloge : point « direct » qui pulse + indicateur de mi-temps
+    c.fillStyle = 'rgba(255,255,255,0.06)'; this.rr(clockX + 2 * d, y0 + 4 * d, clockW - 6 * d, h - 8 * d, (h - 8 * d) / 2.4); c.fill();
+    const live = this.state !== 'fulltime' && !isReplay;
+    if (live) { c.fillStyle = `rgba(255,59,70,${0.55 + 0.45 * Math.sin(performance.now() / 260)})`; c.beginPath(); c.arc(clockX + 9 * d, y0 + h / 2, 2.6 * d, 0, Math.PI * 2); c.fill(); }
+    c.fillStyle = isReplay ? '#ffe14a' : '#fff'; c.font = `900 ${(layout.compact ? 10 : 12) * d}px system-ui,Arial`;
+    c.fillText(isReplay ? 'REPLAY' : this.state === 'shootout' ? 'TAB' : `${String(min).padStart(2, '0')}'`, clockX + clockW / 2 + (live ? 3 * d : 0), y0 + h / 2);
     c.restore();
     // Live match centre remains on desktop; on narrow phones the pitch stays clear.
     if (!isReplay && layout.statsWidth > 0) {
-      const sw = layout.statsWidth, sh = layout.statsHeight, sx = this.W - sw - 12 * d, sy = 12 * d;
+      const sw = layout.statsWidth, sh = layout.statsHeight, sx = this.W - sw - 132 * d, sy = 12 * d;
       const totalPoss = Math.max(0.01, this.stats.poss[0] + this.stats.poss[1]);
       const poss0 = Math.round(this.stats.poss[0] / totalPoss * 100), poss1 = 100 - poss0;
       c.save();
@@ -3911,11 +3944,14 @@ export class Match {
     if (this.tickerT > 0 && this.ticker && !celebrating) {
       c.font = `600 ${12.5 * d}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
       const text = this.ticker.length > 90 ? this.ticker.slice(0, 88) + '…' : this.ticker;
-      const w = Math.min(this.W - 40 * d, c.measureText(text).width + 28 * d), ty = y0 + h + 10 * d;
+      const w = Math.min(this.W - 40 * d, c.measureText(text).width + 48 * d), ty = y0 + h + 10 * d;
       c.save(); c.globalAlpha = Math.min(1, this.tickerT / 0.4);
       c.fillStyle = 'rgba(6,12,22,0.78)'; this.rr(this.W / 2 - w / 2, ty, w, 26 * d, 13 * d); c.fill();
-      c.fillStyle = '#ffe14a'; this.rr(this.W / 2 - w / 2, ty, 4 * d, 26 * d, 2 * d); c.fill();
-      c.fillStyle = '#fff'; c.fillText(text, this.W / 2, ty + 13.5 * d); c.restore();
+      const acc = c.createLinearGradient(0, ty, 0, ty + 26 * d); acc.addColorStop(0, '#ffe14a'); acc.addColorStop(1, '#ff9f1a');
+      c.fillStyle = acc; this.rr(this.W / 2 - w / 2, ty, 22 * d, 26 * d, 13 * d); c.fill();
+      c.fillStyle = '#0b1220'; c.beginPath(); const mx = this.W / 2 - w / 2 + 12 * d, my = ty + 11 * d;
+      this.rr(mx - 2.6 * d, my - 5 * d, 5.2 * d, 8.5 * d, 2.6 * d); c.fill(); c.fillRect(mx - 0.7 * d, my + 3.5 * d, 1.4 * d, 3.5 * d); c.fillRect(mx - 3 * d, my + 6.6 * d, 6 * d, 1.3 * d);
+      c.fillStyle = '#fff'; c.fillText(text, this.W / 2 + 10 * d, ty + 13.5 * d); c.restore();
     }
     if (this.msgT > 0 && this.msg && !celebrating) {
       // Annonce en pastille : lisible sans masquer l'action.

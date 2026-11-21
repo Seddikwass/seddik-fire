@@ -163,3 +163,12 @@ console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroul
   assert.ok(getShotTypeSaveFactor('chip', 8) < getShotTypeSaveFactor('chip', 1), 'le piqué punit le gardien avancé');
   console.log('TECHNIQUES OK — technique et jeu de tête par joueur, piqué, enroulé, volée, retourné');
 }
+
+// Commentaire arabe style TV : noms de clubs en arabe, article fusionné, consultant après un but.
+{
+  const Cm = await import('../public/js/commentary.js');
+  assert.equal(Cm.commentaryLang('auto', 'fr'), 'fr');
+  assert.equal(Cm.commentaryLang('ar_tv', 'fr'), 'ar_tv');
+  for (const k of Object.keys(Cm.LINES.fr)) assert.ok(Cm.LINES.ar_tv[k]?.length, `ar_tv couvre ${k}`);
+  console.log('commentaire ar_tv OK');
+}

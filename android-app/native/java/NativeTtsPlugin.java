@@ -24,13 +24,16 @@ public class NativeTtsPlugin extends Plugin {
         String text = call.getString("text", "");
         String lang = call.getString("lang", "fr-FR");
         Float rate = call.getFloat("rate", 1.0f);
+        Float pitch = call.getFloat("pitch", 1.0f);
+        Boolean queue = call.getBoolean("queue", false);
         if (!ready || tts == null) { call.reject("Synthèse vocale non disponible"); return; }
         int r = tts.setLanguage(Locale.forLanguageTag(lang));
         if (r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED) {
             tts.setLanguage(lang.startsWith("ar") ? new Locale("ar") : Locale.FRENCH);
         }
         tts.setSpeechRate(rate == null ? 1.0f : rate);
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "ft26");
+        tts.setPitch(pitch == null ? 1.0f : pitch);
+        tts.speak(text, queue != null && queue ? TextToSpeech.QUEUE_ADD : TextToSpeech.QUEUE_FLUSH, null, "ft26");
         JSObject ret = new JSObject();
         ret.put("ok", true);
         call.resolve(ret);

@@ -1669,6 +1669,12 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 .pg-ach i{grid-row:span 2;font-style:normal;font-size:22px;text-align:center}.pg-ach b{font:700 12px var(--fb);color:#e9eef5}.pg-ach small{font:700 11px var(--fb);color:#ffd166}
 @media (max-width:760px),(max-height:540px){.pg-st{grid-template-columns:repeat(3,1fr)}.lvlchip span{min-width:60px}.lvlchip small{max-width:86px}}
 
+/* V227 — course surprise */
+.golbl{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;justify-content:flex-end}
+.qrand{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:7px 14px;border:1px dashed rgba(255,209,102,.55);background:rgba(255,209,102,.07);color:#fff;border-radius:10px;text-align:start}
+.qrand b{font:400 italic 15px var(--fh)}.qrand small{font:600 11px var(--fb);color:#aab3c2;max-width:230px}
+@media (max-width:760px),(max-height:540px){.qrand small{display:none}}
+
 </style>
 </head>
 <body>
@@ -1683,7 +1689,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V226</span>
+    <span id="build-tag" aria-label="Version">V227</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1731,9 +1737,9 @@ body.sub #btn-install,.native #btn-install{display:none!important}
         <div class="opt" id="q-opp"><label data-i18n="opponents">Adversaires</label><div class="stepper"><button data-d="-1" aria-label="-">−</button><span></span><button data-d="1" aria-label="+">+</button></div></div>
         <div class="opt" id="q-diff"><label data-i18n="difficulty">Difficulté</label><div class="seg"><button data-v="0" data-i18n="easy">Facile</button><button data-v="1" data-i18n="normal">Normal</button><button data-v="2" data-i18n="hard">Difficile</button></div></div>
         <div class="opt" id="q-traf"><label data-i18n="traffic">Trafic</label><div class="seg"><button data-v="0" data-i18n="no">Non</button><button data-v="1" data-i18n="yes">Oui</button></div></div>
-        <div class="opt" id="q-wx"><label data-i18n="weather">Météo</label><div class="seg"><button data-v="0" data-i18n="sunny">Beau temps</button><button data-v="1" data-i18n="rain">Pluie</button></div></div>
+        <div class="opt" id="q-wx"><label data-i18n="weather">Météo</label><div class="seg"><button data-v="0" data-i18n="sunny">Beau temps</button><button data-v="1" data-i18n="rain">Pluie</button><button data-v="2" data-i18n="wx_night">Nuit</button></div></div>
       </div>
-      <div class="golbl"><button class="cta" id="q-go" data-i18n="start">DÉMARRER ›</button></div>
+      <div class="golbl"><button class="ghost qrand" id="q-rand" title=""><b>🎲 <span data-i18n="q_rand">Course surprise</span></b><small data-i18n="q_randD"></small></button><button class="cta" id="q-go" data-i18n="start">DÉMARRER ›</button></div>
     </div>
   </section>
 
@@ -2707,6 +2713,11 @@ const STYLES = {
   ev: { L: 4.62, W: 2.0, bot: 0.2, wr: 0.36, zr: -0.62, zf: 0.66, flare: 0.03, ytK: [[-1, 0.86], [-0.93, 0.9], [-0.55, 0.9], [-0.4, 0.88], [0.2, 0.8], [0.55, 0.66], [0.88, 0.52], [1, 0.46]], wK: [[-1, 0.86], [-0.9, 1], [0.85, 0.95], [1, 0.8]], cabR: -0.62, cabF: 0.36, roof: 1.22, roofW: 0.6, rs: 1.2, fs: 1.1, spoiler: 'none', doors: 2, rim: 'disc', ev: true, glassRoof: true },
   hyper: { L: 4.72, W: 2.06, bot: 0.17, wr: 0.36, zr: -0.62, zf: 0.66, flare: 0.05, ytK: [[-1, 0.84], [-0.93, 0.88], [-0.5, 0.9], [-0.35, 0.86], [0.25, 0.66], [0.55, 0.58], [0.88, 0.46], [1, 0.4]], wK: [[-1, 0.86], [-0.9, 1], [0.85, 0.95], [1, 0.8]], cabR: -0.42, cabF: 0.28, roof: 1.13, roofW: 0.55, rs: 1.25, fs: 1.0, spoiler: 'bigwing', doors: 2, rim: 'mesh', intakes: true, lightbar: true },
   sedan: { L: 4.75, W: 1.84, bot: 0.28, wr: 0.33, zr: -0.6, zf: 0.62, flare: 0.0, ytK: [[-1, 0.97], [-0.92, 1.02], [-0.62, 1.02], [-0.5, 1.0], [0.2, 0.97], [0.55, 0.9], [0.88, 0.8], [1, 0.72]], wK: [[-1, 0.9], [-0.9, 1], [0.85, 0.97], [1, 0.86]], cabR: -0.64, cabF: 0.22, roof: 1.48, roofW: 0.76, rs: 0.55, fs: 0.75, spoiler: 'none', doors: 4, rim: 'disc' },
+  // V227 — prototype d'endurance, limousine de luxe, 4x4 de prestige et 4x4 de rallye-raid
+  lmp: { L: 4.95, W: 2.02, bot: 0.12, wr: 0.35, zr: -0.62, zf: 0.67, flare: 0.06, ytK: [[-1, 0.8], [-0.93, 0.86], [-0.5, 0.88], [-0.3, 0.84], [0.2, 0.62], [0.55, 0.52], [0.88, 0.42], [1, 0.36]], wK: [[-1, 0.86], [-0.9, 1], [0.85, 0.95], [1, 0.8]], cabR: -0.3, cabF: 0.3, roof: 1.06, roofW: 0.48, rs: 1.3, fs: 1.05, spoiler: 'bigwing', doors: 2, rim: 'mesh', intakes: true, lightbar: true, canards: true },
+  luxe: { L: 5.3, W: 1.98, bot: 0.26, wr: 0.37, zr: -0.6, zf: 0.63, flare: 0.01, ytK: [[-1, 1.0], [-0.92, 1.04], [-0.62, 1.05], [-0.5, 1.03], [0.2, 1.0], [0.55, 0.95], [0.88, 0.86], [1, 0.8]], wK: [[-1, 0.92], [-0.9, 1], [0.85, 0.98], [1, 0.9]], cabR: -0.62, cabF: 0.18, roof: 1.52, roofW: 0.78, rs: 0.6, fs: 0.68, spoiler: 'none', doors: 4, rim: 'ten', chrome: true },
+  raid: { L: 4.98, W: 2.04, bot: 0.48, wr: 0.42, zr: -0.6, zf: 0.64, flare: 0.05, ytK: [[-1, 1.22], [-0.95, 1.26], [-0.6, 1.26], [0.3, 1.24], [0.62, 1.2], [0.9, 1.12], [1, 1.05]], wK: [[-1, 0.95], [-0.92, 1], [0.88, 1], [1, 0.93]], cabR: -0.92, cabF: 0.2, roof: 1.94, roofW: 0.86, rs: 0.16, fs: 0.62, spoiler: 'roof', doors: 4, rim: 'ten', rails: true, chrome: true },
+  desertx: { L: 4.7, W: 2.12, bot: 0.6, wr: 0.47, zr: -0.6, zf: 0.64, flare: 0.1, ytK: [[-1, 1.2], [-0.95, 1.24], [-0.6, 1.24], [0.3, 1.22], [0.62, 1.16], [0.9, 1.06], [1, 0.98]], wK: [[-1, 0.95], [-0.92, 1], [0.88, 1], [1, 0.92]], cabR: -0.86, cabF: 0.14, roof: 1.9, roofW: 0.84, rs: 0.2, fs: 0.66, spoiler: 'roof', doors: 2, rim: 'dish', rally: true, snorkel: true, spare: true },
   // 4x4 et pick-up : garde au sol haute, gros pneus, formes carrées
   offroad: { L: 4.5, W: 1.96, bot: 0.52, wr: 0.43, zr: -0.6, zf: 0.64, flare: 0.07, ytK: [[-1, 1.24], [-0.96, 1.27], [-0.6, 1.27], [0.3, 1.25], [0.62, 1.22], [0.9, 1.17], [1, 1.1]], wK: [[-1, 0.96], [-0.92, 1], [0.88, 1], [1, 0.94]], cabR: -0.94, cabF: 0.16, roof: 1.98, roofW: 0.88, rs: 0.08, fs: 0.5, spoiler: 'none', doors: 4, rim: 'dish', rails: true, bullbar: true, spare: true, snorkel: true },
   pickup: { L: 5.25, W: 1.94, bot: 0.47, wr: 0.41, zr: -0.62, zf: 0.66, flare: 0.05, ytK: [[-1, 1.18], [-0.95, 1.2], [-0.2, 1.2], [0.3, 1.2], [0.62, 1.16], [0.9, 1.1], [1, 1.03]], wK: [[-1, 0.96], [-0.92, 1], [0.88, 1], [1, 0.92]], cabR: -0.28, cabF: 0.3, roof: 1.86, roofW: 0.86, rs: 0.07, fs: 0.62, spoiler: 'none', doors: 4, rim: 'five', bed: true, bullbar: true },
@@ -3342,7 +3353,8 @@ STYLES.sport_wide = Object.assign({}, STYLES.sports, {L:4.86,W:2.04,bot:0.19,wr:
 const MODEL_BUILDERS = {
   police: () => buildCarModel('sedan', { police: true }), polgt: () => buildCarModel('gt', { police: true }), taxi: () => buildCarModel('sedan', { taxi: true }),
   van: () => buildVan(), louage: () => buildVan([0.8, 0.08, 0.08]), truck: () => buildTruck(), bus: () => buildBus(),
-  moto_sport: () => buildMoto('sport'), moto_trail: () => buildMoto('trail'), moto_scoot: () => buildMoto('scoot'),
+  moto_sport: () => buildMoto('sport'), moto_trail: () => buildMoto('trail'), moto_scoot: () => buildMoto('scoot'), moto_naked: () => buildMoto('naked'), moto_cruiser: () => buildMoto('cruiser'),
+  bike_piste: () => buildBike('piste'), bike_fat: () => buildBike('fat'),
   bike_ville: () => buildBike('ville'), bike_bmx: () => buildBike('bmx'), bike_vtt: () => buildBike('vtt'), bike_route: () => buildBike('route'), bike_elec: () => buildBike('elec'), bike_clm: () => buildBike('clm'),
 };
 const MODELS_BUILT = {};
@@ -3411,6 +3423,39 @@ function buildMoto(kind) {
     brakes(zf, 0.22, [0.15, 0.15, 0.16]); discX(mb, 0.085, r, zr, 0.15, DISC, 4, 14, 0.005);
     bar(mb, [0.16, 0.38, -0.05], [0.21, 0.78, -0.62], 0.055, TI, 4); mb.box(0, 0.95, -0.99, 0.1, 0.04, 0.02, RED, 5);
     heads = [[0, 1.06, 0.8]]; exhaust = [[0.21, 0.78, -0.66]];
+  } else if (kind === 'naked') {
+    // roadster « naked » : moteur apparent, cadre treillis rouge, phare rond, guidon plat, échappement court
+    L = 2.08; r = 0.32; zf = 0.72; zr = -0.7; H = 1.36; rim = 'five'; ww = 0.17; const TRL = [0.85, 0.12, 0.08];
+    add(loftSE([{ z: 0.34, yb: 0.8, yt: 0.95, w: 0.3 }, { z: 0.14, yb: 0.74, yt: 1.05, w: 0.46 }, { z: -0.08, yb: 0.78, yt: 0.99, w: 0.4 }, { z: -0.16, yb: 0.84, yt: 0.92, w: 0.3 }], P, 1, 2.6));
+    add(loftSE([{ z: -0.1, yb: 0.85, yt: 0.93, w: 0.28 }, { z: -0.45, yb: 0.86, yt: 0.95, w: 0.27 }, { z: -0.6, yb: 0.9, yt: 0.98, w: 0.22 }], BLK, 0, 3));
+    add(loftSE([{ z: -0.55, yb: 0.9, yt: 1.0, w: 0.2 }, { z: -0.92, yb: 0.98, yt: 1.03, w: 0.1 }], P, 1, 3));
+    add(loftSE([{ z: 1.0, yb: 0.6, yt: 0.63, w: 0.12 }, { z: 0.8, yb: 0.66, yt: 0.7, w: 0.14 }, { z: 0.6, yb: 0.6, yt: 0.63, w: 0.12 }], P, 1, 2.2, 10));
+    mb.box(0, 0.26, 0.04, 0.34, 0.36, 0.46, MET, 4); for (let k = 0; k < 5; k++) mb.box(0, 0.42 + k * 0.05, 0.12 - k * 0.02, 0.38, 0.018, 0.3, ALU, 4);
+    mb.box(0, 0.45, 0.36, 0.34, 0.26, 0.05, [0.06, 0.06, 0.07], 4);
+    for (const sx of [-1, 1]) { bar(mb, [sx * 0.05, 0.96, 0.44], [sx * 0.15, 0.56, -0.22], 0.016, TRL, 4); bar(mb, [sx * 0.05, 0.9, 0.42], [sx * 0.15, 0.36, 0.08], 0.016, TRL, 4); bar(mb, [sx * 0.15, 0.56, -0.22], [sx * 0.15, 0.36, 0.08], 0.016, TRL, 4); }
+    for (const sx of [-1, 1]) { bar(mb, [sx * 0.085, r, zf], [sx * 0.085, 1.0, 0.46], 0.027, GOLD, 4); bar(mb, [sx * 0.07, 1.06, 0.44], [sx * 0.37, 1.07, 0.4], 0.015, BLK, 0); mb.box(sx * 0.39, 1.06, 0.4, 0.06, 0.04, 0.12, BLK, 0); bar(mb, [sx * 0.24, 1.08, 0.44], [sx * 0.3, 1.2, 0.45], 0.01, BLK, 0); mb.box(sx * 0.31, 1.2, 0.45, 0.1, 0.06, 0.03, BLK, 0); }
+    sphere(mb, 0, 0.98, 0.58, 0.11, BLK, 4, -Math.PI / 2, Math.PI / 2, 10); discZ(mb, 0, 0.98, 0.665, 0.085, HEAD, 15);
+    brakes(zf, 0.2, GOLD); discX(mb, 0.085, r, zr, 0.13, DISC, 4, 14, 0.005);
+    for (const sx of [-1, 1]) bar(mb, [sx * 0.1, r, zr], [sx * 0.11, 0.38, -0.12], 0.035, ALU, 4, 0.05);
+    bar(mb, [0.1, 0.24, -0.1], [0.15, 0.36, -0.5], 0.05, TI, 4); bar(mb, [0.15, 0.36, -0.5], [0.16, 0.38, -0.6], 0.065, BLK, 0);
+    mb.box(0, 0.96, -0.95, 0.1, 0.035, 0.02, RED, 5);
+    heads = [[0, 0.98, 0.68]]; exhaust = [[0.16, 0.38, -0.62]];
+  } else if (kind === 'cruiser') {
+    // cruiser : selle basse, fourche longue chromée, bicylindre en V, guidon relevé, double échappement, sacoches en cuir
+    L = 2.42; r = 0.33; zf = 0.96; zr = -0.78; H = 1.3; rim = 'ten'; ww = 0.19; const CHR = [0.82, 0.83, 0.86], LEA = [0.32, 0.18, 0.09];
+    add(loftSE([{ z: 0.46, yb: 0.76, yt: 0.86, w: 0.24 }, { z: 0.28, yb: 0.72, yt: 0.95, w: 0.38 }, { z: 0.02, yb: 0.72, yt: 0.92, w: 0.36 }, { z: -0.1, yb: 0.74, yt: 0.82, w: 0.26 }], P, 1, 2.6));
+    add(loftSE([{ z: -0.1, yb: 0.6, yt: 0.7, w: 0.3 }, { z: -0.3, yb: 0.58, yt: 0.7, w: 0.42 }, { z: -0.55, yb: 0.64, yt: 0.78, w: 0.36 }], BLK, 0, 3));
+    add(loftSE([{ z: -0.5, yb: 0.6, yt: 0.66, w: 0.32 }, { z: -0.8, yb: 0.66, yt: 0.72, w: 0.34 }, { z: -1.12, yb: 0.5, yt: 0.56, w: 0.3 }], P, 1, 3));
+    add(loftSE([{ z: 1.18, yb: 0.42, yt: 0.45, w: 0.14 }, { z: 1.02, yb: 0.66, yt: 0.7, w: 0.2 }, { z: 0.8, yb: 0.62, yt: 0.65, w: 0.18 }], P, 1, 2.2, 10));
+    for (const sx of [-1, 1]) add(loftSE([{ z: -0.5, yb: 0.36, yt: 0.62, w: 0.15, x: sx * 0.3 }, { z: -0.56, yb: 0.34, yt: 0.66, w: 0.17, x: sx * 0.31 }, { z: -0.92, yb: 0.36, yt: 0.64, w: 0.16, x: sx * 0.31 }, { z: -0.98, yb: 0.4, yt: 0.6, w: 0.13, x: sx * 0.3 }], LEA, 0, 5, 12));
+    mb.box(0, 0.22, 0.0, 0.3, 0.24, 0.44, MET, 4);
+    bar(mb, [0, 0.36, 0.05], [0, 0.72, 0.24], 0.09, ALU, 4); bar(mb, [0, 0.36, -0.05], [0, 0.72, -0.24], 0.09, ALU, 4); discX(mb, 0.12, 0.34, 0.0, 0.11, CHR, 4, 16, 0.02);
+    for (const sx of [-1, 1]) { bar(mb, [sx * 0.1, r, zf], [sx * 0.1, 1.0, 0.5], 0.03, CHR, 4); bar(mb, [sx * 0.06, 1.04, 0.5], [sx * 0.28, 1.2, 0.4], 0.016, CHR, 4); bar(mb, [sx * 0.28, 1.2, 0.4], [sx * 0.42, 1.12, 0.3], 0.016, CHR, 4); mb.box(sx * 0.44, 1.11, 0.29, 0.06, 0.04, 0.12, BLK, 0); bar(mb, [sx * 0.24, 0.36, 0.5], [sx * 0.32, 0.36, 0.5], 0.02, CHR, 4); }
+    sphere(mb, 0, 0.98, 0.58, 0.13, CHR, 4, -Math.PI / 2, Math.PI / 2, 12); discZ(mb, 0, 0.98, 0.69, 0.1, HEAD, 15);
+    for (const dy of [0, 0.12]) bar(mb, [0.16, 0.28 + dy, 0.12], [0.22, 0.34 + dy, -1.05], 0.045, CHR, 4);
+    bar(mb, [0, 0.72, -0.62], [0, 1.08, -0.72], 0.016, CHR, 4); mb.box(0, 1.02, -0.72, 0.22, 0.14, 0.03, BLK, 0);
+    brakes(zf, 0.18, CHR); discX(mb, 0.085, r, zr, 0.14, DISC, 4, 14, 0.005); mb.box(0, 0.62, -1.12, 0.14, 0.05, 0.02, RED, 5);
+    heads = [[0, 0.98, 0.7]]; exhaust = [[0.22, 0.4, -1.07]];
   } else {
     // scooter : tablier galbé, plancher plat, coque arrière arrondie, phare rond au guidon, top-case
     L = 1.86; r = 0.23; zf = 0.62; zr = -0.6; H = 1.32; rim = 'disc'; ww = 0.13;
@@ -3462,63 +3507,65 @@ const BIKE_G = {
   vtt: { r: 0.36, ww: 0.058, zf: 0.57, zr: -0.52, bb: [0.33, 0.03], st: [0.76, -0.15], ht: [0.86, 0.4, 0.68, 0.46], sd: [0.92, -0.19], tr: 0.026, ratio: 2.3, rim: 'spk', H: 1.1 },
   route: { r: 0.34, ww: 0.026, zf: 0.5, zr: -0.5, bb: [0.27, 0.02], st: [0.8, -0.14], ht: [0.8, 0.4, 0.65, 0.45], sd: [0.93, -0.19], tr: 0.019, ratio: 3.0, rim: 'deep', H: 1.0 },
   elec: { r: 0.35, ww: 0.05, zf: 0.56, zr: -0.52, bb: [0.3, 0.02], st: [0.76, -0.16], ht: [0.84, 0.4, 0.64, 0.46], sd: [0.93, -0.2], tr: 0.03, ratio: 2.5, rim: 'spk', H: 1.1 },
+  piste: { r: 0.34, ww: 0.023, zf: 0.5, zr: -0.47, bb: [0.29, 0.02], st: [0.8, -0.12], ht: [0.8, 0.41, 0.66, 0.46], sd: [0.94, -0.16], tr: 0.022, ratio: 3.4, rim: 'deep', H: 1.0 },
+  fat: { r: 0.37, ww: 0.11, zf: 0.58, zr: -0.53, bb: [0.33, 0.03], st: [0.76, -0.15], ht: [0.86, 0.41, 0.68, 0.47], sd: [0.92, -0.19], tr: 0.03, ratio: 2.1, rim: 'spk', H: 1.12 },
   clm: { r: 0.34, ww: 0.024, zf: 0.52, zr: -0.47, bb: [0.27, 0.02], st: [0.78, -0.1], ht: [0.74, 0.42, 0.62, 0.46], sd: [0.92, -0.14], tr: 0.024, ratio: 3.2, rim: 'bdisc', rimF: 'tri', H: 0.98 },
 };
 function buildBike(kind) {
   const mb = new MB(), P = [1, 1, 1], BLK = [0.035, 0.035, 0.04], ALU = [0.62, 0.63, 0.66], CHR = [0.8, 0.81, 0.84], RUB = [0.06, 0.06, 0.065], BRN = [0.36, 0.2, 0.1], DISC = [0.58, 0.58, 0.6];
-  const G2 = BIKE_G[kind], { r, zf, zr, tr } = G2, BB = [0, G2.bb[0], G2.bb[1]], ST = [0, G2.st[0], G2.st[1]], HT = [0, G2.ht[0], G2.ht[1]], HB = [0, G2.ht[2], G2.ht[3]], SD = [0, G2.sd[0], G2.sd[1]];
+  const K = kind === 'piste' ? 'route' : kind === 'fat' ? 'vtt' : kind, G2 = BIKE_G[kind], { r, zf, zr, tr } = G2, BB = [0, G2.bb[0], G2.bb[1]], ST = [0, G2.st[0], G2.st[1]], HT = [0, G2.ht[0], G2.ht[1]], HB = [0, G2.ht[2], G2.ht[3]], SD = [0, G2.sd[0], G2.sd[1]];
   const tube = (a, b, k = 1, c = P, m = 1) => bar(mb, a, b, tr * k, c, m);
   // cadre : tube horizontal, diagonal, de selle, de direction, bases et haubans
-  if (kind === 'ville') { tube(lerp3(ST, BB, 0.35), lerp3(HT, HB, 0.55), 1); tube(ST, HT, 0.8); } else tube(ST, HT, kind === 'clm' ? 0.85 : 1);
-  tube(BB, HB, kind === 'elec' ? 1.5 : 1.2); tube(BB, ST, 1.05); tube(HB, HT, 1.4);
+  if (K === 'ville') { tube(lerp3(ST, BB, 0.35), lerp3(HT, HB, 0.55), 1); tube(ST, HT, 0.8); } else tube(ST, HT, K === 'clm' ? 0.85 : 1);
+  tube(BB, HB, K === 'elec' ? 1.5 : 1.2); tube(BB, ST, 1.05); tube(HB, HT, 1.4);
   for (const sx of [-1, 1]) { tube([sx * 0.06, r, zr], [sx * 0.02, BB[1], BB[2] - 0.04], 0.6); tube([sx * 0.06, r, zr], [sx * 0.02, ST[1] - 0.04, ST[2] + 0.02], 0.55); }
   // fourche (suspendue pour le VTT et le vélo électrique)
-  const susp = kind === 'vtt' || kind === 'elec';
+  const susp = K === 'vtt' || K === 'elec';
   for (const sx of [-1, 1]) {
     if (susp) { tube([sx * 0.065, HB[1] - 0.02, HB[2] + 0.01], [sx * 0.065, r + 0.22, zf - 0.04], 1.05, ALU, 4); tube([sx * 0.065, r + 0.24, zf - 0.04], [sx * 0.065, r, zf], 0.8, BLK, 4); }
-    else tube([sx * 0.045, HB[1], HB[2] + 0.005], [sx * 0.05, r, zf], 0.6, kind === 'ville' || kind === 'bmx' ? CHR : P, kind === 'ville' || kind === 'bmx' ? 4 : 1);
+    else tube([sx * 0.045, HB[1], HB[2] + 0.005], [sx * 0.05, r, zf], 0.6, K === 'ville' || K === 'bmx' ? CHR : P, K === 'ville' || K === 'bmx' ? 4 : 1);
   }
   if (susp) mb.box(0, HB[1] - 0.04, HB[2] - 0.02, 0.17, 0.05, 0.06, BLK, 4);
   // tige de selle et selle
-  bar(mb, ST, [0, SD[1] - 0.03, SD[2] + 0.02], 0.014, kind === 'ville' ? CHR : BLK, 4);
-  if (kind === 'ville') { mb.box(0, SD[1] - 0.03, SD[2], 0.2, 0.07, 0.26, BRN, 0); for (const sx of [-1, 1]) bar(mb, [sx * 0.07, SD[1] - 0.03, SD[2] - 0.1], [sx * 0.07, SD[1] - 0.1, SD[2] - 0.13], 0.008, CHR, 4); }
-  else mb.box(0, SD[1] - 0.02, SD[2], kind === 'bmx' ? 0.13 : 0.12, 0.045, 0.27, BLK, 0);
+  bar(mb, ST, [0, SD[1] - 0.03, SD[2] + 0.02], 0.014, K === 'ville' ? CHR : BLK, 4);
+  if (K === 'ville') { mb.box(0, SD[1] - 0.03, SD[2], 0.2, 0.07, 0.26, BRN, 0); for (const sx of [-1, 1]) bar(mb, [sx * 0.07, SD[1] - 0.03, SD[2] - 0.1], [sx * 0.07, SD[1] - 0.1, SD[2] - 0.13], 0.008, CHR, 4); }
+  else mb.box(0, SD[1] - 0.02, SD[2], K === 'bmx' ? 0.13 : 0.12, 0.045, 0.27, BLK, 0);
   // transmission : plateau, cassette, axe et chaîne (manivelles et pédales tournent avec les jambes du cycliste)
-  discX(mb, 0.075, BB[1], BB[2], kind === 'bmx' ? 0.085 : 0.1, kind === 'clm' || kind === 'route' ? [0.12, 0.12, 0.13] : ALU, 4, 20, 0.004);
+  discX(mb, 0.075, BB[1], BB[2], K === 'bmx' ? 0.085 : 0.1, K === 'clm' || K === 'route' ? [0.12, 0.12, 0.13] : ALU, 4, 20, 0.004);
   discX(mb, 0.07, r, zr, 0.05, ALU, 4, 14, 0.008); bar(mb, [-0.07, BB[1], BB[2]], [0.075, BB[1], BB[2]], 0.026, BLK, 4);
   for (const dy of [1, -1]) bar(mb, [0.075, BB[1] + dy * 0.095, BB[2]], [0.07, r + dy * 0.048, zr], 0.006, [0.25, 0.25, 0.27], 4, 0.006, 4);
   // potence et cintre selon le type
-  const SE = [0, HT[1] + (kind === 'ville' ? 0.18 : kind === 'bmx' ? 0.12 : 0.05), HT[2] + (kind === 'ville' ? 0.0 : 0.09)];
-  bar(mb, HT, SE, 0.016, kind === 'ville' || kind === 'bmx' ? CHR : BLK, 4);
-  if (kind === 'route') {
+  const SE = [0, HT[1] + (K === 'ville' ? 0.18 : K === 'bmx' ? 0.12 : 0.05), HT[2] + (K === 'ville' ? 0.0 : 0.09)];
+  bar(mb, HT, SE, 0.016, K === 'ville' || K === 'bmx' ? CHR : BLK, 4);
+  if (K === 'route') {
     bar(mb, [-0.21, SE[1], SE[2]], [0.21, SE[1], SE[2]], 0.012, BLK, 4);
     for (const sx of [-1, 1]) { const a = [sx * 0.21, SE[1], SE[2]], b = [sx * 0.21, SE[1] - 0.03, SE[2] + 0.08], c2 = [sx * 0.21, SE[1] - 0.12, SE[2] + 0.06], d2 = [sx * 0.21, SE[1] - 0.14, SE[2] - 0.03]; bar(mb, a, b, 0.012, BLK, 4); bar(mb, b, c2, 0.012, BLK, 4); bar(mb, c2, d2, 0.012, BLK, 4); mb.box(sx * 0.21, SE[1] - 0.01, SE[2] + 0.05, 0.03, 0.06, 0.06, BLK, 0); }
-  } else if (kind === 'clm') {
+  } else if (K === 'clm') {
     bar(mb, [-0.2, SE[1], SE[2]], [0.2, SE[1], SE[2]], 0.02, BLK, 4, 0.008);
     for (const sx of [-1, 1]) { bar(mb, [sx * 0.07, SE[1] + 0.03, SE[2] - 0.02], [sx * 0.06, SE[1] + 0.05, SE[2] + 0.3], 0.011, BLK, 4); mb.box(sx * 0.08, SE[1] + 0.04, SE[2] + 0.02, 0.07, 0.025, 0.12, BLK, 0); }
-  } else if (kind === 'ville') {
+  } else if (K === 'ville') {
     for (const sx of [-1, 1]) { const a = [sx * 0.04, SE[1], SE[2]], b = [sx * 0.24, SE[1] + 0.02, SE[2] - 0.02], c2 = [sx * 0.29, SE[1] - 0.01, SE[2] - 0.15]; bar(mb, a, b, 0.012, CHR, 4); bar(mb, b, c2, 0.012, CHR, 4); bar(mb, c2, [sx * 0.31, SE[1] - 0.02, SE[2] - 0.25], 0.019, BRN, 0); }
     discZ(mb, 0.16, SE[1] + 0.035, SE[2] + 0.0, 0.026, CHR, 4, 10);
   } else {
-    const hw2 = kind === 'vtt' ? 0.37 : kind === 'bmx' ? 0.31 : 0.33;
-    bar(mb, [-hw2, SE[1], SE[2]], [hw2, SE[1], SE[2]], 0.012, kind === 'bmx' ? CHR : BLK, 4);
+    const hw2 = K === 'vtt' ? 0.37 : K === 'bmx' ? 0.31 : 0.33;
+    bar(mb, [-hw2, SE[1], SE[2]], [hw2, SE[1], SE[2]], 0.012, K === 'bmx' ? CHR : BLK, 4);
     for (const sx of [-1, 1]) bar(mb, [sx * (hw2 - 0.11), SE[1], SE[2]], [sx * hw2, SE[1], SE[2]], 0.018, RUB, 0);
-    if (kind === 'bmx') bar(mb, [-0.13, SE[1] - 0.08, SE[2] - 0.01], [0.13, SE[1] - 0.08, SE[2] - 0.01], 0.01, CHR, 4);
+    if (K === 'bmx') bar(mb, [-0.13, SE[1] - 0.08, SE[2] - 0.01], [0.13, SE[1] - 0.08, SE[2] - 0.01], 0.01, CHR, 4);
   }
   // freins : étriers (route/ville/BMX) ou disques (VTT, électrique)
   if (susp) { discX(mb, -0.075, r, zf, 0.08, DISC, 4, 16, 0.003); discX(mb, -0.075, r, zr, 0.07, DISC, 4, 16, 0.003); mb.box(-0.085, r + 0.07, zf - 0.05, 0.03, 0.06, 0.06, BLK, 4); }
   else { mb.box(0, r + r + 0.02, zf - 0.02, 0.07, 0.03, 0.04, BLK, 4); mb.box(0, ST[1] - 0.12, zr + 0.24, 0.07, 0.03, 0.04, BLK, 4); }
   // accessoires selon le type
-  const mud = (zc, k0, k1) => { let pr = null; for (let k = 0; k <= 10; k++) { const a = k0 + (k1 - k0) * k / 10, q = [0, r + Math.cos(a) * (r + 0.045), zc + Math.sin(a) * (r + 0.045)]; if (pr) bar(mb, pr, q, 0.03, kind === 'ville' ? CHR : BLK, kind === 'ville' ? 4 : 0, 0.007, 4); pr = q; } };
-  if (kind === 'ville' || kind === 'elec') {
+  const mud = (zc, k0, k1) => { let pr = null; for (let k = 0; k <= 10; k++) { const a = k0 + (k1 - k0) * k / 10, q = [0, r + Math.cos(a) * (r + 0.045), zc + Math.sin(a) * (r + 0.045)]; if (pr) bar(mb, pr, q, 0.03, K === 'ville' ? CHR : BLK, K === 'ville' ? 4 : 0, 0.007, 4); pr = q; } };
+  if (K === 'ville' || K === 'elec') {
     mud(zf, -0.5, 2.0); mud(zr, -2.4, 0.5);
     // porte-bagages arrière et béquille
-    mb.box(0, r + 0.33, zr + 0.02, 0.16, 0.012, 0.36, kind === 'ville' ? CHR : BLK, 4);
-    for (const sx of [-1, 1]) bar(mb, [sx * 0.07, r + 0.33, zr + 0.18], [sx * 0.06, r, zr], 0.007, kind === 'ville' ? CHR : BLK, 4);
+    mb.box(0, r + 0.33, zr + 0.02, 0.16, 0.012, 0.36, K === 'ville' ? CHR : BLK, 4);
+    for (const sx of [-1, 1]) bar(mb, [sx * 0.07, r + 0.33, zr + 0.18], [sx * 0.06, r, zr], 0.007, K === 'ville' ? CHR : BLK, 4);
     bar(mb, [0.06, BB[1] - 0.02, BB[2] - 0.1], [0.17, 0.02, BB[2] - 0.3], 0.008, CHR, 4);
     discZ(mb, 0, HT[1] - 0.06, HT[2] + 0.1, 0.035, [1, 0.97, 0.9], 15, 12);
   }
-  if (kind === 'ville') {
+  if (K === 'ville') {
     // panier en osier, garde-chaîne
     const bz = zf + 0.14, by = HT[1] - 0.18, WK = [0.62, 0.46, 0.26];
     mb.box(0, by, bz, 0.34, 0.012, 0.26, WK, 0); for (const sx of [-1, 1]) mb.box(sx * 0.17, by, bz, 0.012, 0.2, 0.26, WK, 0);
@@ -3527,16 +3574,16 @@ function buildBike(kind) {
     bar(mb, [0, by + 0.1, bz - 0.13], [0, HT[1] - 0.02, HT[2] + 0.04], 0.008, CHR, 4);
     mb.box(0.095, (BB[1] + r) / 2 - 0.05, (BB[2] + zr) / 2 + 0.04, 0.012, 0.12, 0.5, BLK, 1);
   }
-  if (kind === 'elec') {
+  if (K === 'elec') {
     // batterie dans le diagonal, moteur dans le moyeu arrière, écran au guidon
     bar(mb, lerp3(BB, HB, 0.18), lerp3(BB, HB, 0.78), 0.048, [0.1, 0.1, 0.12], 4, 0.036);
     mb.box(0, lerp3(BB, HB, 0.5)[1] + 0.04, lerp3(BB, HB, 0.5)[2], 0.02, 0.02, 0.06, [0.25, 1, 0.5], 2);
     discX(mb, 0, r, zr, 0.085, [0.15, 0.15, 0.17], 4, 18, 0.045);
     mb.box(0, SE[1] + 0.02, SE[2] + 0.02, 0.08, 0.012, 0.05, [0.2, 0.7, 1], 2);
   }
-  if (kind === 'bmx') for (const [zc, sx] of [[zr, 1], [zr, -1], [zf, 1], [zf, -1]]) bar(mb, [sx * 0.05, r, zc], [sx * 0.16, r, zc], 0.019, CHR, 4);
-  if (kind === 'route' || kind === 'clm' || kind === 'vtt') { const a = lerp3(BB, HB, 0.3), b = lerp3(BB, HB, 0.62); bar(mb, [0, a[1] + 0.06, a[2] - 0.01], [0, b[1] + 0.06, b[2] - 0.01], 0.034, kind === 'vtt' ? [0.1, 0.55, 0.25] : [0.92, 0.92, 0.95], 0); }
-  if (kind === 'vtt') bar(mb, lerp3(ST, BB, 0.15), [0, r + 0.12, zr + 0.25], 0.022, [0.85, 0.35, 0.05], 4);
+  if (K === 'bmx') for (const [zc, sx] of [[zr, 1], [zr, -1], [zf, 1], [zf, -1]]) bar(mb, [sx * 0.05, r, zc], [sx * 0.16, r, zc], 0.019, CHR, 4);
+  if (K === 'route' || K === 'clm' || K === 'vtt') { const a = lerp3(BB, HB, 0.3), b = lerp3(BB, HB, 0.62); bar(mb, [0, a[1] + 0.06, a[2] - 0.01], [0, b[1] + 0.06, b[2] - 0.01], 0.034, K === 'vtt' ? [0.1, 0.55, 0.25] : [0.92, 0.92, 0.95], 0); }
+  if (K === 'vtt') bar(mb, lerp3(ST, BB, 0.15), [0, r + 0.12, zr + 0.25], 0.022, [0.85, 0.35, 0.05], 4);
   // feu arrière rouge sous la selle
   mb.box(0, SD[1] - 0.14, SD[2] - 0.1, 0.04, 0.05, 0.02, [1, 0.05, 0.03], 5);
   return finishModel(mb, { style: 'bike_' + kind, L: (zf - zr) + 2 * r + 0.05, W: 0.62, H: G2.H, wr: r, ww: G2.ww, wheels: [[0, r, zf, 1], [0, r, zr, 0]], exhaust: [], heads: [[0, HT[1] - 0.06, HT[2] + 0.12]], roofY: G2.H, roofZ: -0.1, tailY: 0.7, rim: G2.rim, rimF: G2.rimF, bike: 'cyc_' + kind, cyc: { ratio: G2.ratio }, noHub: true });
@@ -3548,6 +3595,8 @@ const CYC_POSES = {
   cyc_vtt: { hip: [0, 0.98, -0.18], sh: [0, 1.38, 0.2], head: [0, 1.54, 0.31], hands: [[0.33, 0.92, 0.49], [-0.33, 0.92, 0.49]], cyc: 1, crank: [0.33, 0.03, 0.17] },
   cyc_route: { hip: [0, 0.99, -0.18], sh: [0, 1.33, 0.3], head: [0, 1.44, 0.45], hands: [[0.21, 0.88, 0.55], [-0.21, 0.88, 0.55]], cyc: 1, crank: [0.27, 0.02, 0.17] },
   cyc_elec: { hip: [0, 0.99, -0.19], sh: [0, 1.44, 0.08], head: [0, 1.6, 0.18], hands: [[0.29, 0.9, 0.49], [-0.29, 0.9, 0.49]], cyc: 1, crank: [0.3, 0.02, 0.17] },
+  cyc_piste: { hip: [0, 1.0, -0.15], sh: [0, 1.3, 0.32], head: [0, 1.41, 0.47], hands: [[0.2, 0.86, 0.55], [-0.2, 0.86, 0.55]], cyc: 1, crank: [0.29, 0.02, 0.165] },
+  cyc_fat: { hip: [0, 0.98, -0.18], sh: [0, 1.4, 0.2], head: [0, 1.56, 0.31], hands: [[0.33, 0.93, 0.5], [-0.33, 0.93, 0.5]], cyc: 1, crank: [0.33, 0.03, 0.17] },
   cyc_clm: { hip: [0, 0.98, -0.12], sh: [0, 1.15, 0.42], head: [0, 1.25, 0.58], hands: [[0.07, 0.86, 0.76], [-0.07, 0.86, 0.76]], cyc: 1, crank: [0.27, 0.02, 0.17] },
 };
 const CYC_LEG = {};
@@ -3643,7 +3692,7 @@ function radioCrew(driver) {
 }
 // Consignes de l'équipe. Ce bloc JSON est lu tel quel par la compilation GitHub pour enregistrer
 // chaque phrase en fichier audio (audio/radio/<langue>-<situation>.mp3) : le texte et la voix restent identiques.
-const RADIO_LINES = /*RADIO_LINES_BEGIN*/{"wrong": {"fr": "SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.", "en": "SPOTTER: Wrong way! Slow down and turn around safely.", "ar": "المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.", "tn": "المراقب: راك ماشي بالعكس! نقص في السرعة وارجع للمسار."}, "edge": {"fr": "INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.", "en": "ENGINEER: You are near the track edge. Ease off and return smoothly.", "ar": "المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.", "tn": "المهندس: قربت تخرج على الطريق. نقص شوية وارجع بالراحة."}, "nitro": {"fr": "STRATÈGE : réserve ton nitro pour la sortie du prochain virage.", "en": "STRATEGIST: Nitro is low. Save it for the exit of the next turn.", "ar": "الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.", "tn": "الاستراتيجي: النيترو قربت توفى. خلّي شوية للخروج من الفيراج الجاي."}, "slide": {"fr": "INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.", "en": "ENGINEER: Reduce steering input and gently stabilize the car.", "ar": "المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.", "tn": "المهندس: نقص شوية من الدوران وثبّت الكروسة بالراحة."}, "pack": {"fr": "STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.", "en": "STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.", "ar": "الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.", "tn": "الاستراتيجي: ما زلت تلحق في المنافسين. استغلّ الهواء وحضّر روحك للتجاوز."}, "tt": {"fr": "INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.", "en": "RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.", "ar": "مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.", "tn": "مهندس السباق: حافظ على النسق. فرمل بالراحة وارجع للبنزين بكري."}, "chase": {"fr": "ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.", "en": "CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.", "ar": "فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.", "tn": "فريق المطاردة: رد بالك من الرادار وواصل تجري. خذ الفيراجات بنظافة باش تبعّد البوليس."}, "clear": {"fr": "SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.", "en": "SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.", "ar": "المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.", "tn": "المراقب: الطريق قدّامك واضح. ركّز في الفرملة واخرج مليح من الفيراج."}}/*RADIO_LINES_END*/;
+const RADIO_LINES = /*RADIO_LINES_BEGIN*/{"wrong": {"fr": "SPOTTER : mauvais sens ! Ralentis et replace-toi dans le bon sens.", "en": "SPOTTER: Wrong way! Slow down and turn around safely.", "ar": "المراقب: أنت في الاتجاه المعاكس! خفّف السرعة وارجع للمسار.", "tn": "المراقب: راك ماشي بالعكس! نقص في السرعة وارجع للمسار."}, "edge": {"fr": "INGÉNIEUR : tu approches du bord. Relâche l’accélérateur et reviens progressivement.", "en": "ENGINEER: You are near the track edge. Ease off and return smoothly.", "ar": "المهندس: أنت قريب من حافة الطريق. خفّف وارجع للمسار بهدوء.", "tn": "المهندس: قربت تخرج على الطريق. نقص شوية وارجع بالراحة."}, "nitro": {"fr": "STRATÈGE : réserve ton nitro pour la sortie du prochain virage.", "en": "STRATEGIST: Nitro is low. Save it for the exit of the next turn.", "ar": "الاستراتيجي: النيترو ضعيف. احتفظ بالباقي للخروج من المنعرج القادم.", "tn": "الاستراتيجي: النيترو قربت توفى. خلّي شوية للخروج من الفيراج الجاي."}, "slide": {"fr": "INGÉNIEUR : réduis l’angle de braquage et stabilise progressivement.", "en": "ENGINEER: Reduce steering input and gently stabilize the car.", "ar": "المهندس: خفّف زاوية المقود وثبّت السيارة تدريجياً.", "tn": "المهندس: نقص شوية من الدوران وثبّت الكروسة بالراحة."}, "pack": {"fr": "STRATÈGE : tu remontes le classement. Reste dans l’aspiration, prépare le dépassement et évite le contact.", "en": "STRATEGIST: You are chasing the pack. Stay in the slipstream, prepare the pass and avoid contact.", "ar": "الاستراتيجي: أنت تطارد المتصدرين. استفد من تيار الهواء واستعد للتجاوز وتجنب الاصطدام.", "tn": "الاستراتيجي: ما زلت تلحق في المنافسين. استغلّ الهواء وحضّر روحك للتجاوز."}, "tt": {"fr": "INGÉNIEUR : contre-la-montre en cours. Freine tard mais progressivement, puis réaccélère tôt.", "en": "RACE ENGINEER: Time-trial pace. Brake late but smoothly, then get back on the throttle early.", "ar": "مهندس السباق: حافظ على نسق سريع. افرمل بسلاسة ثم عُد للتسارع مبكراً.", "tn": "مهندس السباق: حافظ على النسق. فرمل بالراحة وارجع للبنزين بكري."}, "chase": {"fr": "ÉQUIPE POURSUITE : surveille le radar et reste mobile. Soigne les virages pour creuser l’écart.", "en": "CHASE TEAM: Watch the radar and keep moving. Use clean corners to open a gap.", "ar": "فريق المطاردة: راقب الرادار وواصل الحركة. استغل المنعرجات لزيادة المسافة.", "tn": "فريق المطاردة: رد بالك من الرادار وواصل تجري. خذ الفيراجات بنظافة باش تبعّد البوليس."}, "clear": {"fr": "SPOTTER : piste dégagée. Privilégie un freinage progressif et de bonnes sorties de virage.", "en": "SPOTTER: Clear track ahead. Focus on smooth braking and clean exits.", "ar": "المراقب: الطريق أمامك واضح. ركّز على الفرملة السلسة والخروج النظيف من المنعرجات.", "tn": "المراقب: الطريق قدّامك واضح. ركّز في الفرملة واخرج مليح من الفيراج."}, "go": {"fr": "ÉQUIPE : feu vert ! Bon départ, reste propre au premier virage.", "en": "TEAM: Green light! Good start, keep it clean into turn one.", "ar": "الفريق: انطلق! بداية جيدة، حافظ على نظافة المنعرج الأول.", "tn": "الفريق: يزّي انطلق! بداية باهية، ادخل الفيراج الأول بالراحة."}, "gain": {"fr": "STRATÈGE : bien joué, tu gagnes une place ! Continue comme ça.", "en": "STRATEGIST: Nice move, you gained a place! Keep it up.", "ar": "الاستراتيجي: أحسنت، ربحت مركزاً! واصل هكذا.", "tn": "الاستراتيجي: برافو، ربحت بلاصة! زيد هكّا."}, "lose": {"fr": "STRATÈGE : tu viens de perdre une place. Reste calme, tu vas la reprendre.", "en": "STRATEGIST: You lost a place. Stay calm, you will get it back.", "ar": "الاستراتيجي: خسرت مركزاً. حافظ على هدوئك وسترجعه.", "tn": "الاستراتيجي: خسرت بلاصة. ما تقلقش، توّا ترجّعها."}, "lead": {"fr": "ÉQUIPE : tu es en tête ! Garde le rythme et protège la trajectoire intérieure.", "en": "TEAM: You're leading! Keep the pace and protect the inside line.", "ar": "الفريق: أنت في المقدمة! حافظ على النسق واحمِ المسار الداخلي.", "tn": "الفريق: راك الأول! حافظ على النسق وسكّر الداخل."}, "last": {"fr": "INGÉNIEUR : dernier tour ! Donne tout, garde le nitro pour la ligne droite finale.", "en": "ENGINEER: Final lap! Give it everything, save nitro for the last straight.", "ar": "المهندس: اللفة الأخيرة! أعطِ كل ما لديك واحتفظ بالنيترو للخط المستقيم الأخير.", "tn": "المهندس: آخر دورة! عطي الكل وخلّي النيترو للخط الأخير."}, "best": {"fr": "INGÉNIEUR : meilleur tour personnel ! Superbe rythme.", "en": "ENGINEER: Personal best lap! Superb pace.", "ar": "المهندس: أفضل لفة لك! نسق رائع.", "tn": "المهندس: أحسن دورة متاعك! نسق هايل."}, "hit": {"fr": "INGÉNIEUR : gros choc ! Redresse doucement et repars.", "en": "ENGINEER: Big hit! Straighten up gently and go again.", "ar": "المهندس: اصطدام قوي! عدّل السيارة بهدوء وانطلق من جديد.", "tn": "المهندس: ضربة قوية! صلّح الكروسة بالراحة وارجع جري."}, "cops": {"fr": "ÉQUIPE POURSUITE : la police est juste derrière ! Change de trajectoire et accélère.", "en": "CHASE TEAM: Police right behind you! Switch lines and floor it.", "ar": "فريق المطاردة: الشرطة خلفك مباشرة! غيّر المسار وتسارع.", "tn": "فريق المطاردة: الحاكم وراك طول! بدّل الطريق وزيد."}, "win": {"fr": "ÉQUIPE : victoire ! Bravo champion, la Tunisie est fière de toi !", "en": "TEAM: Victory! Well done, champion!", "ar": "الفريق: فوز! برافو يا بطل، تونس فخورة بك!", "tn": "الفريق: ربحت! برافو يا بطل، تونس فخورة بيك!"}, "podium": {"fr": "ÉQUIPE : sur le podium ! Très belle course.", "en": "TEAM: On the podium! Great race.", "ar": "الفريق: على منصّة التتويج! سباق رائع.", "tn": "الفريق: في البوديوم! كورسة باهية برشا."}, "bike": {"fr": "COACH : relance fort en sortie de virage et reste dans la roue de ton adversaire.", "en": "COACH: Sprint hard out of the corners and stay on your rival's wheel.", "ar": "المدرّب: انطلق بقوة عند الخروج من المنعرج وابقَ خلف منافسك.", "tn": "الكوتش: زيد بالقوة في الخروج من الفيراج وابقى ورا المنافس."}, "rain": {"fr": "INGÉNIEUR : piste mouillée, freine plus tôt et évite les bandes blanches.", "en": "ENGINEER: Wet track, brake earlier and avoid the white lines.", "ar": "المهندس: الطريق مبلّل، افرمل مبكراً وتجنّب الخطوط البيضاء.", "tn": "المهندس: الطريق فازگة، فرمل بكري وبعّد على الخطوط البيضاء."}, "night": {"fr": "SPOTTER : course de nuit, regarde loin dans tes phares et anticipe les virages.", "en": "SPOTTER: Night race, look far ahead in your headlights and anticipate the turns.", "ar": "المراقب: سباق ليلي، انظر بعيداً في ضوء المصابيح وتوقّع المنعرجات.", "tn": "المراقب: كورسة في الليل، شوف بعيد في الضو وحضّر روحك للفيراجات."}}/*RADIO_LINES_END*/;
 const radioLang = () => LANG === 'tn' ? 'tn' : LANG === 'ar' ? 'ar' : LEN() ? 'en' : 'fr';
 function radioSituation() {
   const p = G.player, d = Math.abs(p.d), kmh = Math.round(Math.abs(p.vfw) * 3.6);
@@ -3655,6 +3704,36 @@ function radioSituation() {
   if (G.cfg.mode === 'tt') return 'tt';
   if (G.cfg.mode === 'chase') return 'chase';
   return 'clear';
+}
+// V227 — coach vocal automatique : départ, places gagnées ou perdues, tête de course, dernier tour, meilleur tour, choc, police, pluie, nuit, arrivée
+const COACH = { t: -99, lap: 1, rank: 0, best: Infinity, hit: 0, said: {}, tip: 0 };
+function coachReset() { Object.assign(COACH, { t: -99, lap: 1, rank: 0, best: Infinity, hit: 0, said: {}, tip: 0 }); }
+function coachSay(key, prio) {
+  if (SAVE.settings.coach === false || !RADIO_LINES[key]) return false;
+  const now = G.time || 0; if (!prio && now - COACH.t < 7) return false; COACH.t = now;
+  G.radioKey = key; const lang = radioLang();
+  try { playCrewClip(key, lang).then(ok => { if (!ok) speakCrewAdvice(RADIO_LINES[key][lang]); }); } catch (e) { }
+  try { const box = $('radio-team'); box.classList.remove('radio-ping'); void box.offsetWidth; box.classList.add('radio-ping'); } catch (e) { }
+  return true;
+}
+function coachTick() {
+  if (G.state !== 'race' || !G.player || SAVE.settings.coach === false) return;
+  const p = G.player, cfg = G.cfg, T = G.T, rt = G.raceT || 0;
+  if (!COACH.said.go && rt > 0.4) { COACH.said.go = 1; coachSay('go', true); return; }
+  if (cfg.mode !== 'chase') {
+    const lap = clamp(Math.floor(p.progress / T.L) + 1, 1, cfg.laps);
+    if (lap > COACH.lap) { COACH.lap = lap; if (lap === cfg.laps && cfg.laps > 1) { coachSay('last', true); return; } }
+    if (G.best < COACH.best) { const first = COACH.best === Infinity; COACH.best = G.best; if (!first && coachSay('best')) return; }
+  }
+  if (cfg.mode === 'race' && rt > 6) {
+    const rk = rankOf(p);
+    if (COACH.rank && rk !== COACH.rank) { const k = rk < COACH.rank ? (rk === 1 ? 'lead' : 'gain') : 'lose'; COACH.rank = rk; if (coachSay(k)) return; }
+    COACH.rank = rk;
+  }
+  if (p.lastHit > COACH.hit + 0.01) { COACH.hit = p.lastHit; if ((G.time - (COACH.said.hitT || -99)) > 20 && p.v < p.st.vmax * 0.5) { COACH.said.hitT = G.time; if (coachSay('hit')) return; } }
+  if (cfg.mode === 'chase' && G.chase) { let dm = 1e9; for (const c of G.cars) if (c.kind === 'cop' && !c.wreck) dm = Math.min(dm, Math.hypot(c.x - p.x, c.z - p.z)); if (dm < 22 && G.time - (COACH.said.copT || -99) > 16) { COACH.said.copT = G.time; if (coachSay('cops')) return; } }
+  if (!COACH.said.wx && rt > 12) { COACH.said.wx = 1; if (G.env && G.env.rain) { coachSay('rain'); return; } if (G.env && G.env.night) { coachSay('night'); return; } }
+  if (p.model && p.model.cyc && rt - COACH.tip > 38) { COACH.tip = rt; coachSay('bike'); }
 }
 function radioAdvice() { G.radioKey = radioSituation(); return RADIO_LINES[G.radioKey][radioLang()]; }
 
@@ -3990,6 +4069,8 @@ const POSES = {
   car: { hip: [0, 0, 0], sh: [0, 0.5, -0.1], head: [0, 0.69, -0.08], hands: [[0.16, 0.43, 0.37], [-0.16, 0.43, 0.37]], knees: [[0.11, 0.17, 0.42], [-0.11, 0.17, 0.42]], feet: [[0.11, -0.18, 0.62], [-0.11, -0.18, 0.62]], wheel: true, helmet: true },
   sport: { hip: [0, 0.92, -0.27], sh: [0, 1.2, 0.08], head: [0, 1.3, 0.22], hands: [[0.26, 0.92, 0.45], [-0.26, 0.92, 0.45]], knees: [[0.22, 0.72, 0.06], [-0.22, 0.72, 0.06]], feet: [[0.2, 0.4, -0.25], [-0.2, 0.4, -0.25]], helmet: true },
   trail: { hip: [0, 1.05, -0.24], sh: [0, 1.56, -0.13], head: [0, 1.73, -0.08], hands: [[0.4, 1.19, 0.43], [-0.4, 1.19, 0.43]], knees: [[0.24, 0.9, 0.14], [-0.24, 0.9, 0.14]], feet: [[0.19, 0.46, -0.05], [-0.19, 0.46, -0.05]], helmet: true },
+  naked: { hip: [0, 0.98, -0.28], sh: [0, 1.45, -0.06], head: [0, 1.61, 0.02], hands: [[0.37, 1.07, 0.4], [-0.37, 1.07, 0.4]], knees: [[0.23, 0.82, 0.1], [-0.23, 0.82, 0.1]], feet: [[0.19, 0.42, -0.14], [-0.19, 0.42, -0.14]], helmet: true },
+  cruiser: { hip: [0, 0.74, -0.34], sh: [0, 1.24, -0.32], head: [0, 1.42, -0.28], hands: [[0.42, 1.12, 0.3], [-0.42, 1.12, 0.3]], knees: [[0.25, 0.72, 0.26], [-0.25, 0.72, 0.26]], feet: [[0.26, 0.38, 0.5], [-0.26, 0.38, 0.5]], helmet: true },
   scoot: { hip: [0, 0.88, -0.32], sh: [0, 1.39, -0.24], head: [0, 1.56, -0.2], hands: [[0.32, 1.02, 0.41], [-0.32, 1.02, 0.41]], knees: [[0.18, 0.9, 0.12], [-0.18, 0.9, 0.12]], feet: [[0.15, 0.31, 0.13], [-0.15, 0.31, 0.13]], helmet: true },
 };
 Object.assign(POSES, CYC_POSES);   // V224 : postures des cyclistes
@@ -4636,14 +4717,50 @@ function buildTrack(def, quality) {
   // Public 3D : gradins et silhouettes de spectateurs sur les circuits urbains, côtiers et au stade.
   // Les personnages sont regroupés dans les chunks du décor pour préserver les performances mobiles.
   { // Public présent sur tous les environnements de course.
-    const crowdStep = theme === 'circuit' ? 24 : 30;
+    const crowdStep = theme === 'circuit' ? 20 : 28;
     const crowdSides = [-1, 1];
     const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55],[0.72,0.52,0.37],[0.34,0.22,0.16],[0.76,0.57,0.42]];
     const shirts = [[0.78,0.12,0.1],[0.08,0.22,0.48],[0.9,0.82,0.65],[0.12,0.42,0.28],[0.88,0.48,0.08],[0.22,0.2,0.24],[0.04,0.55,0.62],[0.58,0.12,0.62],[0.92,0.76,0.12]];
     const hair = [[0.09,0.055,0.035],[0.22,0.12,0.065],[0.38,0.22,0.1],[0.055,0.045,0.04],[0.62,0.42,0.2]];
+    // V227 — un spectateur (fonction partagée par les tribunes et la foule du départ) ; un supporter sur deux agite un petit drapeau tunisien
+    function fan(mb, x, y, z, i, n, row, side) {
+        const female = (n + row + Math.floor(i / 7)) % 2 === 0;
+        const tnFan = (i + n * 7 + row * 3) % 5 < 2, shirt = tnFan ? ((n + row) % 2 ? [0.86, 0.06, 0.08] : [0.95, 0.94, 0.92]) : shirts[(i + n * 3 + row * 2) % shirts.length], tone = skin[(n + i + row) % skin.length];
+        const hc = hair[(n * 2 + row + i) % hair.length];
+        // Personnages 3D : têtes, cous, bustes, bassins et membres individualisés.
+        sphere(mb, x, y + 1.18, z, female ? 0.155 : 0.17, tone, 3, -Math.PI / 2, Math.PI / 2, 7, 1.12, 0.92);
+        sphere(mb, x, y + 1.29, z - 0.025, 0.17, hc, 3, -0.05, Math.PI / 2, 8, 0.78, 0.95);
+        bar(mb, [x, y + 0.97, z], [x, y + 0.82, z], 0.065, tone, 3, 0.06, 6);
+        sphere(mb, x, y + 0.61, z, female ? 0.235 : 0.25, shirt, 3, -Math.PI / 2, Math.PI / 2, 7, 1.35, 0.78);
+        sphere(mb, x, y + 0.34, z, 0.19, shirt, 3, -Math.PI / 2, Math.PI / 2, 8, 0.72, 0.78);
+        const shoulderL = [x - 0.19, y + 0.78, z], shoulderR = [x + 0.19, y + 0.78, z];
+        const waving = (n + row + i) % 3 !== 1;
+        const handL = waving ? [x - 0.34, y + 1.28, z] : [x - 0.36, y + 0.48, z + 0.02];
+        const handR = [x + 0.36, y + (waving ? 1.22 : 0.5), z + 0.02];
+        bar(mb, shoulderL, handL, 0.065, shirt, 3, 0.055, 6);
+        bar(mb, shoulderR, handR, 0.065, shirt, 3, 0.055, 6);
+        sphere(mb, handL[0], handL[1], handL[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 6);
+        sphere(mb, handR[0], handR[1], handR[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 6);
+        const legC = [0.09,0.09,0.1];
+        bar(mb, [x - 0.1, y + 0.28, z], [x - 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 6);
+        bar(mb, [x + 0.1, y + 0.28, z], [x + 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 6);
+        if (waving && (n + row + i) % 2 === 0) {
+          const ii = ((i % N) + N) % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side], top = [handL[0], handL[1] + 0.62, handL[2]];
+          bar(mb, handL, top, 0.012, [0.75, 0.75, 0.78], 4, 0.012, 4);
+          flagQuad(mb, [top[0] + tg[0] * 0.27, top[1] - 0.17, top[2] + tg[2] * 0.27], 0.52, 0.34, tg, nr, 8);
+        }
+      }
+    // drapeau tunisien plat (rouge, disque blanc, croissant et étoile rouges) dans le plan formé par la tangente et la verticale
+    function flagQuad(mb, C, w, h, tg, nr, seg = 12) {
+      const U = [0, 1, 0], P2 = (u, v, k) => [C[0] + tg[0] * u + nr[0] * k * 0.006, C[1] + v, C[2] + tg[2] * u + nr[2] * k * 0.006];
+      mb.quad(P2(-w / 2, -h / 2, 0), P2(w / 2, -h / 2, 0), P2(w / 2, h / 2, 0), P2(-w / 2, h / 2, 0), [0.84, 0.04, 0.07], 0);
+      const disc = (cu, cv, rr, col, k) => { for (let j = 0; j < seg; j++) { const a0 = j / seg * 6.2832, a1 = (j + 1) / seg * 6.2832; mb.tri(P2(cu, cv, k), P2(cu + Math.cos(a0) * rr, cv + Math.sin(a0) * rr, k), P2(cu + Math.cos(a1) * rr, cv + Math.sin(a1) * rr, k), col, 0); } };
+      disc(0, 0, h * 0.25, [0.98, 0.97, 0.94], 1); disc(-h * 0.02, 0, h * 0.19, [0.84, 0.04, 0.07], 2); disc(h * 0.035, 0, h * 0.155, [0.98, 0.97, 0.94], 3); disc(h * 0.09, 0, h * 0.06, [0.84, 0.04, 0.07], 4);
+      void U;
+    }
     for (let i = 20; i < N; i += crowdStep) for (const side of crowdSides) {
       const mb = ch(rk(i)), stadium = theme === 'circuit', baseD = stadium ? W + 12 : W + 7.5;
-      const count = stadium ? 12 : 10, rows = stadium ? 4 : 3;
+      const count = stadium ? 13 : 10, rows = stadium ? 4 : 3;
       if (stadium) {
         for (let row = 0; row < rows; row++) {
           const d = side * (baseD + row * 1.65), p = pos(i, d, 0.55 + row * 0.62);
@@ -4657,26 +4774,12 @@ function buildTrack(def, quality) {
         const d = side * (baseD + (stadium ? row * 1.65 : row * 1.15));
         const pp = pos(i, d, stadium ? 0.95 + row * 0.62 : 0.7 + row * 0.72);
         const x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
-        const female = (n + row + Math.floor(i / crowdStep)) % 2 === 0;
-        const shirt = shirts[(i + n * 3 + row * 2) % shirts.length], tone = skin[(n + i + row) % skin.length];
-        const hc = hair[(n * 2 + row + i) % hair.length];
-        // Personnages 3D : têtes, cous, bustes, bassins et membres individualisés.
-        sphere(mb, x, y + 1.18, z, female ? 0.155 : 0.17, tone, 3, -Math.PI / 2, Math.PI / 2, 9, 1.12, 0.92);
-        sphere(mb, x, y + 1.29, z - 0.025, 0.17, hc, 3, -0.05, Math.PI / 2, 8, 0.78, 0.95);
-        bar(mb, [x, y + 0.97, z], [x, y + 0.82, z], 0.065, tone, 3, 0.06, 6);
-        sphere(mb, x, y + 0.61, z, female ? 0.235 : 0.25, shirt, 3, -Math.PI / 2, Math.PI / 2, 9, 1.35, 0.78);
-        sphere(mb, x, y + 0.34, z, 0.19, shirt, 3, -Math.PI / 2, Math.PI / 2, 8, 0.72, 0.78);
-        const shoulderL = [x - 0.19, y + 0.78, z], shoulderR = [x + 0.19, y + 0.78, z];
-        const waving = (n + row + i) % 3 !== 1;
-        const handL = waving ? [x - 0.34, y + 1.28, z] : [x - 0.36, y + 0.48, z + 0.02];
-        const handR = [x + 0.36, y + (waving ? 1.22 : 0.5), z + 0.02];
-        bar(mb, shoulderL, handL, 0.065, shirt, 3, 0.055, 6);
-        bar(mb, shoulderR, handR, 0.065, shirt, 3, 0.055, 6);
-        sphere(mb, handL[0], handL[1], handL[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 6);
-        sphere(mb, handR[0], handR[1], handR[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 6);
-        const legC = [0.09,0.09,0.1];
-        bar(mb, [x - 0.1, y + 0.28, z], [x - 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 6);
-        bar(mb, [x + 0.1, y + 0.28, z], [x + 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 6);
+        fan(mb, x, y, z, i, n, row, side);
+      }
+      if (Math.floor(i / crowdStep) % 3 === 0) {
+        const ii = i % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side], c0 = pos(i, side * (baseD + (stadium ? 1.4 : 0.9)), stadium ? 3.4 : 2.9);
+        for (const u of [-1.7, 1.7]) bar(mb, [c0[0] + tg[0] * u, c0[1] - 1.6, c0[2] + tg[2] * u], [c0[0] + tg[0] * u, c0[1] + 1.05, c0[2] + tg[2] * u], 0.025, [0.7, 0.7, 0.72], 4, 0.025, 4);
+        flagQuad(mb, c0, 3.4, 2.1, tg, nr, 16);
       }
       // Panneaux publicitaires de course, espacés pour préserver les performances mobiles.
       if (Math.floor(i / crowdStep) % 4 === 1) {
@@ -4702,6 +4805,23 @@ function buildTrack(def, quality) {
         mb.box(fp[0] + 0.095, fp[1] + 2.18, fp[2] + 0.1, 0.12, 0.16, 0.025, [0.82,0.035,0.055], 2, hd[i]);
         mb.box(fp[0] + 0.19, fp[1] + 2.18, fp[2] + 0.12, 0.09, 0.09, 0.025, [0.98,0.96,0.91], 2, hd[i]);
       }
+    }
+  }
+  // V227 — foule du départ : deux tribunes pleines de supporters et de drapeaux de part et d'autre de la ligne
+  { const crowdStep = 22, crowdSides = [-1, 1]; void crowdSides;
+    const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55],[0.72,0.52,0.37],[0.34,0.22,0.16],[0.76,0.57,0.42]];
+    const shirts = [[0.86,0.06,0.08],[0.95,0.94,0.92],[0.08,0.22,0.48],[0.86,0.06,0.08],[0.12,0.42,0.28],[0.95,0.94,0.92],[0.92,0.76,0.12]];
+    const hair = [[0.09,0.055,0.035],[0.22,0.12,0.065],[0.38,0.22,0.1],[0.055,0.045,0.04],[0.62,0.42,0.2]];
+    void crowdStep;
+    for (const side of [-1, 1]) for (const i of [N - 9, 9]) {
+      const mb = ch(rk(i)), baseD = W + 9;
+      for (let row = 0; row < 5; row++) { const p = pos(i, side * (baseD + row * 1.6), 0.5 + row * 0.6); mb.box(p[0], p[1], p[2], 2.0, 0.46, 15, [0.86, 0.86, 0.84], 18, hd[i]); }
+      for (let row = 0; row < 5; row++) for (let n = 0; n < 11; n++) {
+        const along = (n - 5) * 1.3 + (row % 2) * 0.35, pp = pos(i, side * (baseD + row * 1.6), 0.93 + row * 0.6), x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
+        crowdFan(mb, x, y, z, i, n, row, side, skin, shirts, hair);
+      }
+      const ii = i % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side];
+      for (const u of [-4.5, 0, 4.5]) { const c0 = pos(i, side * (baseD + 8.6), 6.2); const q = [c0[0] + tg[0] * u, c0[1], c0[2] + tg[2] * u]; bar(mb, [q[0], q[1] - 6, q[2]], [q[0], q[1] + 1.2, q[2]], 0.06, [0.8, 0.8, 0.82], 4, 0.06, 6); crowdFlag(mb, [q[0] + tg[0] * 1.1, q[1], q[2] + tg[2] * 1.1], 2.2, 1.45, tg, nr); }
     }
   }
   // portique de départ
@@ -5120,6 +5240,23 @@ function buildTrack(def, quality) {
     if (theme === 'forest') for (let k = 0; k < 4; k++) { const o = at(k / 4 + 0.15, 0, W + 6, 3); if (o) cork(o); }
   }
 
+  function crowdFlag(mb, C, w, h, tg, nr) {
+    const P2 = (u, v, k) => [C[0] + tg[0] * u + nr[0] * k * 0.008, C[1] + v, C[2] + tg[2] * u + nr[2] * k * 0.008];
+    mb.quad(P2(-w / 2, -h / 2, 0), P2(w / 2, -h / 2, 0), P2(w / 2, h / 2, 0), P2(-w / 2, h / 2, 0), [0.84, 0.04, 0.07], 0);
+    const disc = (cu, rr, col, k) => { for (let j = 0; j < 16; j++) { const a0 = j / 16 * 6.2832, a1 = (j + 1) / 16 * 6.2832; mb.tri(P2(cu, 0, k), P2(cu + Math.cos(a0) * rr, Math.sin(a0) * rr, k), P2(cu + Math.cos(a1) * rr, Math.sin(a1) * rr, k), col, 0); } };
+    disc(0, h * 0.25, [0.98, 0.97, 0.94], 1); disc(-h * 0.02, h * 0.19, [0.84, 0.04, 0.07], 2); disc(h * 0.035, h * 0.155, [0.98, 0.97, 0.94], 3); disc(h * 0.09, h * 0.06, [0.84, 0.04, 0.07], 4);
+  }
+  function crowdFan(mb, x, y, z, i, n, row, side, skin, shirts, hair) {
+    const female = (n + row) % 2 === 0, shirt = shirts[(i + n * 3 + row * 2) % shirts.length], tone = skin[(n + i + row) % skin.length], hc = hair[(n * 2 + row + i) % hair.length];
+    sphere(mb, x, y + 1.18, z, female ? 0.155 : 0.17, tone, 3, -Math.PI / 2, Math.PI / 2, 8, 1.12, 0.92);
+    sphere(mb, x, y + 1.29, z - 0.025, 0.17, hc, 3, -0.05, Math.PI / 2, 7, 0.78, 0.95);
+    sphere(mb, x, y + 0.61, z, female ? 0.235 : 0.25, shirt, 3, -Math.PI / 2, Math.PI / 2, 8, 1.35, 0.78);
+    sphere(mb, x, y + 0.34, z, 0.19, shirt, 3, -Math.PI / 2, Math.PI / 2, 7, 0.72, 0.78);
+    const up = (n + row) % 3 !== 1, hL = up ? [x - 0.32, y + 1.32, z] : [x - 0.36, y + 0.48, z], hR = up ? [x + 0.33, y + 1.3, z] : [x + 0.36, y + 0.5, z];
+    bar(mb, [x - 0.19, y + 0.78, z], hL, 0.065, shirt, 3, 0.055, 5); bar(mb, [x + 0.19, y + 0.78, z], hR, 0.065, shirt, 3, 0.055, 5);
+    bar(mb, [x - 0.1, y + 0.28, z], [x - 0.12, y + 0.04, z], 0.075, [0.09, 0.09, 0.1], 3, 0.065, 5); bar(mb, [x + 0.1, y + 0.28, z], [x + 0.12, y + 0.04, z], 0.075, [0.09, 0.09, 0.1], 3, 0.065, 5);
+    if (up && (n + row) % 2 === 0) { const ii = ((i % N) + N) % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side], top = [hL[0], hL[1] + 0.6, hL[2]]; bar(mb, hL, top, 0.012, [0.75, 0.75, 0.78], 4, 0.012, 4); crowdFlag(mb, [top[0] + tg[0] * 0.27, top[1] - 0.17, top[2] + tg[2] * 0.27], 0.52, 0.34, tg, nr); }
+  }
   function windowsOnFace(mb, P, hx, hz, h, face, prob, warm) {
     const e = 0.07, fl = 3.6, nf = Math.floor((h - 4.5) / fl);
     const along = (face === 'x+' || face === 'x-') ? hz * 2 : hx * 2, nc = Math.floor((along - 2) / 3.2);
@@ -6827,6 +6964,15 @@ function xpHTML(res) {
     + (up ? `<p class="lvup">⭐ ${t('pg_up', lv)} +${money(res.lvUp.reward)}</p>` : '')
     + (res.ach || []).map(a => `<p class="achup">${a[1]} ${t('pg_ach')} : ${L3(a[4], a[5], a[6])} · +${money(a[3])}</p>`).join('') + '</div>';
 }
+function quickSurprise() {
+  // course surprise : tout est tiré au sort parmi ce que le joueur possède
+  const q = UI.q, rr = Math.random(), modes = rr < 0.55 ? 'race' : rr < 0.75 ? 'velo' : rr < 0.88 ? 'chase' : 'tt';
+  const bikes = CARS.filter(c => catOf(c) === 'velo' && SAVE.owned.includes(c.id)), w = Math.random();
+  q.mode = modes; q.track = Math.floor(Math.random() * TRACKS.length); q.weather = TRACKS[q.track].env.night ? 0 : w < 0.6 ? 0 : w < 0.8 ? 1 : 2;
+  q.opp = 4 + Math.floor(Math.random() * 4); q.laps = 2; if (modes === 'velo') q.bike = bikes[Math.floor(Math.random() * bikes.length)].id;
+  try { UI.renderQuick(); } catch (e) { }
+  setTimeout(() => $('q-go').click(), 350);
+}
 function openProg() {
   checkAch(); saveGame(); UI.updMoney();
   const el = $('prog'), lv = SAVE.lv || 1, s = SAVE.stats || {}, pct = Math.round((SAVE.xp || 0) / xpNeed(lv) * 100), done = ACH.filter(a => SAVE.ach && SAVE.ach[a[0]]).length;
@@ -6838,6 +6984,9 @@ function openProg() {
   const close = () => { el.classList.add('hidden'); el.innerHTML = ''; };
   el.querySelector('.ts-x').onclick = close; el.onclick = e => { if (e.target === el) close(); };
 }
+// V227 — options
+const V227_TXT = {"fr": ["Nuit", "Course surprise", "Circuit, mode, météo et adversaires tirés au sort", "Conseils vocaux de l’équipe en course"], "en": ["Night", "Surprise race", "Random track, mode, weather and rivals", "Team voice tips during races"], "es": ["Noche", "Carrera sorpresa", "Circuito, modo, clima y rivales al azar", "Consejos de voz del equipo"], "pt": ["Noite", "Corrida surpresa", "Pista, modo, clima e rivais aleatórios", "Dicas de voz da equipe"], "de": ["Nacht", "Überraschungsrennen", "Zufällige Strecke, Modus, Wetter und Gegner", "Sprachtipps des Teams im Rennen"], "it": ["Notte", "Gara a sorpresa", "Circuito, modalità, meteo e rivali a caso", "Consigli vocali del team in gara"], "tr": ["Gece", "Sürpriz yarış", "Rastgele pist, mod, hava ve rakipler", "Yarışta takımın sesli ipuçları"], "ar": ["ليل", "سباق مفاجئ", "حلبة ونمط وطقس ومنافسون عشوائيون", "نصائح صوتية من الفريق أثناء السباق"], "tn": ["ليل", "كورسة مفاجأة", "حلبة ونوع وطقس ومنافسين بالقرعة", "نصايح الفريق بالصوت في الكورسة"]};
+for (const l in V227_TXT) { const v = V227_TXT[l]; Object.assign(LANGS[l], { wx_night: v[0], q_rand: v[1], q_randD: v[2], o_coach: v[3] }); }
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -6890,6 +7039,14 @@ const CARS = [
   { id: 'route_carthage', name: 'Carthage R1 Route', cls: 'C', tier: 1, cat: 'velo', style: 'bike_route', price: 5200, vmax: 78, acc: 4.6, lat: 19.5, nos: 1.12, mass: 0.11, desc: 'Vélo de route en carbone, cintre de course et jantes hautes : fait pour le sprint.' },
   { id: 'elec_sahel', name: 'Sahel e-Bike', cls: 'B', tier: 2, cat: 'velo', style: 'bike_elec', price: 7500, vmax: 74, acc: 6.2, lat: 19.5, nos: 1.15, mass: 0.2, desc: 'Vélo à assistance électrique : batterie dans le cadre, moteur dans la roue, départs fulgurants.' },
   { id: 'clm_jasmin', name: 'Jasmin Chrono CLM', cls: 'A', tier: 3, cat: 'velo', style: 'bike_clm', price: 11000, vmax: 88, acc: 4.9, lat: 18.5, nos: 1.2, mass: 0.1, desc: 'Machine de contre-la-montre : roue lenticulaire, prolongateurs et position aérodynamique.' },
+  { id: 'piste_rades', name: 'Radès Piste Pro', cls: 'A', tier: 3, cat: 'velo', style: 'bike_piste', price: 14000, vmax: 92, acc: 5.4, lat: 19, nos: 1.22, mass: 0.1, desc: 'Vélo de piste en carbone : pignon fixe, jantes hautes, position de sprinteur.' },
+  { id: 'fat_douz', name: 'Douz Fatbike', cls: 'C', tier: 1, cat: 'velo', style: 'bike_fat', price: 4200, vmax: 60, acc: 4.6, lat: 22, nos: 1.05, mass: 0.17, desc: 'Pneus énormes pour le sable et les pistes : rien ne l’arrête.' },
+  { id: 'medina_naked', name: 'Médina 890 Naked', cls: 'A', tier: 3, cat: 'moto', style: 'moto_naked', price: 46000, vmax: 262, acc: 12.0, lat: 23, nos: 1.2, mass: 0.5, desc: 'Roadster sans carénage : cadre treillis rouge, moteur apparent, réactions immédiates.' },
+  { id: 'sahara_cruiser', name: 'Sahara Cruiser 1800', cls: 'B', tier: 2, cat: 'moto', style: 'moto_cruiser', price: 38000, vmax: 222, acc: 9.4, lat: 20, nos: 1.15, mass: 0.7, desc: 'Cruiser chromé au bicylindre en V, selle basse et sacoches en cuir.' },
+  { id: 'carthago_lmp', name: 'Carthago LMP-H', cls: 'S', tier: 4, style: 'lmp', price: 245000, vmax: 378, acc: 14.4, lat: 29.4, nos: 1.6, desc: 'Prototype d’endurance : cockpit fermé, aileron géant, appui maximal.' },
+  { id: 'zitouna_royale', name: 'Zitouna Royale S', cls: 'A', tier: 3, style: 'luxe', price: 115000, vmax: 300, acc: 11.2, lat: 23.6, nos: 1.3, desc: 'Grande berline de luxe, chromes et V8 biturbo : le confort à 300 km/h.' },
+  { id: 'atlas_prestige', name: 'Atlas Prestige 4x4', cls: 'B', tier: 2, cat: 'offroad', style: 'raid', price: 64000, vmax: 248, acc: 9.2, lat: 21, nos: 1.2, mass: 1.5, desc: '4x4 de prestige : cuir, chromes et transmission intégrale.' },
+  { id: 'hammada_dkr', name: 'Hammada Raid DKR', cls: 'A', tier: 3, cat: 'offroad', style: 'desertx', price: 98000, vmax: 262, acc: 10.6, lat: 22, nos: 1.3, mass: 1.45, desc: '4x4 de rallye-raid : suspensions géantes, roue de secours et prise d’air pour les dunes.' },
   { id: 'zitouna', name: 'Zitouna 125', cls: 'D', tier: 0, cat: 'moto', style: 'moto_scoot', price: 4000, vmax: 150, acc: 7.6, lat: 20, nos: 1.0, mass: 0.45, desc: 'Scooter de ville.' },
   { id: 'djebel', name: 'Djebel 800', cls: 'B', tier: 2, cat: 'moto', style: 'moto_trail', price: 30000, vmax: 228, acc: 10.2, lat: 21.5, nos: 1.15, mass: 0.55, desc: 'Trail aventure.' },
   { id: 'raad', name: 'Raad 1000 RR', cls: 'S', tier: 4, cat: 'moto', style: 'moto_sport', price: 82000, vmax: 315, acc: 13.4, lat: 24, nos: 1.3, mass: 0.5, desc: 'Sportive de piste.' },
@@ -7071,6 +7228,7 @@ function randomPaint() { return hexToRgb(PAINTS[Math.floor(Math.random() * 8)]);
 
 const velSfx = () => (G.player && G.player.car && catOf(G.player.car) === 'velo') ? '_velo' : '';   // records et fantômes séparés pour les vélos
 function setupRace(cfg) {
+  coachReset();
   const T = G.T; G.cars = []; G.cfg = cfg; G.time = 0; G.raceT = 0; G.style = 0; G.msgs = []; G.laps = []; G.best = Infinity; G.lapStart = 0;
   G.smoke.clear(); G.glow.clear(); if (G.skids) G.skids.clear(); G.revT = undefined; G.hitFx = 0; G.shake = 0; G.flash = 0; G.steer = 0; G.chase = null; G.wrongT = 0; G.stuckT = 0;
   const car = (cfg.velo && CARS.find(c => c.id === cfg.velo)) || CARS.find(c => c.id === SAVE.car) || CARS[0];
@@ -7619,6 +7777,7 @@ function endRace() {
   }
   SAVE.stats.dist = (SAVE.stats.dist || 0) + Math.max(0, G.odo || 0); SAVE.stats.time = (SAVE.stats.time || 0) + Math.max(0, G.cfg.mode === 'chase' ? G.chase.t : G.raceT); SAVE.stats.top = Math.max(SAVE.stats.top || 0, G.topV || 0); G.odo = 0; G.topV = 0;
   try { res.xp = raceXP(res); res.lvUp = addXP(res.xp); res.ach = checkAch(); } catch (e) { res.xp = 0; }
+  try { if (res.mode === 'race') coachSay(res.pos === 1 ? 'win' : res.pos <= 3 ? 'podium' : '', true); } catch (e) { }
   // Historique persistant : chaque parcours conserve résultat, gains et solde après paiement.
   const trackDef = TRACKS[cfg.track];
   SAVE.history = Array.isArray(SAVE.history) ? SAVE.history : [];
@@ -7783,6 +7942,12 @@ function makeEnv(b, weather) {
   if (b.night) {
     e.bake = (b.bake || [0.2, 0.2, 0.2]).map(v => v * 1.19);
     e.sunCol = (b.sunCol || [0.2, 0.2, 0.2]).map(v => v * 1.11);
+  }
+  if (weather === 'night' && !b.night) {
+    // course de nuit sur un circuit de jour : ciel étoilé, lune bleutée, phares et lampadaires allumés
+    e.night = true; e.sky = [0.018, 0.03, 0.075]; e.hor = [0.07, 0.09, 0.16]; e.fog = [0.05, 0.07, 0.12]; e.gnd = (b.gnd || [0.3, 0.3, 0.3]).map(v => v * 0.32);
+    e.sunDir = nrm([0.35, 0.62, -0.4]); e.sunCol = [0.3, 0.36, 0.52]; e.sunSize = 0.0008; e.clouds = 0.2; e.shadows = false; e.expo = 1.74; e.haze = 0;
+    e.fogDen = (b.fogDen || 0.002) * 0.95; e.bake = [0.24, 0.24, 0.29]; e.grade = GR([0.0, 0.01, 0.03], [0.98, 1.0, 1.07], 0.3); e.wet = b.wet || 0;
   }
   if (weather === 'rain' && !b.rain) {
     const gray = (c, k, g) => { const m = (c[0] + c[1] + c[2]) / 3; return c.map(v => (v * (1 - g) + m * g) * k); };
@@ -8095,7 +8260,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V226';
+const GAME_VERSION = 'V227';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -8115,7 +8280,7 @@ function detectLang() {
   for (const raw of all) { const l = String(raw).toLowerCase(); if (l === 'ar-tn') return 'tn'; const b = l.split('-')[0]; if (b !== 'tn' && LANGS[b]) return b; }
   return 'en';
 }
-function defaultSettings() { return { sfx: 80, music: 50, quality: (IS_TOUCH && ((navigator.deviceMemory || 4) <= 3 || (navigator.hardwareConcurrency || 8) <= 4)) ? 'medium' : 'high', dyn: true, fps: false, cam: 0, tags: true, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
+function defaultSettings() { return { sfx: 80, music: 50, quality: (IS_TOUCH && ((navigator.deviceMemory || 4) <= 3 || (navigator.hardwareConcurrency || 8) <= 4)) ? 'medium' : 'high', dyn: true, fps: false, cam: 0, tags: true, coach: true, touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
   return { money: 8000, owned: ['sprint', 'bisklet'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
 }
@@ -8185,7 +8350,7 @@ const UI = {
   updMoney() { $('money').textContent = money(SAVE.money); try { updLvl(); } catch (e) { } },
   nextCfg() {
     if (SAVE.career < CAREER.length) return evCfg(SAVE.career);
-    const q = this.q; return { mode: q.mode, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined };
+    const q = this.q; return { mode: q.mode, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: q.traffic, heat: 1, weather: q.weather === 1 ? 'rain' : q.weather === 2 ? 'night' : undefined };
   },
   renderMain() {
     const car = CARS.find(c => c.id === SAVE.car) || CARS[0];
@@ -8287,7 +8452,7 @@ const UI = {
     $('q-diff').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === q.diff));
     $('q-traf').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === q.traffic));
     const forced = TRACKS[q.track].weather === 'rain';
-    $('q-wx').querySelectorAll('button').forEach(b => { b.classList.toggle('on', forced ? b.dataset.v === '1' : +b.dataset.v === q.weather); b.disabled = forced; });
+    $('q-wx').querySelectorAll('button').forEach(b => { b.classList.toggle('on', forced ? b.dataset.v === '1' : +b.dataset.v === q.weather); b.disabled = forced || (b.dataset.v === '2' && !!TRACKS[q.track].env.night); });
   },
   /* ----- carrière ----- */
   renderCareer() {
@@ -8319,6 +8484,7 @@ const UI = {
       row(t('o_units'), seg('units', [['kmh', 'km/h'], ['mph', 'mph']])),
       row(t('o_cam'), seg('cam', [[0, t('o_near')], [1, t('o_far')], [2, t('o_hood')], [3, t('o_bump')], [4, t('o_drone')]])),
       row(t('o_tags'), seg('tags', [[true, t('yes')], [false, t('no')]])),
+      row(t('o_coach'), seg('coach', [[true, t('yes')], [false, t('no')]])),
       row(t('o_touch'), seg('touch', [['auto', t('o_auto')], ['on', t('yes')], ['off', t('no')]])),
       row(t('o_steer'), seg('steer', [['buttons', t('o_buttons')], ['stick', t('o_stick')], ['tilt', t('o_tilt')]])),
       row(t('o_autogas'), seg('autogas', [[true, t('yes')], [false, t('no')]])),
@@ -8431,7 +8597,7 @@ const UI = {
   hud(dt) {
     const p = G.player, cfg = G.cfg, T = G.T;
     this.bar('h-nos', p.nitro); const full = p.nitro > 0.99; if (this.hudCache.nf !== full) { this.hudCache.nf = full; $('h-nosbox').classList.toggle('full', full); }
-    drawSpeedo(p); drawMinimap(); drawTags();
+    drawSpeedo(p); drawMinimap(); drawTags(); coachTick();
     if ((this.hudTick = (this.hudTick + 1) % 4) !== 0) return;
     if (cfg.mode === 'race') { let n = 0; for (const c of G.cars) if (c.kind === 'ai' || c.kind === 'player') n++; this.set('h-pos', String(rankOf(p))); this.set('h-postot', '/' + n); }
     if (cfg.mode !== 'chase') { const lap = clamp(Math.floor(p.progress / T.L) + 1, 1, cfg.laps); this.set('h-lap', t('lapHud', lap, cfg.laps)); this.set('h-time', fmtT(G.raceT)); this.set('h-best', G.best < Infinity ? t('bestLap', fmtT(G.best)) : '');
@@ -9046,7 +9212,8 @@ function bindInputs() {
   $('q-diff').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.diff = +b.dataset.v; UI.renderQuick(); });
   $('q-traf').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.traffic = +b.dataset.v; UI.renderQuick(); });
   $('q-wx').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.weather = +b.dataset.v; UI.renderQuick(); });
-  $('q-go').onclick = () => { const q = UI.q, vb = q.mode === 'velo'; UI.startRace({ mode: vb ? 'race' : q.mode, velo: vb ? (q.bike || 'bisklet') : undefined, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: vb ? 0 : q.traffic, heat: 1, weather: q.weather ? 'rain' : undefined }); };
+  $('q-go').onclick = () => { const q = UI.q, vb = q.mode === 'velo'; UI.startRace({ mode: vb ? 'race' : q.mode, velo: vb ? (q.bike || 'bisklet') : undefined, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: vb ? 0 : q.traffic, heat: 1, weather: q.weather === 1 ? 'rain' : q.weather === 2 ? 'night' : undefined }); };
+  $('q-rand').onclick = () => quickSurprise();
   $('p-resume').onclick = () => UI.pause(false);
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };
   $('p-quit').onclick = () => UI.quit();

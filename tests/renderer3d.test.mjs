@@ -21,7 +21,8 @@ const closeCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1 } });
 const previousCameraDistance = Math.hypot(7, 82, 82);
 assert.ok(closeCamera.distance < previousCameraDistance * 0.82,
   'la nouvelle caméra 3D est nettement plus proche que le cadrage précédent');
-assert.deepEqual(closeCamera.target, [14, 0, 8], 'la caméra suit le centre de jeu fourni par le moteur');
+assert.ok(closeCamera.target[0] === 14 && Math.abs(closeCamera.target[2] - 8) < 3, 'la caméra suit le centre de jeu fourni par le moteur');
+assert.ok(Math.atan2(closeCamera.eye[1], closeCamera.eye[2] - closeCamera.target[2]) < 0.55, 'angle de caméra TV moderne (bas, < 32°)');
 assert.ok(closeCamera.eye.every(Number.isFinite), 'la position de caméra reste finie');
 const actionCamera = get3DCameraPose({ cam: { x: 14, y: -8, actionZoom: 1.09 } });
 assert.ok(actionCamera.distance < closeCamera.distance, 'le zoom d action rapproche progressivement la caméra');

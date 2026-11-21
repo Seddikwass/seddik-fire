@@ -1,5 +1,11 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.47.0
+- **Caméra TV moderne** : angle plus bas (≈ 27°) et focale plus longue, comme les retransmissions et les jeux de foot actuels ; joueurs plus grands, tribunes visibles.
+- **Pelouse réaliste** : texture d'herbe fine, bandes de tonte plus marquées qui s'inversent selon l'angle de vue (effet réel du gazon couché), usure devant les buts.
+- **Étiquette du joueur contrôlé** : numéro aux couleurs du club, nom et jauge d'endurance (vert → orange → rouge).
+- **Temps additionnel** : le 4e arbitre lève le panneau à la 45e et à la 90e, panneau LED « +N » à l'écran, annonce du commentateur, horloge « 45+1' », « 90+3' ».
+
 ## Version 3.46.0
 - **Onze de départ réel** du dernier match officiel (presse tunisienne, 7 novembre 2026) pour l'Espérance, le Club Africain, le CS Sfaxien et l'Étoile du Sahel : formation 4-3-3 et titulaires appliqués à la création de la carrière et en match rapide.
 - **Commentaire « Arabe – soirée TV »** : nouvelles phrases arabes enflammées (« قووووول »), noms des clubs en arabe, intonation plus aiguë et rapide sur les buts, réaction d'un consultant après chaque but (deuxième voix si l'appareil en possède). Réglage « Commentaire du match » indépendant de la langue du jeu.

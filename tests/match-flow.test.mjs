@@ -172,3 +172,16 @@ console.log('SET PIECES OK — mur à 9,15 m, tireur fixe, visée, frappe enroul
   for (const k of Object.keys(Cm.LINES.fr)) assert.ok(Cm.LINES.ar_tv[k]?.length, `ar_tv couvre ${k}`);
   console.log('commentaire ar_tv OK');
 }
+
+// Temps additionnel : panneau du 4e arbitre à la 45e, horloge « 45+ ».
+{
+  const C = await import('../public/js/career.js');
+  const st = C.newCareer({ clubId: 'est', seed: 4 });
+  const canvas = { clientWidth: 800, clientHeight: 400, getContext: () => new Proxy({}, { get: () => () => ({ addColorStop() {} }) }) };
+  let seed = 7; const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 0x100000000; };
+  const m = new Match({ canvas, home: C.matchTeam(st, 'est'), away: C.matchTeam(st, 'ca', true), userSide: null, settings: { duration: 1, voice: false, replays: false, assist: true, difficulty: 1 }, random });
+  for (let i = 0; i < 60 * 200 && !m.addBoard && m.half === 1; i++) m.step(1 / 60);
+  assert.ok(m.addBoard && m.addBoard.half === 1 && m.addBoard.n === m.addTime(1), 'panneau de temps additionnel à la 45e');
+  assert.match(m.ticker, /additionnel/, 'annonce du temps additionnel');
+  console.log('TEMPS ADDITIONNEL OK');
+}

@@ -288,12 +288,14 @@ export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   const distanceScale = 1 + portrait * 0.16;
   // Caméra de retransmission : assez proche pour lire les joueurs, assez haute
   // pour voir les lignes de passe (≈ 23 m de haut, ≈ 30 m en retrait du ballon).
+  // v3.47 : angle « TV moderne » plus bas (≈ 27° au lieu de 38°) et focale plus longue :
+  // joueurs plus grands, perspective proche des retransmissions et des jeux de foot actuels.
   const eye = [
-    targetX - 3.2 / zoom * distanceScale,
-    23 / zoom * distanceScale + focusLift * 0.42,
-    targetZ + 29 / zoom * distanceScale,
+    targetX - 2.4 / zoom * distanceScale,
+    16.5 / zoom * distanceScale + focusLift * 0.42,
+    targetZ + 31.5 / zoom * distanceScale,
   ];
-  const target = [targetX, focusLift, targetZ];
+  const target = [targetX, focusLift, targetZ - 2.2];
   return {
     eye,
     target,
@@ -302,8 +304,8 @@ export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
     ballHeight,
     focusLift,
     portrait,
-    fovy: safeAspect < 1.15 ? 0.9 : 0.7,
-    distance: Math.hypot(eye[0] - targetX, eye[1] - target[1], eye[2] - targetZ),
+    fovy: safeAspect < 1.15 ? 0.9 : 0.64,
+    distance: Math.hypot(eye[0] - targetX, eye[1] - target[1], eye[2] - target[2]),
   };
 }
 function parseColor(value, fallback = [0.8, 0.8, 0.8]) {
@@ -521,7 +523,7 @@ function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glov
 }
 
 const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; uniform float uFx; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; varying float vFxA; varying float vFx; void main(){ vec3 p=aPosition; vFxA=aAnim; vFx=uFx; if(uFx<0.5&&aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; if(uFx<0.5&&aAnim<0.0){ float w=0.5+0.5*sin(uTime*2.4-(p.x+p.z)*0.45); vColor=aColor*(0.7+0.45*w)+vec3(0.3*uExcite*max(sin(uTime*15.0),0.0)); } vWorld=p; gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
-const FS = 'precision mediump float; uniform vec3 uFog; uniform vec3 uEye; uniform float uRim; uniform vec3 uFogRange; uniform vec3 uLight; uniform float uWet; uniform float uAlpha; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; varying float vFxA; varying float vFx; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); vec3 lp=vColor*(amb*0.78+0.62*key+0.16*rim+0.1*fill)+vec3(sh*0.16)+vec3(1.0,0.94,0.82)*fres*0.32*(0.4+0.6*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } if(uWet>0.0&&n.y>0.85){ vec3 Vw=normalize(uEye-vWorld); float gl2=pow(max(dot(n,normalize(sun+Vw)),0.0),46.0); float fr=pow(1.0-max(dot(n,Vw),0.0),4.0); lit+=vec3(0.75,0.8,0.9)*(gl2*0.6+fr*0.34)*uWet; lit*=1.0-0.12*uWet*(1.0-uRim); } lit*=uLight; vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(uFogRange.x,uFogRange.y,vDepth)*uFogRange.z; color=mix(color,uFog,fog); gl_FragColor=vec4(color,vFx>0.5?uAlpha*clamp(vFxA,0.0,1.0):uAlpha); }';
+const FS = '#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\nuniform vec3 uFog; uniform vec3 uEye; uniform float uRim; uniform vec3 uFogRange; uniform vec3 uLight; uniform float uWet; uniform float uAlpha; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; varying float vFxA; varying float vFx; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); vec3 lp=vColor*(amb*0.78+0.62*key+0.16*rim+0.1*fill)+vec3(sh*0.16)+vec3(1.0,0.94,0.82)*fres*0.32*(0.4+0.6*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } if(uWet>0.0&&n.y>0.85){ vec3 Vw=normalize(uEye-vWorld); float gl2=pow(max(dot(n,normalize(sun+Vw)),0.0),46.0); float fr=pow(1.0-max(dot(n,Vw),0.0),4.0); lit+=vec3(0.75,0.8,0.9)*(gl2*0.6+fr*0.34)*uWet; lit*=1.0-0.12*uWet*(1.0-uRim); } float grassM=step(0.95,n.y)*step(vWorld.y,0.05)*step(vColor.r*1.55,vColor.g)*step(vColor.b*1.5,vColor.g)*step(abs(vWorld.x),57.0)*step(abs(vWorld.z),39.0); if(grassM>0.5){ vec2 q=vWorld.xz; float f1=fract(sin(dot(floor(q*3.0),vec2(12.9898,78.233)))*43758.5453); float f2=fract(sin(dot(floor(q*0.9+0.37),vec2(39.346,11.135)))*24634.6345); float mid=sin(q.x*0.9+sin(q.y*0.7)*1.6)*sin(q.y*1.1+q.x*0.23); vec3 Vg=normalize(uEye-vWorld); float bandI=floor((q.x+52.5)/5.25); float dirB=mod(bandI,2.0)*2.0-1.0; float inPitch=step(abs(q.x),52.5)*step(abs(q.y),34.0); float sheen=Vg.x/(length(Vg.xz)+0.001)*dirB*inPitch; lit*=1.0+(f1-0.5)*0.07+(f2-0.5)*0.06+mid*0.03+sheen*0.075; } lit*=uLight; vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(uFogRange.x,uFogRange.y,vDepth)*uFogRange.z; color=mix(color,uFog,fog); gl_FragColor=vec4(color,vFx>0.5?uAlpha*clamp(vFxA,0.0,1.0):uAlpha); }';
 
 function compile(gl, type, source) {
   const shader = gl.createShader(type);
@@ -678,7 +680,7 @@ export class MatchRenderer3D {
     // Couleur de la pelouse en un point : bandes de tonte franches, ondulations douces et usure.
     const turf = (x, z) => {
       const inside = Math.abs(x) <= 52.6 && Math.abs(z) <= 34.1;
-      const band = Math.floor((x + 52.5) / 5.25) % 2 ? 1.06 : 0.955;
+      const band = Math.floor((x + 52.5) / 5.25) % 2 ? 1.075 : 0.94;
       const soft = 1 + Math.sin(x * 0.21 + z * 0.13) * 0.006 + Math.sin(x * 0.07 - z * 0.31) * 0.006;
       const wear = Math.max(0, 1 - Math.hypot(Math.abs(x) - 48.5, z / 1.7) / 8) * 0.14 + Math.max(0, 1 - Math.hypot(x, z) / 6) * 0.04;
       const k = (inside ? band : 0.86) * soft;
@@ -1323,6 +1325,8 @@ export class MatchRenderer3D {
       } else {
         tx=0;
         if(subAge>=0&&subAge<4.5){ o.signal='board'; tx=sub.team?1.2:-1.2; ty=34.6; }
+        const AB=match.addBoard, abAge=AB&&AB.half===match.half?clock-AB.t:-1;
+        if(abAge>=0&&abAge<5){ o.signal='board'; tx=0; ty=34.4; }
       }
       const dx=tx-o.x, dy=ty-o.y, dd=Math.hypot(dx,dy), want=dd>0.15?Math.min(o.role==='coach'?1.6:3,dd*1.5):0;
       o.vx+=((dd?dx/dd*want:0)-o.vx)*Math.min(1,dt*4); o.vy+=((dd?dy/dd*want:0)-o.vy)*Math.min(1,dt*4);

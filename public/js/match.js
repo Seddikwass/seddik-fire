@@ -1221,6 +1221,15 @@ export class Match {
     const gm = this.clock / this.secondsPerMinute + (this.half === 2 ? 45 : 0);
     this.minute = Math.min(gm, this.half === 1 ? 45 + 2 : 90 + 4);
     const limit = this.half === 1 ? 45 + this.addTime(1) : 90 + this.addTime(2);
+    // Temps additionnel annoncé par le 4e arbitre (panneau lumineux) à la 45e / 90e.
+    const base = this.half === 1 ? 45 : 90;
+    if (gm >= base - 0.05 && !(this._addShown = this._addShown || {})[this.half]) {
+      this._addShown[this.half] = true; const n = this.addTime(this.half);
+      this.addBoard = { t: this.clock, half: this.half, n };
+      const L = this.settings.lang, cl = commentaryLang(this.settings.commentary, L || 'fr');
+      this.ticker = cl.startsWith('ar') ? `الوقت بدل الضائع: ${n} دقائق` : cl === 'en' ? `Added time: ${n} minutes` : `Temps additionnel : ${n} minute${n > 1 ? 's' : ''}`; this.tickerT = 4.5;
+      if (this.settings.voice) A.speak(this.ticker, cl, true);
+    }
     if (gm >= limit && !this.ball.inFlightShot) {
       A.whistle(true);
       if (this.half === 1) { this.state = 'halftime'; this.stateT = 2.5; this.clock = 0; this.banner('MI-TEMPS', 2.5); this.say('half', {}, true); }
@@ -3765,6 +3774,44 @@ export class Match {
     const q = this.proj(x, y, z); return q && q[3] > 0.1 ? [q[0], q[1]] : null;
   }
   // Visée des coups de pied arrêtés et jauge de puissance du joueur contrôlé.
+  // Panneau LED du 4e arbitre (temps additionnel), comme à la télé.
+  drawAddedBoard(isReplay, top) {
+    const B = this.addBoard; if (!B || isReplay || B.half !== this.half) return;
+    const age = this.clock - B.t; if (age < 0 || age > 5) return;
+    const c = this.c, d = this.dpr, a = Math.min(1, age / 0.3, (5 - age) / 0.4);
+    const w = 74 * d, h = 46 * d, x = this.W - w - 16 * d, y = top + 44 * d;
+    c.save(); c.globalAlpha = a;
+    c.fillStyle = '#0b0d10'; this.rr(x, y, w, h, 5 * d); c.fill();
+    c.strokeStyle = '#3a3f47'; c.lineWidth = 2 * d; this.rr(x, y, w, h, 5 * d); c.stroke();
+    c.fillStyle = '#1d2229'; c.fillRect(x + 6 * d, y + 6 * d, w - 12 * d, h - 12 * d);
+    c.font = `900 ${26 * d}px "Courier New",monospace`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.shadowColor = '#3cff6b'; c.shadowBlur = 10 * d; c.fillStyle = '#4dff7a';
+    c.fillText(`+${B.n}`, x + w / 2, y + h / 2 + 1 * d);
+    c.shadowBlur = 0; c.fillStyle = '#aebbd0'; c.font = `800 ${8 * d}px system-ui,Arial`; c.fillText('TEMPS ADD.', x + w / 2, y + h + 8 * d);
+    c.restore();
+  }
+  // Étiquette moderne au-dessus du joueur contrôlé : numéro, nom et jauge d'endurance.
+  drawPlayerTag() {
+    if (this.userSide == null || this.state !== 'play' || this.goalFxT > 0 || this.input?.shooting) return;
+    const p = this.selected; if (!p) return;
+    const c = this.c, d = this.dpr, head = this.screenPoint(p.x, p.y, 2.6); if (!head) return;
+    const name = String(p.name || '').split(' ').slice(-1)[0].toUpperCase().slice(0, 12);
+    const num = p.num != null ? String(p.num) : '';
+    c.save(); c.font = `800 ${9.5 * d}px system-ui,Arial`; c.textBaseline = 'middle';
+    const nw = c.measureText(name).width, numW = num ? 16 * d : 0, w = nw + numW + 12 * d, h = 15 * d;
+    const x = head[0] - w / 2, y = head[1] - h - 10 * d;
+    c.globalAlpha = 0.92; c.fillStyle = 'rgba(6,12,22,0.82)'; this.rr(x, y, w, h, 4 * d); c.fill();
+    const kit = this.teams[p.team]?.kit || {};
+    if (num) { c.fillStyle = kit.shirt || '#c8102e'; this.rr(x, y, numW, h, 4 * d); c.fill(); c.fillStyle = '#fff'; c.textAlign = 'center'; c.fillText(num, x + numW / 2, y + h / 2 + 0.5 * d); }
+    c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(name, x + numW + 6 * d, y + h / 2 + 0.5 * d);
+    // endurance : vert → orange → rouge
+    const st = clamp(Number.isFinite(p.stamina) ? p.stamina : 1, 0, 1);
+    c.fillStyle = 'rgba(0,0,0,0.6)'; c.fillRect(x, y + h + 2 * d, w, 3 * d);
+    c.fillStyle = st > 0.6 ? '#3ee07a' : st > 0.35 ? '#ffb020' : '#ff4b4b'; c.fillRect(x, y + h + 2 * d, w * st, 3 * d);
+    // petit triangle pointant vers le joueur
+    c.fillStyle = '#ffe14a'; c.beginPath(); c.moveTo(head[0] - 4 * d, y + h + 7 * d); c.lineTo(head[0] + 4 * d, y + h + 7 * d); c.lineTo(head[0], y + h + 11 * d); c.fill();
+    c.restore();
+  }
   drawAimGuide() {
     if (this.userSide == null || this.state !== 'play') return;
     const p = this.selected, b = this.ball, c = this.c, d = this.dpr;
@@ -3861,7 +3908,7 @@ export class Match {
   }
   drawHUD(isReplay, frame = null) {
     const c = this.c, d = this.dpr, T = this.teams;
-    if (!isReplay) this.drawAimGuide();
+    if (!isReplay) { this.drawPlayerTag(); this.drawAimGuide(); }
     // Scoreboard broadcast : proportions calculées selon la largeur réelle du canvas.
     const layout = getMatchHudLayout(this.W, d);
     const x0 = 12 * d, y0 = 12 * d, h = layout.scoreHeight;
@@ -3918,7 +3965,8 @@ export class Match {
     const live = this.state !== 'fulltime' && !isReplay;
     if (live) { c.fillStyle = `rgba(255,59,70,${0.55 + 0.45 * Math.sin(performance.now() / 260)})`; c.beginPath(); c.arc(clockX + 9 * d, y0 + h / 2, 2.6 * d, 0, Math.PI * 2); c.fill(); }
     c.fillStyle = isReplay ? '#ffe14a' : '#fff'; c.font = `900 ${(layout.compact ? 10 : 12) * d}px system-ui,Arial`;
-    c.fillText(isReplay ? 'REPLAY' : this.state === 'shootout' ? 'TAB' : `${String(min).padStart(2, '0')}'`, clockX + clockW / 2 + (live ? 3 * d : 0), y0 + h / 2);
+    const clockTxt = this.half === 1 && min >= 45 && this.state !== 'halftime' ? `45+${min - 44}'` : this.half === 2 && min >= 90 && this.state !== 'fulltime' ? `90+${min - 89}'` : `${String(min).padStart(2, '0')}'`;
+    c.fillText(isReplay ? 'REPLAY' : this.state === 'shootout' ? 'TAB' : clockTxt, clockX + clockW / 2 + (live ? 3 * d : 0), y0 + h / 2);
     c.restore();
     // Live match centre remains on desktop; on narrow phones the pitch stays clear.
     if (!isReplay && layout.statsWidth > 0) {
@@ -3953,6 +4001,7 @@ export class Match {
       this.rr(mx - 2.6 * d, my - 5 * d, 5.2 * d, 8.5 * d, 2.6 * d); c.fill(); c.fillRect(mx - 0.7 * d, my + 3.5 * d, 1.4 * d, 3.5 * d); c.fillRect(mx - 3 * d, my + 6.6 * d, 6 * d, 1.3 * d);
       c.fillStyle = '#fff'; c.fillText(text, this.W / 2 + 10 * d, ty + 13.5 * d); c.restore();
     }
+    this.drawAddedBoard(isReplay, y0 + h);
     if (this.msgT > 0 && this.msg && !celebrating) {
       // Annonce en pastille : lisible sans masquer l'action.
       const size = Math.max(18, Math.round(Math.min(this.H * 0.07, 40 * d)));

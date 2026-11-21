@@ -37,15 +37,15 @@ export const CLUBS = [
   { id: 'css',  name: 'Club Sportif Sfaxien',        short: 'CSS',  city: 'Sfax',           stadium: 'Stade Taïeb-Mhiri',            capacity: 22000, colors: ['#111111', '#ffffff'], away: ['#ffffff', '#111111'], rep: 84, div: 1 },
   { id: 'ess',  name: 'Étoile Sportive du Sahel',    short: 'ESS',  city: 'Sousse',         stadium: 'Stade Olympique de Sousse',    capacity: 28000, colors: ['#c8102e', '#ffffff'], away: ['#ffffff', '#c8102e'], rep: 82, div: 1 },
   { id: 'st',   name: 'Stade Tunisien',              short: 'ST',   city: 'Le Bardo',       stadium: 'Stade Hédi-Enneifer',          capacity: 12000, colors: ['#b5121b', '#0f7b3c'], away: ['#ffffff', '#0f7b3c'], rep: 74, div: 1 },
-  { id: 'usm',  name: 'US Monastirienne',            short: 'USM',  city: 'Monastir',       stadium: 'Stade Mustapha-Ben-Jannet',    capacity: 20000, colors: ['#1d4fa3', '#ffffff'], away: ['#ffffff', '#1d4fa3'], rep: 72, div: 1 },
-  { id: 'esz',  name: 'ES Zarzis',                   short: 'ESZ',  city: 'Zarzis',         stadium: 'Stade Abdessalem-Kazouz',      capacity: 7000,  colors: ['#f2c400', '#0a5aa8'], away: ['#0a5aa8', '#f2c400'], rep: 66, div: 1 },
-  { id: 'esm',  name: 'ES Métlaoui',                 short: 'ESM',  city: 'Métlaoui',       stadium: 'Stade municipal de Métlaoui',  capacity: 8000,  colors: ['#0b8a3e', '#ffffff'], away: ['#ffffff', '#0b8a3e'], rep: 62, div: 1 },
-  { id: 'jso',  name: 'JS El Omrane',                short: 'JSO',  city: 'Tunis',          stadium: 'Stade Chedly-Zouiten',         capacity: 18000, colors: ['#7a1020', '#f2f2f2'], away: ['#f2f2f2', '#7a1020'], rep: 60, div: 1 },
+  { id: 'usm',  name: 'US Monastirienne',            short: 'USM',  city: 'Monastir',       stadium: 'Stade Mustapha-Ben-Jannet',    capacity: 20000, colors: ['#ffffff', '#1d4fa3'], away: ['#1d4fa3', '#ffffff'], rep: 72, div: 1 },
+  { id: 'esz',  name: 'ES Zarzis',                   short: 'ESZ',  city: 'Zarzis',         stadium: 'Stade Abdessalem-Kazouz',      capacity: 7000,  colors: ['#d71920', '#f6c400'], away: ['#ffffff', '#d71920'], rep: 66, div: 1 },
+  { id: 'esm',  name: 'ES Métlaoui',                 short: 'ESM',  city: 'Métlaoui',       stadium: 'Stade municipal de Métlaoui',  capacity: 8000,  colors: ['#c8161d', '#f4c20d'], away: ['#ffffff', '#c8161d'], rep: 62, div: 1 },
+  { id: 'jso',  name: 'JS El Omrane',                short: 'JSO',  city: 'Tunis',          stadium: 'Stade Chedly-Zouiten',         capacity: 18000, colors: ['#1d3f9a', '#f2c200'], away: ['#ffffff', '#1d3f9a'], rep: 60, div: 1 },
   { id: 'usbg', name: 'US Ben Guerdane',             short: 'USBG', city: 'Ben Guerdane',   stadium: 'Stade du 7-Mars',              capacity: 10000, colors: ['#ffd400', '#151515'], away: ['#151515', '#ffd400'], rep: 63, div: 1 },
-  { id: 'asm',  name: 'AS Marsa',                    short: 'ASM',  city: 'La Marsa',       stadium: 'Stade Abdelaziz-Chtioui',      capacity: 6500,  colors: ['#f4c20d', '#1a1a1a'], away: ['#1a1a1a', '#f4c20d'], rep: 58, div: 1 },
-  { id: 'cab',  name: 'CA Bizertin',                 short: 'CAB',  city: 'Bizerte',        stadium: 'Stade 15-Octobre',             capacity: 20000, colors: ['#111111', '#f5d000'], away: ['#f5d000', '#111111'], rep: 61, div: 1 },
-  { id: 'ob',   name: 'Olympique de Béja',           short: 'OB',   city: 'Béja',           stadium: 'Stade Boujemaa-Kmiti',         capacity: 15000, colors: ['#e2231a', '#1b3f8b'], away: ['#ffffff', '#e2231a'], rep: 55, div: 1 },
-  { id: 'eshs', name: 'ES Hammam-Sousse',            short: 'ESHS', city: 'Hammam Sousse',  stadium: 'Stade Bouaoula',               capacity: 6000,  colors: ['#d71f26', '#ffffff'], away: ['#ffffff', '#222222'], rep: 50, div: 1 },
+  { id: 'asm',  name: 'AS Marsa',                    short: 'ASM',  city: 'La Marsa',       stadium: 'Stade Abdelaziz-Chtioui',      capacity: 6500,  colors: ['#f4c20d', '#0e7a3a'], away: ['#0e7a3a', '#f4c20d'], rep: 58, div: 1 },
+  { id: 'cab',  name: 'CA Bizertin',                 short: 'CAB',  city: 'Bizerte',        stadium: 'Stade 15-Octobre',             capacity: 20000, colors: ['#f5d000', '#111111'], away: ['#ffffff', '#c9a227'], rep: 61, div: 1 },
+  { id: 'ob',   name: 'Olympique de Béja',           short: 'OB',   city: 'Béja',           stadium: 'Stade Boujemaa-Kmiti',         capacity: 15000, colors: ['#d71a21', '#ffffff'], away: ['#ffffff', '#d71a21'], rep: 55, div: 1 },
+  { id: 'eshs', name: 'ES Hammam-Sousse',            short: 'ESHS', city: 'Hammam Sousse',  stadium: 'Stade Bouaoula',               capacity: 6000,  colors: ['#f2c500', '#151515'], away: ['#151515', '#f2c500'], rep: 50, div: 1 },
   { id: 'psse', name: 'PS Sakiet Eddaïer',           short: 'PSSE', city: 'Sakiet Eddaïer', stadium: 'Stade municipal de Sakiet Eddaïer', capacity: 5000, colors: ['#0d6e3a', '#f0f0f0'], away: ['#f0f0f0', '#0d6e3a'], rep: 50, div: 1 },
   { id: 'cshl', name: 'CS Hammam-Lif',               short: 'CSHL', city: 'Hammam-Lif',     stadium: 'Stade Bou Kornine',            capacity: 8000,  colors: ['#0b7a3b', '#ffffff'], away: ['#ffffff', '#0b7a3b'], rep: 54, div: 1 },
   // ---- Ligue 2 (liste PROVISOIRE, structure extensible) ----
@@ -204,6 +204,7 @@ export const REAL_SQUADS = {
 };
 // Maillots domicile réels (motif et couleurs, sans logos ni sponsors).
 // Sources : footyheadlines.com et footballkitarchive.com (saisons 2025-26 / 2026-27).
+// Maillots domicile vérifiés (footballkitarchive / footyheadlines, saisons 2024-25 → 2026-27).
 export const KIT_DESIGNS = {
   est: { pattern: 'stripes', shirt: '#d4141c', alt: '#f7c600', trim: '#111111', shorts: '#111111', socks: '#d4141c', stripes: 10 },
   ca: { pattern: 'hoops', shirt: '#e30613', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#ffffff', hoops: 7 },
@@ -211,4 +212,33 @@ export const KIT_DESIGNS = {
   ess: { pattern: 'plain', shirt: '#c8102e', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#c8102e' },
   usm: { pattern: 'centerStripe', shirt: '#ffffff', alt: '#1d4fa3', sleeves: '#1d4fa3', trim: '#d4af37', shorts: '#1d4fa3', socks: '#ffffff' },
   st: { pattern: 'stripes', shirt: '#b5121b', alt: '#0f7b3c', trim: '#ffffff', shorts: '#ffffff', socks: '#b5121b', stripes: 8 },
+  esz: { pattern: 'stripes', shirt: '#d71920', alt: '#f6c400', trim: '#f6c400', shorts: '#f6c400', socks: '#d71920', stripes: 10 },
+  esm: { pattern: 'stripes', shirt: '#c8161d', alt: '#f4c20d', trim: '#f4c20d', shorts: '#c8161d', socks: '#c8161d', stripes: 8 },
+  jso: { pattern: 'chestBand', shirt: '#1d3f9a', alt: '#f2c200', trim: '#f2c200', shorts: '#1d3f9a', socks: '#1d3f9a' },
+  usbg: { pattern: 'stripes', shirt: '#ffd400', alt: '#151515', trim: '#151515', shorts: '#151515', socks: '#ffd400', stripes: 10 },
+  asm: { pattern: 'stripes', shirt: '#f4c20d', alt: '#0e7a3a', trim: '#0e7a3a', shorts: '#0e7a3a', socks: '#f4c20d', stripes: 10 },
+  cab: { pattern: 'plain', shirt: '#f5d000', alt: '#111111', trim: '#111111', shorts: '#111111', socks: '#f5d000' },
+  ob: { pattern: 'checkers', shirt: '#d71a21', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#d71a21' },
+  eshs: { pattern: 'plain', shirt: '#f2c500', alt: '#151515', trim: '#151515', shorts: '#151515', socks: '#f2c500' },
+  psse: { pattern: 'plain', shirt: '#0d6e3a', alt: '#f0f0f0', trim: '#f0f0f0', shorts: '#f0f0f0', socks: '#0d6e3a' },
+  cshl: { pattern: 'stripes', shirt: '#0b7a3b', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#0b7a3b', stripes: 10 },
+};
+// Maillots extérieur (portés seulement en cas de conflit de couleurs, comme en vrai).
+export const KIT_DESIGNS_AWAY = {
+  est: { pattern: 'plain', shirt: '#ffffff', alt: '#d4141c', trim: '#d4141c', shorts: '#ffffff', socks: '#ffffff' },
+  ca: { pattern: 'plain', shirt: '#ffffff', alt: '#e30613', trim: '#e30613', shorts: '#e30613', socks: '#ffffff' },
+  css: { pattern: 'plain', shirt: '#ffffff', alt: '#111111', trim: '#111111', shorts: '#ffffff', socks: '#ffffff' },
+  ess: { pattern: 'plain', shirt: '#ffffff', alt: '#c8102e', trim: '#c8102e', shorts: '#ffffff', socks: '#ffffff' },
+  usm: { pattern: 'plain', shirt: '#1d4fa3', alt: '#ffffff', trim: '#ffffff', shorts: '#1d4fa3', socks: '#1d4fa3' },
+  st: { pattern: 'sash', shirt: '#ffffff', alt: '#0f7b3c', alt2: '#b5121b', trim: '#0f7b3c', shorts: '#ffffff', socks: '#ffffff' },
+  esz: { pattern: 'plain', shirt: '#ffffff', alt: '#d71920', trim: '#d71920', shorts: '#ffffff', socks: '#ffffff' },
+  esm: { pattern: 'plain', shirt: '#ffffff', alt: '#c8161d', trim: '#c8161d', shorts: '#ffffff', socks: '#ffffff' },
+  jso: { pattern: 'stripes', shirt: '#ffffff', alt: '#1d3f9a', trim: '#f2c200', shorts: '#ffffff', socks: '#ffffff', stripes: 14 },
+  usbg: { pattern: 'plain', shirt: '#151515', alt: '#ffd400', trim: '#ffd400', shorts: '#151515', socks: '#151515' },
+  asm: { pattern: 'plain', shirt: '#0e7a3a', alt: '#f4c20d', trim: '#f4c20d', shorts: '#0e7a3a', socks: '#0e7a3a' },
+  cab: { pattern: 'plain', shirt: '#ffffff', alt: '#c9a227', trim: '#c9a227', shorts: '#111111', socks: '#ffffff' },
+  ob: { pattern: 'plain', shirt: '#ffffff', alt: '#d71a21', trim: '#d71a21', shorts: '#ffffff', socks: '#ffffff' },
+  eshs: { pattern: 'plain', shirt: '#151515', alt: '#f2c500', trim: '#f2c500', shorts: '#151515', socks: '#151515' },
+  psse: { pattern: 'plain', shirt: '#f0f0f0', alt: '#0d6e3a', trim: '#0d6e3a', shorts: '#0d6e3a', socks: '#f0f0f0' },
+  cshl: { pattern: 'plain', shirt: '#ffffff', alt: '#0b7a3b', trim: '#0b7a3b', shorts: '#ffffff', socks: '#ffffff' },
 };

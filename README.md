@@ -1,5 +1,10 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.45.0
+- **Maillots corrigés pour les 16 clubs de Ligue 1** (domicile + extérieur) d'après les tenues 2024-25 → 2026-27 : ES Zarzis et ES Métlaoui en rayures rouge/jaune, JS Omrane en bleu avec bande jaune, US Ben Guerdane rayé jaune/noir, AS Marsa rayé jaune/vert, Olympique de Béja en damier rouge/blanc, CA Bizertin et ES Hammam-Sousse en jaune/noir, CS Hammam-Lif rayé vert/blanc, Stade Tunisien en blanc avec écharpe vert/rouge à l'extérieur.
+- Nouveaux motifs 3D : bande de poitrine, damier, écharpe diagonale.
+- **Choix automatique des maillots comme en vrai** : le visiteur garde son maillot domicile s'il n'y a pas de conflit de couleurs, sinon maillot extérieur, sinon troisième maillot (marine, violet, orange).
+
 ## Version 3.44.0 — vrais maillots et vrais effectifs des grands clubs
 - Maillots domicile réels dessinés en 3D (motif et couleurs, sans logos ni sponsors) : Espérance (rayures verticales rouges et jaunes, short noir), Club Africain (cerceaux rouges et blancs, short et chaussettes blancs), CS Sfaxien (rayures noires et blanches), Étoile du Sahel (rouge uni), US Monastir (blanc à bande centrale et épaules bleues, liseré doré), Stade Tunisien (rayures rouges et vertes). Sources : footyheadlines.com et footballkitarchive.com.
 - Le motif est calculé sur le buste en 3D (rayures, cerceaux, bande centrale) et les manches prennent la couleur du maillot ; à l'extérieur, chaque club garde son maillot extérieur.

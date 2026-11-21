@@ -385,7 +385,7 @@ function orientedEllipsoid(out, c, fx, uy, sz, rf, ru, rs, color, seg = 8, rings
   }
 }
 // Motifs de maillot : rayures verticales, cerceaux horizontaux, bande centrale, uni.
-export function kitPatternColor(kit, shirt, alt) {
+export function kitPatternColor(kit, shirt, alt, alt2 = alt) {
   const pattern = kit?.pattern;
   if (!pattern || pattern === 'plain') return shirt;
   const n = Number(kit.stripes || kit.hoops) || (pattern === 'hoops' ? 7 : 10);
@@ -393,6 +393,9 @@ export function kitPatternColor(kit, shirt, alt) {
     if (pattern === 'stripes') { const lon = Math.atan2(b, a); return Math.floor((lon / (Math.PI * 2) + 0.5) * n + 0.5) % 2 ? alt : shirt; }
     if (pattern === 'hoops') return Math.floor((y + 1) / 2 * n) % 2 ? alt : shirt;
     if (pattern === 'centerStripe') return Math.abs(b) < 0.34 ? alt : shirt;
+    if (pattern === 'chestBand') return y > 0.08 && y < 0.46 ? alt : shirt;
+    if (pattern === 'checkers') { const lon = Math.atan2(b, a); return (Math.floor((lon / (Math.PI * 2) + 0.5) * 12) + Math.floor((y + 1) * 3.2)) % 2 ? alt : shirt; }
+    if (pattern === 'sash') { const s = Math.abs(a * 0.72 - y * 0.7 + 0.05); return s < 0.2 ? alt : s < 0.29 ? alt2 : shirt; }
     return shirt;
   };
 }
@@ -927,7 +930,7 @@ export class MatchRenderer3D {
     const kit=player.kitOverride||(player.isGK?(side0.gkKit||side0.kit):side0.kit);
     const shirt=parseColor(kit?.shirt,[0.8,0.1,0.1]), trim=parseColor(kit?.trim,[0.95,0.88,0.72]);
     const shorts=parseColor(kit?.shorts||kit?.trim,[0.08,0.1,0.13]);
-    const kitAlt=parseColor(kit?.alt,trim), shirtPat=player.isOfficial?shirt:kitPatternColor(kit,shirt,kitAlt), sleeveCol=kit?.sleeves?parseColor(kit.sleeves,shirt):(kit?.pattern==='hoops'?kitAlt:shirt);
+    const kitAlt=parseColor(kit?.alt,trim), shirtPat=player.isOfficial?shirt:kitPatternColor(kit,shirt,kitAlt,parseColor(kit?.alt2,kitAlt)), sleeveCol=kit?.sleeves?parseColor(kit.sleeves,shirt):(kit?.pattern==='hoops'?kitAlt:shirt);
     const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=player.sockColor||parseColor(kit?.socks,shirt.map(v=>v*0.92));
     const detail=this.quality.detail;
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;

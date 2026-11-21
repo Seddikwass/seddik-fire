@@ -1,4 +1,5 @@
 // Test headless : 2 saisons complètes simulées + transferts, staff, médical, élection
+import * as D from '../public/js/data.js';
 import * as C from '../public/js/career.js';
 import assert from 'node:assert/strict';
 const t0 = Date.now();
@@ -68,7 +69,14 @@ console.log('OK — tous les tests carrière passent');
   assert.equal(Object.values(off.players).filter(p => p.real).length, 0, 'option désactivée : uniquement des joueurs fictifs');
   const t = C.matchTeam(st, 'ca', false);
   assert.equal(t.kit.pattern, 'hoops', 'Club Africain à domicile : maillot à cerceaux rouges et blancs');
-  assert.equal(C.matchTeam(st, 'est', true).kit.pattern, undefined, 'à l extérieur : maillot extérieur uni');
+  assert.equal(C.matchTeam(st, 'est', true).kit.shirt, '#ffffff', 'à l extérieur : maillot extérieur blanc');
+  // Conflit de couleurs : le visiteur garde son maillot domicile s'il n'y a pas de conflit, sinon extérieur / troisième.
+  assert.equal(C.awayKitMode('css', 'cab'), false, 'CSS (noir/blanc) vs CAB (jaune) : pas de conflit');
+  assert.equal(C.awayKitMode('est', 'esz'), true, 'EST vs ESZ (rouge/jaune) : maillot extérieur');
+  assert.notEqual(C.awayKitMode('ca', 'ess'), false, 'CA vs ESS (rouge) : changement');
+  for (const h of Object.keys(D.KIT_DESIGNS)) for (const a of Object.keys(D.KIT_DESIGNS)) if (h !== a) {
+    assert.ok(!C.kitsClash(C.clubKit(h, false), C.clubKit(a, C.awayKitMode(h, a))), `maillots distincts ${h}-${a}`);
+  }
   assert.ok(Object.values(KIT_DESIGNS).every(k => /^#[0-9a-f]{6}$/i.test(k.shirt) && /^#[0-9a-f]{6}$/i.test(k.alt)), 'couleurs de maillot valides');
   console.log('REAL SQUADS OK — 5 effectifs réels, numéros uniques, option fictive, maillots réels');
 }

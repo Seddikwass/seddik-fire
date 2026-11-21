@@ -13,7 +13,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
 
-export const APP_VERSION = '3.44.0';
+export const APP_VERSION = '3.45.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -805,7 +805,7 @@ const ACT = {
     const fake = C.newCareer({ clubId: 'est', seed: 99, realNames: settings.realNames !== false });
     const h = $('#qh').value, a = $('#qa').value; if (h === a) return toast('Choisissez deux équipes différentes.', 'err');
     const side = Number($('#qside').value);
-    const home = C.matchTeam(fake, h, false), away = C.matchTeam(fake, a, true);
+    const home = C.matchTeam(fake, h, false), away = C.matchTeam(fake, a, C.awayKitMode(h, a));
     if (home.kit.shirt === away.kit.shirt) away.kit = { shirt: '#f4f4f4', trim: '#222', shorts: '#222' };
     go('match', { home, away, knockout: $('#qko')?.checked ? { aggBefore: [0, 0] } : null, userSide: side < 0 ? null : side, duration: Number($('#qdur').value), strH: C.teamStrength(fake, h, false), strA: C.teamStrength(fake, a, false) });
   },
@@ -821,7 +821,7 @@ const ACT = {
   playMatch: () => {
     const f = C.userFixture(st); if (!f) return;
     settings.duration = Number($('#pmDur').value); S.saveSettings(settings);
-    const home = C.matchTeam(st, f.h, false), away = C.matchTeam(st, f.a, true);
+    const home = C.matchTeam(st, f.h, false), away = C.matchTeam(st, f.a, C.awayKitMode(f.h, f.a));
     if (home.kit.shirt.toLowerCase() === away.kit.shirt.toLowerCase()) { away.kit = { shirt: away.colors[1] !== home.kit.shirt ? away.colors[1] : '#f4f4f4', trim: '#222', shorts: '#222' }; }
     save();
     // Élimination directe : match unique (coupe, supercoupe) ou retour CAF avec cumul de l'aller.

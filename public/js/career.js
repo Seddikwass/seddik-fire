@@ -1,5 +1,5 @@
 // Moteur de carrière : saisons, compétitions, finances, transferts, staff, médical, élections.
-import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, REAL_SQUADS, KIT_DESIGNS } from './data.js';
+import { CLUBS, CAF_CLUBS, RULES, START_CAF, START_CUP_HOLDER, START_CHAMPION, FIRST, LAST, FOREIGN_FIRST, FOREIGN_LAST, FOREIGN_NAT, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, REAL_SQUADS, KIT_DESIGNS, KIT_DESIGNS_AWAY } from './data.js';
 import { rng, clamp, uid, deepCopy } from './util.js';
 import { quickSim } from './match.js';
 import * as Dr from './dressing.js';
@@ -465,6 +465,31 @@ function cafSquad(st, id) {
   st.cafSquads[id] = list;
   return list;
 }
+// --- Maillots : domicile / extérieur / troisième selon le conflit de couleurs ---
+const THIRD_KITS = [
+  { pattern: 'plain', shirt: '#1b2a4a', alt: '#ffffff', trim: '#ffffff', shorts: '#1b2a4a', socks: '#1b2a4a', third: true },
+  { pattern: 'plain', shirt: '#6a2c91', alt: '#ffffff', trim: '#ffffff', shorts: '#6a2c91', socks: '#6a2c91', third: true },
+  { pattern: 'plain', shirt: '#f07c1a', alt: '#111111', trim: '#111111', shorts: '#111111', socks: '#f07c1a', third: true },
+];
+export function clubKit(id, mode = false) {
+  if (mode === 'third' || typeof mode === 'number') return { ...THIRD_KITS[Number(mode) || 0] };
+  const d = mode ? KIT_DESIGNS_AWAY[id] : KIT_DESIGNS[id];
+  return d ? { ...d } : null;
+}
+const hexRgb = h => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '')); const n = m ? parseInt(m[1], 16) : 0x808080; return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const kitMains = k => [k.shirt].concat(k.pattern && k.pattern !== 'plain' && k.pattern !== 'chestBand' && k.pattern !== 'sash' ? [k.alt] : []).map(hexRgb);
+export function kitsClash(a, b) {
+  if (!a || !b) return false;
+  for (const x of kitMains(a)) for (const y of kitMains(b)) { const d = Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]); if (d < 120) return true; }
+  return false;
+}
+// Mode de maillot du visiteur : false (domicile) si pas de conflit, sinon true (extérieur), sinon 0/1/2 (troisième).
+export function awayKitMode(homeId, awayId) {
+  if (!KIT_DESIGNS[awayId]) return true;
+  const h = clubKit(homeId, false) || { shirt: (CLUBS.find(c => c.id === homeId) || CAF_CLUBS.find(c => c.id === homeId))?.colors?.[0] };
+  for (const mode of [false, true, 0, 1, 2]) { const k = clubKit(awayId, mode); if (k && !kitsClash(h, k)) return mode; }
+  return true;
+}
 export function matchTeam(st, id, kitAway = false) {
   const c = st.clubs[id];
   if (c) {
@@ -473,8 +498,8 @@ export function matchTeam(st, id, kitAway = false) {
     // Le moral pèse légèrement sur le rendement réel en match (−3 % à +2 %).
     const withMorale = p => { const k = Dr.moraleFactor(p.morale ?? 70); const a = {}; for (const [key, v] of Object.entries(p.attrs)) a[key] = typeof v === 'number' ? Math.round(v * k) : v; return a; };
     const mk = p => ({ id: p.id, name: p.name, num: p.num, pos: p.pos, attrs: withMorale(p), fitness: p.fitness, instr: t.instr?.[p.id] || '' });
-    const kitCols = kitAway ? c.away : c.colors;
-    return { id, name: c.name, short: c.short, colors: kitCols, kit: !kitAway && KIT_DESIGNS[id] ? { ...KIT_DESIGNS[id] } : { shirt: kitCols[0], trim: kitCols[1], shorts: kitAway ? kitCols[0] : '#f2f2f2' }, formation: t.formation, mentality: t.mentality, pressing: t.pressing, width: t.width, line: t.line, takers: t.takers || {}, stadium: c.stadium, players: t.lineup.map(i => mk(st.players[i])), bench: t.bench.map(i => st.players[i]).filter(Boolean).map(mk), formPos: form };
+    const kit = clubKit(id, kitAway), kitCols = kitAway === true ? c.away : c.colors;
+    return { id, name: c.name, short: c.short, colors: kit ? [kit.shirt, kit.trim] : kitCols, kit: kit || { shirt: kitCols[0], trim: kitCols[1], shorts: kitAway ? kitCols[0] : '#f2f2f2' }, formation: t.formation, mentality: t.mentality, pressing: t.pressing, width: t.width, line: t.line, takers: t.takers || {}, stadium: c.stadium, players: t.lineup.map(i => mk(st.players[i])), bench: t.bench.map(i => st.players[i]).filter(Boolean).map(mk), formPos: form };
   }
   const caf = CAF_CLUBS.find(x => x.id === id), sq = cafSquad(st, id);
   const cols = kitAway ? [caf.colors[1], caf.colors[0]] : caf.colors;

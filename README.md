@@ -1,5 +1,11 @@
 # Seddik Fire
 
+## Nouveautés 2.33 — Un plan entièrement différent pour chaque carte, d'après la géographie réelle
+- **18 plans dessinés à la main** : chaque carte a sa côte, ses plans d'eau et ses lieux placés comme dans la réalité.
+- **Géographie réelle** : Chott el-Jérid au sud de Tozeur, lac de Bizerte, presqu'île de Mahdia (Cap Afrique), Djerba entourée par la mer avec Zarzis sur le continent, chenal entre les deux îles de Kerkennah, îlot de Kerkennah au large de Sfax, île de La Galite avec Galiton, lac de Tunis à Carthage, presqu'île du Cap Bon, côte nord de Tabarka sur les hautes terres, lagune de Korba, salines de Thyna, Grand Erg et oasis du Sud.
+- **Chaque lieu a son vrai type** : médinas fortifiées avec remparts, portes et place centrale (Sousse, Sfax, Mahdia, Hammamet, Nabeul, Le Kef, Tozeur en briques, Bizerte), oasis et palmeraies (Tozeur, Nefta, Kébili, Douz, Chenini de Gabès, El Hamma), ksour (Ksar Ouled Soltane, Ksar Hadada), mines de phosphate (Métlaoui, Redeyef, Moularès, Oum Larayes, Gafsa), ruines romaines (Carthage, Dougga, Sbeitla, Thyna, Salakta, Zaghouan), cimetière marin de Mahdia, hôtels en bord de mer (Hammamet, Yasmine, Port El Kantaoui, Skanès, Djerba, Gammarth), oliveraies de Sfax et du Sahel, orangeraies du Cap Bon, champs de blé de Béja et Jendouba, Table de Jugurtha, village de potiers de Guellala et de Nabeul.
+- **Routes** reliant les lieux sans traverser l'eau.
+
 ## Nouveautés 2.32 — Des cartes vraiment différentes en partie
 - **Disposition propre à chaque carte** : 19 cartes partageaient le même squelette (routes, médina, base, ksar, oasis, port aux mêmes endroits). Désormais chaque carte a sa disposition : miroir nord/sud selon la carte, déformation propre à chaque carte (base, médina, oasis, port et routes déplacés ensemble) et forme de médina différente (grille, rue, croix, anneau, terrasses).
 - **Port propre à chaque carte** : marina de plaisance (Sidi Bou Saïd, Hammamet, Sousse), port de pêche avec barques tunisiennes colorées, filets et jarres à poulpes (Djerba, Kerkennah avec felouques à voile, Mahdia, Kélibia, La Galite), port de commerce avec cargos et grues (Sfax, Bizerte, Gabès). Plus de conteneurs dans les ports de pêche ni à l'intérieur.

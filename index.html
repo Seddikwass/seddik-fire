@@ -1681,17 +1681,6 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 @media (max-width:900px){.seg .swl{display:none}.seg .swc{margin:0}}
 #hud{zoom:var(--hudz,1)}
 
-/* V231 — ma voix */
-#myvoice{position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.84);backdrop-filter:blur(4px);padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
-#myvoice.hidden{display:none}
-.mv-help{margin:6px 0 2px;color:#cfd6df;font:600 12.5px var(--fb)}.mv-count{margin:0 0 8px;color:var(--acc2);font:800 12px var(--fb)}
-.mv-list{display:flex;flex-direction:column;gap:5px}
-.mv-row{display:grid;grid-template-columns:1fr 40px 40px 40px;gap:6px;align-items:center;padding:6px 8px;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
-.mv-row span{font:600 12.5px var(--fb);color:#e9eef5;line-height:1.3}.mv-row.ok{border-color:rgba(99,219,140,.4);background:rgba(99,219,140,.07)}
-.mv-row button{height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#fff;font-size:15px}
-.mv-row button:disabled{opacity:.3}.mv-row .mv-rec{color:#ff5050}.mv-row.rec{border-color:#ff5050;box-shadow:0 0 14px rgba(255,60,60,.35)}.mv-row.rec .mv-rec{background:#ff3b3b;color:#fff;animation:pulse 1s infinite}
-.mv-foot{display:flex;justify-content:flex-end;margin-top:10px}
-.mvbtn{padding:8px 14px}
 
 </style>
 </head>
@@ -1707,7 +1696,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V231</span>
+    <span id="build-tag" aria-label="Version">V232</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1827,7 +1816,6 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 <div id="results" class="overlay"><div class="box wide" id="res-body"></div></div>
 <div id="trk-sheet" class="hidden" role="dialog"></div>
 <div id="prog" class="hidden" role="dialog"></div>
-<div id="myvoice" class="hidden" role="dialog"></div>
 <div id="fest" class="hidden" role="dialog" aria-live="polite"><canvas id="fest-cv"></canvas><div class="fest-card" id="fest-card"></div></div>
 <div id="confirm" class="overlay"><div class="box"><p id="cf-text"></p><div class="row"><button id="cf-no" data-i18n="cancel">Annuler</button><button id="cf-yes" class="cta" data-i18n="confirm">CONFIRMER</button></div></div></div>
 <div id="rotate" class="overlay"><div class="rotic"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 40a24 24 0 0 0 20 16M52 24A24 24 0 0 0 36 8" fill="none" stroke="#ff7a18" stroke-width="3"/></svg></div><p data-i18n="rotate">Tourne ton téléphone en mode paysage pour mieux jouer.</p><button id="rot-ok" data-i18n="rotateOk">Continuer quand même</button></div>
@@ -3787,6 +3775,19 @@ async function crewBuf(ctx, file) {
 }
 const crewNameKey = () => 'n_' + (SAVE.driver || 'aziz');
 const crewName = () => (DRIVERS.find(d => d.id === SAVE.driver) || DRIVERS[0]).name;
+// V232 — voix réelle enregistrée par Wassim (audio/voix/<langue>-<situation>.mp3), jouée en priorité pour tous les joueurs
+const MYVOICE = { list: null, loading: null };
+function myVoiceList() {
+  if (MYVOICE.list) return Promise.resolve(MYVOICE.list);
+  if (!MYVOICE.loading) MYVOICE.loading = fetch('audio/voix/index.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null)
+    .then(j => (MYVOICE.list = new Set((j && Array.isArray(j.files)) ? j.files : [])));
+  return MYVOICE.loading;
+}
+async function myVoiceBuf(ctx, lang, key) {
+  const L = await myVoiceList(); if (!L.size || !key) return null;
+  for (const lg of [lang, lang === 'ar' ? 'tn' : lang === 'tn' ? 'ar' : null]) { if (!lg) continue; const f = lg + '-' + key + '.mp3'; if (L.has(f)) return crewBuf(ctx, '../voix/' + f).catch(() => null); }
+  return null;
+}
 async function playCrewClip(key, lang, preKey) {
   try {
     if (!key || !window.fetch) return false;
@@ -3794,9 +3795,9 @@ async function playCrewClip(key, lang, preKey) {
     AU.init(); const ctx = AU.ctx; if (!ctx) return false;
     if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (e) { } }
     const list = await crewClipList();
-    let buf = await myvBuf(ctx, lang + '-' + key).catch(() => null);   // ma voix d'abord
+    let buf = await myVoiceBuf(ctx, lang, key);   // voix réelle d'abord
     if (!buf) { if (!list.has(file)) return false; buf = await crewBuf(ctx, file); } if (!buf) return false;
-    let pre = preKey ? await myvBuf(ctx, lang + '-' + preKey).catch(() => null) : null;
+    let pre = preKey ? await myVoiceBuf(ctx, lang, preKey) : null;
     if (!pre && preKey && list.has(lang + '-' + preKey + '.mp3')) pre = await crewBuf(ctx, lang + '-' + preKey + '.mp3').catch(() => null);
     if (CREW_CLIPS.playing) { try { CREW_CLIPS.playing.stop(); } catch (e) { } }
     const t0 = ctx.currentTime + 0.12, vol = Math.max(0.35, (SAVE.settings.sfx === undefined ? 80 : SAVE.settings.sfx) / 100);
@@ -4450,13 +4451,27 @@ function addPalm(mb, x, y, z, h, r) {
     px = nx; pz = nz; py += sh;
   }
   mb.cyl(x, y - 0.05, z, 0.34, 1.15, 6, [0.93, 0.93, 0.9], 0, 0.33, null, false);   // base du tronc chaulée
-  const nf = 9, top = [px, py, pz];
+  // V232 — couronne réaliste : palmes arquées pliées en V (folioles), dégradé vert, palmes sèches pendantes et régimes de dattes
+  const top = [px, py, pz], nf = 12, rot = r() * 6.28;
+  const frond = (a, len, lift, droop, cB, cT, wd) => {
+    const dir = [Math.cos(a), 0, Math.sin(a)], sd = [-dir[2], 0, dir[0]], S = 4, sp = [];
+    for (let k = 0; k <= S; k++) { const t = k / S; sp.push([top[0] + dir[0] * len * t, top[1] + lift * t - droop * t * t, top[2] + dir[2] * len * t]); }
+    for (let k = 0; k < S; k++) {
+      const t0 = k / S, t1 = (k + 1) / S, w0 = wd * Math.sin(Math.PI * Math.min(0.92, t0 + 0.08)), w1 = wd * Math.sin(Math.PI * Math.min(0.97, t1)) * (k === S - 1 ? 0.25 : 1);
+      const c0 = [cB[0] + (cT[0] - cB[0]) * t0, cB[1] + (cT[1] - cB[1]) * t0, cB[2] + (cT[2] - cB[2]) * t0], c1 = [cB[0] + (cT[0] - cB[0]) * t1, cB[1] + (cT[1] - cB[1]) * t1, cB[2] + (cT[2] - cB[2]) * t1];
+      for (const sg of [-1, 1]) {
+        const e0 = [sp[k][0] + sd[0] * sg * w0, sp[k][1] - w0 * 0.38, sp[k][2] + sd[2] * sg * w0], e1 = [sp[k + 1][0] + sd[0] * sg * w1, sp[k + 1][1] - w1 * 0.38, sp[k + 1][2] + sd[2] * sg * w1];
+        mb.quad(sp[k], sp[k + 1], e1, e0, c0, 20, c1, V3.sc(c1, 0.82), V3.sc(c0, 0.82));
+      }
+    }
+  };
   for (let f = 0; f < nf; f++) {
-    const a = f / nf * Math.PI * 2 + r(), len = 3.2 + r() * 1.4, dir = [Math.cos(a), 0, Math.sin(a)], side = [-dir[2] * 0.5, 0, dir[0] * 0.5];
-    const M = [top[0] + dir[0] * len * 0.5, top[1] + 0.45, top[2] + dir[2] * len * 0.5], Tp = [top[0] + dir[0] * len, top[1] - 1.3 - r(), top[2] + dir[2] * len];
-    const g = jit([0.17, 0.38, 0.12], r, 0.18);
-    mb.quad(top, V3.add(M, side), Tp, V3.sub(M, side), g, 20, V3.sc(g, 1.15), V3.sc(g, 0.8), V3.sc(g, 1.15));
+    const a = rot + f / nf * 6.2832 + (r() - 0.5) * 0.3, tier = f % 3, g = jit([0.16, 0.36, 0.11], r, 0.16);
+    frond(a, 3.3 + r() * 1.3 - tier * 0.25, 1.5 - tier * 0.55, 2.6 + tier * 0.6 + r() * 0.6, V3.sc(g, 0.62), V3.sc(g, 1.22), 0.62);
   }
+  for (let f = 0; f < 2; f++) { const g = jit([0.6, 0.46, 0.27], r, 0.1); frond(rot + 0.5 + f * 3.1, 2.4, -0.4, 1.6, V3.sc(g, 0.7), g, 0.34); }
+  for (let f = 0; f < 4; f++) { const a = rot + f * 1.57 + 0.3; mb.quad([top[0], top[1] + 0.9, top[2]], [top[0] + Math.cos(a) * 0.5, top[1] + 0.15, top[2] + Math.sin(a) * 0.5], [top[0] + Math.cos(a + 0.8) * 0.45, top[1] + 0.1, top[2] + Math.sin(a + 0.8) * 0.45], [top[0], top[1] + 0.6, top[2]], [0.24, 0.42, 0.14], 20); }
+  if (r() < 0.55) for (let k = 0; k < 2; k++) { const a = rot + k * 3.1 + 1.1, X = top[0] + Math.cos(a) * 0.42, Z = top[2] + Math.sin(a) * 0.42; mb.dome(X, top[1] - 0.95, Z, 0.32, 0.6, 0.32, 6, 2, [0.78, 0.45, 0.12], 0, [0.62, 0.32, 0.08]); }
 }
 // sapin : étages en étoile (branches) dont les pointes retombent, dégradé sombre en bas → clair en haut
 function addPine(mb, x, y, z, h, r) {
@@ -4490,11 +4505,11 @@ function addOak(mb, x, y, z, s, r) {
   const tc = jit([0.3, 0.21, 0.15], r, 0.12), lean = (r() - 0.5) * 0.6;
   mb.cyl(x, y, z, 0.18 + s * 0.025, s * 0.5, 6, tc, 0, 0.1 + s * 0.015, null, false);
   const g = jit([0.12, 0.21, 0.07], r, 0.18);
-  for (let k = 0; k < 3; k++) {
-    const a = r() * 6.28, d = s * 0.18 * r(), rr = s * (0.24 + r() * 0.1), cy = y + s * (0.52 + r() * 0.18);
-    const X = x + Math.cos(a) * d + lean, Z = z + Math.sin(a) * d;
-    mb.dome(X, cy, Z, rr, rr * 0.82, rr, 6, 2, V3.sc(g, 0.85), 20, V3.sc(g, 1.3));
-    mb.dome(X, cy, Z, rr, -rr * 0.4, rr, 6, 1, V3.sc(g, 0.85), 20, V3.sc(g, 0.55));
+  for (let k = 0; k < 6; k++) {   // V232 — houppier en 6 touffes de teintes différentes : silhouette plus naturelle
+    const a = r() * 6.28, d = s * (k ? 0.24 : 0.04) * (0.5 + r() * 0.5), rr = s * (k ? 0.17 + r() * 0.08 : 0.26), cy = y + s * (0.5 + r() * 0.26 + (k ? 0 : 0.08));
+    const X = x + Math.cos(a) * d + lean, Z = z + Math.sin(a) * d, gk = jit(g, r, 0.14);
+    mb.dome(X, cy, Z, rr, rr * 0.86, rr, 7, 2, V3.sc(gk, 0.85), 20, V3.sc(gk, 1.35));
+    mb.dome(X, cy, Z, rr, -rr * 0.42, rr, 7, 1, V3.sc(gk, 0.85), 20, V3.sc(gk, 0.5));
   }
 }
 function addRedHouse(mb, x, y, z, yaw, w, d, h, r) {
@@ -4821,11 +4836,6 @@ function buildTrack(def, quality) {
         const x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
         fan(mb, x, y, z, i, n, row, side); if ((n + row) % 4 === 0) (T.fans || (T.fans = [])).push(x, y + 1.35, z);
       }
-      if (Math.floor(i / crowdStep) % 3 === 0) {
-        const ii = i % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side], c0 = pos(i, side * (baseD + (stadium ? 1.4 : 0.9)), stadium ? 3.4 : 2.9);
-        for (const u of [-1.7, 1.7]) bar(mb, [c0[0] + tg[0] * u, c0[1] - 1.6, c0[2] + tg[2] * u], [c0[0] + tg[0] * u, c0[1] + 1.05, c0[2] + tg[2] * u], 0.025, [0.7, 0.7, 0.72], 4, 0.025, 4);
-        flagQuad(mb, c0, 3.4, 2.1, tg, nr, 16);
-      }
       // Panneaux publicitaires de course, espacés pour préserver les performances mobiles.
       if (Math.floor(i / crowdStep) % 4 === 1) {
         const bd = side * (baseD + (stadium ? 9.4 : 5.2));
@@ -4839,16 +4849,6 @@ function buildTrack(def, quality) {
           const sp = pos(i, bd + side * 0.04, stadium ? 2.25 : 1.7);
           mb.box(sp[0] + tx[i] * off, sp[1], sp[2], 0.16, 2.3, 0.16, [0.16,0.19,0.23], 2, hd[i]);
         }
-      }
-      // Drapeau tunisien rouge et blanc répété le long de tous les circuits.
-      if (Math.floor(i / crowdStep) % 2 === 0) {
-        const fp = pos(i, side * (baseD + 6.2), 4.45);
-        mb.box(fp[0], fp[1] + 1.18, fp[2], 0.085, 2.36, 0.085, [0.72,0.73,0.75], 0, hd[i]);
-        mb.box(fp[0], fp[1] + 2.18, fp[2], 1.42, 0.9, 0.09, [0.82,0.035,0.055], 2, hd[i]);
-        mb.box(fp[0], fp[1] + 2.18, fp[2] + 0.055, 0.53, 0.53, 0.045, [0.98,0.96,0.91], 2, hd[i]);
-        mb.box(fp[0] - 0.045, fp[1] + 2.18, fp[2] + 0.083, 0.24, 0.29, 0.025, [0.82,0.035,0.055], 2, hd[i]);
-        mb.box(fp[0] + 0.095, fp[1] + 2.18, fp[2] + 0.1, 0.12, 0.16, 0.025, [0.82,0.035,0.055], 2, hd[i]);
-        mb.box(fp[0] + 0.19, fp[1] + 2.18, fp[2] + 0.12, 0.09, 0.09, 0.025, [0.98,0.96,0.91], 2, hd[i]);
       }
     }
   }
@@ -4865,16 +4865,7 @@ function buildTrack(def, quality) {
         const along = (n - 5) * 1.3 + (row % 2) * 0.35, pp = pos(i, side * (baseD + row * 1.6), 0.93 + row * 0.6), x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
         crowdFan(mb, x, y, z, i, n, row, side, skin, shirts, hair); if ((n + row) % 3 === 0) (T.fans || (T.fans = [])).push(x, y + 1.35, z);
       }
-      const ii = i % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side];
-      for (const u of [-4.5, 0, 4.5]) { const c0 = pos(i, side * (baseD + 8.6), 6.2); const q = [c0[0] + tg[0] * u, c0[1], c0[2] + tg[2] * u]; bar(mb, [q[0], q[1] - 6, q[2]], [q[0], q[1] + 1.2, q[2]], 0.06, [0.8, 0.8, 0.82], 4, 0.06, 6); crowdFlag(mb, [q[0] + tg[0] * 1.1, q[1], q[2] + tg[2] * 1.1], 2.2, 1.45, tg, nr); }
     }
-  }
-  // V228 — grand drapeau tunisien peint sur l'asphalte, juste après la ligne de départ
-  { const mb = ch(rk(5)), i0 = 4, i1 = 9, wl = Math.min(W * 0.62, 5.5), up = 0.045;
-    mb.quad(pos(i0, -wl, up), pos(i0, wl, up), pos(i1, wl, up), pos(i1, -wl, up), [0.8, 0.04, 0.07], 0);
-    const c = pos(Math.round((i0 + i1) / 2), 0, up + 0.004), ii = Math.round((i0 + i1) / 2), ax = [rx[ii], 0, rz[ii]], az = [tx[ii], 0, tz[ii]], H2 = Math.min(wl, (i1 - i0) * ds / 2);
-    const disc = (cu, cv, rr, col, k) => { for (let j = 0; j < 20; j++) { const a0 = j / 20 * 6.2832, a1 = (j + 1) / 20 * 6.2832, Q = (a, r2) => [c[0] + ax[0] * (cu + Math.cos(a) * r2) + az[0] * (cv + Math.sin(a) * r2), c[1] + k * 0.003, c[2] + ax[2] * (cu + Math.cos(a) * r2) + az[2] * (cv + Math.sin(a) * r2)]; mb.tri([c[0] + ax[0] * cu + az[0] * cv, c[1] + k * 0.003, c[2] + ax[2] * cu + az[2] * cv], Q(a0, rr), Q(a1, rr), col, 0); } };
-    disc(0, 0, H2 * 0.5, [0.96, 0.95, 0.92], 1); disc(0, -H2 * 0.04, H2 * 0.38, [0.8, 0.04, 0.07], 2); disc(0, H2 * 0.07, H2 * 0.31, [0.96, 0.95, 0.92], 3); disc(0, H2 * 0.18, H2 * 0.12, [0.8, 0.04, 0.07], 4);
   }
   // portique de départ
   {
@@ -5293,7 +5284,8 @@ function buildTrack(def, quality) {
         if (T.resv && T.resv.some(q => (p[0] - q[0]) ** 2 + (p[2] - q[1]) ** 2 < (q[2] + 2) ** 2)) continue;
         const mb = ch(rk(i)), y = T.groundY(p[0], p[2]) + (theme === 'city' ? 0.18 : -0.05);
         bar(mb, [p[0], y, p[2]], [p[0], y + 2.3, p[2]], 0.16, [0.4, 0.34, 0.27], 0, 0.16, 6); mb.cyl(p[0], y - 0.02, p[2], 0.19, 1.0, 6, [0.93, 0.93, 0.9], 0, 0.18, null, false);
-        const g = jit([0.13, 0.3, 0.12], r, 0.1); sphere(mb, p[0], y + 3.3, p[2], 1.55, g, 20, -Math.PI / 2, Math.PI / 2, 8, 0.82); sphere(mb, p[0] + 0.5, y + 3.9, p[2] - 0.3, 1.0, V3.sc(g, 1.12), 20, -Math.PI / 2, Math.PI / 2, 7, 0.8);
+        const g = jit([0.13, 0.3, 0.12], r, 0.1); sphere(mb, p[0], y + 3.25, p[2], 1.25, V3.sc(g, 0.8), 20, -Math.PI / 2, Math.PI / 2, 7, 0.8);   // V232 — ficus taillé : cœur sombre + 6 touffes de teintes variées, branches visibles
+        for (let k = 0; k < 6; k++) { const a = k * 1.047 + r() * 0.6, rr = 0.95 + r() * 0.25, q = [p[0] + Math.cos(a) * 0.95, y + 3.2 + (k % 2) * 0.55 + r() * 0.25, p[2] + Math.sin(a) * 0.95]; if (k < 3) bar(mb, [p[0], y + 2.1, p[2]], [q[0] * 0.7 + p[0] * 0.3, q[1] - 0.6, q[2] * 0.7 + p[2] * 0.3], 0.06, [0.36, 0.3, 0.24], 0, 0.04, 4); sphere(mb, q[0], q[1], q[2], rr * 0.82, V3.sc(jit(g, r, 0.16), 1.05 + (k % 2) * 0.15), 20, -Math.PI / 2, Math.PI / 2, 6, 0.8); }
         if (theme === 'city') mb.box(p[0], y - 0.15, p[2], 1.1, 0.2, 1.1, [0.3, 0.26, 0.2], 0, hd[i]);
       }
     }
@@ -5535,31 +5527,6 @@ function buildTrack(def, quality) {
         }
       }
     }
-    // Identité tunisienne sur les circuits non urbains : panneaux-drapeaux visibles
-    // depuis la piste, avec poteau et emblème simplifié en géométrie 3D.
-    if (theme !== 'city') {
-      for (let i = 36; i < N; i += 188) {
-        if (inTun(i, 8)) continue;
-        for (const side of [-1, 1]) {
-          const mb = ch(rk(i)), d = side * (W + 4.6), base = at(i, d, 0);
-          post(mb, i, d, 3.25, 0.045, POST);
-          board(mb, i, d, 2.85, 0.76, 0.43, [0.86, 0.035, 0.075], 2, 0.055);
-          const P = (u, v) => at(i, d + u, 2.85 + v);
-          const center = P(0, 0), radius = 0.205, white = [0.97, 0.96, 0.92], red = [0.86, 0.035, 0.075];
-          for (let q = 0; q < 18; q++) {
-            const a0 = q / 18 * Math.PI * 2, a1 = (q + 1) / 18 * Math.PI * 2;
-            mb.tri(center, P(Math.cos(a0) * radius, Math.sin(a0) * radius), P(Math.cos(a1) * radius, Math.sin(a1) * radius), white, 2);
-          }
-          const cc = P(0.055, 0.012), rr = 0.15;
-          for (let q = 0; q < 18; q++) {
-            const a0 = q / 18 * Math.PI * 2, a1 = (q + 1) / 18 * Math.PI * 2;
-            mb.tri(cc, P(0.055 + Math.cos(a0) * rr, 0.012 + Math.sin(a0) * rr), P(0.055 + Math.cos(a1) * rr, 0.012 + Math.sin(a1) * rr), red, 2);
-          }
-          const star = P(-0.04, 0.01), tip = P(-0.04, 0.105), left = P(-0.12, -0.045), right = P(0.045, -0.045);
-          mb.tri(star, tip, left, red, 2); mb.tri(star, left, right, red, 2); mb.tri(star, right, tip, red, 2);
-        }
-      }
-    }
   }
   function buildCity() {
     for (const side of [-1, 1]) {
@@ -5590,34 +5557,6 @@ function buildTrack(def, quality) {
     }
     // palmiers de l'avenue
     for (let i = 8; i < N; i += 16) { if (inTun(i, 6)) continue; for (const side of [-1, 1]) if (r() < 0.8) { const p = pos(i, side * (W + 3.2), 0.18); addPalm(ch(rk(i)), p[0], p[1], p[2], 7 + r() * 4, r); } }
-    // Drapeaux tunisiens en bord d'avenue : fanions 3D visibles des deux côtés de la chaussée.
-    // Géométrie légère, intégrée aux mêmes lots de décor pour préserver les performances.
-    for (let i = 24; i < N; i += 118) {
-      if (inTun(i, 8)) continue;
-      for (const side of [-1, 1]) {
-        const mb = ch(rk(i)), base = pos(i, side * (W + 5.1), 0.15);
-        const poleTop = [base[0], base[1] + 5.1, base[2]];
-        bar(mb, base, poleTop, 0.055, [0.22, 0.23, 0.25], 5, 0.055, 5);
-        const sign = side, cx0 = poleTop[0], cy0 = poleTop[1] - 0.55, cz0 = poleTop[2];
-        const P = (u, v) => [cx0 + tx[i] * u * sign, cy0 + v, cz0 + tz[i] * u * sign];
-        const red = [0.86, 0.035, 0.075], white = [0.96, 0.95, 0.9];
-        const a = P(0, 0.45), b = P(1.45, 0.45), c = P(1.45, -0.45), d = P(0, -0.45);
-        mb.quad(a, b, c, d, red, 2);
-        // disque blanc et croissant rouge stylisé
-        const center = P(0.72, 0), radius = 0.27;
-        for (let q = 0; q < 16; q++) {
-          const t0 = q / 16 * Math.PI * 2, t1 = (q + 1) / 16 * Math.PI * 2;
-          mb.tri(center, P(0.72 + Math.cos(t0) * radius, Math.sin(t0) * radius), P(0.72 + Math.cos(t1) * radius, Math.sin(t1) * radius), white, 2);
-        }
-        const cc = P(0.79, 0.015), rr = 0.205;
-        for (let q = 0; q < 16; q++) {
-          const t0 = q / 16 * Math.PI * 2, t1 = (q + 1) / 16 * Math.PI * 2;
-          mb.tri(cc, P(0.79 + Math.cos(t0) * rr, 0.015 + Math.sin(t0) * rr), P(0.79 + Math.cos(t1) * rr, 0.015 + Math.sin(t1) * rr), red, 2);
-        }
-        const star = P(0.61, 0.01), tip = P(0.61, 0.16), left = P(0.48, -0.07), right = P(0.74, -0.07);
-        mb.tri(star, tip, left, red, 2); mb.tri(star, left, right, red, 2); mb.tri(star, right, tip, red, 2);
-      }
-    }
     // éclairage urbain : lampadaires modernes avec bras déporté et tête LED
     for (let i = 12; i < N; i += 22) {
       if (inTun(i, 7)) continue;
@@ -7067,59 +7006,6 @@ function applyLook() {
   root.style.setProperty('--acc', c[0]); root.style.setProperty('--acc2', c[1]);
   root.style.setProperty('--hudz', s.hudsz === 'small' ? '0.88' : s.hudsz === 'big' ? '1.08' : '1');
 }
-// V231 — ma voix : le joueur enregistre lui-même les consignes de l'équipe (stockées sur l'appareil)
-const V231_TXT = {"fr": ["Ma voix pour l'équipe radio", "Enregistrer", "Ma voix pour les conseils de l'équipe", "Appuie sur ⏺, lis la phrase à voix haute, puis appuie sur ⏹ (6 s maximum). Les phrases que tu n'enregistres pas gardent la voix de l'équipe.", "Exporter mes enregistrements", "Micro refusé ou indisponible : autorise le micro pour le jeu.", "{0} / {1} phrases enregistrées", "Fichier exporté. Envoie-le pour mettre ta voix dans le jeu pour tous les joueurs.", "Ton prénom"], "en": ["My voice for the team radio", "Record", "My voice for the team's tips", "Press ⏺, read the line out loud, then press ⏹ (6 s max). Lines you do not record keep the team voice.", "Export my recordings", "Microphone blocked or unavailable: allow the microphone for the game.", "{0} / {1} lines recorded", "File exported. Send it to put your voice in the game for every player.", "Your name"], "es": ["Mi voz para la radio del equipo", "Grabar", "Mi voz para los consejos del equipo", "Pulsa ⏺, lee la frase en voz alta y pulsa ⏹ (6 s máx.). Las frases no grabadas conservan la voz del equipo.", "Exportar mis grabaciones", "Micrófono bloqueado o no disponible: permite el micrófono para el juego.", "{0} / {1} frases grabadas", "Archivo exportado. Envíalo para poner tu voz en el juego para todos.", "Tu nombre"], "pt": ["A minha voz para o rádio da equipa", "Gravar", "A minha voz para as dicas da equipa", "Toque em ⏺, leia a frase em voz alta e toque em ⏹ (máx. 6 s). As frases não gravadas mantêm a voz da equipa.", "Exportar as minhas gravações", "Microfone bloqueado ou indisponível: permita o microfone para o jogo.", "{0} / {1} frases gravadas", "Ficheiro exportado. Envie-o para pôr a sua voz no jogo para todos.", "O teu nome"], "de": ["Meine Stimme für den Teamfunk", "Aufnehmen", "Meine Stimme für die Teamtipps", "Drücke ⏺, lies den Satz laut vor und drücke ⏹ (max. 6 s). Nicht aufgenommene Sätze behalten die Teamstimme.", "Meine Aufnahmen exportieren", "Mikrofon blockiert oder nicht verfügbar: erlaube das Mikrofon für das Spiel.", "{0} / {1} Sätze aufgenommen", "Datei exportiert. Schicke sie, um deine Stimme für alle ins Spiel zu bringen.", "Dein Name"], "it": ["La mia voce per la radio del team", "Registra", "La mia voce per i consigli del team", "Premi ⏺, leggi la frase ad alta voce, poi premi ⏹ (max 6 s). Le frasi non registrate mantengono la voce del team.", "Esporta le mie registrazioni", "Microfono bloccato o non disponibile: consenti il microfono per il gioco.", "{0} / {1} frasi registrate", "File esportato. Invialo per mettere la tua voce nel gioco per tutti.", "Il tuo nome"], "tr": ["Takım telsizi için sesim", "Kaydet", "Takım ipuçları için sesim", "⏺ tuşuna bas, cümleyi yüksek sesle oku, sonra ⏹ tuşuna bas (en fazla 6 sn). Kaydetmediğin cümleler takım sesini korur.", "Kayıtlarımı dışa aktar", "Mikrofon engellendi veya yok: oyun için mikrofona izin ver.", "{0} / {1} cümle kaydedildi", "Dosya dışa aktarıldı. Sesini herkes için oyuna eklemek üzere gönder.", "Adın"], "ar": ["صوتي في راديو الفريق", "تسجيل", "صوتي لنصائح الفريق", "اضغط ⏺ واقرأ الجملة بصوت عالٍ ثم اضغط ⏹ (6 ثوانٍ كحد أقصى). الجمل غير المسجّلة تحتفظ بصوت الفريق.", "تصدير تسجيلاتي", "الميكروفون مرفوض أو غير متاح: اسمح باستعمال الميكروفون للعبة.", "{0} / {1} جملة مسجّلة", "تم تصدير الملف. أرسله لإضافة صوتك إلى اللعبة لكل اللاعبين.", "اسمك"], "tn": ["صوتي في راديو الفريق", "سجّل", "صوتي لنصايح الفريق", "انزل على ⏺، اقرا الجملة بصوت عالي، وبعد انزل على ⏹ (6 ثواني ماكس). الجمل اللي ما تسجّلهمش يقعدو بصوت الفريق.", "صدّر التسجيلات متاعي", "الميكرو ممنوع ولا مش موجود: خلّي اللعبة تستعمل الميكرو.", "{0} / {1} جملة مسجّلة", "الفيشي تصدّر. ابعثو باش نحطّو صوتك في اللعبة للناس الكل.", "اسمك"]};
-for (const l in V231_TXT) { const v = V231_TXT[l]; Object.assign(LANGS[l], { o_myvoice: v[0], mv_open: v[1], mv_title: v[2], mv_help: v[3], mv_export: v[4], mv_mic: v[5], mv_count: v[6], mv_exported: v[7], mv_name: v[8] }); }
-const MYV = { db: null, cache: {}, keys: null, rec: null };
-function myvDB() { return MYV.db || (MYV.db = new Promise((ok, ko) => { try { const r = indexedDB.open('superjoud_voice', 1); r.onupgradeneeded = () => r.result.createObjectStore('clips'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); } catch (e) { ko(e); } })); }
-async function myvKeys() { if (MYV.keys) return MYV.keys; try { const db = await myvDB(); return await new Promise(ok => { const q = db.transaction('clips').objectStore('clips').getAllKeys(); q.onsuccess = () => ok(MYV.keys = new Set(q.result)); q.onerror = () => ok(MYV.keys = new Set()); }); } catch (e) { return (MYV.keys = new Set()); } }
-async function myvGet(id) { const db = await myvDB(); return new Promise(ok => { const q = db.transaction('clips').objectStore('clips').get(id); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); }); }
-async function myvPut(id, blob) { const db = await myvDB(); await new Promise(ok => { const tx = db.transaction('clips', 'readwrite'); tx.objectStore('clips').put(blob, id); tx.oncomplete = ok; tx.onerror = ok; }); (await myvKeys()).add(id); delete MYV.cache[id]; }
-async function myvDel(id) { const db = await myvDB(); await new Promise(ok => { const tx = db.transaction('clips', 'readwrite'); tx.objectStore('clips').delete(id); tx.oncomplete = ok; tx.onerror = ok; }); (await myvKeys()).delete(id); delete MYV.cache[id]; }
-async function myvBuf(ctx, id) {
-  if (MYV.cache[id]) return MYV.cache[id];
-  const keys = await myvKeys(); if (!keys.has(id)) return null;
-  const blob = await myvGet(id); if (!blob) return null;
-  const ab = await blob.arrayBuffer(); const buf = await new Promise((ok, ko) => { const pr = ctx.decodeAudioData(ab, ok, ko); if (pr && pr.catch) pr.catch(ko); });
-  return (MYV.cache[id] = buf);
-}
-function myvLines() { const lang = radioLang(); return ['n_' + (SAVE.driver || 'aziz'), ...Object.keys(RADIO_LINES).filter(k => !k.startsWith('n_'))].map(k => ({ k, lang, id: lang + '-' + k, txt: k.startsWith('n_') ? (DRIVERS.find(d => d.id === SAVE.driver) || DRIVERS[0]).name + ' !' : RADIO_LINES[k][lang] })); }
-async function openMyVoice() {
-  const el = $('myvoice'), lines = myvLines(), keys = await myvKeys();
-  const draw = () => {
-    const n = lines.filter(l => keys.has(l.id)).length;
-    el.innerHTML = `<div class="pg-box mv-box"><div class="ts-head"><div><small>🎙 ${t('o_myvoice')}</small><h2>${t('mv_title')}</h2></div><button class="ts-x" aria-label="${t('pg_close')}">✕</button></div>
-<p class="mv-help">${t('mv_help')}</p><p class="mv-count">${t('mv_count', n, lines.length)}</p>
-<div class="mv-list">${lines.map((l, i) => `<div class="mv-row ${keys.has(l.id) ? 'ok' : ''}" data-i="${i}"><span>${i === 0 ? '<b>' + t('mv_name') + '</b> · ' : ''}${esc(l.txt)}</span><button class="mv-rec" aria-label="${t('mv_open')}">⏺</button><button class="mv-play" ${keys.has(l.id) ? '' : 'disabled'}>▶</button><button class="mv-del" ${keys.has(l.id) ? '' : 'disabled'}>🗑</button></div>`).join('')}</div>
-<div class="mv-foot"><button class="ghost mv-exp" ${n ? '' : 'disabled'}>⬇ ${t('mv_export')}</button></div></div>`;
-    el.querySelector('.ts-x').onclick = close;
-    el.querySelectorAll('.mv-row').forEach(row => { const l = lines[+row.dataset.i];
-      row.querySelector('.mv-rec').onclick = () => recLine(l, row);
-      row.querySelector('.mv-play').onclick = async () => { G.radioKey = l.k; AU.init(); const b = await myvBuf(AU.ctx, l.id).catch(() => null); if (b) { const sN = AU.ctx.createBufferSource(); sN.buffer = b; sN.connect(AU.ctx.destination); sN.start(); } };
-      row.querySelector('.mv-del').onclick = async () => { await myvDel(l.id); draw(); }; });
-    el.querySelector('.mv-exp').onclick = exportVoice;
-  };
-  const close = () => { if (MYV.rec) try { MYV.rec.stop(); } catch (e) { } el.classList.add('hidden'); el.innerHTML = ''; };
-  async function recLine(l, row) {
-    if (MYV.rec) { try { MYV.rec.stop(); } catch (e) { } return; }
-    let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); } catch (e) { toast(t('mv_mic')); return; }
-    const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || '';
-    const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined), parts = [];
-    MYV.rec = rec; row.classList.add('rec'); row.querySelector('.mv-rec').textContent = '⏹';
-    rec.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); };
-    rec.onstop = async () => { stream.getTracks().forEach(tk => tk.stop()); MYV.rec = null; if (parts.length) { await myvPut(l.id, new Blob(parts, { type: rec.mimeType || mime || 'audio/webm' })); } draw(); };
-    rec.start(); setTimeout(() => { if (MYV.rec === rec) rec.stop(); }, 6000);
-  }
-  async function exportVoice() {
-    const out = { game: 'super-seddik-joud', version: GAME_VERSION, driver: SAVE.driver, clips: {} };
-    for (const l of lines) if (keys.has(l.id)) { const b = await myvGet(l.id); if (b) { const ab = new Uint8Array(await b.arrayBuffer()); let bin = ''; for (let i = 0; i < ab.length; i += 0x8000) bin += String.fromCharCode.apply(null, ab.subarray(i, i + 0x8000)); out.clips[l.id] = { type: b.type, data: btoa(bin) }; } }
-    const blob = new Blob([JSON.stringify(out)], { type: 'application/json' }), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'super-seddik-joud-ma-voix.json'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
-    toast(t('mv_exported'));
-  }
-  draw(); el.classList.remove('hidden');
-}
-document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#o-myv')) openMyVoice(); });
 const LI = () => LEN() ? 1 : (LANG === 'ar' || LANG === 'tn') ? 2 : 0;
 function t(k, ...args) { let s = (LANGS[LANG] && LANGS[LANG][k]) || (LEN() && LANGS.en[k]) || LANGS.fr[k] || k; for (let i = 0; i < args.length; i++) s = s.split('{' + i + '}').join(args[i]); return s; }
 const tCar = c => LANG === 'tn' ? (TN_CONTENT.car[c.id] || (TXT.car[c.id] || [c.desc])[2] || c.desc) : ((TXT.car[c.id] || [c.desc])[LI()] || c.desc);
@@ -8411,7 +8297,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V231';
+const GAME_VERSION = 'V232';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -8636,7 +8522,6 @@ const UI = {
       row(t('o_cam'), seg('cam', [[0, t('o_near')], [1, t('o_far')], [2, t('o_hood')], [3, t('o_bump')], [4, t('o_drone')]])),
       row(t('o_tags'), seg('tags', [[true, t('yes')], [false, t('no')]])),
       row(t('o_coach'), seg('coach', [[true, t('yes')], [false, t('no')]])),
-      row(t('o_myvoice'), `<button class="ghost mvbtn" id="o-myv">🎙 ${t('mv_open')}</button>`),
       row(t('o_rline'), seg('rline', [[true, t('yes')], [false, t('no')]])),
       row(t('o_vibe'), seg('vibe', [[true, t('yes')], [false, t('no')]])),
       row(t('o_color'), seg('uicol', Object.keys(UI_COLORS).map(k => [k, `<i class="swc" style="background:${UI_COLORS[k][0]}"></i><span class="swl">${t('c_' + k)}</span>`]))),

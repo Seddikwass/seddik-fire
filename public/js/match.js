@@ -2483,7 +2483,26 @@ export class Match {
       kind: shotInfo?.kind || null, distance: shotInfo?.distance || 12,
     }), { p: name, t: T.short }, true);
     this.lastGoalTeam = team;
+    // VAR : vérification automatique d'environ un but sur trois (affichage TV, le but est confirmé).
+    if (!this.net) { const h = Math.floor(this.clock * 13.7 + this.score[0] * 3 + this.score[1] * 5) % 3; this.varCheck = h === 0 ? { t: performance.now(), reason: Math.floor(this.clock) % 2 ? 'Hors-jeu possible' : 'Faute possible dans l\'action' } : null; }
     if (this.o.onGoal) this.o.onGoal(team);
+  }
+  // Bandeau VAR pendant le ralenti : vérification puis décision.
+  drawVar() {
+    const V = this.varCheck; if (!V) return;
+    const age = (performance.now() - V.t) / 1000; if (age > 9.5) { this.varCheck = null; return; }
+    if (age < 2.2) return; // laisse passer la célébration
+    const c = this.c, d = this.dpr, done = age > 6.2, k = Math.min(1, (age - 2.2) / 0.3, (9.5 - age) / 0.4);
+    const text = done ? '✓ BUT VALIDÉ' : `VÉRIFICATION — ${V.reason}`;
+    c.save(); c.globalAlpha = k; c.font = `800 ${11 * d}px system-ui,Arial`; c.textBaseline = 'middle'; c.textAlign = 'left';
+    const tw = c.measureText(text).width, w = tw + 70 * d, h = 28 * d, x = this.W / 2 - w / 2, y = Math.max(62 * d, this.H * 0.2);
+    c.fillStyle = 'rgba(6,12,22,0.9)'; this.rr(x, y, w, h, 6 * d); c.fill();
+    c.fillStyle = done ? '#1fbf5a' : '#1a5fd6'; this.rr(x, y, 46 * d, h, 6 * d); c.fill();
+    c.fillStyle = '#fff'; c.font = `900 ${12 * d}px system-ui,Arial`; c.textAlign = 'center'; c.fillText('VAR', x + 23 * d, y + h / 2 + 0.5 * d);
+    c.font = `800 ${11 * d}px system-ui,Arial`; c.textAlign = 'left'; c.fillStyle = done ? '#8ff0b0' : '#fff';
+    c.fillText(text, x + 56 * d, y + h / 2 + 0.5 * d);
+    if (!done) { const bw = (w - 56 * d - 10 * d), pr = ((age - 2.2) / 4) % 1; c.fillStyle = '#ffffff22'; c.fillRect(x + 56 * d, y + h - 4 * d, bw, 2 * d); c.fillStyle = '#4da3ff'; c.fillRect(x + 56 * d, y + h - 4 * d, bw * pr, 2 * d); }
+    c.restore();
   }
 
   // ---------------- ralenti ----------------
@@ -4002,6 +4021,7 @@ export class Match {
       c.fillStyle = '#fff'; c.fillText(text, this.W / 2 + 10 * d, ty + 13.5 * d); c.restore();
     }
     this.drawAddedBoard(isReplay, y0 + h);
+    this.drawVar();
     if (this.msgT > 0 && this.msg && !celebrating) {
       // Annonce en pastille : lisible sans masquer l'action.
       const size = Math.max(18, Math.round(Math.min(this.H * 0.07, 40 * d)));

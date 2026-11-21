@@ -1,5 +1,12 @@
 # ⚽ Football Tunisia 2026
 
+## Version 3.48.0
+- **Stade « bowl » moderne** : les quatre virages sont désormais des tribunes en arc remplies de supporters (fini les blocs pleins dans les angles), toit et rampe lumineuse continus, deux écrans géants sous le toit, pylônes d'éclairage déplacés derrière l'enceinte.
+- **VAR** : environ un but sur trois passe en vérification (hors-jeu ou faute possible) pendant le ralenti, puis « ✓ BUT VALIDÉ ».
+- **Avant-match** : les deux maillots portés pour le match (domicile / extérieur / 3e maillot selon le conflit de couleurs) avec leur vrai motif.
+- **Après-match** : statistiques façon TV avec barres comparatives (possession, tirs, précision des passes…).
+- **Écran d'accueil** : stade de nuit animé (faisceaux de projecteurs, tribunes, pelouse en perspective), mise en page deux colonnes sur téléphone en paysage pour que tous les boutons soient visibles.
+
 ## Version 3.47.0
 - **Caméra TV moderne** : angle plus bas (≈ 27°) et focale plus longue, comme les retransmissions et les jeux de foot actuels ; joueurs plus grands, tribunes visibles.
 - **Pelouse réaliste** : texture d'herbe fine, bandes de tonte plus marquées qui s'inversent selon l'angle de vue (effet réel du gazon couché), usure devant les buts.

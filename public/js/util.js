@@ -38,3 +38,21 @@ export function crestSVG(club, size = 40) {
     : style === 1 ? `<path d="M3 18 L37 18 L37 26 L3 26Z" fill="${c2}"/>` : `<path d="M3 5 L37 40" stroke="${c2}" stroke-width="7"/>`;
   return `<svg class="crest" width="${size}" height="${size * 1.15}" viewBox="0 0 40 46" aria-label="${txt}"><defs><clipPath id="cl${club.id}"><path d="M3 3 H37 V24 C37 35 28 41 20 44 C12 41 3 35 3 24Z"/></clipPath></defs><g clip-path="url(#cl${club.id})"><rect width="40" height="46" fill="${c1}"/>${pattern}</g><path d="M3 3 H37 V24 C37 35 28 41 20 44 C12 41 3 35 3 24Z" fill="none" stroke="#0007" stroke-width="2"/><rect x="7" y="13" width="26" height="13" rx="3" fill="#0009"/><text x="20" y="23.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="${fs}" fill="#fff">${esc(txt)}</text></svg>`;
 }
+
+// Maillot en SVG (motif réel : rayures, cerceaux, damier, bande, écharpe…), pour les écrans d'avant-match.
+let jerseySeq = 0;
+export function jerseySVG(kit = {}, size = 64, num = '') {
+  const id = 'js' + (++jerseySeq), s = kit.shirt || '#888', a = kit.alt || kit.trim || '#fff', tr = kit.trim || a, sl = kit.sleeves || (kit.pattern === 'hoops' ? a : s);
+  const body = 'M16 6 L24 3 Q32 8 40 3 L48 6 L60 16 L53 26 L48 22 L48 58 L16 58 L16 22 L11 26 L4 16 Z';
+  let pat = '';
+  const p = kit.pattern;
+  if (p === 'stripes') { const n = Math.max(4, Math.round((kit.stripes || 10) / 2)), w = 32 / (n * 2); for (let i = 0; i < n; i++) pat += `<rect x="${16 + (i * 2 + 1) * w}" y="0" width="${w}" height="64" fill="${a}"/>`; }
+  else if (p === 'hoops') { for (let i = 0; i < 4; i++) pat += `<rect x="0" y="${12 + i * 12}" width="64" height="6" fill="${a}"/>`; }
+  else if (p === 'checkers') { for (let i = 0; i < 8; i++) for (let j = 0; j < 9; j++) if ((i + j) % 2) pat += `<rect x="${i * 8}" y="${j * 7}" width="8" height="7" fill="${a}"/>`; }
+  else if (p === 'chestBand') pat = `<rect x="0" y="20" width="64" height="9" fill="${a}"/>`;
+  else if (p === 'centerStripe') pat = `<rect x="27" y="0" width="10" height="64" fill="${a}"/>`;
+  else if (p === 'sash') pat = `<path d="M10 4 L22 4 L54 60 L42 60Z" fill="${a}"/><path d="M22 4 L26 4 L58 60 L54 60Z" fill="${kit.alt2 || tr}"/>`;
+  const sleeves = `<path d="M16 6 L4 16 L11 26 L16 22Z M48 6 L60 16 L53 26 L48 22Z" fill="${sl}"/>`;
+  const numTxt = num ? `<text x="32" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="15" fill="${p && p !== 'plain' ? '#fff' : tr}" stroke="#0006" stroke-width="0.6">${esc(String(num))}</text>` : '';
+  return `<svg class="jersey" width="${size}" height="${size}" viewBox="0 0 64 64"><defs><clipPath id="${id}"><path d="${body}"/></clipPath><linearGradient id="${id}g" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".45" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient></defs><g clip-path="url(#${id})"><rect width="64" height="64" fill="${s}"/>${pat}${sleeves}<path d="M24 3 Q32 10 40 3 L40 6 Q32 13 24 6Z" fill="${tr}"/><rect width="64" height="64" fill="url(#${id}g)"/></g><path d="${body}" fill="none" stroke="#0008" stroke-width="1.4"/>${numTxt}</svg>`;
+}

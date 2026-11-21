@@ -356,3 +356,42 @@ button:disabled,.btn:disabled{
 
 /* Ralenti TV : commandes masquées pour une image propre (un toucher passe le ralenti). */
 .match.replaying .joyzone,.match.replaying .btns{opacity:0;pointer-events:none;transition:opacity .25s}
+/* v3.48 : duel des maillots avant-match */
+.kitduel{display:flex;align-items:center;justify-content:center;gap:22px;margin:10px 0 4px}
+.kitduel figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.kitduel .jersey{filter:drop-shadow(0 6px 10px rgba(0,0,0,.45));transition:transform .25s}
+.kitduel figure:hover .jersey{transform:translateY(-3px) scale(1.04)}
+.kitduel figcaption{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#aebbd0}
+.kitduel .vsx{font-weight:900;font-size:14px;color:#ffdf45;letter-spacing:.1em}
+/* v3.48 : écran titre « stade de nuit » animé + mise en page paysage mobile */
+.title-bg .beam{position:absolute;top:-20%;width:46%;height:120%;background:conic-gradient(from 180deg at 50% 0,transparent 0 160deg,#fff7d82a 172deg,#fff7d855 180deg,#fff7d82a 188deg,transparent 200deg);filter:blur(6px);animation:beam 9s ease-in-out infinite alternate;pointer-events:none}
+.title-bg .beam.l{left:-4%;transform-origin:50% 0;transform:rotate(-14deg)}
+.title-bg .beam.r{right:-4%;transform-origin:50% 0;transform:rotate(14deg);animation-delay:-4.5s}
+@keyframes beam{from{transform:rotate(-20deg)}to{transform:rotate(8deg)}}
+.title-bg .stands{position:absolute;left:0;right:0;bottom:28%;height:30%;background:radial-gradient(circle,#e21b2d55 1px,transparent 1.6px) 0 0/7px 6px,radial-gradient(circle,#ffffff30 1px,transparent 1.6px) 3px 3px/9px 7px,linear-gradient(180deg,#0b1220,#151d2c);mask-image:linear-gradient(180deg,transparent,#000 40%);-webkit-mask-image:linear-gradient(180deg,transparent,#000 40%);opacity:1}
+.title-bg .pitch3d{position:absolute;left:-30%;right:-30%;bottom:-8%;height:46%;transform:perspective(420px) rotateX(55deg);filter:brightness(1.15);transform-origin:50% 100%;background:linear-gradient(90deg,transparent 49.8%,#ffffff55 49.8% 50.2%,transparent 50.2%),radial-gradient(circle at 50% 38%,transparent 9%,#ffffff55 9.2% 9.7%,transparent 9.9%),repeating-linear-gradient(90deg,#1f7a38 0 6%,#2a8c45 6% 12%);box-shadow:0 -30px 80px #0d3a1b inset}
+.title-bg .glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 72%,#fff6d020,transparent 50%),linear-gradient(180deg,#050911 0,#05091100 30%,#05091100 85%,#05091188 100%)}
+.title-bg:after{z-index:1}
+.season-tag{display:inline-block;margin:4px 0 2px;padding:3px 10px;border-radius:999px;background:#ffdf4520;border:1px solid #ffdf4566;color:#ffdf45;font-weight:800;font-size:11px;letter-spacing:.14em}
+.title-in .menu .btn{backdrop-filter:blur(6px)}
+@media (orientation:landscape) and (max-height:540px){
+  .title-in{width:min(860px,96%);display:grid;grid-template-columns:1.05fr 1fr;gap:18px;align-items:center;text-align:left;padding:16px 20px}
+  .title-in .logo{text-align:left}
+  .title-in .logo .ball{font-size:28px}
+  .title-in .logo h1{font-size:clamp(26px,5.4vw,42px);line-height:1.02;margin:4px 0}
+  .title-in .menu{margin:0}
+  .title-in .menu .btn{min-height:40px;font-size:14px;padding:8px 12px}
+  .title-in .fine{grid-column:1 / -1;margin:0;font-size:10px}
+}
+@media (prefers-reduced-motion:reduce){.title-bg .beam{animation:none}}
+.title-bg{z-index:0;pointer-events:none}
+.title-in{z-index:1}
+/* v3.48 : statistiques d'après-match façon TV */
+.statbars{display:grid;gap:10px;max-width:560px;margin:14px auto;text-align:left}
+.sb-top{display:grid;grid-template-columns:60px 1fr 60px;align-items:center;font-size:13px}
+.sb-top span{text-align:center;color:#c5d2df;font-weight:700;letter-spacing:.03em}
+.sb-top b{font-weight:900;color:#dfe7f0}.sb-top b:last-child{text-align:right}
+.sb-top b.lead{color:#ffdf45}
+.sb-bar{display:flex;gap:3px;height:6px;margin-top:4px}
+.sb-bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#b30f1f,#e8323f)}
+.sb-bar i:last-child{background:linear-gradient(90deg,#2d6bea,#5d95ff)}

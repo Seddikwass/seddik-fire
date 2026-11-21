@@ -592,7 +592,8 @@ function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0) {
   if (look.beard && detail > 0) E(0.055, -0.075, 0.07, 0.06, 0.095, 7, 4);
 }
 function spectator(out, x, y, z, facing, shirt, skin, scarf) {
-  const sx = facing[0] === 0 ? 1 : 0, sz = facing[0] === 0 ? 0 : 1;
+  // Vecteur latéral perpendiculaire à l'orientation (fonctionne aussi dans les virages en arc).
+  const sx = -facing[2], sz = facing[0];
   const off = (u, v, w) => [x + sx * u + facing[0] * w, y + v, z + sz * u + facing[2] * w];
   const n = facing;
   const panel = (u0, u1, v0, v1, w, c) => { const a = off(u0, v0, w), b = off(u1, v0, w), cc = off(u1, v1, w), d = off(u0, v1, w); pushVertex(out, a, n, c); pushVertex(out, b, n, c); pushVertex(out, cc, n, c); pushVertex(out, a, n, c); pushVertex(out, cc, n, c); pushVertex(out, d, n, c); };
@@ -838,15 +839,73 @@ export class MatchRenderer3D {
       }
     };
     stand('x', -1); stand('x', 1); stand('z', -1); stand('z', 1);
-    // angles : blocs pleins qui ferment l'enceinte
-    for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(g, [sx * 63, 6, sz * 46], [16, 12, 14], [0.12,0.13,0.16]);
+    // Virages en arc de cercle : l'enceinte forme un « bowl » continu comme les stades modernes.
+    const cornerStand = (sx, sz) => {
+      const cx = sx * 55, cz = sz * 35, dirOf = a => [sx * Math.cos(a), 0, sz * Math.sin(a)];
+      const tiers = [{ rows: lower, r0: 2.4, h0: 1.2 }, { rows: upper, r0: 2.4 + lower * 0.85 + 2.6, h0: 1.2 + lower * 0.45 + 3.2 }];
+      const P = (a, r, y) => { const d = dirOf(a); return [cx + d[0] * r, y, cz + d[2] * r]; };
+      const awayCorner = sx > 0 && sz > 0;
+      for (const [t, tier] of tiers.entries()) {
+        for (let r = 0; r < tier.rows; r++) {
+          const ri = tier.r0 + r * 0.85, h = tier.h0 + r * 0.45, col = r % 2 ? concreteA : concreteB;
+          const segs = Math.max(4, Math.ceil(ri * Math.PI / 2 / 1.6));
+          for (let k = 0; k < segs; k++) {
+            const a0 = k / segs * Math.PI / 2, a1 = (k + 1) / segs * Math.PI / 2, am = (a0 + a1) / 2, dm = dirOf(am);
+            quad(g, P(a0, ri, h), P(a1, ri, h), P(a1, ri + 0.85, h), P(a0, ri + 0.85, h), col, [0, 1, 0]);
+            quad(g, P(a0, ri, h - 0.45), P(a1, ri, h - 0.45), P(a1, ri, h), P(a0, ri, h), col, [-dm[0], 0, -dm[2]]);
+          }
+          const n = Math.floor(ri * Math.PI / 2 / spacing);
+          for (let k = 0; k < n; k++) {
+            const a = (k + 0.5) / n * Math.PI / 2, d = dirOf(a), facing = [-d[0], 0, -d[2]];
+            if (Math.abs((k % 22) - 11) < 0.6) continue; // escalier
+            const [px, , pz] = P(a, ri + 0.35, h);
+            const pal = awayCorner ? awayPalette : fanPalette;
+            if (rand() < 0.07) { seatBlock(g, px, h, pz, facing, awayCorner ? away : home); continue; }
+            currentAnim = 0.001 + rand();
+            spectator(g, px, h, pz, facing, pal[Math.floor(rand() * pal.length)], skin[Math.floor(rand() * skin.length)], rand() < 0.16 ? (awayCorner ? awayTrim : homeTrim) : null);
+            currentAnim = 0; fans++;
+          }
+        }
+        if (t === 0 && tier.rows) {
+          const rb = tier.r0 + tier.rows * 0.85 + 0.6, hb = tier.h0 + tier.rows * 0.45 + 1.1, segs = 10;
+          for (let k = 0; k < segs; k++) {
+            const a0 = k / segs * Math.PI / 2, a1 = (k + 1) / segs * Math.PI / 2, dm = dirOf((a0 + a1) / 2), nn = [-dm[0], 0, -dm[2]];
+            quad(g, P(a0, rb, hb - 0.8), P(a1, rb, hb - 0.8), P(a1, rb, hb + 0.8), P(a0, rb, hb + 0.8), [0.07,0.08,0.1], nn);
+            quad(g, P(a0, rb - 0.27, hb - 0.5), P(a1, rb - 0.27, hb - 0.5), P(a1, rb - 0.27, hb + 0.45), P(a0, rb - 0.27, hb + 0.45), home.map(v => v * 0.9), nn);
+          }
+        }
+      }
+      // toit en arc, rampe lumineuse et mur arrière
+      const top = 1.2 + lower * 0.45 + 3.2 + upper * 0.45 + 3.6, reach = 6.4, depth = (lower + upper) * 0.85 + 8, segs = 12;
+      for (let k = 0; k < segs; k++) {
+        const a0 = k / segs * Math.PI / 2, a1 = (k + 1) / segs * Math.PI / 2, dm = dirOf((a0 + a1) / 2);
+        quad(g, P(a0, reach, top), P(a1, reach, top), P(a1, reach + depth, top), P(a0, reach + depth, top), [0.06,0.07,0.09], [0, -1, 0]);
+        quad(g, P(a0, reach, top - 0.6), P(a1, reach, top - 0.6), P(a1, reach, top - 0.3), P(a0, reach, top - 0.3), [1.25,1.18,0.95], [-dm[0], 0, -dm[2]]);
+        quad(g, P(a0, reach + depth, 0), P(a1, reach + depth, 0), P(a1, reach + depth, top), P(a0, reach + depth, top), [0.09,0.1,0.13], [-dm[0], 0, -dm[2]]);
+      }
+      // Écran géant suspendu sous le toit, face au terrain.
+      if (sx === sz) {
+        const d = dirOf(Math.PI / 4), c = P(Math.PI / 4, reach + 1.2, top - 3.2), side = [-d[2], 0, d[0]], f = [-d[0], 0, -d[2]];
+        const corner = (u, v, w = 0) => [c[0] + side[0] * u + f[0] * w, c[1] + v, c[2] + side[2] * u + f[2] * w];
+        quad(g, corner(-5.4, -2.6, -0.05), corner(5.4, -2.6, -0.05), corner(5.4, 2.6, -0.05), corner(-5.4, 2.6, -0.05), [0.03,0.035,0.045], f);
+        quad(g, corner(-5, -2.2), corner(5, -2.2), corner(5, 2.2), corner(-5, 2.2), [0.05,0.1,0.18], f);
+        quad(g, corner(-5, 1.2, 0.02), corner(5, 1.2, 0.02), corner(5, 2.2, 0.02), corner(-5, 2.2, 0.02), home.map(v => Math.min(1.4, v * 1.25)), f);
+        quad(g, corner(-1.6, -1.3, 0.02), corner(1.6, -1.3, 0.02), corner(1.6, 0.6, 0.02), corner(-1.6, 0.6, 0.02), [1.2, 1.2, 1.15], f);
+        quad(g, corner(-4.6, -1.3, 0.02), corner(-2.2, -1.3, 0.02), corner(-2.2, 0.6, 0.02), corner(-4.6, 0.6, 0.02), home.map(v => Math.min(1.3, v * 1.2)), f);
+        quad(g, corner(2.2, -1.3, 0.02), corner(4.6, -1.3, 0.02), corner(4.6, 0.6, 0.02), corner(2.2, 0.6, 0.02), away.map(v => Math.min(1.3, v * 1.2)), f);
+      }
+    };
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) cornerStand(sx, sz);
     this.fanCount = fans;
     // Stadium lighting towers, lamp banks and a broadcast gantry.
-    for(const x of [-53,53]) for(const z of [-42,42]){
-      cylinder(g,[x,0,z],[x,27,z],0.36,[0.24,0.28,0.33],8,0.22);
-      box(g,[x,26.7,z],[3.5,0.75,1.2],[0.3,0.34,0.39]);
-      for(let k=0;k<7;k++) sphere(g,[x-1.65+k*0.55,26.9,z-0.08],[0.19,0.12,0.1],[1.35,1.18,0.86],7,4);
-      box(g,[x,25.9,z-0.12],[4.7,0.12,0.1],[0.95,0.88,0.64]);
+    // Pylônes d'éclairage derrière l'enceinte (diagonales), têtes orientées vers la pelouse.
+    for(const sx of [-1,1]) for(const sz of [-1,1]){
+      const x=sx*82, z=sz*62, H=44;
+      cylinder(g,[x,0,z],[x,H,z],0.9,[0.24,0.28,0.33],8,0.45);
+      const f=[-sx*0.8,0,-sz*0.6], side=[-f[2],0,f[0]];
+      const C=(u,v,w=0)=>[x+side[0]*u+f[0]*w, H+v, z+side[2]*u+f[2]*w];
+      quad(g,C(-4.5,-2),C(4.5,-2),C(4.5,2.2),C(-4.5,2.2),[0.2,0.23,0.27],f);
+      for(let i=0;i<6;i++) for(let j=0;j<3;j++) sphere(g,C(-3.75+i*1.5,-1.2+j*1.3,0.25),[0.5,0.42,0.3],[1.5,1.38,1.05],6,4);
     }
     // Subtle technical area and benches outside the touchline.
     // Bancs de touche face caméra (côté tribune lointaine) : abri, sièges aux couleurs du club, remplaçants assis.

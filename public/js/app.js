@@ -12,9 +12,9 @@ import { COMMENTARY_STYLES } from './commentary.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
-import { esc, fmtMoney, fmtShort, crestSVG, clamp } from './util.js';
+import { esc, fmtMoney, fmtShort, crestSVG, clamp, jerseySVG } from './util.js';
 
-export const APP_VERSION = '3.47.0';
+export const APP_VERSION = '3.48.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -70,8 +70,8 @@ function shell(inner) {
 const VIEWS = {};
 VIEWS.home = () => {
   const has = !!S.loadLocal();
-  return `<div class="title"><div class="title-bg"></div><div class="title-in">
-   <div class="logo"><span class="ball">⚽</span><h1>FOOTBALL <b>TUNISIA</b> <i>2026</i></h1><p>Ligue 1 ${SEASON_LABEL} · Coupe de Tunisie · CAF · Gestion de club</p></div>
+  return `<div class="title"><div class="title-bg"><i class="beam l"></i><i class="beam r"></i><i class="stands"></i><i class="pitch3d"></i><i class="glow"></i></div><div class="title-in">
+   <div class="logo"><span class="ball">⚽</span><span class="season-tag">SAISON ${SEASON_LABEL}</span><h1>FOOTBALL <b>TUNISIA</b> <i>2026</i></h1><p>Ligue 1 · Coupe de Tunisie · CAF · Gestion de club</p></div>
    <div class="menu">
     ${has ? `<button class="btn big primary" data-a="continue">▶ ${t('Continuer')}</button>` : ''}
     <button class="btn big ${has ? '' : 'primary'}" data-a="nav" data-v="newCareer">🏆 ${t('Nouvelle carrière')}</button>
@@ -160,6 +160,7 @@ VIEWS.prematch = () => {
   const comp = { L1: t('Ligue 1'), L2: 'Ligue 2', CUP: t('Coupe de Tunisie'), CL: t('Ligue des Champions CAF'), CC: t('Coupe de la Confédération CAF'), SUP: t('Supercoupe') }[f.comp];
   return `<div class="prematch"><div class="card center"><small>${comp} · ${C.slotLabel(st)}</small>
    <div class="fixture xl">${crest(f.h, 72)}<div><b>${esc(C.clubName(st, f.h))}</b><span>${f.neutral ? 'terrain neutre' : 'à ' + esc(C.clubObj(st, f.h)?.stadium || C.clubObj(st, f.h)?.country || '')}</span><b>${esc(C.clubName(st, f.a))}</b></div>${crest(f.a, 72)}</div>
+   ${kitDuel(f.h, f.a)}
    <div class="kv inline"><span>Force estimée</span><b>${Math.round(me)} vs ${Math.round(them)}</b><span>${t('Formation')}</span><b>${st.clubs[st.userClub].tactics.formation}</b></div>
    <div class="row center"><button class="btn primary big" data-a="playMatch">🎮 ${t('Jouer')} le match</button><button class="btn big" data-a="simMatch">⚡ Simulation rapide</button></div>
    <div class="row center"><button class="btn small" data-a="nav" data-v="tactics">📋 ${t('Tactique')}</button><button class="btn small" data-a="nav" data-v="squad">👥 ${t('Effectif')}</button>
@@ -168,6 +169,13 @@ VIEWS.prematch = () => {
    <div class="card"><h3>${t('Titulaires')}</h3><div class="xi">${lu.map((p, i) => `<span class="${p.fitness < 0.75 ? 'tired' : ''}"><i>${FORMATION_POS[st.clubs[st.userClub].tactics.formation][i]}</i> ${p.num}. ${esc(p.name)} <b class="${ovrCls(p.ovr)}">${p.ovr}</b></span>`).join('')}</div></div></div>`;
 };
 
+// Maillots portés pour ce match (le visiteur change seulement en cas de conflit de couleurs).
+function kitFor(id, mode) { const k = C.clubKit(id, mode); if (k) return k; const c = C.clubObj(st, id) || {}; const cols = mode === true ? (c.away || c.colors) : c.colors; return { shirt: cols?.[0] || '#888', trim: cols?.[1] || '#fff', alt: cols?.[1] }; }
+function kitDuel(h, a) {
+  const mode = C.awayKitMode(h, a), kh = kitFor(h, false), ka = kitFor(a, mode);
+  const lbl = mode === false ? 'domicile' : mode === true ? 'extérieur' : 'third';
+  return `<div class="kitduel"><figure>${jerseySVG(kh, 70, 10)}<figcaption>Domicile</figcaption></figure><span class="vsx">VS</span><figure>${jerseySVG(ka, 70, 10)}<figcaption>${lbl === 'third' ? '3e maillot' : 'Maillot ' + lbl}</figcaption></figure></div>`;
+}
 function prematchExtras(f) {
   const trip = C.nextTrip(st, f), rot = C.rotationAdvice(st);
   const tired = st.clubs[st.userClub].tactics.lineup.map(id => st.players[id]).filter(p => p && p.fitness < 0.8);
@@ -767,6 +775,14 @@ function onlineIdentity() {
   return { name, club };
 }
 VIEWS.postmatchQuick = () => `<div class="page">${args.online && args.names ? `<p class="center hint">🌐 Match en ligne : <b>${esc(args.names[0] || '')}</b> (${esc(args.home.short || '')}) contre <b>${esc(args.names[1] || '')}</b> (${esc(args.away.short || '')})</p>` : ''}${postHTML(args.home.name, args.away.name, args.res.hg, args.res.ag, args.res)}<div class="row center"><button class="btn primary big" data-a="nav" data-v="${args.online ? 'online' : 'quick'}">${args.online ? 'Rejouer en ligne' : 'Rejouer'}</button><button class="btn big" data-a="nav" data-v="home">${t('Accueil')}</button></div></div>`;
+// Statistiques façon diffusion TV : valeur – libellé – valeur, barre partagée entre les deux équipes.
+function statBars(s) {
+  const pct = (a, b) => (a + b) ? a / (a + b) * 100 : 50;
+  const rows = [['Possession', s.possPct[0], s.possPct[1], '%'], ['Tirs', s.shots[0], s.shots[1]], ['Tirs cadrés', s.onTarget[0], s.onTarget[1]],
+    ['Passes réussies', s.passOk[0], s.passOk[1]], ['Précision des passes', s.passes[0] ? Math.round(s.passOk[0] / s.passes[0] * 100) : 0, s.passes[1] ? Math.round(s.passOk[1] / s.passes[1] * 100) : 0, '%'],
+    ['Corners', s.corners[0], s.corners[1]], ['Fautes', s.fouls[0], s.fouls[1]], ['Cartons', s.yellows[0] + s.reds[0], s.yellows[1] + s.reds[1]]];
+  return `<div class="statbars">${rows.map(([l, a, b, u = '']) => { const p = pct(Number(a) || 0, Number(b) || 0); return `<div class="sb-row"><div class="sb-top"><b class="${a > b ? 'lead' : ''}">${a}${u}</b><span>${l}</span><b class="${b > a ? 'lead' : ''}">${b}${u}</b></div><div class="sb-bar"><i style="width:${p.toFixed(1)}%"></i><i style="width:${(100 - p).toFixed(1)}%"></i></div></div>`; }).join('')}</div>`;
+}
 function postHTML(hn, an, hg, ag, res, f = null) {
   const s = res.stats;
   const ev = (res.events || []).filter(e => ['goal', 'yellow', 'red', 'injury', 'sub', 'shootout'].includes(e.type)).sort((a, b) => a.min - b.min);
@@ -776,7 +792,7 @@ function postHTML(hn, an, hg, ag, res, f = null) {
   return `<div class="card center post"><small>${t('Fin du match')}</small><div class="score">${esc(hn)} <b>${hg} - ${ag}</b> ${esc(an)}</div>${f && f.pens ? `<p>Tirs au but : ${f.pens[0]}-${f.pens[1]}</p>` : (!f && res.pens ? `<p>Tirs au but : ${res.pens[0]}-${res.pens[1]}</p>` : '')}${f && f.agg ? `<p>Cumul : ${f.agg[0]}-${f.agg[1]}</p>` : ''}${f && f.attendance ? `<p class="hint">${f.attendance.toLocaleString('fr-FR')} spectateurs</p>` : ''}
    ${mvp ? `<section class="mvp-card"><small>🏆 JOUEUR DU MATCH</small><h3>${esc(mvp.name || 'Joueur')}</h3><b>${Number(mvp.rating || 0).toFixed(1)}/10</b><p>${esc(teamName(mvp.team))} · ${mvp.goals || 0} but(s) · ${mvp.assists || 0} passe(s) décisive(s)</p></section>` : ''}
    <ul class="events">${ev.map(e => `<li class="${e.team ? 'r' : 'l'}">${e.min}' ${{ goal: '⚽', yellow: '🟨', red: '🟥', injury: '🩹', sub: '🔁', shootout: '🎯' }[e.type]} ${esc(e.name)}${e.assist ? ` <small>(passe ${esc(e.assist)})</small>` : ''}${e.outName ? ` <small>↔ ${esc(e.outName)}</small>` : ''}</li>`).join('')}</ul>
-   ${s ? `<table class="tbl stats"><tbody>${[['Possession', s.possPct[0] + ' %', s.possPct[1] + ' %'], ['Tirs', s.shots[0], s.shots[1]], ['Cadrés', s.onTarget[0], s.onTarget[1]], ['Passes réussies', `${s.passOk[0]}/${s.passes[0]}`, `${s.passOk[1]}/${s.passes[1]}`], ['Corners', s.corners[0], s.corners[1]], ['Fautes', s.fouls[0], s.fouls[1]], ['Cartons', s.yellows[0] + s.reds[0], s.yellows[1] + s.reds[1]]].map(([l, a, b]) => `<tr><td>${a}</td><th>${l}</th><td>${b}</td></tr>`).join('')}</tbody></table>` : ''}
+   ${s ? statBars(s) : ''}
    ${players.length ? `<h3 class="section-title">Notes des joueurs</h3><table class="tbl player-ratings"><thead><tr><th>Joueur</th><th>Équipe</th><th>Min.</th><th>B</th><th>P.D.</th><th>Note</th></tr></thead><tbody>${players.slice(0, 12).map(p => `<tr><td>${esc(p.name || 'Joueur')}${p.red ? ' 🟥' : ''}${p.yellow ? ' 🟨' : ''}</td><td>${esc(teamName(p.team))}</td><td>${p.minutes || 0}</td><td>${p.goals || 0}</td><td>${p.assists || 0}</td><td><b>${Number(p.rating || 0).toFixed(1)}</b></td></tr>`).join('')}</tbody></table>` : ''}</div>`;
 }
 VIEWS.seasonEnd = () => {

@@ -1,5 +1,13 @@
 # Seddik Fire
 
+## Nouveautés 2.32 — Des cartes vraiment différentes en partie
+- **Disposition propre à chaque carte** : 19 cartes partageaient le même squelette (routes, médina, base, ksar, oasis, port aux mêmes endroits). Désormais chaque carte a sa disposition : miroir nord/sud selon la carte, déformation propre à chaque carte (base, médina, oasis, port et routes déplacés ensemble) et forme de médina différente (grille, rue, croix, anneau, terrasses).
+- **Port propre à chaque carte** : marina de plaisance (Sidi Bou Saïd, Hammamet, Sousse), port de pêche avec barques tunisiennes colorées, filets et jarres à poulpes (Djerba, Kerkennah avec felouques à voile, Mahdia, Kélibia, La Galite), port de commerce avec cargos et grues (Sfax, Bizerte, Gabès). Plus de conteneurs dans les ports de pêche ni à l'intérieur.
+- **Plus de mer à l'intérieur des terres** : chott salé à Tozeur, Tataouine et au Sahara, lac de barrage au Kef, à Gafsa et dans les hautes terres. Chaque carte côtière a aussi la couleur de mer qui lui est propre.
+- **Sol propre à chaque carte** : croûte de sel et canaux d'irrigation des oasis (Tozeur, Gabès), rides de sable, grès rouge (Tataouine, Gafsa), calcaire et éboulis (Le Kef), roche volcanique et lichens (La Galite), terre labourée des oliveraies (Sfax, Sahel, Cap Bon), terre rouge et tessons (Djerba), litière de forêt et fougères (Tabarka), alfa, prairies de coquelicots.
+- **Ksar seulement dans le Sud** : dans le Nord, il est remplacé par un village.
+- **Étalonnage des couleurs propre à chaque carte**, sur téléphone comme sur ordinateur.
+
 ## Nouveautés 2.31 — Une vraie image pour chaque carte
 - **Choix de la carte repensé** : chacune des 23 cartes a sa propre image, prise dans la carte elle-même (monuments, maisons, arbres, côte), au lieu du même fond pour toutes.
 - **Grand aperçu** de la carte choisie, avec un léger zoom animé, son nom, son type de terrain et ses lieux.

@@ -1696,7 +1696,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V233</span>
+    <span id="build-tag" aria-label="Version">V234</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -2809,6 +2809,7 @@ function loftSE(secs, c, m, ex = 2.4, n = 16, capEnds = true) {
 const WHEELS = {};
 function getWheel(style, r, w) {
   const key = style + '_' + r + '_' + w; if (WHEELS[key]) return WHEELS[key];
+  let knob = false; if (style[0] === 'k') { knob = true; style = style.slice(1); }   // V234 — pneus tout-terrain à crampons (quads)
   if (style === 'spk' || style === 'deep' || style === 'bdisc' || style === 'tri') return (WHEELS[key] = R.upload(bikeWheelMB(style, r, w)));
   const mb = new MB(), seg = 32, hw = w / 2, P = (x, a, rr) => [x, Math.cos(a) * rr, Math.sin(a) * rr];
   const tire = [0.055, 0.055, 0.06], wall = [0.085, 0.085, 0.09], rimW = [1, 1, 1], rimD = [0.55, 0.55, 0.55], rec = [0.07, 0.07, 0.075];
@@ -2817,8 +2818,13 @@ function getWheel(style, r, w) {
     const a0 = i / seg * Math.PI * 2, a1 = (i + 1) / seg * Math.PI * 2;
     const xs = [-hw, -hw * 0.55, -hw * 0.45, -hw * 0.05, hw * 0.05, hw * 0.45, hw * 0.55, hw];
     for (let k = 0; k < xs.length - 1; k++) { const grv = k % 2 === 1, rad = grv ? r * 0.985 : r; mb.quad(P(xs[k], a0, rad), P(xs[k + 1], a0, rad), P(xs[k + 1], a1, rad), P(xs[k], a1, rad), grv ? [0.03, 0.03, 0.03] : tire, 0); }
+    if (knob) {   // crampons en relief, en quinconce sur 3 rangées
+      const kb = (x0, x1, b0, b1, h) => { const o = r + h, cK = [0.07, 0.07, 0.075]; mb.quad(P(x0, b0, o), P(x1, b0, o), P(x1, b1, o), P(x0, b1, o), cK, 0); mb.quad(P(x0, b0, r), P(x1, b0, r), P(x1, b0, o), P(x0, b0, o), cK, 0); mb.quad(P(x1, b1, r), P(x0, b1, r), P(x0, b1, o), P(x1, b1, o), cK, 0); mb.quad(P(x0, b1, r), P(x0, b0, r), P(x0, b0, o), P(x0, b1, o), cK, 0); mb.quad(P(x1, b0, r), P(x1, b1, r), P(x1, b1, o), P(x1, b0, o), cK, 0); };
+      const b0 = a0 + 0.02, b1 = a1 - 0.02, h = Math.min(0.03, r * 0.11);
+      if (i % 2 === 0) { kb(-hw * 0.98, -hw * 0.55, b0, b1, h); kb(hw * 0.55, hw * 0.98, b0, b1, h); } else kb(-hw * 0.28, hw * 0.28, b0, b1, h);
+    }
     // Sculptures de bande de roulement : rainures transversales visibles sur les pneus proches
-    if (i % 2 === 0) {
+    if (!knob && i % 2 === 0) {
       const ga = a0 + 0.018, gb = a1 - 0.018, skew = 0.035;
       mb.quad(P(-hw * 0.48, ga, r * 1.003), P(hw * 0.48, ga + skew, r * 1.003),
         P(hw * 0.48, gb + skew, r * 1.003), P(-hw * 0.48, gb, r * 1.003), [0.022, 0.022, 0.024], 0);
@@ -3362,6 +3368,7 @@ const MODEL_BUILDERS = {
   van: () => buildVan(), louage: () => buildVan([0.8, 0.08, 0.08]), truck: () => buildTruck(), bus: () => buildBus(),
   moto_sport: () => buildMoto('sport'), moto_trail: () => buildMoto('trail'), moto_scoot: () => buildMoto('scoot'), moto_naked: () => buildMoto('naked'), moto_cruiser: () => buildMoto('cruiser'),
   bike_piste: () => buildBike('piste'), bike_fat: () => buildBike('fat'),
+  quad_sport: () => buildQuad('sport'), quad_cross: () => buildQuad('cross'), quad_dune: () => buildQuad('dune'), quad_util: () => buildQuad('util'), quad_mini: () => buildQuad('mini'), quad_elec: () => buildQuad('elec'), quad_raid: () => buildQuad('raid'),
   bike_ville: () => buildBike('ville'), bike_bmx: () => buildBike('bmx'), bike_vtt: () => buildBike('vtt'), bike_route: () => buildBike('route'), bike_elec: () => buildBike('elec'), bike_clm: () => buildBike('clm'),
 };
 const MODELS_BUILT = {};
@@ -3595,6 +3602,121 @@ function buildBike(kind) {
   mb.box(0, SD[1] - 0.14, SD[2] - 0.1, 0.04, 0.05, 0.02, [1, 0.05, 0.03], 5);
   return finishModel(mb, { style: 'bike_' + kind, L: (zf - zr) + 2 * r + 0.05, W: 0.62, H: G2.H, wr: r, ww: G2.ww, wheels: [[0, r, zf, 1], [0, r, zr, 0]], exhaust: [], heads: [[0, HT[1] - 0.06, HT[2] + 0.12]], roofY: G2.H, roofZ: -0.1, tailY: 0.7, rim: G2.rim, rimF: G2.rimF, bike: 'cyc_' + kind, cyc: { ratio: G2.ratio }, noHub: true });
 }
+/* =====================================================================
+   V234 — quads (designs originaux, générés par code)
+   Repère : +z vers l'avant, +y vers le haut, sol à y = 0, 1 unité = 1 m
+   ===================================================================== */
+const TI_Q = [0.5, 0.5, 0.55];
+const QUAD_G = {
+  //        r     ww    wx    zf     zr     seat  dy
+  sport: { r: 0.28, ww: 0.22, wx: 0.5, zf: 0.6, zr: -0.58, seat: 0.86, dy: 0, rim: 'five' },
+  cross: { r: 0.27, ww: 0.21, wx: 0.49, zf: 0.58, zr: -0.56, seat: 0.88, dy: 0.02, rim: 'ten' },
+  dune: { r: 0.34, ww: 0.3, wx: 0.6, zf: 0.68, zr: -0.64, seat: 0.95, dy: 0.08, rim: 'dish' },
+  util: { r: 0.31, ww: 0.25, wx: 0.53, zf: 0.64, zr: -0.6, seat: 0.92, dy: 0.06, rim: 'disc' },
+  mini: { r: 0.21, ww: 0.17, wx: 0.39, zf: 0.44, zr: -0.43, seat: 0.66, dy: -0.2, rim: 'dish' },
+  elec: { r: 0.28, ww: 0.23, wx: 0.51, zf: 0.6, zr: -0.58, seat: 0.87, dy: 0.01, rim: 'disc' },
+  raid: { r: 0.32, ww: 0.26, wx: 0.57, zf: 0.68, zr: -0.64, seat: 0.96, dy: 0.1, rim: 'mesh' },
+};
+function buildQuad(kind) {
+  const mb = new MB(), P = [1, 1, 1], BLK = [0.035, 0.035, 0.04], MET = [0.12, 0.12, 0.13], ALU = [0.62, 0.63, 0.66], CHR = [0.8, 0.81, 0.84], RUB = [0.06, 0.06, 0.065];
+  const HEAD = [1, 0.97, 0.9], RED = [1, 0.05, 0.03], GL = [0.05, 0.07, 0.09], DISC = [0.58, 0.58, 0.6];
+  const Q = QUAD_G[kind], { r, ww, wx, zf, zr, seat } = Q, add = o => mb.append(o);
+  const plast = kind === 'util' ? [0.16, 0.2, 0.12] : kind === 'elec' ? [0.92, 0.93, 0.95] : P, plM = kind === 'util' || kind === 'elec' ? 0 : 1;
+  const accent = kind === 'elec' ? [0.15, 0.75, 1] : kind === 'raid' ? [1, 0.55, 0.08] : kind === 'cross' ? [0.95, 0.9, 0.1] : BLK;
+  const fw = 2 * wx + ww * 0.55;   // largeur hors-tout des garde-boue
+  // châssis tubulaire : longerons, berceau moteur, boucle arrière
+  for (const sx of [-1, 1]) {
+    bar(mb, [sx * 0.16, r + 0.02, zf - 0.05], [sx * 0.18, r - 0.04, zr + 0.12], 0.028, MET, 4);
+    bar(mb, [sx * 0.16, r + 0.02, zf - 0.05], [sx * 0.15, seat - 0.12, zf - 0.28], 0.026, MET, 4);
+    bar(mb, [sx * 0.15, seat - 0.12, zf - 0.28], [sx * 0.15, seat - 0.12, zr - 0.04], 0.024, MET, 4);
+    bar(mb, [sx * 0.15, seat - 0.12, zr - 0.04], [sx * 0.18, r - 0.04, zr + 0.12], 0.024, MET, 4);
+  }
+  // moteur, carter, radiateur
+  mb.box(0, r - 0.12, 0.02, 0.32, 0.36, 0.5, MET, 4); mb.box(0, r + 0.24, 0.06, 0.24, 0.16, 0.3, kind === 'elec' ? [0.1, 0.1, 0.12] : ALU, 4);
+  if (kind !== 'elec') { for (let k = 0; k < 4; k++) mb.box(0, r + 0.12 + k * 0.045, 0.08, 0.34, 0.012, 0.32, [0.25, 0.25, 0.27], 4); mb.box(0, r + 0.12, zf - 0.12, 0.3, 0.22, 0.04, [0.15, 0.15, 0.16], 4); }
+  else { mb.box(0, r + 0.05, -0.06, 0.38, 0.3, 0.62, [0.08, 0.08, 0.09], 4); for (const sx of [-1, 1]) mb.box(sx * 0.195, r + 0.08, -0.06, 0.012, 0.05, 0.5, accent, 2); }
+  // trains avant (triangles doubles + amortisseurs) et bras oscillant arrière
+  for (const sx of [-1, 1]) {
+    const hub = [sx * (wx - ww * 0.42), r, zf];
+    for (const dy of [-0.06, 0.1]) { bar(mb, [sx * 0.16, r + dy, zf + 0.12], hub, 0.018, ALU, 4); bar(mb, [sx * 0.16, r + dy, zf - 0.14], hub, 0.018, ALU, 4); }
+    bar(mb, [sx * 0.2, seat - 0.16, zf - 0.12], [sx * (wx - ww * 0.6), r + 0.06, zf - 0.02], 0.04, accent === BLK ? [0.8, 0.12, 0.08] : accent, 4, 0.03);
+    bar(mb, [sx * 0.2, seat - 0.16, zf - 0.12], [sx * (wx - ww * 0.6), r + 0.06, zf - 0.02], 0.02, CHR, 4, 0.02);
+    discX(mb, sx * (wx - ww * 0.62), r, zf, r * 0.52, DISC, 4, 16, 0.004); mb.box(sx * (wx - ww * 0.62), r + r * 0.32, zf - r * 0.36, 0.04, 0.07, 0.08, [0.75, 0.1, 0.08], 0);
+    bar(mb, [sx * 0.18, r - 0.02, zr + 0.18], [sx * 0.1, r, zr], 0.03, ALU, 4);
+  }
+  bar(mb, [-(wx - ww * 0.45), r, zr], [wx - ww * 0.45, r, zr], 0.035, MET, 4); discX(mb, 0.14, r, zr, r * 0.55, DISC, 4, 16, 0.004);
+  bar(mb, [0, seat - 0.15, zr + 0.08], [0, r + 0.02, zr + 0.25], 0.045, accent === BLK ? [0.8, 0.12, 0.08] : accent, 4);
+  // garde-boue avant : coque enveloppante, nez, phares
+  for (const sx of [-1, 1]) add(loftSE([
+    { x: sx * (wx - ww * 0.12), z: zf + r * 1.15, yb: r + r * 0.45, yt: r + r * 0.62, w: ww * 1.3 },
+    { x: sx * (wx - ww * 0.16), z: zf + r * 0.6, yb: r + r * 0.92, yt: r + r * 1.22, w: ww * 1.5 },
+    { x: sx * (wx - ww * 0.2), z: zf - r * 0.1, yb: 2 * r + 0.05, yt: 2 * r + 0.15, w: ww * 1.55 },
+    { x: sx * (wx - ww * 0.3), z: zf - r * 0.8, yb: r + r * 0.72, yt: 2 * r + 0.1, w: ww * 1.35 },
+    { x: sx * (wx - ww * 0.4), z: zf - r * 1.15, yb: r + 0.05, yt: r + r * 0.9, w: ww * 1.1 }], plast, plM, 2.6, 12));
+  add(loftSE([{ z: zf + r * 1.1, yb: r + 0.12, yt: r + r * 0.9, w: 0.34 }, { z: zf + r * 0.4, yb: r + 0.14, yt: 2 * r + 0.14, w: 0.56 }, { z: zf - r * 0.6, yb: r + 0.2, yt: seat - 0.04, w: 0.52 }, { z: zf - r * 1.2, yb: seat - 0.2, yt: seat + 0.02, w: 0.4 }], plast, plM, 2.4, 14));
+  const hy = r + 0.34, heads = [];
+  for (const sx of [-1, 1]) { mb.box(sx * 0.14, hy - 0.03, zf + r * 0.72, 0.12, 0.06, 0.05, GL, 0); mb.box(sx * 0.14, hy - 0.025, zf + r * 0.74, 0.1, 0.045, 0.02, HEAD, 15); heads.push([sx * 0.14, hy, zf + r * 0.78]); }
+  if (kind === 'elec') mb.box(0, hy + 0.06, zf + r * 0.66, 0.42, 0.02, 0.02, accent, 15);
+  // garde-boue arrière, selle, réservoir
+  for (const sx of [-1, 1]) add(loftSE([
+    { x: sx * (wx - ww * 0.35), z: zr + r * 1.15, yb: r + 0.05, yt: r + r * 0.9, w: ww * 1.15 },
+    { x: sx * (wx - ww * 0.25), z: zr + r * 0.75, yb: r + r * 0.72, yt: 2 * r + 0.12, w: ww * 1.45 },
+    { x: sx * (wx - ww * 0.18), z: zr, yb: 2 * r + 0.05, yt: 2 * r + 0.16, w: ww * 1.6 },
+    { x: sx * (wx - ww * 0.15), z: zr - r * 0.7, yb: r + r * 0.78, yt: r + r * 1.1, w: ww * 1.5 },
+    { x: sx * (wx - ww * 0.12), z: zr - r * 1.15, yb: r + r * 0.35, yt: r + r * 0.55, w: ww * 1.2 }], plast, plM, 2.6, 12));
+  add(loftSE([{ z: zr + r * 1.2, yb: r + 0.24, yt: seat - 0.12, w: 0.5 }, { z: zr - r * 0.2, yb: r + 0.26, yt: seat - 0.1, w: 0.6 }, { z: zr - r * 1.0, yb: r + 0.22, yt: r + 0.4, w: 0.5 }], plast, plM, 2.6, 12));
+  add(loftSE([{ z: 0.12, yb: seat - 0.1, yt: seat - 0.02, w: 0.26 }, { z: -0.02, yb: seat - 0.1, yt: seat + 0.03, w: 0.32 }, { z: -0.36, yb: seat - 0.1, yt: seat + 0.02, w: 0.32 }, { z: zr + r * 0.2, yb: seat - 0.12, yt: seat - 0.02, w: 0.28 }], kind === 'util' ? [0.06, 0.06, 0.06] : BLK, 0, 2.2, 12));
+  if (kind !== 'elec') add(loftSE([{ z: zf - r * 1.15, yb: seat - 0.16, yt: seat + 0.02, w: 0.34 }, { z: 0.22, yb: seat - 0.14, yt: seat + 0.06, w: 0.36 }, { z: 0.1, yb: seat - 0.12, yt: seat - 0.01, w: 0.3 }], plast, plM, 2.4, 12));
+  // repose-pieds, nerf bars
+  for (const sx of [-1, 1]) {
+    mb.box(sx * 0.33, r - 0.06, -0.12, 0.2, 0.03, 0.46, [0.2, 0.2, 0.22], 4);
+    for (let k = 0; k < 4; k++) mb.box(sx * 0.33, r - 0.035, -0.3 + k * 0.12, 0.18, 0.012, 0.02, [0.3, 0.3, 0.32], 4);
+    if (kind === 'sport' || kind === 'cross' || kind === 'raid') { bar(mb, [sx * 0.25, r - 0.04, zf - r * 1.0], [sx * (wx + 0.02), r - 0.02, -0.1], 0.016, BLK, 4); bar(mb, [sx * (wx + 0.02), r - 0.02, -0.1], [sx * 0.25, r - 0.04, zr + r * 1.0], 0.016, BLK, 4); }
+  }
+  // direction : colonne, guidon large, poignées, leviers, compteur
+  const HB = [0, seat + 0.16 + (kind === 'raid' ? 0.04 : 0), 0.34 + (kind === 'mini' ? -0.05 : 0)], hw = kind === 'mini' ? 0.3 : 0.38;
+  bar(mb, [0, r + 0.22, zf - 0.18], HB, 0.022, MET, 4);
+  bar(mb, [-hw, HB[1] + 0.02, HB[2] - 0.03], [hw, HB[1] + 0.02, HB[2] - 0.03], 0.016, kind === 'util' ? MET : ALU, 4);
+  mb.box(0, HB[1], HB[2], 0.12, 0.04, 0.05, MET, 4);
+  for (const sx of [-1, 1]) { bar(mb, [sx * (hw - 0.12), HB[1] + 0.02, HB[2] - 0.03], [sx * hw, HB[1] + 0.02, HB[2] - 0.03], 0.024, RUB, 0); bar(mb, [sx * (hw - 0.14), HB[1] + 0.03, HB[2]], [sx * (hw - 0.04), HB[1] + 0.02, HB[2] + 0.08], 0.008, ALU, 4); }
+  mb.box(0, HB[1] + 0.06, HB[2] + 0.02, 0.11, 0.05, 0.03, BLK, 0); mb.box(0, HB[1] + 0.07, HB[2] + 0.036, 0.08, 0.03, 0.005, kind === 'elec' ? [0.2, 0.7, 1] : [0.3, 0.9, 0.5], 2);
+  // échappement, feux arrière
+  const exhaust = [];
+  if (kind !== 'elec') { bar(mb, [0.12, r + 0.1, 0.1], [0.22, r + 0.3, zr + 0.1], 0.03, TI_Q, 4); bar(mb, [0.22, r + 0.3, zr + 0.1], [0.24, r + 0.36, zr - 0.18], 0.05, kind === 'util' ? MET : [0.45, 0.45, 0.5], 4); exhaust.push([0.24, r + 0.36, zr - 0.2]); }
+  for (const sx of [-1, 1]) mb.box(sx * 0.12, r + 0.3, zr - r * 1.0, 0.08, 0.035, 0.02, RED, 5);
+  // équipements selon le modèle
+  if (kind === 'util') {
+    // porte-bagages avant/arrière, treuil, attelage, caisse
+    for (const [zc, len] of [[zf + 0.02, 0.5], [zr - 0.02, 0.6]]) { const yr = r + r + 0.18; for (const sx of [-1, 1]) bar(mb, [sx * 0.42, yr, zc - len / 2], [sx * 0.42, yr, zc + len / 2], 0.012, BLK, 4); for (let k = 0; k <= 4; k++) bar(mb, [-0.42, yr, zc - len / 2 + k * len / 4], [0.42, yr, zc - len / 2 + k * len / 4], 0.01, BLK, 4); }
+    mb.box(0, r - 0.02, zf + r + 0.08, 0.26, 0.12, 0.1, MET, 4); discX(mb, 0, r + 0.04, zf + r + 0.15, 0.04, [0.6, 0.55, 0.4], 0, 10, 0.06);
+    bar(mb, [0, r - 0.05, zr - r - 0.04], [0, r - 0.05, zr - r - 0.22], 0.025, MET, 4);
+    mb.box(0, r + r + 0.19, zr - 0.02, 0.5, 0.2, 0.36, [0.45, 0.3, 0.16], 0); mb.box(0, r + r + 0.4, zr - 0.02, 0.52, 0.02, 0.38, [0.36, 0.24, 0.12], 0);
+  }
+  if (kind === 'dune') {
+    // pare-chocs tubulaires, mât lumineux arrière (sans drapeau), sac de selle
+    bar(mb, [-0.36, r + 0.05, zf + r + 0.12], [0.36, r + 0.05, zf + r + 0.12], 0.025, CHR, 4); for (const sx of [-1, 1]) bar(mb, [sx * 0.36, r + 0.05, zf + r + 0.12], [sx * 0.2, r + 0.22, zf + r * 0.6], 0.022, CHR, 4);
+    bar(mb, [0.32, r + 0.3, zr - r * 0.6], [0.36, r + 1.9, zr - r * 0.7], 0.008, [0.85, 0.85, 0.85], 4); mb.box(0.36, r + 1.9, zr - r * 0.7, 0.035, 0.05, 0.035, [1, 0.6, 0.1], 15);
+    mb.box(0, seat - 0.06, zr + 0.02, 0.34, 0.14, 0.2, [0.55, 0.38, 0.2], 0);
+  }
+  if (kind === 'raid') {
+    // tour de navigation, bulle, réservoirs latéraux, feux additionnels, roue de secours
+    mb.box(0, HB[1] + 0.1, HB[2] + 0.06, 0.26, 0.2, 0.05, BLK, 0); mb.box(0, HB[1] + 0.12, HB[2] + 0.04, 0.22, 0.14, 0.01, [0.3, 0.7, 1], 2);
+    add(loftSE([{ z: HB[2] + 0.12, yb: HB[1] + 0.18, yt: HB[1] + 0.22, w: 0.34 }, { z: HB[2] + 0.06, yb: HB[1] + 0.2, yt: HB[1] + 0.42, w: 0.32 }], GL, 3, 2.2, 10));
+    for (const sx of [-1, 1]) { add(loftSE([{ x: sx * 0.3, z: 0.12, yb: r + 0.32, yt: seat - 0.1, w: 0.14 }, { x: sx * 0.32, z: -0.2, yb: r + 0.3, yt: seat - 0.08, w: 0.16 }], accent, 0, 2.4, 10)); mb.box(sx * 0.1, hy + 0.12, zf + r * 0.6, 0.09, 0.09, 0.04, HEAD, 15); heads.push([sx * 0.1, hy + 0.16, zf + r * 0.64]); }
+    discZ(mb, 0, r + r + 0.36, zr - r * 0.9, 0.24, RUB, 0, 14); discZ(mb, 0, r + r + 0.36, zr - r * 0.9 - 0.005, 0.13, ALU, 4, 10);
+  }
+  if (kind === 'cross' || kind === 'sport') {
+    // plaques numéro et déco latérale
+    mb.box(0, r + 0.3, zf + r * 0.95, 0.26, 0.16, 0.012, [0.96, 0.96, 0.96], 0); mb.box(0, r + 0.3, zf + r * 0.96, 0.12, 0.1, 0.006, BLK, 0);
+    for (const sx of [-1, 1]) mb.box(sx * 0.31, r + 0.42, zr + r * 0.1, 0.012, 0.12, 0.3, accent === BLK ? [0.9, 0.9, 0.9] : accent, 0);
+  }
+  if (kind === 'mini') for (const sx of [-1, 1]) bar(mb, [sx * 0.2, r + 0.02, zr - r * 0.9], [sx * 0.3, r + 0.4, zr - r * 0.6], 0.014, CHR, 4);   // poignées pour le passager
+  return finishModel(mb, { style: 'quad_' + kind, L: (zf - zr) + 2 * r + 0.25, W: 2 * wx + ww, H: seat + 0.55, wr: r, ww, wheels: [[wx, r, zf, 1], [-wx, r, zf, 1], [wx, r, zr, 0], [-wx, r, zr, 0]], exhaust, heads, roofY: seat + 0.5, roofZ: -0.15, tailY: r + 0.3, rim: Q.rim, knob: true, rider: 'quad_' + kind });
+}
+// postures de pilote de quad : à califourchon, bras écartés sur le guidon large, pieds sur les repose-pieds
+const QUAD_POSES = {};
+for (const k in QUAD_G) { const Q = QUAD_G[k], s = Q.seat, hz = 0.34 + (k === 'mini' ? -0.05 : 0), hy = s + 0.18 + (k === 'raid' ? 0.04 : 0), hw = k === 'mini' ? 0.27 : 0.34;
+  QUAD_POSES['quad_' + k] = { hip: [0, s + 0.1, -0.24], sh: [0, s + 0.58, -0.08], head: [0, s + 0.76, -0.01], hands: [[hw, hy + 0.02, hz - 0.03], [-hw, hy + 0.02, hz - 0.03]], knees: [[0.3, s + 0.04, 0.12], [-0.3, s + 0.04, 0.12]], feet: [[0.33, Q.r - 0.02, -0.06], [-0.33, Q.r - 0.02, -0.06]], helmet: true }; }
 // postures des cyclistes (repère du vélo) ; les jambes et le pédalier sont calculés à chaque position de manivelle
 const CYC_POSES = {
   cyc_ville: { hip: [0, 1.0, -0.22], sh: [0, 1.48, -0.1], head: [0, 1.67, -0.06], hands: [[0.31, 0.97, 0.15], [-0.31, 0.97, 0.15]], cyc: 1, crank: [0.28, 0.0, 0.17] },
@@ -4113,7 +4235,7 @@ const POSES = {
   cruiser: { hip: [0, 0.74, -0.34], sh: [0, 1.24, -0.32], head: [0, 1.42, -0.28], hands: [[0.42, 1.12, 0.3], [-0.42, 1.12, 0.3]], knees: [[0.25, 0.72, 0.26], [-0.25, 0.72, 0.26]], feet: [[0.26, 0.38, 0.5], [-0.26, 0.38, 0.5]], helmet: true },
   scoot: { hip: [0, 0.88, -0.32], sh: [0, 1.39, -0.24], head: [0, 1.56, -0.2], hands: [[0.32, 1.02, 0.41], [-0.32, 1.02, 0.41]], knees: [[0.18, 0.9, 0.12], [-0.18, 0.9, 0.12]], feet: [[0.15, 0.31, 0.13], [-0.15, 0.31, 0.13]], helmet: true },
 };
-Object.assign(POSES, CYC_POSES);   // V224 : postures des cyclistes
+Object.assign(POSES, CYC_POSES, QUAD_POSES);   // V224 : postures des cyclistes ; V234 : pilotes de quad
 const DRV_MESH = {};
 function driverMesh(idx, pose) {
   const key = idx + '_' + pose; if (DRV_MESH[key]) return DRV_MESH[key];
@@ -6902,6 +7024,10 @@ function nextCam() { G.camMode = (G.camMode + 1) % CAM_N; G.cam.vel = null; SAVE
 const V224_TXT = {"fr": ["Vélos", "Course vélo", "Peloton de vélos, sans circulation. Choisis ton vélo.", "Ton vélo"], "en": ["Bicycles", "Bike race", "A cycling pack, no traffic. Pick your bike.", "Your bike"], "es": ["Bicicletas", "Carrera ciclista", "Pelotón de bicis, sin tráfico. Elige tu bici.", "Tu bici"], "pt": ["Bicicletas", "Corrida de bicicleta", "Pelotão de bicicletas, sem trânsito. Escolha a sua.", "A tua bicicleta"], "de": ["Fahrräder", "Radrennen", "Ein Fahrerfeld ohne Verkehr. Wähle dein Rad.", "Dein Rad"], "it": ["Biciclette", "Gara ciclistica", "Gruppo di bici, senza traffico. Scegli la tua bici.", "La tua bici"], "tr": ["Bisikletler", "Bisiklet yarışı", "Trafiksiz bisiklet grubu. Bisikletini seç.", "Bisikletin"], "ar": ["دراجات هوائية", "سباق دراجات", "مجموعة دراجات هوائية بدون حركة مرور. اختر دراجتك.", "دراجتك"], "tn": ["بسكلات", "كورسة بسكلات", "بسكلات برك، من غير كراهب. اختار البسكلات متاعك.", "البسكلات متاعك"]};
 const V224_TRK = {"matmata": ["Matmata • Maisons troglodytes et cratères", "Matmata • Cave houses and craters", "مطماطة • المساكن الحفرية", "مطماطة • الديار تحت الأرض"], "tataouine": ["Tataouine • Ksar Ouled Soltane et ghorfas", "Tataouine • Ksar Ouled Soltane granaries", "تطاوين • قصر أولاد سلطان والغرف", "تطاوين • قصر أولاد سلطان والغرف"], "kef": ["Le Kef • Table de Jugurtha et kasbah", "Le Kef • Jugurtha’s Table and kasbah", "الكاف • مائدة يوغرطة والقصبة", "الكاف • مايدة يوغرطة والقصبة"], "nabeul": ["Nabeul • Souk des potiers et Cap Bon", "Nabeul • Potters’ souk and Cap Bon", "نابل • سوق الفخّار والوطن القبلي", "نابل • سوق الفخّار والوطن القبلي"], "mahdia": ["Mahdia • Cap Africa, phare et port de pêche", "Mahdia • Cap Africa, lighthouse and fishing port", "المهدية • رأس إفريقيا والمنارة وميناء الصيد", "المهدية • راس افريقيا والفنار والمرسى"], "dougga": ["Dougga • Capitole et théâtre romains", "Dougga • Roman capitol and theatre", "دقة • الكابيتول والمسرح الروماني", "دقة • الكابيتول والمسرح الروماني"], "zaghouan": ["Zaghouan • Temple des Eaux et aqueduc", "Zaghouan • Water Temple and aqueduct", "زغوان • معبد المياه والحنايا", "زغوان • معبد المياه والحنايا"], "tunis_jour": ["Tunis • Avenue Habib-Bourguiba de jour", "Tunis • Habib Bourguiba Avenue by day", "تونس • شارع الحبيب بورقيبة نهاراً", "تونس • شارع بورقيبة في النهار"]};
 for (const l in V224_TXT) { const v = V224_TXT[l]; Object.assign(LANGS[l], { cat_velo: v[0], m_velo: v[1], m_veloD: v[2], q_bike: v[3] }); }
+// V234 — quads
+const V234_TXT = {"fr": ["Quads", "Course de quads", "Peloton de quads tout-terrain, sans circulation. Choisis ton quad.", "Ton quad"], "en": ["Quads", "Quad race", "A pack of off-road quads, no traffic. Pick your quad.", "Your quad"], "es": ["Quads", "Carrera de quads", "Pelotón de quads todoterreno, sin tráfico. Elige tu quad.", "Tu quad"], "pt": ["Quads", "Corrida de quads", "Pelotão de quads todo-o-terreno, sem trânsito. Escolhe o teu quad.", "O teu quad"], "de": ["Quads", "Quad-Rennen", "Ein Feld aus Gelände-Quads, ohne Verkehr. Wähle dein Quad.", "Dein Quad"], "it": ["Quad", "Gara di quad", "Gruppo di quad fuoristrada, senza traffico. Scegli il tuo quad.", "Il tuo quad"], "tr": ["ATV", "ATV yarışı", "Trafiksiz arazi ATV grubu. ATV'ni seç.", "ATV'n"], "ar": ["كوادات", "سباق الكوادات", "مجموعة كوادات للطرق الوعرة بدون حركة مرور. اختر الكواد الخاص بك.", "الكواد الخاص بك"], "tn": ["كوادات", "كورسة كوادات", "كوادات للرمل والطرقات الصعيبة، بلاش كراهب. اختار الكواد متاعك.", "الكواد متاعك"]};
+for (const l in V234_TXT) { const v = V234_TXT[l]; if (LANGS[l]) Object.assign(LANGS[l], { cat_quad: v[0], m_quad: v[1], m_quadD: v[2], q_quad: v[3] }); }
+const VMODE = { velo: { cat: 'velo', def: 'bisklet', key: 'bike', lbl: 'q_bike' }, quad: { cat: 'quad', def: 'quad_hammamet', key: 'quad', lbl: 'q_quad' } };   // courses réservées à une famille de véhicules
 for (const k in V224_TRK) { const v = V224_TRK[k]; TXT.trk[k] = [v[0], v[1], v[2]]; TN_CONTENT.trk[k] = v[3]; }
 // V226 — progression du pilote : niveaux, grades, XP de course et trophées récompensés
 const V226_TXT = {
@@ -6952,6 +7078,7 @@ const ACH = [
   ['tourAll', '🕌', s => Object.keys(s.trk || {}).length >= TRACKS.length, 15000, 'Tour de Tunisie : tous les circuits', 'Tour of Tunisia: every track', 'جولة تونس: كل الحلبات'],
   ['style', '💨', s => (s.bestStyle || 0) >= 3000, 3000, '3 000 points de style en une course', '3,000 style points in one race', '3000 نقطة أسلوب في سباق'],
   ['garage10', '🔧', () => SAVE.owned.length >= 10, 5000, 'Posséder 10 véhicules', 'Own 10 vehicles', 'امتلاك 10 مركبات'],
+  ['quadsAll', '🏜', () => CARS.filter(c => c.cat === 'quad').every(c => SAVE.owned.includes(c.id)), 7000, 'Tous les quads au garage', 'Every quad in the garage', 'كل الكوادات في الگاراج'],
   ['bikesAll', '🛞', () => CARS.filter(c => c.cat === 'velo').every(c => SAVE.owned.includes(c.id)), 6000, 'Tous les vélos au garage', 'Every bike in the garage', 'كل الدراجات في المرآب'],
   ['career10', '📅', () => (SAVE.careerDone || []).length >= 10, 4000, '10 étapes de carrière', '10 career stages', '10 مراحل في المسيرة'],
   ['career50', '🎖️', () => (SAVE.careerDone || []).length >= 50, 25000, 'Les 50 étapes de carrière', 'All 50 career stages', 'كل المراحل الخمسين'],
@@ -6976,10 +7103,11 @@ function xpHTML(res) {
 }
 function quickSurprise() {
   // course surprise : tout est tiré au sort parmi ce que le joueur possède
-  const q = UI.q, rr = Math.random(), modes = rr < 0.55 ? 'race' : rr < 0.75 ? 'velo' : rr < 0.88 ? 'chase' : 'tt';
+  const q = UI.q, rr = Math.random(), modes = rr < 0.5 ? 'race' : rr < 0.64 ? 'velo' : rr < 0.78 ? 'quad' : rr < 0.9 ? 'chase' : 'tt';
   const bikes = CARS.filter(c => catOf(c) === 'velo' && SAVE.owned.includes(c.id)), w = Math.random();
   q.mode = modes; q.track = Math.floor(Math.random() * TRACKS.length); q.weather = TRACKS[q.track].env.night ? 0 : w < 0.6 ? 0 : w < 0.8 ? 1 : 2;
   q.opp = 4 + Math.floor(Math.random() * 4); q.laps = 2; if (modes === 'velo') q.bike = bikes[Math.floor(Math.random() * bikes.length)].id;
+  if (modes === 'quad') { const qs = CARS.filter(c => catOf(c) === 'quad' && SAVE.owned.includes(c.id)); if (qs.length) q.quad = qs[Math.floor(Math.random() * qs.length)].id; else q.mode = 'race'; }
   try { UI.renderQuick(); } catch (e) { }
   setTimeout(() => $('q-go').click(), 350);
 }
@@ -7052,6 +7180,13 @@ const CARS = [
   { id: 'eclipse_gtx', name: 'Eclipse GTX Electric', cls: 'S', tier: 4, style: 'ev', price: 142000, vmax: 338, acc: 14.1, lat: 27.5, nos: 1.35, desc: 'Supercar électrique à quatre moteurs, couple instantané et motricité intégrale.' },
   { id: 'alpine_xr', name: 'Alpine XR-900', cls: 'S', tier: 4, style: 'sports', price: 138000, vmax: 330, acc: 12.9, lat: 28.1, nos: 1.4, desc: 'Sportive légère de précision, châssis affûté et appui aérodynamique.' },
   // motos (adversaires : motos aussi)
+  { id: 'quad_hammamet', name: 'Hammamet Mini 110', cls: 'D', tier: 0, cat: 'quad', style: 'quad_mini', price: 0, vmax: 78, acc: 6.0, lat: 20, nos: 1.0, mass: 0.3, desc: "Mini-quad 110 cm³ pour débuter : léger, maniable, parfait sur le sable de Hammamet." },
+  { id: 'quad_fellah', name: 'Fellah 450 4x4', cls: 'C', tier: 1, cat: 'quad', style: 'quad_util', price: 7800, vmax: 104, acc: 6.4, lat: 20.5, nos: 1.05, mass: 0.55, desc: "Quad de travail 4x4 : porte-bagages, treuil et caisse en bois, increvable dans les oliveraies." },
+  { id: 'quad_chott', name: 'Chott Cross 250', cls: 'C', tier: 1, cat: 'quad', style: 'quad_cross', price: 9500, vmax: 118, acc: 8.6, lat: 22, nos: 1.08, mass: 0.38, desc: "Quad de cross nerveux : suspensions longues, plaques numéro, parfait pour les sauts." },
+  { id: 'quad_sahel', name: 'Sahel E-Quad', cls: 'B', tier: 2, cat: 'quad', style: 'quad_elec', price: 15000, vmax: 128, acc: 10.2, lat: 21.5, nos: 1.15, mass: 0.45, desc: "Quad 100 % électrique : couple instantané, bandeau LED et silence total." },
+  { id: 'quad_kerkennah', name: 'Kerkennah 700 R', cls: 'B', tier: 2, cat: 'quad', style: 'quad_sport', price: 18500, vmax: 138, acc: 9.6, lat: 23, nos: 1.15, mass: 0.42, desc: "Quad sportif 700 cm³ : triangles alu, amortisseurs réglables, sortie d'échappement relevée." },
+  { id: 'quad_douz', name: 'Douz Dune 850', cls: 'A', tier: 3, cat: 'quad', style: 'quad_dune', price: 26000, vmax: 146, acc: 9.8, lat: 21, nos: 1.2, mass: 0.5, desc: "Quad des dunes : pneus ballon à crampons, voie large, pare-chocs chromés et mât lumineux." },
+  { id: 'quad_ghilane', name: 'Ksar Ghilane Raid 1000', cls: 'A', tier: 3, cat: 'quad', style: 'quad_raid', price: 34000, vmax: 156, acc: 10.4, lat: 22, nos: 1.25, mass: 0.55, desc: "Quad de rallye-raid : tour de navigation, bulle, réservoirs latéraux et roue de secours." },
   { id: 'bisklet', name: 'Bisklet Médina', cls: 'D', tier: 0, cat: 'velo', style: 'bike_ville', price: 0, vmax: 52, acc: 3.4, lat: 17.5, nos: 1.0, mass: 0.14, desc: 'Le vélo tunisien de tous les jours : panier en osier, porte-bagages, sonnette et garde-boue.' },
   { id: 'bmx_lac', name: 'BMX Lac Freestyle', cls: 'D', tier: 0, cat: 'velo', style: 'bike_bmx', price: 1500, vmax: 56, acc: 5.2, lat: 20, nos: 1.05, mass: 0.12, desc: 'Petit, nerveux et maniable : idéal pour les ruelles de la médina.' },
   { id: 'vtt_chambi', name: 'Chambi VTT 29', cls: 'C', tier: 1, cat: 'velo', style: 'bike_vtt', price: 3800, vmax: 66, acc: 4.8, lat: 21, nos: 1.08, mass: 0.15, desc: 'VTT à fourche suspendue et gros pneus à crampons : il accroche partout, même en montagne.' },
@@ -7140,7 +7275,7 @@ const CARS = [
   { id:'sfax_turbo_89',name:'Sfax Turbo 89',cls:'A',tier:3,cat:'retro',style:'retro80',price:68000,vmax:298,acc:10.4,lat:23,nos:1.24,desc:'Coupé rétro à turbo haute pression.' },
   { id:'carthage_classic_gt',name:'Carthage Classic GT',cls:'A',tier:3,cat:'retro',style:'retro70',price:72000,vmax:304,acc:10.6,lat:23.2,nos:1.26,desc:'Grand tourisme classique restauré et préparé.' },
 ];
-const CATS = ['car', 'moto', 'velo', 'offroad', 'heavy', 'retro'];
+const CATS = ['car', 'moto', 'quad', 'velo', 'offroad', 'heavy', 'retro'];
 const catOf = c => c.cat || 'car';
 const tierCars = t => CARS.filter(c => c.tier === t && catOf(c) === 'car');
 const UPG = [{ k: 'eng', name: 'Moteur', desc: 'Vitesse max' }, { k: 'tur', name: 'Turbo', desc: 'Accélération' }, { k: 'tyr', name: 'Pneus', desc: 'Adhérence' }, { k: 'nos', name: 'Nitro', desc: 'Durée et puissance' }, { k: 'aero', name: 'Aérodynamique', desc: 'Vitesse et stabilité' }, { k: 'brk', name: 'Freins sport', desc: 'Puissance de freinage' }];
@@ -7238,14 +7373,14 @@ function mkCar(kind, modelName, paint, o = {}) {
     burnT: 0, burn: false, gear: 1, rpm: 0.5, wreck: false, drv: 0, perk: null, ph: 0.5, state: '', cruise: 0.5, vmax: 0.5, cornerF: 1.5, carName: '', rimS: null, rimC: null, st: null, car: null,
   }, o);
 }
-function prepWheels(c) { const m = c.model; c.wm = getWheel(m.cyc ? m.rim : (c.rimS || m.rim), m.wr, m.ww); if (m.rimF) c.wmF = getWheel(m.rimF, m.wr, m.ww); return c; }
+function prepWheels(c) { const m = c.model; c.wm = getWheel(m.cyc ? m.rim : (m.knob ? 'k' : '') + (c.rimS || m.rim), m.wr, m.ww); if (m.rimF) c.wmF = getWheel(m.rimF, m.wr, m.ww); return c; }
 function placeOnTrack(c, s, d) {
   const T = G.T, a = T.at(s); c.s = T.wrap(s); c.d = d; c.x = a.x + a.rx * d; c.z = a.z + a.rz * d; c.y = a.y; c.h = a.h; c.i = a.i;
   c.trx = a.rx; c.trz = a.rz; c.ttx = a.tx; c.ttz = a.tz;
 }
 function randomPaint() { return hexToRgb(PAINTS[Math.floor(Math.random() * 8)]); }
 
-const velSfx = () => (G.player && G.player.car && catOf(G.player.car) === 'velo') ? '_velo' : '';   // records et fantômes séparés pour les vélos
+const velSfx = () => { const k = G.player && G.player.car && catOf(G.player.car); return k === 'velo' || k === 'quad' ? '_' + k : ''; };   // records et fantômes séparés pour les vélos
 function setupRace(cfg) {
   coachReset();
   const T = G.T; G.cars = []; G.cfg = cfg; G.time = 0; G.raceT = 0; G.style = 0; G.msgs = []; G.laps = []; G.best = Infinity; G.lapStart = 0;
@@ -7290,7 +7425,7 @@ function setupRace(cfg) {
   G.cars.unshift(p);
   const Q = SAVE.settings.quality, TCOL = ['#7a7f86', '#c9c9c9', '#3b4a63', '#6b2a2a', '#2e4d3a', '#e8e4dc', '#1c1c1e', '#8a6d3b', '#a3282c', '#d7d2c4', '#2b5f8a', '#5b5f63'];
   const trafCol = mn => mn === 'taxi' ? [1, 0.8, 0.08] : mn === 'louage' ? [0.94, 0.94, 0.92] : hexToRgb(TCOL[Math.floor(Math.random() * TCOL.length)]);
-  if (cfg.traffic && catOf(car) !== 'velo') {
+  if (cfg.traffic && catOf(car) !== 'velo' && catOf(car) !== 'quad') {
     // V214 — circulation réaliste : berlines, citadines, taxis jaunes, louages, utilitaires, camions, bus, pick-up, 4x4, scooters, motos et voitures anciennes
     const models = ['sedan', 'taxi', 'louage', 'hatch', 'moto_scoot', 'van', 'suv', 'truck', 'sedan', 'retro80', 'bus', 'taxi', 'pickup', 'moto_trail', 'hatch', 'retro70', 'louage', 'coupe'];
     const n = (cfg.mode === 'chase' ? 14 : 10) + (Q === 'ultra' ? 4 : Q === 'high' ? 2 : 0);
@@ -7315,7 +7450,8 @@ function setupRace(cfg) {
   }
   // roues construites avant le départ : aucune construction de maillage (saccade) en pleine course
   for (const c of G.cars) prepWheels(c); prepWheels(p);
-  for (const c of G.cars) { if (c.model.bike || c.model.seatM) driverMesh(c.drv, c.model.bike || 'car'); if (c.model.cyc) for (let k = 0; k < CYC_PH; k++) cycLegs(c.drv, c.model.bike, k); }
+  for (const c of G.cars) { if (c.model.rider) driverMesh(c.drv, c.model.rider); if (c.model.bike || c.model.seatM) driverMesh(c.drv, c.model.bike || 'car'); if (c.model.cyc) for (let k = 0; k < CYC_PH; k++) cycLegs(c.drv, c.model.bike, k); }
+  if (p.model.rider) driverMesh(p.drv, p.model.rider);
   if (p.model.bike || p.model.seatM) driverMesh(p.drv, p.model.bike || 'car');
   if (p.model.cyc) for (let k = 0; k < CYC_PH; k++) cycLegs(p.drv, p.model.bike, k);
   if (cfg.mode === 'chase') for (const n of ['police', 'polgt']) getWheel(MODELS[n].rim, MODELS[n].wr, MODELS[n].ww);
@@ -7946,6 +8082,7 @@ const DRM = new Float32Array(16);
 function drawCar(c, M, far) {
   const m = c.model;
   R.setPaint(c.paint); R.setBrake(c.brake ? 1 : 0); R.setUnder(c.under || UNDER0);
+  if (m.rider) R.draw(driverMesh(c.drv, m.rider), M);   // V234 — pilote de quad
   if (m.bike) { R.draw(driverMesh(c.drv, m.bike), M); if (m.cyc) R.draw(cycLegs(c.drv, m.bike, cycPh(c)), M); } // pilote de moto / cycliste : toujours visible
   if (far) { R.draw(m.far, M); return; }
   // de près : habitacle, pilote au volant et vitres transparentes
@@ -7954,7 +8091,7 @@ function drawCar(c, M, far) {
   if (inside) R.draw(driverMesh(c.drv, 'car'), M4.mul(M, m.seatM, DRM));
   const steer = c.kind === 'player' ? G.steer : clamp(c.dv * 0.15, -0.6, 0.6), frontSteer = -steer;
   R.setRim(c.rimC || RIM0);
-  const wm = c.wm || (c.wm = getWheel(m.cyc ? m.rim : (c.rimS || m.rim), m.wr, m.ww)), wmF = m.rimF ? (c.wmF || (c.wmF = getWheel(m.rimF, m.wr, m.ww))) : wm;
+  const wm = c.wm || (c.wm = getWheel(m.cyc ? m.rim : (m.knob ? 'k' : '') + (c.rimS || m.rim), m.wr, m.ww)), wmF = m.rimF ? (c.wmF || (c.wmF = getWheel(m.rimF, m.wr, m.ww))) : wm;
   for (const w of m.wheels) { const speedFactor = clamp(Math.abs(c.v || 0) / 90, 0, 1);
     const baseWheelAngle = frontSteer * (0.72 - 0.12 * speedFactor);
     // Géométrie Ackermann légère : la roue intérieure braque un peu plus que l'extérieure.
@@ -8297,7 +8434,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V233';
+const GAME_VERSION = 'V234';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -8319,7 +8456,7 @@ function detectLang() {
 }
 function defaultSettings() { return { sfx: 80, music: 50, quality: (IS_TOUCH && ((navigator.deviceMemory || 4) <= 3 || (navigator.hardwareConcurrency || 8) <= 4)) ? 'medium' : 'high', dyn: true, fps: false, cam: 0, tags: true, coach: true, rline: false, uicol: 'orange', hudsz: 'norm', touch: 'auto', steer: 'buttons', sens: 100, opacity: 75, vibe: true, lang: detectLang() }; }
 function defaultSave() {
-  return { money: 8000, owned: ['sprint', 'bisklet'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
+  return { money: 8000, owned: ['sprint', 'bisklet', 'quad_hammamet'], car: 'sprint', driver: 'aziz', drivers: ['aziz', 'rania'], paint: { sprint: '#d81e1e' }, neon: {}, upg: {}, rims: {}, career: 0, careerDone: [], careerVersion: 2, best: {}, history: [], settings: defaultSettings(), stats: { races: 0, wins: 0 } };
 }
 let SAVE = defaultSave();
 function loadGame() {
@@ -8337,6 +8474,7 @@ function loadGame() {
     }
     SAVE.careerVersion = 2;
     if (!SAVE.owned.includes('bisklet')) SAVE.owned.push('bisklet');   // V224 : le vélo de ville est offert
+    if (!SAVE.owned.includes('quad_hammamet')) SAVE.owned.push('quad_hammamet');   // V234 : le mini-quad est offert
     const st = Object.assign(defaultSettings(), o.settings || {}); if (o.settings && o.settings.vol !== undefined && o.settings.sfx === undefined) st.sfx = o.settings.vol; SAVE.settings = st;
     return true;
   } catch (e) { return false; }
@@ -8471,20 +8609,20 @@ const UI = {
   /* ----- course rapide ----- */
   renderQuick() {
     const q = this.q;
-    $('q-modes').innerHTML = ['race', 'velo', 'tt', 'chase'].map(k => `<button class="mode ${q.mode === k ? 'on' : ''}" data-m="${k}"><b>${t('m_' + k)}</b><small>${t('m_' + k + 'D')}</small></button>`).join('');
+    $('q-modes').innerHTML = ['race', 'velo', 'quad', 'tt', 'chase'].map(k => `<button class="mode ${q.mode === k ? 'on' : ''}" data-m="${k}"><b>${t('m_' + k)}</b><small>${t('m_' + k + 'D')}</small></button>`).join('');
     $('q-modes').querySelectorAll('button').forEach(b => b.onclick = () => { q.mode = b.dataset.m; if (q.mode === 'chase') q.traffic = 1; this.renderQuick(); });
     const trackFilters=['all','city','desert','mountain','coast','circuit'].map(k=>[k,t('f_'+k)]);
     $('q-track-filters').innerHTML=trackFilters.map(([key,label])=>`<button type="button" data-filter="${key}" class="${(q.trackFilter||'all')===key?'on':''}">${label}</button>`).join('');
     $('q-track-filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{q.trackFilter=b.dataset.filter;this.renderQuick();});
     const visibleTracks=TRACKS.map((d,i)=>({d,i})).filter(x=>(q.trackFilter||'all')==='all'||x.d.theme===(q.trackFilter||'all'));
-    $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><span class="tinfo" role="button" aria-label="${t('ts_info')}">i</span><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small>${trackFacts(d)}<small>${t('record', SAVE.best[d.id + (q.mode === 'velo' ? '_velo' : '')] ? fmtT(SAVE.best[d.id + (q.mode === 'velo' ? '_velo' : '')]) : '—')}</small></button>`).join('');
+    $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><span class="tinfo" role="button" aria-label="${t('ts_info')}">i</span><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small>${trackFacts(d)}<small>${t('record', SAVE.best[d.id + (VMODE[q.mode] ? '_' + q.mode : '')] ? fmtT(SAVE.best[d.id + (VMODE[q.mode] ? '_' + q.mode : '')]) : '—')}</small></button>`).join('');
     $('q-tracks').querySelectorAll('button').forEach(b => { b.onclick = () => { q.track = +b.dataset.i; this.renderQuick(); }; b.querySelector('.tinfo').onclick = e => { e.stopPropagation(); const ti = +b.dataset.i; openTrackSheet(ti, () => { q.track = ti; this.renderQuick(); }); }; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.i], q.track === +b.dataset.i); });
-    { const vb = q.mode === 'velo', bx = $('q-bikes'); bx.classList.toggle('hidden', !vb);
-      if (vb) { const bikes = CARS.filter(c => catOf(c) === 'velo'); if (!q.bike || !SAVE.owned.includes(q.bike)) q.bike = SAVE.owned.includes(SAVE.car) && catOf(CARS.find(c => c.id === SAVE.car) || {}) === 'velo' ? SAVE.car : 'bisklet';
-        bx.innerHTML = `<h3>${t('q_bike')}</h3><div>` + bikes.map(c => { const own = SAVE.owned.includes(c.id); return `<button class="bk ${q.bike === c.id ? 'on' : ''} ${own ? '' : 'lock'}" data-b="${c.id}" ${own ? '' : 'disabled'}><span class="cls mini ${c.cls}">${c.cls}</span><b>${c.name}</b><small>${own ? Math.round(c.vmax * spdU()) + ' ' + (MPH() ? 'mph' : 'km/h') : '🔒 ' + money(c.price)}</small></button>`; }).join('') + '</div>';
-        bx.querySelectorAll('button.bk').forEach(b => b.onclick = () => { q.bike = b.dataset.b; this.renderQuick(); }); } }
-    $('q-traf').classList.toggle('hidden', q.mode === 'velo');
-    $('q-laps').classList.toggle('hidden', q.mode === 'chase'); $('q-opp').classList.toggle('hidden', q.mode !== 'race' && q.mode !== 'velo'); $('q-diff').classList.toggle('hidden', q.mode !== 'race' && q.mode !== 'velo');
+    { const VM = VMODE[q.mode], vb = !!VM, bx = $('q-bikes'); bx.classList.toggle('hidden', !vb);
+      if (vb) { const K = VM.key, bikes = CARS.filter(c => catOf(c) === VM.cat); if (!q[K] || !SAVE.owned.includes(q[K])) q[K] = SAVE.owned.includes(SAVE.car) && catOf(CARS.find(c => c.id === SAVE.car) || {}) === VM.cat ? SAVE.car : (bikes.find(c => SAVE.owned.includes(c.id)) || {}).id || VM.def;
+        bx.innerHTML = `<h3>${t(VM.lbl)}</h3><div>` + bikes.map(c => { const own = SAVE.owned.includes(c.id); return `<button class="bk ${q[K] === c.id ? 'on' : ''} ${own ? '' : 'lock'}" data-b="${c.id}" ${own ? '' : 'disabled'}><span class="cls mini ${c.cls}">${c.cls}</span><b>${c.name}</b><small>${own ? Math.round(c.vmax * spdU()) + ' ' + (MPH() ? 'mph' : 'km/h') : '🔒 ' + money(c.price)}</small></button>`; }).join('') + '</div>';
+        bx.querySelectorAll('button.bk').forEach(b => b.onclick = () => { q[K] = b.dataset.b; this.renderQuick(); }); } }
+    $('q-traf').classList.toggle('hidden', !!VMODE[q.mode]);
+    $('q-laps').classList.toggle('hidden', q.mode === 'chase'); $('q-opp').classList.toggle('hidden', q.mode !== 'race' && !VMODE[q.mode]); $('q-diff').classList.toggle('hidden', q.mode !== 'race' && !VMODE[q.mode]);
     $('q-laps').querySelector('span').textContent = q.laps; $('q-opp').querySelector('span').textContent = q.opp;
     $('q-diff').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === q.diff));
     $('q-traf').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === q.traffic));
@@ -9254,7 +9392,7 @@ function bindInputs() {
   $('q-diff').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.diff = +b.dataset.v; UI.renderQuick(); });
   $('q-traf').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.traffic = +b.dataset.v; UI.renderQuick(); });
   $('q-wx').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.weather = +b.dataset.v; UI.renderQuick(); });
-  $('q-go').onclick = () => { const q = UI.q, vb = q.mode === 'velo'; UI.startRace({ mode: vb ? 'race' : q.mode, velo: vb ? (q.bike || 'bisklet') : undefined, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: vb ? 0 : q.traffic, heat: 1, weather: q.weather === 1 ? 'rain' : q.weather === 2 ? 'night' : undefined }); };
+  $('q-go').onclick = () => { const q = UI.q, VM = VMODE[q.mode], vb = !!VM; UI.startRace({ mode: vb ? 'race' : q.mode, velo: vb ? (q[VM.key] || VM.def) : undefined, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: vb ? 0 : q.traffic, heat: 1, weather: q.weather === 1 ? 'rain' : q.weather === 2 ? 'night' : undefined }); };
   $('q-rand').onclick = () => quickSurprise();
   $('p-resume').onclick = () => UI.pause(false);
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };

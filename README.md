@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Nouveautés 2.36 — Audit du cahier des charges, phase 1
+- **Interface honnête** : l'écran d'accueil annonçait « 30 guerriers · 6 cartes » ; il affiche maintenant « Battle royale tunisien · 23 cartes · vous contre 29 soldats IA ».
+- **« Combattants » au lieu de « joueurs »** dans les modes et le bandeau du lobby (français, anglais, arabe), car les adversaires sont des soldats contrôlés par l'IA : le jeu n'a pas de multijoueur en ligne.
+- **Vérifié** : 30 combattants actifs (vous + 29 IA), sauvegarde des parties, victoires, éliminations, XP et missions quotidiennes conservée après actualisation.
+
 ## Nouveautés 2.35 — La carte choisie est toujours celle jouée
 - **Correction** : en mode Parcours, l'étape imposait sa carte et ignorait la carte choisie (l'étape 1 donnait toujours l'Île de Seddik). Désormais la carte choisie est toujours celle jouée, dans tous les modes. Choisir une étape propose sa carte, qu'on peut ensuite changer.
 - **Les 50 étapes ont la carte de leur nom** : Dunes de Douz au Sahara, Mer de Mahdia à Mahdia, Îles Kerkennah à Kerkennah, Gafsa la Rouge à Gafsa…

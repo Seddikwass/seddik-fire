@@ -1682,6 +1682,12 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 #hud{zoom:var(--hudz,1)}
 
 
+
+/* V235 — bouton figure */
+#touch [data-t=stunt]{z-index:3;border-radius:18px;background:linear-gradient(180deg,#8a4dff,#3c1a91);border:2px solid #cdb0ff;border-bottom-color:#1f0b55;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px;box-shadow:0 6px 18px rgba(80,30,200,.45)}
+#touch [data-t=stunt].hidden{display:none!important}
+#touch [data-t=stunt] svg{width:54%;height:auto}#touch [data-t=stunt] b{font:900 10px 'Chakra Petch',sans-serif;letter-spacing:.06em}
+#touch [data-t=stunt].on{filter:brightness(1.3);transform:scale(.95)}
 </style>
 </head>
 <body>
@@ -1696,7 +1702,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V234</span>
+    <span id="build-tag" aria-label="Version">V235</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1808,7 +1814,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
   <div id="touch" class="hidden">
     <div id="stick" class="hidden"><i class="ring"></i><i class="knob"></i></div>
     <div class="tl"><button data-t="left" aria-label="Tourner à gauche en maintenant"><svg viewBox="0 0 24 24"><path d="M15 4L7 12l8 8" fill="none" stroke="currentColor" stroke-width="3"/></svg></button><button data-t="right" aria-label="Tourner à droite en maintenant"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="3"/></svg></button></div>
-    <div class="tr"><button data-t="nitro">N₂O</button><button data-t="hand" aria-label="Frein à main et drift, maintenir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><path d="M10.2 15.2V8.8h2.3a1.9 1.9 0 0 1 0 3.8h-2.3"/><path d="M4.2 6.5a9 9 0 0 0 0 11M19.8 6.5a9 9 0 0 1 0 11"/></svg></button><button data-t="brake" aria-label="Frein"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="2.5" fill="currentColor"/><path d="M7 10.2h10M7 13.8h10" stroke="#000" stroke-opacity=".45" stroke-width="1.4"/></svg></button><button data-t="gas" aria-label="Accélérer"><svg viewBox="0 0 24 24"><path d="M8.5 2.5h7l-1.6 19h-3.8z" fill="currentColor"/><path d="M9.6 7h4.8M9.9 11h4.2M10.2 15h3.6" stroke="#000" stroke-opacity=".45" stroke-width="1.3"/></svg></button></div>
+    <div class="tr"><button data-t="stunt" class="hidden" aria-label="Figure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="17" r="3.2"/><circle cx="19" cy="9.5" r="3.2"/><path d="M5 17 L11 12 L19 9.5 M11 12 L10 7 L14 6"/></svg><b>FIG</b></button><button data-t="nitro">N₂O</button><button data-t="hand" aria-label="Frein à main et drift, maintenir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><path d="M10.2 15.2V8.8h2.3a1.9 1.9 0 0 1 0 3.8h-2.3"/><path d="M4.2 6.5a9 9 0 0 0 0 11M19.8 6.5a9 9 0 0 1 0 11"/></svg></button><button data-t="brake" aria-label="Frein"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="2.5" fill="currentColor"/><path d="M7 10.2h10M7 13.8h10" stroke="#000" stroke-opacity=".45" stroke-width="1.4"/></svg></button><button data-t="gas" aria-label="Accélérer"><svg viewBox="0 0 24 24"><path d="M8.5 2.5h7l-1.6 19h-3.8z" fill="currentColor"/><path d="M9.6 7h4.8M9.9 11h4.2M10.2 15h3.6" stroke="#000" stroke-opacity=".45" stroke-width="1.3"/></svg></button></div>
   </div>
 </div>
 
@@ -2774,6 +2780,16 @@ function bar(mb, a, b, ru, c, m, rv, sides = 8) {
   const P = (p, k) => { const t = k / sides * Math.PI * 2 + Math.PI / sides, cu = Math.cos(t) * ru, sv = Math.sin(t) * rv; return [p[0] + ux * cu + vx * sv, p[1] + uy * cu + vy * sv, p[2] + uz * cu + vz * sv]; };
   for (let k = 0; k < sides; k++) mb.quad(P(a, k), P(b, k), P(b, k + 1), P(a, k + 1), c, m);
   for (let k = 1; k < sides - 1; k++) { mb.tri(P(b, 0), P(b, k), P(b, k + 1), c, m); mb.tri(P(a, 0), P(a, k + 1), P(a, k), c, m); }
+}
+function taper(mb, a, b, r0, r1, c, m, sides = 10, fl = 1) {
+  // V235 — segment de membre effilé (rayon r0 -> r1), section légèrement aplatie (fl) : bras, jambes, cou réalistes
+  let dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2]; const l = Math.hypot(dx, dy, dz) || 1; dx /= l; dy /= l; dz /= l;
+  let ux = dz, uy = 0, uz = -dx; let ul = Math.hypot(ux, uy, uz); if (ul < 1e-3) { ux = 1; uy = 0; uz = 0; ul = 1; } ux /= ul; uz /= ul; uy /= ul;
+  const vx = dy * uz - dz * uy, vy = dz * ux - dx * uz, vz = dx * uy - dy * ux;
+  const P = (p, r, k) => { const t = k / sides * Math.PI * 2, cu = Math.cos(t) * r, sv = Math.sin(t) * r * fl; return [p[0] + ux * cu + vx * sv, p[1] + uy * cu + vy * sv, p[2] + uz * cu + vz * sv]; };
+  const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], rm = (r0 + r1) / 2 * 1.06;   // léger galbe musculaire au milieu
+  const rings = [[a, r0], [mid, rm], [b, r1]];
+  for (let j = 0; j < 2; j++) for (let k = 0; k < sides; k++) mb.quad(P(rings[j][0], rings[j][1], k), P(rings[j + 1][0], rings[j + 1][1], k), P(rings[j + 1][0], rings[j + 1][1], k + 1), P(rings[j][0], rings[j][1], k + 1), c, m);
 }
 function sphere(mb, cx, cy, cz, r, c, m, la0 = -Math.PI / 2, la1 = Math.PI / 2, seg = 14, sy = 1, sz = 1) {
   const nv = 8, P = (u, v) => { const a = u / seg * Math.PI * 2, b = la0 + (la1 - la0) * v / nv; return [cx + Math.cos(a) * Math.cos(b) * r, cy + Math.sin(b) * r * sy, cz + Math.sin(a) * Math.cos(b) * r * sz]; };
@@ -3745,12 +3761,14 @@ function cycLegs(idx, pose, ph) {
     const hgt = Math.sqrt(Math.max(0, Lg * Lg - D * D / 4)), mz = hp[2] + dz * D / 2, my = hp[1] + dy * D / 2;
     let pz = -dy, py = dz; if (pz < 0) { pz = -pz; py = -py; }
     const kn = [sx * 0.12, my + py * hgt, mz + pz * hgt], ftE = [sx * 0.12, hp[1] + dy * D, hp[2] + dz * D];
-    bar(mb, hp, kn, 0.078, shorts, 0); bar(mb, lerp3(hp, kn, 0.72), kn, 0.07, skin, 0); bar(mb, kn, ftE, 0.052, skin, 0);
-    sphere(mb, kn[0], kn[1], kn[2], 0.062, skin, 0, -Math.PI / 2, Math.PI / 2, 8);
-    bar(mb, lerp3(kn, ftE, 0.8), ftE, 0.048, SOCK, 0);
-    mb.box(ftE[0], ftE[1] - 0.045, ftE[2] + 0.03, 0.09, 0.07, 0.24, SHOE, 0); mb.box(ftE[0], ftE[1] - 0.05, ftE[2] + 0.03, 0.095, 0.014, 0.25, [0.12, 0.12, 0.13], 4);
+    taper(mb, hp, lerp3(hp, kn, 0.74), 0.09, 0.07, shorts, 0, 12); taper(mb, lerp3(hp, kn, 0.74), kn, 0.07, 0.058, skin, 0, 12);
+    sphere(mb, kn[0], kn[1], kn[2], 0.058, skin, 0, -Math.PI / 2, Math.PI / 2, 10);
+    taper(mb, kn, lerp3(kn, ftE, 0.42), 0.056, 0.062, skin, 0, 12); taper(mb, lerp3(kn, ftE, 0.42), lerp3(kn, ftE, 0.78), 0.062, 0.04, skin, 0, 12);   // mollet
+    taper(mb, lerp3(kn, ftE, 0.78), ftE, 0.042, 0.038, SOCK, 0, 10);
+    sphere(mb, ftE[0], ftE[1] - 0.04, ftE[2] + 0.04, 0.05, SHOE, 0, -Math.PI / 2, Math.PI / 2, 10, 0.75, 2.4); mb.box(ftE[0], ftE[1] - 0.075, ftE[2] + 0.04, 0.08, 0.014, 0.24, [0.12, 0.12, 0.13], 4);
+    mb.box(ftE[0], ftE[1] - 0.015, ftE[2] + 0.05, 0.085, 0.012, 0.03, suit, 0);   // molette de serrage
   }
-  return (CYC_LEG[key] = R.upload(mb));
+  return (CYC_LEG[key] = R.upload(mb.smooth(58)));
 }
 function cycPh(c) { const x = ((c.crank || 0) / (Math.PI * 2)) % 1; return Math.floor((x < 0 ? x + 1 : x) * CYC_PH) % CYC_PH; }
 
@@ -4241,10 +4259,14 @@ function driverMesh(idx, pose) {
   const key = idx + '_' + pose; if (DRV_MESH[key]) return DRV_MESH[key];
   const d = DRIVERS[idx] || DRIVERS[0], P = POSES[pose] || POSES.car, mb = new MB();
   const skin = hexToRgb(d.skin), hair = hexToRgb(d.hairC), suit = hexToRgb(d.suit), helm = hexToRgb(d.helmet);
-  const pants = V3.sc(suit, 0.35), glove = [0.05, 0.05, 0.055], boot = [0.04, 0.04, 0.045];
+  const mx = typeof pose === 'string' && pose.startsWith('quad_');   // V235 — pilote de quad en tenue de cross
+  const pants = V3.sc(suit, mx ? 0.8 : 0.35), glove = mx ? [0.92, 0.4, 0.08] : [0.05, 0.05, 0.055], boot = mx ? [0.9, 0.9, 0.92] : [0.04, 0.04, 0.045];
   const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-  // torse (combinaison) et bande claire sur la poitrine
-  bar(mb, P.hip, P.sh, 0.16, suit, 0, 0.105);
+  // torse (combinaison) : bassin, taille affinée, cage thoracique, dos arrondi
+  const lerpP = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+  taper(mb, P.hip, lerpP(P.hip, P.sh, 0.42), 0.15, 0.135, suit, 0, 14, 0.7); taper(mb, lerpP(P.hip, P.sh, 0.42), P.sh, 0.135, 0.175, suit, 0, 14, 0.66);
+  { const ch = lerpP(P.hip, P.sh, 0.78); sphere(mb, ch[0], ch[1], ch[2], 0.165, suit, 0, -Math.PI / 2, Math.PI / 2, 12, 0.62, 0.68); sphere(mb, P.hip[0], P.hip[1] - 0.01, P.hip[2], 0.15, pants, 0, -Math.PI / 2, Math.PI / 2, 12, 0.6, 0.72); }
+  for (const sx of [-1, 1]) sphere(mb, P.sh[0] + sx * 0.17, P.sh[1] - 0.035, P.sh[2], 0.068, suit, 0, -Math.PI / 2, Math.PI / 2, 10);   // deltoïdes
   bar(mb, add(P.hip, [0, 0.2, 0.0]), add(P.sh, [0, -0.08, 0.004]), 0.165, V3.sc(suit, 1.35), 0, 0.02);
   if (!P.cyc) {
   // combinaison FIA : col, renforts d'épaules, harnais 4 points et boucle centrale
@@ -4276,7 +4298,7 @@ function driverMesh(idx, pose) {
     const mid = [0, (P.hip[1] + P.sh[1]) / 2, (P.hip[2] + P.sh[2]) / 2 - 0.12]; mb.box(mid[0], mid[1] - 0.06, mid[2] - 0.02, 0.2, 0.15, 0.012, [0.96, 0.96, 0.96], 0);
   }
   const hc = P.head;
-  bar(mb, P.sh, add(hc, [0, -0.1, -0.01]), 0.045, skin, 0);
+  taper(mb, P.sh, add(hc, [0, -0.1, -0.01]), 0.055, 0.046, P.helmet || P.cyc ? V3.sc(suit, 0.6) : skin, 0, 10);   // cou (cagoule ignifugée sous le casque)
   if (P.helmet) {
     // casque intégral de compétition : coque, visière fumée, joint, aérations et marquages
     sphere(mb, hc[0], hc[1], hc[2], 0.142, helm, 4, -Math.PI / 2, Math.PI / 2, 16);
@@ -4295,6 +4317,15 @@ function driverMesh(idx, pose) {
       mb.box(sx * 0.055 + hc[0], hc[1] + 0.128, hc[2] + 0.01, 0.018, 0.012, 0.05, [0.92, 0.94, 0.98], 4);
     }
     mb.box(hc[0], hc[1] - 0.112, hc[2] + 0.07, 0.12, 0.018, 0.04, [0.025, 0.03, 0.04], 4);
+    if (mx) {
+      mb.box(hc[0], hc[1] + 0.1, hc[2] + 0.14, 0.24, 0.014, 0.16, helm, 4);   // visière casquette
+      sphere(mb, hc[0], hc[1] - 0.075, hc[2] + 0.12, 0.08, helm, 4, -Math.PI / 2, Math.PI / 2, 10, 0.75, 1.5);   // mentonnière avancée
+      mb.box(hc[0], hc[1] + 0.005, hc[2] + 0.13, 0.21, 0.07, 0.05, [0.95, 0.5, 0.1], 0); mb.box(hc[0], hc[1] + 0.005, hc[2] + 0.156, 0.17, 0.05, 0.006, [0.5, 0.75, 0.95], 15);   // masque
+      for (const sx of [-1, 1]) mb.box(hc[0] + sx * 0.14, hc[1] + 0.005, hc[2] + 0.02, 0.01, 0.04, 0.16, [0.95, 0.5, 0.1], 0);
+      // pare-pierres (plastron) avant et dorsale
+      const ch = lerpP(P.hip, P.sh, 0.7); mb.box(ch[0], ch[1] - 0.06, ch[2] + 0.12, 0.3, 0.26, 0.04, [0.95, 0.95, 0.96], 4); mb.box(ch[0], ch[1] - 0.04, ch[2] - 0.13, 0.3, 0.3, 0.04, [0.95, 0.95, 0.96], 4);
+      for (const sx of [-1, 1]) mb.box(ch[0] + sx * 0.08, ch[1] - 0.02, ch[2] + 0.145, 0.1, 0.12, 0.01, [0.15, 0.15, 0.17], 4);
+    }
   } else {
     sphere(mb, hc[0], hc[1], hc[2], 0.105, skin, 0, -Math.PI / 2, Math.PI / 2, 10, 1.08);
     const cap = (r, la0, dz = -0.008, dy = 0.012, c = hair) => sphere(mb, hc[0], hc[1] + dy, hc[2] + dz, r, c, 0, la0, Math.PI / 2, 10, 1.04);
@@ -4320,16 +4351,24 @@ function driverMesh(idx, pose) {
   for (let k = 0; k < 2; k++) {
     const sx = k ? -1 : 1, s0 = add(P.sh, [sx * 0.19, -0.04, 0]), h = P.hands[k];
     const e = [(s0[0] + h[0]) / 2 * 1.18, Math.min(s0[1], h[1]) - 0.08, (s0[2] + h[2]) / 2];
-    bar(mb, s0, e, 0.05, suit, 0); bar(mb, e, h, 0.044, suit, 0);
-    sphere(mb, e[0], e[1], e[2], 0.057, V3.sc(suit, 0.72), 4, -Math.PI / 2, Math.PI / 2, 8);
-    mb.box(h[0], h[1], h[2] - 0.018, 0.09, 0.035, 0.075, [0.12, 0.13, 0.15], 4);
-    sphere(mb, h[0], h[1], h[2], 0.046, glove, 0, -Math.PI / 2, Math.PI / 2, 8);
+    const wr = lerpP(e, h, 0.86);
+    taper(mb, s0, e, 0.058, 0.045, suit, 0, 10); taper(mb, e, wr, 0.047, 0.034, P.cyc ? skin : suit, 0, 10);
+    sphere(mb, e[0], e[1], e[2], 0.05, mx ? [0.08, 0.08, 0.09] : V3.sc(suit, 0.72), mx ? 4 : 0, -Math.PI / 2, Math.PI / 2, 10);
+    if (mx) taper(mb, lerpP(e, wr, 0.05), lerpP(e, wr, 0.5), 0.056, 0.05, [0.1, 0.1, 0.11], 4, 8);   // coudières de cross
+    taper(mb, lerpP(wr, h, -0.6), wr, 0.044, 0.041, glove, 0, 8);   // manchette du gant
+    sphere(mb, h[0], h[1], h[2], 0.047, glove, 0, -Math.PI / 2, Math.PI / 2, 10, 0.8, 1.15);
+    for (let f = 0; f < 4; f++) bar(mb, [h[0] + (f - 1.5) * 0.017 * sx, h[1] + 0.02, h[2] + 0.02], [h[0] + (f - 1.5) * 0.017 * sx, h[1] - 0.03, h[2] + 0.04], 0.009, glove, 0, 0.009, 5);   // doigts serrés sur la poignée
+    mb.box(h[0], h[1] + 0.03, h[2] - 0.01, 0.06, 0.01, 0.05, mx ? [0.9, 0.35, 0.08] : [0.16, 0.17, 0.2], 4);
     if (P.cyc) continue;
     const hp = add(P.hip, [sx * 0.1, 0.02, 0]), kn = P.knees[k], ft = P.feet[k];
-    bar(mb, hp, kn, 0.075, pants, 0); bar(mb, kn, ft, 0.055, pants, 0);
-    sphere(mb, kn[0], kn[1], kn[2], 0.068, V3.sc(suit, 0.72), 4, -Math.PI / 2, Math.PI / 2, 8);
-    mb.box(ft[0], ft[1] - 0.04, ft[2] + 0.04, 0.1, 0.09, 0.2, boot, 0);
-    mb.box(ft[0], ft[1] - 0.087, ft[2] + 0.075, 0.105, 0.018, 0.17, [0.16, 0.16, 0.17], 4);
+    const an = lerpP(kn, ft, 0.82);
+    taper(mb, hp, kn, 0.088, 0.062, pants, 0, 12); taper(mb, kn, an, 0.064, 0.045, pants, 0, 12);
+    sphere(mb, kn[0], kn[1], kn[2], 0.066, mx ? [0.1, 0.1, 0.11] : V3.sc(suit, 0.72), 4, -Math.PI / 2, Math.PI / 2, 10);
+    if (mx) { taper(mb, lerpP(kn, an, 0.02), lerpP(kn, an, 0.75), 0.07, 0.06, [0.86, 0.87, 0.9], 4, 10, 0.9); for (const q of [0.25, 0.5, 0.72]) taper(mb, lerpP(kn, an, q), lerpP(kn, an, q + 0.05), 0.074, 0.073, [0.08, 0.08, 0.09], 4, 10, 0.9); }   // bottes de cross à boucles
+    else taper(mb, lerpP(kn, an, 0.55), an, 0.058, 0.05, boot, 0, 10);
+    taper(mb, an, [ft[0], ft[1] - 0.04, ft[2] + 0.02], 0.05, 0.048, boot, 0, 10);
+    sphere(mb, ft[0], ft[1] - 0.045, ft[2] + 0.09, 0.052, boot, 0, -Math.PI / 2, Math.PI / 2, 10, 0.75, 1.7);
+    mb.box(ft[0], ft[1] - 0.087, ft[2] + 0.075, 0.1, 0.018, 0.22, [0.16, 0.16, 0.17], 4);
   }
   if (P.wheel) {
     // volant incliné face au pilote + colonne
@@ -4342,7 +4381,7 @@ function driverMesh(idx, pose) {
     }
     bar(mb, wc, [0, 0.33, 0.72], 0.025, WHL, 0);
   }
-  return (DRV_MESH[key] = R.upload(mb));
+  return (DRV_MESH[key] = R.upload(mb.smooth(58)));   // V235 — normales lissées : corps arrondi, plus de facettes
 }
 
 /* ---------- portrait SVG (généré, sans image externe) ---------- */
@@ -7078,6 +7117,7 @@ const ACH = [
   ['tourAll', '🕌', s => Object.keys(s.trk || {}).length >= TRACKS.length, 15000, 'Tour de Tunisie : tous les circuits', 'Tour of Tunisia: every track', 'جولة تونس: كل الحلبات'],
   ['style', '💨', s => (s.bestStyle || 0) >= 3000, 3000, '3 000 points de style en une course', '3,000 style points in one race', '3000 نقطة أسلوب في سباق'],
   ['garage10', '🔧', () => SAVE.owned.length >= 10, 5000, 'Posséder 10 véhicules', 'Own 10 vehicles', 'امتلاك 10 مركبات'],
+  ['wheelie5', '🤸', () => (SAVE.bestWh || 0) >= 5, 3000, 'Figure de 5 secondes', '5-second stunt', 'حركة 5 ثواني'],
   ['quadsAll', '🏜', () => CARS.filter(c => c.cat === 'quad').every(c => SAVE.owned.includes(c.id)), 7000, 'Tous les quads au garage', 'Every quad in the garage', 'كل الكوادات في الگاراج'],
   ['bikesAll', '🛞', () => CARS.filter(c => c.cat === 'velo').every(c => SAVE.owned.includes(c.id)), 6000, 'Tous les vélos au garage', 'Every bike in the garage', 'كل الدراجات في المرآب'],
   ['career10', '📅', () => (SAVE.careerDone || []).length >= 10, 4000, '10 étapes de carrière', '10 career stages', '10 مراحل في المسيرة'],
@@ -7508,6 +7548,7 @@ function readInput(dt) {
       if (b(6)) brake = Math.max(brake, gp.buttons[6].value || 1);
       if (b(0)) nitro = true;
       if (b(2) || b(1)) hand = true;
+      if (b(3)) TOUCH.stuntPad = true; else TOUCH.stuntPad = false;
     }
   } catch (e) {}
   if (TOUCH.axOn) analog = clamp(TOUCH.ax * (SAVE.settings.sens || 100) / 100, -1, 1);
@@ -7530,7 +7571,7 @@ function readInput(dt) {
   G.inputHand = (G.inputHand || 0) + ((hand ? 1 : 0) - (G.inputHand || 0)) * (1 - Math.exp(-dt / (hand ? 0.22 : 0.28)));
   const o = G.inpO || (G.inpO = {});
   o.gas = (SAVE.settings.autogas && G.state === 'race' && !(G.inputBrake > 0.05)) ? 1 : G.inputGas; o.brake = G.inputBrake; o.steer = G.steer;
-  o.hand = G.inputHand; o.nitro = nitro; o.rev = 0; o.hold = false;
+  o.hand = G.inputHand; o.nitro = nitro; o.rev = 0; o.hold = false; o.stunt = !!(KEYS.KeyE || KEYS.KeyX || TOUCH.stunt || TOUCH.stuntPad);
   return o;
 }
 
@@ -7753,6 +7794,38 @@ function collide(a, b) {
 
 /* ---------------- popups & effets ---------------- */
 function buzz(imp) { try { if (SAVE.settings.vibe && navigator.vibrate) navigator.vibrate(Math.min(90, 15 + imp * 5)); } catch (e) { } }
+// V235 — figures (motos, vélos : roue arrière ; quads : deux roues)
+const V235_TXT = {"fr": ["FIGURE", "Roue arrière", "Deux roues", "Figure de 5 secondes"], "en": ["STUNT", "Wheelie", "Two wheels", "5-second stunt"], "es": ["TRUCO", "Caballito", "Dos ruedas", "Truco de 5 segundos"], "pt": ["MANOBRA", "Cavalinho", "Duas rodas", "Manobra de 5 segundos"], "de": ["STUNT", "Wheelie", "Zwei Räder", "5-Sekunden-Stunt"], "it": ["ACROBAZIA", "Impennata", "Due ruote", "Acrobazia di 5 secondi"], "tr": ["NUMARA", "Şahlanma", "İki teker", "5 saniyelik numara"], "ar": ["حركة", "على العجلة الخلفية", "على عجلتين", "حركة لمدة 5 ثوانٍ"], "tn": ["حركة", "على الروضة اللورانية", "على زوز روايض", "حركة 5 ثواني"]};
+for (const l in V235_TXT) { const v = V235_TXT[l]; if (LANGS[l]) Object.assign(LANGS[l], { st_btn: v[0], st_wh: v[1], st_2w: v[2], ach_wh5: v[3] }); }
+function stuntKind(c) { if (c.stK === undefined) { const k = c.car ? catOf(c.car) : ''; c.stK = k === 'moto' || k === 'velo' || k === 'quad' ? k : null; } return c.stK; }
+function stuntTick(c, dt, want) {
+  const k = stuntKind(c); if (!k) { c.wh = 0; return; }
+  const tgt = k === 'quad' ? 0.33 : k === 'velo' ? 0.4 : 0.5, can = want && c.v > 4 && !(c.brake && c.v > 6);
+  c.whPh = (c.whPh || 0) + dt * 2.4;
+  const goal = can ? tgt * (0.9 + 0.1 * Math.sin(c.whPh)) : 0, was = c.wh || 0;
+  c.wh = was + (goal - was) * (1 - Math.exp(-dt * (can ? 3.4 : 6.5)));
+  if (was > 0.12 && c.wh <= 0.12 && !can) {   // retombée : petit choc de suspension et poussière
+    c.squat = (c.squat || 0) + 0.04;
+    try { const M = c.M || carMatrix(c); for (let i = 0; i < 6; i++) { localToWorld(M, rnd(-0.4, 0.4), 0.1, c.model.wheels[0][2], Q1); G.smoke.emit(Q1[0], Q1[1], Q1[2], rnd(-1, 1), rnd(0.4, 1.2), rnd(-1, 1), 0.7, 0.5, 2.2, 0.62, 0.58, 0.52, 0.35, 1, 0); } } catch (e) { }
+  }
+  return c.wh > tgt * 0.62;
+}
+function stuntUpdate(dt, inp, racing) {
+  const p = G.player; if (!p) return;
+  if (G.stPl !== p || (G.stPlT = (G.stPlT || 0) + dt) > 1.2) { G.stPl = p; G.stPlT = 0; try { UI.placeStunt(); } catch (e) { } }   // suit la mise en page du HUD
+  const fin = G.state === 'finish' && (G.finishWait || 0) > 0.6;   // célébration automatique sur la ligne
+  const up = stuntTick(p, dt, (racing && inp.stunt) || fin);
+  if (racing && up) { p.whT = (p.whT || 0) + dt; p.nitro = Math.min(1, p.nitro + dt * 0.06); }
+  else if (p.whT) {
+    if (p.whT > 0.7) { const pts = Math.round(p.whT * 120 / 10) * 10; popup(t(p.stK === 'quad' ? 'st_2w' : 'st_wh') + ' ' + p.whT.toFixed(1) + ' s  +' + pts, '#7cf7ff'); G.style = (G.style || 0) + pts; if (p.whT > (SAVE.bestWh || 0)) SAVE.bestWh = +p.whT.toFixed(1); AU.crowdPulse && AU.crowdPulse(0.5); }
+    p.whT = 0;
+  }
+  for (const c of G.cars) if (c !== p && c.kind === 'ai') {
+    if (!stuntKind(c)) continue;
+    if (!(c.whOn > 0) && c.v > 11 && Math.random() < dt * 0.025) c.whOn = 1 + Math.random() * 1.8;   // les adversaires frimeurs
+    c.whOn = (c.whOn || 0) - dt; stuntTick(c, dt, c.whOn > 0 || !!c.finished);
+  }
+}
 function popup(text, color) { G.msgs.push({ text, color: color || '#fff', t: 1.8 }); UI.popup(text, color); }
 
 /* ---------------- mise à jour principale ---------------- */
@@ -7796,6 +7869,7 @@ function updateGame(dt) {
       for (let i = 0; i < G.cars.length; i++) for (let j = i + 1; j < G.cars.length; j++) { const a = G.cars[i], b = G.cars[j]; if (Math.abs(T.dS(a.s, b.s)) < 9) collide(a, b); }
     }
   }
+  try { stuntUpdate(dt, inp, racing); } catch (e) { }
   // progression du joueur
   if (p.prevS >= 0) { const dS = T.dS(p.prevS, p.s); if (Math.abs(dS) < 30) p.progress += dS; }
   p.prevS = p.s;
@@ -7946,9 +8020,15 @@ function endRace() {
 
 /* ---------------- effets visuels ---------------- */
 function carMatrix(c) {
-  const cp = Math.cos(c.pitch + (c.squat || 0)), sp = Math.sin(c.pitch + (c.squat || 0)), sr = Math.sin(c.roll), cr = Math.cos(c.roll);
+  const wa = c.wh || 0, pt = c.pitch + (c.squat || 0) + wa;
+  const cp = Math.cos(pt), sp = Math.sin(pt), sr = Math.sin(c.roll), cr = Math.cos(c.roll);
   const M = c.Mb || (c.Mb = new Float32Array(16));
-  return M4.basisTo(M, c.x, c.y + (c.bob || 0), c.z, Math.sin(c.h) * cp, sp, Math.cos(c.h) * cp, -Math.cos(c.h) * sr, cr, Math.sin(c.h) * sr);
+  let ox = 0, oy = 0, oz = 0;
+  if (wa > 0.002) {   // V235 — figure : rotation autour de l'essieu arrière
+    const m = c.model, d = m.rearD || (m.rearD = -Math.min(...m.wheels.map(w => w[2]))), wr = m.wr;
+    oy = -wr * Math.cos(wa) + d * Math.sin(wa) + wr; const dz = wr * Math.sin(wa) + d * Math.cos(wa) - d; ox = Math.sin(c.h) * dz; oz = Math.cos(c.h) * dz;
+  }
+  return M4.basisTo(M, c.x + ox, c.y + (c.bob || 0) + oy, c.z + oz, Math.sin(c.h) * cp, sp, Math.cos(c.h) * cp, -Math.cos(c.h) * sr, cr, Math.sin(c.h) * sr);
 }
 function localToWorld(M, x, y, z, o) { o = o || [0, 0, 0]; o[0] = M[0] * x + M[4] * y + M[8] * z + M[12]; o[1] = M[1] * x + M[5] * y + M[9] * z + M[13]; o[2] = M[2] * x + M[6] * y + M[10] * z + M[14]; return o; }
 const Q1 = [0, 0, 0], Q2 = [0, 0, 0], Q3 = [0, 0, 0];
@@ -8434,7 +8514,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V234';
+const GAME_VERSION = 'V235';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -8703,6 +8783,15 @@ const UI = {
     $('cf-yes').onclick = () => { $('confirm').classList.remove('show'); yes(); }; $('cf-no').onclick = () => $('confirm').classList.remove('show');
   },
   /* ----- course ----- */
+  placeStunt() {
+    const b = document.querySelector('#touch [data-t=stunt]'), n = document.querySelector('#touch [data-t=nitro]'); if (!b || !n) return;
+    const can = !!(G.player && stuntKind(G.player)); b.classList.toggle('hidden', !can); if (!can) return;
+    b.querySelector('b').textContent = t('st_btn');
+    const r = n.getBoundingClientRect(), hud = b.offsetParent ? b.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+    const sz = Math.max(52, Math.min(r.width, r.height) * 0.92);
+    const st = { position: 'fixed', width: sz + 'px', height: sz + 'px', left: (r.left + (r.width - sz) / 2) + 'px', top: (r.top - sz - 12) + 'px', right: 'auto', bottom: 'auto', transform: 'none' };
+    for (const k in st) b.style.setProperty(k, st[k], 'important');   // les règles tactiles du HUD sont en !important
+  },
   startRace(cfg) {
     guardArm();
     if (cfg.tier === undefined) cfg.tier = (CARS.find(k => k.id === SAVE.car) || CARS[0]).tier;
@@ -9429,6 +9518,7 @@ function bindInputs() {
     });
   };
   addEventListener('resize', syncAndroidLayout, { passive: true });
+  addEventListener('resize', () => setTimeout(() => { try { if (G.player && G.state !== 'menu') UI.placeStunt(); } catch (e) { } }, 150), { passive: true });
   addEventListener('orientationchange', () => {
     TILT.zero = null;
     syncAndroidLayout();

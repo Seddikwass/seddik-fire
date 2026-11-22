@@ -1,5 +1,12 @@
 # Seddik Fire
 
+## Nouveautés 2.35 — La carte choisie est toujours celle jouée
+- **Correction** : en mode Parcours, l'étape imposait sa carte et ignorait la carte choisie (l'étape 1 donnait toujours l'Île de Seddik). Désormais la carte choisie est toujours celle jouée, dans tous les modes. Choisir une étape propose sa carte, qu'on peut ensuite changer.
+- **Les 50 étapes ont la carte de leur nom** : Dunes de Douz au Sahara, Mer de Mahdia à Mahdia, Îles Kerkennah à Kerkennah, Gafsa la Rouge à Gafsa…
+- **La radio dit le nom du joueur à chaque conseil** : nom saisi dans le lobby, sinon nom du soldat affiché en jeu.
+- **Souks dans toutes les médinas** : étals à auvents rayés, tapis kilim, paniers d'épices, poteries de Nabeul et Guellala, lanternes et géraniums dans les ruelles.
+- **HUD modernisé** : panneaux givrés, chiffres nets, arme active soulignée d'un liseré lumineux, nouveau bouton de tir, messages de côté plus lisibles.
+
 ## Nouveautés 2.34 — Chaque carte se reconnaît en partie, la radio t'appelle par ton nom
 - **La radio de l'équipe t'appelle par ton prénom** : « Wassim, la zone se referme… », dans toutes les langues, à l'écrit et à la voix (une fois sur deux pour les conseils courants, toujours pour les messages importants).
 - **Panneaux d'entrée bleu et blanc** devant chaque lieu de la carte (Médina de Sousse, Ksar Ouled Soltane, Chott el-Jérid…), posés au sol.

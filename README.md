@@ -2,6 +2,14 @@
 
 > Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
 
+## Version 3.56.0 — Master Production Bible, lot 2 (gardien)
+- Machine à états du gardien (placement, lecture du tir, plongeon, relevé, sortie aérienne, ballon en main, boxe), lisible en test.
+- Temps de réaction humain (0,17 à 0,32 s selon la note) et jugement de l'arrêt depuis la position d'appui : fini le gardien qui traverse son but avant le plongeon.
+- Vitesse latérale bornée (plus de glissade au-delà du poteau) ; un gardien battu ne peut plus ramasser le tir avant la ligne.
+- Sorties aériennes sur les centres qui tombent dans sa zone (captage ou boxe selon la note et la pression adverse).
+- Correctif : l’écran d’avant-match de la 3.55.0 plantait (import manquant de la provenance des tenues).
+- Nouvelle batterie de 26 situations × 10 essais (`tests/keeper.test.mjs`), rapport brut dans `docs/RAPPORT-GARDIEN.md`.
+
 ## Version 3.55.0 — Master Production Bible, lot 1 (données)
 - Sauvegarde de l'état stable : tag `v3.54.0-stable` (commit e0fc42c) pour restauration.
 - Onzes ESHS, PSSE, ESS réconciliés avec le dossier de production (noms complets, Nour Karoui à la place de « N. El Beji »), conflits notés et statut « publié, en attente de validation FTF ».

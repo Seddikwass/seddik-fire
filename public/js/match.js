@@ -861,14 +861,14 @@ export function isShotOnTargetAtGoalLine(y = 0, z = 0) {
     Math.abs(y) < GOAL_W && z >= 0 && z < GOAL_H;
 }
 
-export function getKeeperSaveAssessment({ rating = 50, keeperY = 0, shotY = 0, shotZ = 0.8, shotSpeed = 20, crossingTime = 0.5, difficulty = 0 } = {}) {
+export function getKeeperSaveAssessment({ rating = 50, keeperY = 0, shotY = 0, shotZ = 0.8, shotSpeed = 20, crossingTime = 0.5, difficulty = 0, reachScale = 1 } = {}) {
   const skill = clamp(Number(rating) || 50, 0, 100);
   const lateralGap = (Number.isFinite(shotY) ? shotY : 0) - (Number.isFinite(keeperY) ? keeperY : 0);
   const heightGap = Math.max(0, (Number.isFinite(shotZ) ? shotZ : 0.8) - 1.25);
   const need = Math.hypot(lateralGap, heightGap * 0.58);
   const timing = Number.isFinite(crossingTime) ? crossingTime : 0.5;
   const reaction = clamp((1.05 - timing) / 0.72, 0, 1);
-  const reach = clamp(1.6 + skill / 100 * 1.6 + clamp(Number(difficulty) || 0, -0.3, 0.3), 1.25, 3.5);
+  const reach = clamp((1.6 + skill / 100 * 1.6 + clamp(Number(difficulty) || 0, -0.3, 0.3)) * clamp(Number(reachScale) || 1, 0.5, 1), 1.0, 3.5);
   const speed = Math.max(0, Number.isFinite(shotSpeed) ? shotSpeed : 20);
   const chance = need < reach
     ? 0.92 - (need / reach) * 0.55 - (speed - 20) * 0.012 + (skill - 70) / 200 + (reaction - 0.5) * 0.07
@@ -1739,10 +1739,37 @@ export class Match {
   }
   aiKeeper(p, dt) {
     const T = this.teams[p.team], b = this.ball, d = T.dir, gx = -HL * d;
+    const prevState = p.gkState;
+    p.gkState = resolveKeeperState(p, b);
+    if (p.gkState !== prevState) { p.gkStateT = 0; (p.gkStateLog ||= []).push(p.gkState); if (p.gkStateLog.length > 24) p.gkStateLog.shift(); } else p.gkStateT = (p.gkStateT || 0) + dt;
+    if (p.gkState === 'recover') { this.moveTo(p, p.x, p.y, dt, 0.4, true, true); return; }
+    // Centre aérien : lecture du point de chute et sortie aérienne si le ballon tombe dans sa zone.
+    const claim = !b.owner && !b.inFlightShot ? getKeeperClaimPlan({ goalX: gx, dir: d, bx: b.x, by: b.y, bz: b.z, bvx: b.vx, bvy: b.vy, bvz: b.vz, kx: p.x, ky: p.y, rating: p.a?.gk ?? 50 }) : null;
+    if (claim) {
+      p.gkState = 'claim';
+      this.moveTo(p, claim.x, claim.y, dt, 1.25, true, true);
+      const reach = Math.hypot(b.x - p.x, b.y - p.y);
+      if (reach < 1.35 && b.z > 0.6 && b.z < 2.9 && !p.claimTried) {
+        p.claimTried = true;
+        let rival = 99; for (const o of this.teams[1 - p.team].ps) if (!o.sentOff) rival = Math.min(rival, Math.hypot(o.x - b.x, o.y - b.y));
+        const pCatch = clamp(0.42 + (p.a?.gk ?? 50) / 200 + (rival > 2.2 ? 0.18 : rival < 1 ? -0.22 : 0), 0.15, 0.93);
+        p.jumpT = Math.max(p.jumpT || 0, 0.45);
+        if (this.r() < pCatch) {
+          b.owner = p; b.last = p; b.lastTeam = p.team; b.vx = b.vy = b.vz = 0;
+          p.keeperCatchT = 0.48; p.gkState = 'hold'; p.claims = (p.claims || 0) + 1; this.addEvent('claim', p);
+        } else {
+          const side = Math.sign(b.y || 1);
+          b.vx = d * (9 + this.r() * 5); b.vy = side * (6 + this.r() * 5); b.vz = 4 + this.r() * 3;
+          b.last = p; b.lastTeam = p.team; p.keeperPunchT = 0.42; p.gkState = 'punch'; p.punches = (p.punches || 0) + 1; this.addEvent('punch', p);
+        }
+      }
+      return;
+    }
+    if (p.claimTried && (b.z < 0.3 || b.owner)) p.claimTried = false;
     // Lecture anticipée du tir : le gardien se replace sur la trajectoire
     // et déclenche son plongeon avant que le ballon n'arrive sur la ligne.
     const shot = b.inFlightShot;
-    if (shot && shot.team !== p.team && Math.abs(b.vx) > 3) {
+    if (shot && shot.team !== p.team && Math.abs(b.vx) > 3 && (shot.t || 0) >= getKeeperReactionDelay(p.a?.gk ?? 50)) {
       const tcross = (gx - b.x) / b.vx;
       if (tcross > 0.02 && tcross < 1.15) {
         const cy = b.y + b.vy * tcross;
@@ -2326,12 +2353,22 @@ export class Match {
           if (Math.abs(yc) < GOAL_W + 0.3 && zc < GOAL_H + 0.3) {
             const sp = Math.hypot(b.vx, b.vy);
             const difficulty = gk.team === this.userSide ? 0 : ([-.3, 0, .15, .3][this.settings.difficulty] || 0);
+            // Position d'appui au moment de la réaction : le plongeon (reach) couvre le reste ; le pas chassé avant plongeon reste limité.
+            const rd = getKeeperReactionDelay(gk.a?.gk ?? 50);
+            if (shot.gkReactY == null && (shot.t || 0) >= rd) { shot.gkReactY = gk.y; shot.gkReactT = shot.t; }
+            const shuffle = shot.gkReactY == null ? 0 : Math.min(0.9, ((shot.t || 0) - shot.gkReactT) * 1.6);
+            const setY = shot.gkReactY == null ? gk.y : shot.gkReactY + clamp(gk.y - shot.gkReactY, -shuffle, shuffle);
             const assessment = getKeeperSaveAssessment({
-              rating: gk.a.gk, keeperY: gk.y, shotY: yc, shotZ: zc,
+              rating: gk.a.gk, keeperY: setY,
+              // Temps réellement disponible pour plonger après la réaction : une frappe à bout portant réduit l'allonge utile.
+              reachScale: clamp(((shot.t || 0) + tcross - rd) / 0.5, 0.55, 1), shotY: yc, shotZ: zc,
               shotSpeed: sp, crossingTime: tcross, difficulty
             });
             const { reach, need, reaction } = assessment;
-            gk.vy += clamp((yc - gk.y) * 10, -14, 14) * dt * (4.5 + reaction * 2);
+            if ((shot.t || 0) >= getKeeperReactionDelay(gk.a?.gk ?? 50)) gk.vy += clamp((yc - gk.y) * 10, -14, 14) * dt * (4.5 + reaction * 2);
+            // Vitesse latérale bornée (pas de glissade au-delà du poteau) : un plongeon couvre ~3 m en 0,45 s.
+            gk.vy = clamp(gk.vy, -7.2, 7.2);
+            if (Math.abs(gk.y) > GOAL_W + 0.6 && Math.sign(gk.vy) === Math.sign(gk.y)) gk.vy *= 0.3;
             gk.dive = Math.sign(yc - gk.y) * Math.min(1, need / 2);
             if (need > 0.4 && tcross < 0.82) {
               gk.diveT = Math.max(gk.diveT || 0, 0.48);
@@ -2361,6 +2398,7 @@ export class Match {
                 A.crowd(0.82); A.saveSound(); this.crowdReact('save', gk.team);
                 return;
               }
+              shot.beaten = true; // gardien battu : il ne peut plus « ramasser » ce tir avant la ligne
             }
           } else if (!shot.missSaid && tcross < 0.15) { shot.missSaid = true; this.say('miss'); if (Math.abs(yc) < GOAL_W + 2.5 && zc < GOAL_H + 1.5) this.crowdReact('miss', shot.team); }
         }
@@ -2371,6 +2409,7 @@ export class Match {
     let best = null, bd = 1e9;
     for (const T of this.teams) for (const p of T.ps) {
       if (p.sentOff || p.cd > 0) continue;
+      if (p.isGK && b.inFlightShot?.beaten && b.inFlightShot.team !== p.team) continue;
       const d = Math.hypot(p.x - b.x, p.y - b.y);
       const reachZ = p.isGK && Math.abs(b.x - (-HL * T.dir)) < 17 && Math.abs(b.y) < 21 ? 2.6 : 1.0;
       const rad = this.passInfo && this.passInfo.to === p ? 1.7 : 1.1;
@@ -4154,6 +4193,35 @@ export function quickSim(strH, strA, r = Math.random, homeAdv = 1.08) {
 }
 
 // ---------- Réseau : état compact d'un match (même champs que le ralenti) ----------
+
+// Temps de réaction humain avant le premier appui (0,30 s pour un gardien faible, ~0,17 s pour un excellent gardien).
+export function getKeeperReactionDelay(rating = 50) { return clamp(0.32 - (Number(rating) || 50) / 100 * 0.16, 0.15, 0.32); }
+// Machine à états du gardien (lisible en test et en debug) :
+// set = placement, track = lecture d'un tir, dive = plongeon, hold = ballon en main, recover = relevé après plongeon.
+export function resolveKeeperState(p, b) {
+  if (b.owner === p) return 'hold';
+  if ((p.diveT || 0) > 0.05) return 'dive';
+  if (p.gkState === 'dive' || (p.gkState === 'recover' && (p.gkStateT || 0) < 0.35)) return 'recover';
+  if (b.inFlightShot && b.inFlightShot.team !== p.team) return 'track';
+  return 'set';
+}
+// Sortie aérienne : point de chute du ballon à hauteur de prise (~2 m) ; le gardien n'y va que si c'est dans sa zone et atteignable.
+export function getKeeperClaimPlan({ goalX, dir, bx, by, bz, bvx, bvy, bvz, kx, ky, rating = 50 }) {
+  if (bz < 1.1 || Math.hypot(bvx, bvy) < 4) return null;
+  const towardGoal = (goalX - bx) * bvx > 0 || Math.abs(bx - goalX) < 12;
+  if (!towardGoal) return null;
+  const h = 2.0, disc = bvz * bvz - 2 * G * (h - bz);
+  if (disc < 0) return null;
+  const t = (bvz + Math.sqrt(disc)) / G;
+  if (!(t > 0.05 && t < 2.6)) return null;
+  const lx = bx + bvx * t, ly = by + bvy * t;
+  const depth = (lx - goalX) * dir; // distance devant la ligne de but
+  const zone = 5.5 + (rating - 50) / 25; // 5,5 m (six mètres) à ~7,5 m pour un excellent gardien
+  if (depth < 0.3 || depth > zone || Math.abs(ly) > 9.16) return null;
+  const run = Math.hypot(lx - kx, ly - ky), canReach = run / Math.max(0.4, t) < 7.2;
+  return canReach ? { x: lx, y: ly, t } : null;
+}
+
 export const NET_PLAYER_FIELDS = ['x', 'y', 'face', 'anim', 'vx', 'vy', 'jumpT', 'diveT', 'slideT', 'kickT', 'headerT', 'firstTouchT', 'stumbleT', 'keeperCatchT', 'keeperPunchT', 'headerDir', 'diveDir', 'slideDir', 'kickDir', 'firstTouchDir', 'stumbleDir', 'diveHeight', 'diveStretch', 'contactT', 'contactDir', 'slideDuration', 'heading', 'kickFootSide', 'motionAccel', 'celebrateT', 'saveT', 'skillT', 'skillDir', 'acroT'];
 const r2 = v => Math.round((Number(v) || 0) * 100) / 100;
 export function getNetSnapshot(m, full = false) {

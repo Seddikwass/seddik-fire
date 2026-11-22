@@ -64,6 +64,9 @@ match.ball.vy = 2;
 match.ball.vz = 0;
 match.ball.inFlightShot = { team: 0, t: 0 };
 match.aiKeeper(keeper, 1 / 60);
+assert.ok(!(keeper.diveT > 0), 'pas de plongeon avant le temps de réaction humain');
+match.ball.x = 44.6; match.ball.y = 0.3; match.ball.inFlightShot.t = 0.32; // ~0,3 s après la frappe
+match.aiKeeper(keeper, 1 / 60);
 assert.ok(keeper.diveT > 0, 'le gardien doit anticiper et amorcer son plongeon avant la ligne');
 
 const receiver = match.teams[0].ps.find(p => p !== attacker && !p.isGK);

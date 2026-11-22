@@ -12,10 +12,10 @@ import { COMMENTARY_STYLES } from './commentary.js';
 import { lineupHistory } from './lineups.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
-import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
+import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION, KIT_PROVENANCE, KIT_STATUS_DEFAULT } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp, jerseySVG } from './util.js';
 
-export const APP_VERSION = '3.55.0';
+export const APP_VERSION = '3.56.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -177,7 +177,7 @@ function kitDuel(h, a) {
   const mode = C.awayKitMode(h, a), kh = kitFor(h, false), ka = kitFor(a, mode);
   const lbl = mode === false ? 'domicile' : mode === true ? 'extérieur' : 'third';
   const xiNote = id => { const t = C.clubObj(st, id)?.tactics; return t?.realXI && settings.realNames !== false ? `<div class="xinote">📋 <b>${esc(C.clubObj(st, id).short || id)}</b> : onze du dernier match — ${esc(t.realXI)} · source ${esc(t.realXISource || '')} · <i>à revalider</i></div>` : ''; };
-  const kp = id => (D.KIT_PROVENANCE[id] || D.KIT_STATUS_DEFAULT);
+  const kp = id => (KIT_PROVENANCE[id] || KIT_STATUS_DEFAULT);
   return `${xiNote(h)}${xiNote(a)}<p class="kitnote">Tenues reproduites aux couleurs des clubs, sans logos ni sponsors — <i>${esc(kp(h).status)}</i> / <i>${esc(kp(a).status)}</i></p><div class="kitduel"><figure>${jerseySVG(kh, 70, 10)}<figcaption>Domicile</figcaption></figure><span class="vsx">VS</span><figure>${jerseySVG(ka, 70, 10)}<figcaption>${lbl === 'third' ? '3e maillot' : 'Maillot ' + lbl}</figcaption></figure></div>`;
 }
 function prematchExtras(f) {

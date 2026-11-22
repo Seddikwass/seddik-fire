@@ -9,7 +9,7 @@ Référence : cahier des charges « SEDDIK LEAGUE — Cahier des charges pour Cl
 | Dépôt / branche | `Seddikwass/seddik-fire`, branche `football-tunisia-2026`, à jour avec `origin` |
 | Dernière version | 3.51.0, commit `3c5157a` (21/11/2026), déployée et *live* sur Render |
 | Service Render | `football-tunisia-2026` (Francfort, Node.js, offre gratuite), `npm install --omit=dev` / `node server.js`, contrôle `/api/health` |
-| Persistance | PostgreSQL si `DATABASE_URL` est fourni, sinon stockage fichier non persistant (offre gratuite) — **risque P0** : comptes et sauvegardes en ligne perdus à chaque redéploiement sans base PostgreSQL |
+| Persistance | PostgreSQL actif en production (journal Render du 22/11 : `store: postgres`) — comptes et sauvegardes en ligne conservés entre les déploiements |
 | Secrets | Aucun secret dans le code ; `SESSION_SECRET` et `ADMIN_TOKEN` générés par Render ; arrêt du serveur si `SESSION_SECRET` manque en production |
 | Code client | ~10 250 lignes JS (moteur de match, rendu WebGL maison, carrière, audio, en ligne) sans dépendance d'exécution |
 | Tests | 19 suites automatisées (`npm test`) + 2 scénarios navigateur (`tests/e2e.mjs`, `tests/online-e2e.mjs`) |
@@ -21,7 +21,7 @@ Référence : cahier des charges « SEDDIK LEAGUE — Cahier des charges pour Cl
 ## 2. Risques et priorités
 
 **P0**
-- Persistance en ligne : brancher une base PostgreSQL (plan payant Render ou autre) avant toute communication publique.
+- Persistance en ligne : PostgreSQL déjà branché ; vérifier la politique de sauvegarde/restauration de la base (rétention de l'offre Render).
 - Exactitude des données : les compositions importées sont un snapshot multi-sources (voir §4) à revalider sur les feuilles FTF.
 - Droits : noms réels des joueurs, maillots, écussons et voix exigent des autorisations avant une publication commerciale (Google Play). L'option « noms fictifs » existe déjà dans les réglages.
 - Build Android : à produire et signer hors de cet environnement (SDK absent).

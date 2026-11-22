@@ -1,5 +1,14 @@
 # Seddik Fire
 
+## Nouveautés 2.38 — Voix arabe et tunisienne réparée, hôtels, ponts, trains, lobby moderne
+- **Voix de la radio en arabe et en tunisien réparée** : le jeu cherche une voix réellement installée sur le téléphone (tunisienne, puis arabe générale, saoudienne, égyptienne, émiratie, marocaine, algérienne). Avant, il demandait « ar-TN » puis « ar-SA » et restait muet si le téléphone n'avait que la voix arabe générale.
+- **Nouveaux boutons** dans Réglages ▸ Radio : « ▶ Tester la voix », état de la voix sur l'appareil, et « Installer la voix arabe » qui ouvre l'installation des voix Android si elle manque. Si aucune voix n'existe, un message le dit au lieu de rester silencieux.
+- **Hôtels** dans les villes touristiques (Hammamet, Yasmine, Nabeul, Kélibia, Sousse, Port El Kantaoui, Skanès, Mahdia, Djerba, Tozeur, Nefta, Douz, Tabarka, Gammarth, Bizerte, Kerkennah, Matmata, Tunis) : façade blanche, balcons à parasols, atrium vitré, panneaux solaires, piscine avec transats.
+- **Ponts** : canal de Bizerte et son pont mobile, pont d'El Kantara entre les deux îles Kerkennah.
+- **Trains** : TGM de Gammarth à Carthage (Sidi Bou Saïd), métro du Sahel (Sousse, Monastir, Mahdia), Lézard Rouge (Gafsa).
+- **Lobby moderne** : la carte choisie s'affiche en plein écran derrière le soldat, avec un dégradé cinématographique.
+- Plus aucun bâtiment qui se chevauche sur les 23 cartes.
+
 ## Nouveautés 2.37 — Radio en arabe et en tunisien, particularités réelles de chaque lieu
 - **Radio d'équipe en arabe standard (الفصحى) et en tunisien (الدارجة)**, avec le prénom du joueur au début de chaque message, à l'écrit et à la voix. Nouveau réglage « Langue de la radio » : comme le jeu, tunisien, arabe, français, anglais. Voix arabe du téléphone (voix tunisienne si l'appareil en a une). La voix d'équipe est réactivée une fois pour tous.
 - **Particularités réelles** : flamants roses (lac de Tunis, salines de Thyna, chotts, Kerkennah, Bizerte), caravanes de dromadaires (Douz, Ong Jemel, Nefta, Djerba, Matmata), calèches (Tozeur, Hammamet, Sousse, Houmt Souk), dinosaures de Tataouine, train Lézard Rouge sur sa voie entre les mines de Gafsa, piscines romaines de Gafsa, mosaïques romaines (Carthage, Dougga, Sbeitla, El Jem, Thyna, Kerkouane), dolmens (Le Kef, Siliana), phoques moines de La Galite, fauconnerie d'El Haouaria, tentes bédouines, parasols et transats sur les plages des stations.

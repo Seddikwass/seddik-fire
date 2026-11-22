@@ -1039,6 +1039,8 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <label class="rg"><span>Effets</span><input id="oSfx" type="range" min="0" max="1" step=".05"><em id="oSfxV"></em></label>
       <div class="row"><button id="radioBtn" class="ghost">Radio d’équipe : voix</button></div>
       <div class="row"><button id="radioLangBtn" class="ghost">Langue de la radio : comme le jeu</button></div>
+      <div class="row"><button id="radioTestBtn" class="ghost">▶ Tester la voix</button><button id="radioInstBtn" class="ghost" hidden>Installer la voix arabe</button></div>
+      <p id="radioVoiceSt" class="vst"></p>
       <p>Une équipe au QG vous conseille pendant la bataille, à la voix ou par écrit.</p>
     </div>
     <div class="set">
@@ -1057,7 +1059,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.37</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.38</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1563,7 +1565,7 @@ const STY={
   hut:{floor:'#b99d6b',wall:'#8e6b3d',edge:'#5a4122',roof:'#b48d50',roof2:'#916d36',door:'#2c6db3'}
 };
 function coastX(y){if(MAP&&MAP.cst){const k=MAP.cst;return k[0]+k[1]*Math.sin(y/k[2]+k[3])+k[4]*Math.sin(y/k[5])+k[6]*Math.exp(-(((y-k[7])/k[8])**2))+k[9]*(y-1800)/1800+28*Math.sin(y/53)+14*Math.sin(y/23+1)}if(MAP&&MAP.flip)y=WS-y;if(MAP&&MAP.st==='djerba')return 3020+170*Math.sin(y/440)+75*Math.sin(y/130+.7)+45*Math.sin(y/67);if(MAP&&MAP.st==='capbon')return 3090+110*Math.sin(y/280)+90*Math.sin(y/155+2)+22*Math.sin(y/49);return 3160+90*Math.sin(y/310)+45*Math.sin(y/97+1.3)+30*Math.sin(y/53)}
-function isWater(x,y){if(x>PIER.x&&x<PIER.x+PIER.w&&y>PIER.y&&y<PIER.y+PIER.h)return false;if(MAP&&(MAP.wat||MAP.isl)){if(MAP.isl)for(const e of MAP.isl)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return false;if(MAP.wat)for(const e of MAP.wat)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return true}return x>coastX(y)||dd2(x,y,LAKE.x,LAKE.y)<LAKE.r*LAKE.r}
+function isWater(x,y){if(x>PIER.x&&x<PIER.x+PIER.w&&y>PIER.y&&y<PIER.y+PIER.h)return false;if(MAP&&MAP.bridges)for(const b of MAP.bridges)if(x>b.x&&x<b.x+b.w&&y>b.y&&y<b.y+b.h)return false;if(MAP&&(MAP.wat||MAP.isl)){if(MAP.isl)for(const e of MAP.isl)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return false;if(MAP.wat)for(const e of MAP.wat)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return true}return x>coastX(y)||dd2(x,y,LAKE.x,LAKE.y)<LAKE.r*LAKE.r}
 function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=clamp(t,0,1);return Math.hypot(px-ax-dx*t,py-ay-dy*t)}
 function nearRoad(x,y,m){for(const rd of roads)for(let i=0;i<rd.length-1;i++)if(segDist(x,y,rd[i][0],rd[i][1],rd[i+1][0],rd[i+1][1])<m)return true;return false}
 function inRect(x,y,r,p){return x>r.x-p&&x<r.x+r.w+p&&y>r.y-p&&y<r.y+r.h+p}
@@ -1709,7 +1711,7 @@ const PLANS={
  sfax:{cst:[2950,110,520,0,40,150,0,0,1,0],isl:[{x:3380,y:1050,rx:200,ry:420}],wat:[{x:2400,y:2650,rx:110,ry:90,col:SALT,sh:SALTSH},{x:2620,y:2650,rx:110,ry:90,col:SALT,sh:SALTSH},{x:2400,y:2860,rx:110,ry:90,col:SALT,sh:SALTSH},{x:2620,y:2860,rx:110,ry:90,col:SALT,sh:SALTSH}],lake:[-900,-900,40],
   p:[[1980,1700],[-250,1950],[-260,700],[2500,2450],[1650,850],[2200,3300],[3380,1050],[900,1900]],
   f:[['medina',1980,1700,680,560],['port',1950],['village',-260,700,6],['ruins',2150,2650],['village',1650,850,8],['village',2200,3300,7],['olive',900,1900,800,900],['olive',1300,700,600,500],['olive',1100,2900,700,500],['base',600,800]]},
- bizerte:{cst:[3050,90,420,0,40,140,0,0,1,0],wat:[{x:1450,y:2150,rx:820,ry:520},{x:-200,y:600,rx:500,ry:900}],lake:[-900,-900,40],
+ bizerte:{cst:[3050,90,420,0,40,140,0,0,1,0],br:[{x:2600,y:2070,w:76,h:160,k:'lift'}],wat:[{x:1450,y:2150,rx:820,ry:520},{x:-200,y:600,rx:500,ry:900},{x:2660,y:2150,rx:470,ry:48}],lake:[-900,-900,40],
   p:[[2600,1400],[-200,850],[1050,2950],[2200,700],[-260,2350],[-250,2950],[500,3250],[2550,250]],
   f:[['medina',2600,1400,520,420],['port',1450],['resort',-200,850],['base',1050,2950],['village',2200,700,8],['village',-280,2350,5],['village',-260,2950,6],['fields',500,3150,600,350],['light',-130,240],['olive',1700,500,500,300]]},
  gabes:{cst:[2980,90,450,0,40,140,0,0,1,0],wat:[],lake:[-900,-900,40],
@@ -1733,7 +1735,7 @@ const PLANS={
  mahdia:{cst:[2500,40,400,0,20,140,850,1500,270,0],wat:[],lake:[-900,-900,40],
   p:[[2620,1500],[3220,1470],[3080,1560],[-200,1250],[2900,1500],[2300,700],[1300,2600],[-200,3200]],
   f:[['medina',2930,1500,460,300],['port',1260],['ruins',3060,1580,'tomb'],['village',2300,700,9],['olive',1300,2600,700,600],['village',1250,2450,6],['ruins',-230,3250],['olive',900,1100,600,500],['base',800,700]]},
- kerkennah:{cst:[3050,120,380,0,60,120,0,0,1,0],wat:[{x:-260,y:1800,rx:520,ry:2000},{x:1550,y:-380,rx:1900,ry:520},{x:1200,y:1850,rx:900,ry:110},{x:1600,y:3950,rx:1800,ry:520}],lake:[-900,-900,40],
+ kerkennah:{cst:[3050,120,380,0,60,120,0,0,1,0],br:[{x:1468,y:1712,w:64,h:276,k:'stone'}],wat:[{x:-260,y:1800,rx:520,ry:2000},{x:1550,y:-380,rx:1900,ry:520},{x:1200,y:1850,rx:900,ry:110},{x:1600,y:3950,rx:1800,ry:520}],lake:[-900,-900,40],
   p:[[2300,1500],[600,2700],[1800,2450],[-250,650],[1150,2350],[2550,280],[900,1300],[1600,900]],
   f:[['village',2300,1500,9],['port',650],['village',600,2700,6],['village',1800,2450,7],['village',1150,2350,5],['village',2550,300,5],['ruins',900,1300],['village',1600,900,6],['salt',1800,3250],['salt',600,950],['palms',1300,2900,500],['palms',2000,800,400],['base',2700,2600]]},
  galite:{cst:[3000,160,300,0,70,110,0,0,1,0],isl:[{x:3380,y:2950,rx:150,ry:170}],wat:[{x:-260,y:1800,rx:820,ry:2200},{x:1600,y:-340,rx:2000,ry:640},{x:1600,y:3960,rx:2000,ry:620}],lake:[-900,-900,40],
@@ -1742,7 +1744,7 @@ const PLANS={
  gafsa:{cst:[3720,0,1,0,0,1,0,0,1,0],wat:[],lake:[2600,1950,70],
   p:[[2500,1800],[1350,1400],[500,700],[700,1700],[900,2400],[1500,2600],[3000,2500],[2900,700]],
   f:[['medina',2450,1750,480,380,'stone'],['oasis',2700,2050,260],['mine',1350,1400],['mine',500,700],['mine',700,1750],['mine',900,2400],['mountain',1500,2650,360],['oasis',3000,2500,240],['village',2900,700,6],['base',2000,800]]}};
-function planInit(P){MAP.dunes=[];MAP.medinas=[];MAP.cst=P.cst;MAP.wat=P.wat||[];MAP.isl=P.isl||[];if(P.lake){LAKE.x=P.lake[0];LAKE.y=P.lake[1];LAKE.r=P.lake[2]}LX.mc=[-2000,-2000];LX.heli=[-2000,-2000];PIER.y=-900;PIER.x=-900}
+function planInit(P){MAP.dunes=[];MAP.medinas=[];MAP.bridges=P.br||[];MAP.cst=P.cst;MAP.wat=P.wat||[];MAP.isl=P.isl||[];if(P.lake){LAKE.x=P.lake[0];LAKE.y=P.lake[1];LAKE.r=P.lake[2]}LX.mc=[-2000,-2000];LX.heli=[-2000,-2000];PIER.y=-900;PIER.x=-900}
 function waterAt(x,y){const M=MAP;if(M&&M.isl)for(const e of M.isl)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return false;if(M&&M.wat)for(const e of M.wat)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return true;return false}
 function buildPlan(P){planInit(P);PAVED.length=0;const grz=[];
   const X=(x,y)=>x<0?coastX(y)+x:x;const rnd=(a,b)=>sr(a,b);
@@ -1825,7 +1827,7 @@ function drawWaterX(c){const M=MAP;
 
 function genWorld(mid){
   if(!MAPS[mid]){const M=MODES[stats.mode];mid=(M&&M.map)||(MAPS[stats.map]?stats.map:'seddik')}
-  MAP=MAPS[mid];MAP.id=mid;MAP.st=MAP.like||mid;MAP.flip=0;MAP.cst=null;MAP.wat=null;MAP.isl=null;PIER.y=1080;LXF=null;LX.mc=[MC.x,MC.y];LX.heli=[1420,760];
+  MAP=MAPS[mid];MAP.id=mid;MAP.st=MAP.like||mid;MAP.flip=0;MAP.cst=null;MAP.wat=null;MAP.isl=null;MAP.bridges=null;PIER.y=1080;LXF=null;LX.mc=[MC.x,MC.y];LX.heli=[1420,760];
   for(const a of[walls,solids,trees,bushes,crates,blds,roads,fields,occ])a.length=0;
   for(let i=0;i<POIS.length;i++){POIS[i].n=MAP.poi[i];POIS[i].x=POI0[i].x;POIS[i].y=POI0[i].y}
   PAVED.length=0;for(const o of PAVED0)PAVED.push({...o});Object.assign(LAKE,LAKE0);XTRA={parks:[],pools:[],gas:null};
@@ -3444,10 +3446,10 @@ function vnz(x,y,s,k){x/=s;y/=s;const xi=Math.floor(x),yi=Math.floor(y),fx=x-xi,
 // [type, mot du lieu, nombre]  (flam : flamants dans le plan d'eau le plus proche du lieu ; umb : parasols sur la plage voisine)
 const PROPS={
  cote:[['flam','Tunis',3],['umb','Marsa',8],['umb','Hammamet',8],['mosaic','Carthage',2]],
- sidibou:[['flam','Amilcar',3],['umb','Gammarth',8],['umb','Marsa',6],['mosaic','Byrsa',2],['mosaic','Thermes',2]],
+ sidibou:[['rail',['Gammarth','Marsa','Sidi Bou','Amilcar','Byrsa'],'tgm'],['flam','Amilcar',3],['umb','Gammarth',8],['umb','Marsa',6],['mosaic','Byrsa',2],['mosaic','Thermes',2]],
  hammamet:[['umb','Yasmine',10],['umb','Médina',6],['cales','Médina',2],['flam','Korba',2]],
- sousse:[['umb','Kantaoui',9],['umb','Skanès',8],['cales','Médina',1]],
- mahdia:[['umb','Salakta',6],['mosaic','Salakta',2],['mosaic','Ksour',2]],
+ sousse:[['rail',['Hammam','Médina de Sousse','Skanès','Ribat','Ksar Hellal'],'sahel'],['umb','Kantaoui',9],['umb','Skanès',8],['cales','Médina',1]],
+ mahdia:[['rail',['Hiboun','Place','Ksour','Salakta'],'sahel'],['umb','Salakta',6],['mosaic','Salakta',2],['mosaic','Ksour',2]],
  djerba:[['umb','Midoun',10],['flam','Ajim',3],['camel','Midoun',3],['cales','Houmt',1]],
  kerkennah:[['flam','Ouled Kacem',3],['flam','Sidi Youssef',2]],
  sfax:[['flam','Thyna',4],['umb','Sidi Mansour',5],['mosaic','Thyna',1]],
@@ -3455,19 +3457,20 @@ const PROPS={
  tozeur:[['cales','Palmeraie',3],['flam','Chott',4],['camel','Ong Jemel',3],['camel','Nefta',2]],
  sahara:[['camel','Douz',4],['tent','Douz',3],['flam','Kébili',3],['camel','Tozeur',2]],
  tataouine:[['dino','Tataouine',0],['dino','Chenini',0],['dino','Médenine',0],['camel','Remada',2],['tent','Ghomrassen',2]],
- gafsa:[['pool','Gafsa',1],['rail',0,0]],
+ gafsa:[['pool','Gafsa',1],['rail',['Redeyef','Moularès','Métlaoui','Gorges','Gafsa'],'lezard']],
  kef:[['mosaic','Dougga',3],['dolmen','Kalaat',3]],
  hautes:[['mosaic','Sbeitla',3],['mosaic','Zaghouan',1],['dolmen','Siliana',2]],
  capbon:[['falcon','Haouaria',3],['umb','Kélibia',6],['umb','Hammamet',6],['mosaic','Haouaria',1]],
  bizerte:[['umb','Corniche',8],['flam','Menzel',3],['umb','Rafraf',5]],
  galite:[['seal','Crique',4],['seal','Pointe',3],['seal','Falaises',2]]};
-function mapProps(R){const L=PROPS[MAP.id];MAP.props=[];MAP.rails=null;if(!L)return;const out=MAP.props,rr=(a,b)=>a+R()*(b-a);
+function mapProps(R){const L=PROPS[MAP.id]||[];MAP.props=[];MAP.rails=null;const out=MAP.props,rr=(a,b)=>a+R()*(b-a);
+  for(const b of blds){if((b.tun||b.tunRoof)!=='hotel')continue;for(const [px,py] of [[b.x+b.w+70,b.y+b.h/2],[b.x+b.w/2,b.y+b.h+60],[b.x+b.w/2,b.y-60],[b.x-70,b.y+b.h/2]]){if(px<100||py<100||px>WS-100||py>WS-100)continue;let ok=!isWater(px,py)&&!isWater(px+60,py)&&!isWater(px-60,py);for(const o of blds)if(o!==b&&px>o.x-70&&px<o.x+o.w+70&&py>o.y-50&&py<o.y+o.h+50){ok=false;break}if(ok){out.push({k:'hpool',x:px,y:py,v:(px>b.x+b.w||px<b.x)?1:0});break}}}
   const poi=kw=>{const i=MAP.poi.findIndex(p=>p.includes(kw));return i>=0&&POIS[i]?POIS[i]:null};
   const landOK=(x,y,r)=>x>120&&y>120&&x<WS-120&&y<WS-120&&!isWater(x,y)&&!bldAt(x,y)&&!bldAt(x+r,y)&&!bldAt(x-r,y)&&!bldAt(x,y+r)&&!bldAt(x,y-r);
   const near=(P,r,dmin,dmax)=>{for(let t=0;t<60;t++){const a=R()*TAU,d=rr(dmin,dmax),x=P.x+Math.cos(a)*d,y=P.y+Math.sin(a)*d;if(landOK(x,y,r)&&!nearRoad(x,y,r*.6))return[x,y]}return null};
   const waters=()=>{const w=(MAP.wat||[]).slice();if(LAKE.r>60&&LAKE.x>0)w.push({x:LAKE.x,y:LAKE.y,rx:LAKE.r,ry:LAKE.r});return w};
   for(const [k,kw,n] of L){
-    if(k==='rail'){const ids=['Redeyef','Moularès','Métlaoui','Gorges','Gafsa'].map(poi).filter(Boolean);if(ids.length>1){MAP.rails=ids.map(p=>[p.x+40,p.y+120]);const a=MAP.rails[1],b=MAP.rails[2]||MAP.rails[1],c=MAP.rails[0];out.push({k:'train',x:a[0]+(b[0]-a[0])*.35,y:a[1]+(b[1]-a[1])*.35,a:Math.atan2(b[1]-a[1],b[0]-a[0])});void c}continue}
+    if(k==='rail'){const ids=kw.map(poi).filter(Boolean);if(ids.length>1){const pts=ids.map(p=>{let q=[p.x+40,p.y+120];for(let t=0;t<12&&(bldAt(q[0],q[1])||isWater(q[0],q[1]));t++)q=[q[0]-30,q[1]+25];return q});(MAP.rails=MAP.rails||[]).push({pts,k:n});const a=pts[0],b=pts[1];out.push({k:'train',x:a[0]+(b[0]-a[0])*.45,y:a[1]+(b[1]-a[1])*.45,a:Math.atan2(b[1]-a[1],b[0]-a[0]),t:n})}continue}
     const P=poi(kw);if(!P)continue;
     if(k==='flam'){let best=null,bd=1e18;for(const e of waters()){const d=dd2(P.x,P.y,e.x,e.y);if(d<bd){bd=d;best=e}}if(!best||bd>1400*1400)continue;
       for(let i=0;i<n;i++){const a=Math.atan2(P.y-best.y,P.x-best.x)+rr(-.9,.9),f=rr(.62,.86),x=best.x+Math.cos(a)*best.rx*f,y=best.y+Math.sin(a)*best.ry*f;if(isWater(x,y))out.push({k:'flam',x,y,a:rr(0,TAU),n:5+Math.floor(R()*6)})}continue}
@@ -3477,12 +3480,25 @@ function mapProps(R){const L=PROPS[MAP.id];MAP.props=[];MAP.rails=null;if(!L)ret
     if(k==='pool'){const q=near(P,90,140,420);if(q)out.push({k:'pool',x:q[0],y:q[1]});continue}
     const R0={camel:60,cales:40,mosaic:50,dolmen:40,falcon:28,tent:44}[k]||40;
     for(let i=0;i<n;i++){const q=near(P,R0,k==='mosaic'?40:110,k==='mosaic'?260:480);if(q)out.push({k,x:q[0],y:q[1],a:rr(0,TAU),c:Math.floor(R()*4)})}}}
-function drawRails(X,Y,S){const RL=MAP.rails;if(!RL)return;const c=ctx;c.save();c.lineCap='butt';
+function drawRails(X,Y,S){if(!MAP.rails)return;const c=ctx;c.save();c.lineCap='butt';for(const LN of MAP.rails){const RL=LN.pts;
   for(let i=0;i<RL.length-1;i++){const [ax,ay]=RL[i],[bx,by]=RL[i+1],L=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/L,uy=(by-ay)/L,nx=-uy,ny=ux;if(Math.max(ax,bx)<X-40||Math.min(ax,bx)>X+S+40||Math.max(ay,by)<Y-40||Math.min(ay,by)>Y+S+40)continue;
     for(let d=0;d<L;d+=14){const x=ax+ux*d,y=ay+uy*d;if(x<X-20||x>X+S+20||y<Y-20||y>Y+S+20||bldAt(x,y)||isWater(x,y))continue;c.strokeStyle='#5a4532';c.lineWidth=4;c.beginPath();c.moveTo(x-nx*11,y-ny*11);c.lineTo(x+nx*11,y+ny*11);c.stroke()}
     c.strokeStyle='rgba(60,60,60,.25)';c.lineWidth=10;c.beginPath();c.moveTo(ax,ay);c.lineTo(bx,by);c.stroke();
-    for(const o of [-6,6]){c.strokeStyle='#8d9196';c.lineWidth=2.2;c.beginPath();c.moveTo(ax+nx*o,ay+ny*o);c.lineTo(bx+nx*o,by+ny*o);c.stroke()}}c.restore()}
-function drawProps(X,Y,S){const PL=MAP.props;drawRails(X,Y,S);if(!PL||!PL.length)return;const c=ctx;
+    for(const o of [-6,6]){c.strokeStyle='#8d9196';c.lineWidth=2.2;c.beginPath();c.moveTo(ax+nx*o,ay+ny*o);c.lineTo(bx+nx*o,by+ny*o);c.stroke()}
+    if(LN.k!=='lezard'){c.strokeStyle='rgba(60,60,60,.55)';c.lineWidth=1;for(let d=20;d<L;d+=90){const x=ax+ux*d,y=ay+uy*d;if(bldAt(x,y))continue;c.beginPath();c.moveTo(x+nx*14,y+ny*14);c.lineTo(x+nx*22,y+ny*22);c.stroke();c.fillStyle='#555';c.beginPath();c.arc(x+nx*22,y+ny*22,2,0,TAU);c.fill()}}}}c.restore()}
+function drawBridges(X,Y,S){const BR=MAP.bridges;if(!BR||!BR.length)return;const c=ctx;for(const b of BR){if(b.x>X+S+40||b.x+b.w<X-40||b.y>Y+S+40||b.y+b.h<Y-40)continue;const vert=b.h>b.w;c.save();
+  c.fillStyle='rgba(0,20,30,.35)';c.fillRect(b.x+8,b.y+10,b.w,b.h);
+  // piles
+  c.fillStyle='#8a8478';const L=vert?b.h:b.w;for(let d=24;d<L-10;d+=46){if(vert){c.fillRect(b.x-6,b.y+d,b.w+12,10)}else{c.fillRect(b.x+d,b.y-6,10,b.h+12)}}
+  c.fillStyle=b.k==='stone'?'#bfb29a':'#4a4d52';c.fillRect(b.x,b.y,b.w,b.h);
+  if(b.k==='stone'){c.strokeStyle='rgba(90,75,55,.4)';c.lineWidth=1;for(let d=8;d<L;d+=12){c.beginPath();if(vert){c.moveTo(b.x,b.y+d);c.lineTo(b.x+b.w,b.y+d)}else{c.moveTo(b.x+d,b.y);c.lineTo(b.x+d,b.y+b.h)}c.stroke()}}
+  else{c.strokeStyle='#f2f0e6';c.lineWidth=2;c.setLineDash([10,10]);c.beginPath();if(vert){c.moveTo(b.x+b.w/2,b.y);c.lineTo(b.x+b.w/2,b.y+b.h)}else{c.moveTo(b.x,b.y+b.h/2);c.lineTo(b.x+b.w,b.y+b.h/2)}c.stroke();c.setLineDash([])}
+  c.fillStyle=b.k==='stone'?'#d8ccb0':'#9aa3ab';if(vert){c.fillRect(b.x-3,b.y,4,b.h);c.fillRect(b.x+b.w-1,b.y,4,b.h)}else{c.fillRect(b.x,b.y-3,b.w,4);c.fillRect(b.x,b.y+b.h-1,b.w,4)}
+  if(b.k==='lift'){// pont mobile de Bizerte : deux tours et la travée levante
+    for(const t of [0,1]){const tx=vert?b.x-14:b.x+(t?b.w-26:0),ty=vert?b.y+(t?b.h-26:0):b.y-14,tw=vert?b.w+28:26,th=vert?26:b.h+28;c.fillStyle='rgba(0,0,0,.3)';c.fillRect(tx+8,ty+10,tw,th);c.fillStyle='#5d7a8c';c.fillRect(tx,ty,tw,th);c.strokeStyle='#2c3e4a';c.lineWidth=2;c.strokeRect(tx+2,ty+2,tw-4,th-4);c.beginPath();c.moveTo(tx,ty);c.lineTo(tx+tw,ty+th);c.moveTo(tx+tw,ty);c.lineTo(tx,ty+th);c.stroke()}
+    c.strokeStyle='#d9b24a';c.lineWidth=2;c.strokeRect(b.x+2,b.y+28,b.w-4,b.h-56)}
+  c.restore()}}
+function drawProps(X,Y,S){const PL=MAP.props;drawRails(X,Y,S);drawBridges(X,Y,S);if(!PL||!PL.length)return;const c=ctx;
   for(const p of PL){if(p.x<X-120||p.x>X+S+120||p.y<Y-120||p.y>Y+S+120)continue;c.save();c.translate(p.x,p.y);const R=mulberry32((p.x*7+p.y*3)|0);
     if(p.k==='umb'){const cols=[['#e63946','#fff'],['#1d70b8','#fff'],['#f4a261','#fff'],['#2a9d8f','#fff'],['#e9c46a','#264653']][p.c];c.fillStyle='rgba(0,0,0,.18)';c.beginPath();c.ellipse(7,9,17,15,0,0,TAU);c.fill();
       for(const s of [-1,1]){c.fillStyle='#f6f1e7';c.fillRect(s*22-5,-10,10,26);c.fillStyle='rgba(0,0,0,.1)';c.fillRect(s*22-5,-10,10,6)}c.fillStyle=R()<.5?'#f2d16b':'#7fc6e8';c.fillRect(-8,14,16,24);
@@ -3497,11 +3513,16 @@ function drawProps(X,Y,S){const PL=MAP.props;drawRails(X,Y,S);if(!PL||!PL.length
     else if(p.k==='dino'){c.rotate(p.a);const g=p.v?'#6f8a55':'#8a7a5a';c.fillStyle='rgba(0,0,0,.22)';c.beginPath();c.ellipse(8,10,52,22,0,0,TAU);c.fill();c.fillStyle='#b9a888';c.fillRect(-30,-24,60,48);c.strokeStyle='#8a7a5e';c.lineWidth=1.5;c.strokeRect(-30,-24,60,48);
       c.strokeStyle=g;c.lineCap='round';c.lineWidth=9;c.beginPath();c.moveTo(-14,0);c.quadraticCurveTo(-40,10,-62,4);c.stroke();c.lineWidth=7;c.beginPath();c.moveTo(14,0);c.quadraticCurveTo(36,-8,50,-30);c.stroke();c.fillStyle=g;c.beginPath();c.ellipse(52,-33,7,5,-.8,0,TAU);c.fill();
       for(const [lx,ly] of [[-10,-13],[10,-13],[-10,13],[10,13]]){c.beginPath();c.ellipse(lx,ly,4,6,0,0,TAU);c.fill()}c.beginPath();c.ellipse(0,0,22,13,0,0,TAU);c.fill();c.fillStyle='rgba(255,255,255,.18)';c.beginPath();c.ellipse(-4,-5,12,5,0,0,TAU);c.fill();c.fillStyle='#111';c.beginPath();c.arc(55,-35,1.3,0,TAU);c.fill()}
-    else if(p.k==='train'){c.rotate(p.a);for(let i=0;i<5;i++){const x=-i*58;c.fillStyle='rgba(0,0,0,.25)';c.fillRect(x-24,-8,52,22);c.fillStyle=i?'#a5262b':'#7a1b1e';c.fillRect(x-26,-11,52,22);c.fillStyle='#e8c46a';c.fillRect(x-26,-2,52,3);
+    else if(p.k==='train'){c.rotate(p.a);const TC=p.t==='tgm'?['#2e7d4f','#f2f0e6','#d9b24a']:p.t==='sahel'?['#1d5fa8','#f2f0e6','#e9c46a']:['#7a1b1e','#a5262b','#e8c46a'],nc=p.t==='lezard'||!p.t?5:3;for(let i=0;i<nc;i++){const x=-i*58;c.fillStyle='rgba(0,0,0,.25)';c.fillRect(x-24,-8,52,22);c.fillStyle=i?TC[1]:TC[0];c.fillRect(x-26,-11,52,22);if(p.t){c.fillStyle=TC[0];c.fillRect(x-26,-11,52,4);c.fillRect(x-26,7,52,4)}c.fillStyle=TC[2];c.fillRect(x-26,-2,52,3);
         if(i){c.fillStyle='#3b2a20';for(let w=0;w<4;w++)c.fillRect(x-22+w*12,-9,7,5)}else{c.fillStyle='#2b2b2b';c.beginPath();c.arc(x+14,0,6,0,TAU);c.fill();c.fillStyle='#bdbdbd';c.beginPath();c.arc(x+14,0,2.5,0,TAU);c.fill()}c.fillStyle='#333';c.fillRect(x+26,-2,6,4)}}
     else if(p.k==='pool'){c.fillStyle='rgba(0,0,0,.2)';c.fillRect(-70,-48,150,104);c.fillStyle='#d8c7a2';c.fillRect(-76,-54,152,108);c.fillStyle='#b8a47c';for(let i=0;i<8;i++){c.fillRect(-76+i*19,-54,17,7);c.fillRect(-76+i*19,47,17,7)}
       const g=c.createLinearGradient(-60,-40,60,40);g.addColorStop(0,'#5fc4c0');g.addColorStop(1,'#2c8a94');c.fillStyle=g;c.fillRect(-60,-38,120,76);c.strokeStyle='rgba(255,255,255,.45)';c.lineWidth=1.4;for(let i=0;i<5;i++){c.beginPath();c.moveTo(-50+i*24,-20+i*4);c.quadraticCurveTo(-40+i*24,-26+i*4,-30+i*24,-20+i*4);c.stroke()}
       c.fillStyle='#e8dcc0';for(let i=0;i<4;i++)c.fillRect(-60+i*4,-38+i*6,24-i*4,6)}
+    else if(p.k==='hpool'){if(p.v)c.rotate(Math.PI/2);c.fillStyle='rgba(0,0,0,.18)';c.fillRect(-58,-34,124,76);c.fillStyle='#e8dcc2';c.fillRect(-62,-38,124,76);
+      const g=c.createLinearGradient(-40,-22,40,22);g.addColorStop(0,'#7fe0e8');g.addColorStop(1,'#1d8fb0');c.fillStyle=g;c.beginPath();c.ellipse(-12,0,32,20,0,0,TAU);c.ellipse(18,4,20,15,0,0,TAU);c.fill();c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.ellipse(-12,0,32,20,0,0,TAU);c.stroke();
+      c.strokeStyle='rgba(255,255,255,.5)';c.lineWidth=1.2;for(let i=0;i<3;i++){c.beginPath();c.moveTo(-34+i*16,-6+i*4);c.quadraticCurveTo(-28+i*16,-10+i*4,-22+i*16,-6+i*4);c.stroke()}
+      for(let i=0;i<5;i++){c.fillStyle='#f6f1e7';c.fillRect(-56+i*24,26,8,10);c.fillStyle='rgba(0,0,0,.12)';c.fillRect(-56+i*24,26,8,3)}c.fillStyle='#e63946';c.beginPath();c.arc(48,-24,9,0,TAU);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(48,-24,4,0,TAU);c.fill();
+      c.fillStyle='#3f7a3a';c.beginPath();c.arc(-52,-28,7,0,TAU);c.arc(52,26,7,0,TAU);c.fill()}
     else if(p.k==='mosaic'){c.rotate((p.a%1.6)>.8?0:Math.PI/2);c.fillStyle='#e8dcc4';c.fillRect(-44,-32,88,64);c.strokeStyle='#8a3a22';c.lineWidth=3;c.strokeRect(-41,-29,82,58);c.strokeStyle='#2f4f6a';c.lineWidth=1.6;c.strokeRect(-35,-23,70,46);
       const cols=['#a5322a','#2f4f6a','#c99a2c','#3d6a3a'];for(let i=0;i<5;i++)for(let j=0;j<3;j++){const cx=-28+i*14,cy=-14+j*14;c.fillStyle=cols[(i+j+p.c)%4];c.beginPath();c.moveTo(cx,cy-5);c.lineTo(cx+5,cy);c.lineTo(cx,cy+5);c.lineTo(cx-5,cy);c.closePath();c.fill()}
       c.fillStyle='rgba(120,90,60,.35)';for(let i=0;i<14;i++)c.fillRect(-44+R()*88,-32+R()*64,3+R()*6,2+R()*4)}
@@ -4487,7 +4508,7 @@ function tunisify(){if(!blds.length&&!trees.length)return;if(blds.some(b=>b.tun|
   const R=mulberry32(((MAP.id||'').split('').reduce((a,c)=>a*31+c.charCodeAt(0),7))>>>0),rr=(a,b)=>a+R()*(b-a),TK=MAP.tunK||'',HM=TK==='village'?2:TK==='medina'?1.6:TK==='island'?1.3:TK==='wild'?.4:1;
   const rectFree=(x,y,w,h)=>{for(const [px,py] of [[x,y],[x+w,y],[x,y+h],[x+w,y+h],[x+w/2,y+h/2]])if(!free(px,py,14,{paved:city}))return false;for(const it of items)if(it.x>x-20&&it.x<x+w+20&&it.y>y-20&&it.y<y+h+20)return false;return true};
   const tree=(x,y,r,k)=>{if(free(x,y,r*.6,{paved:city})){addTree(x,y,r,k);return true}return false};
-  const house=(x,y,w,h,kind)=>{const b=bld(Math.round(x),Math.round(y),Math.round(w),Math.round(h),'med',[],{});b.tun=kind;b.tv=R();b.props=[];return b};
+  const house=(x,y,w,h,kind)=>{for(const o of blds)if(x<o.x+o.w+8&&x+w+8>o.x&&y<o.y+o.h+8&&y+h+8>o.y)return{tun:kind,props:[],x,y,w,h,skip:1};const b=bld(Math.round(x),Math.round(y),Math.round(w),Math.round(h),'med',[],{});b.tun=kind;b.tv=R();b.props=[];return b};
   // toits existants repeints à la tunisienne (portes et intérieur inchangés)
   {const ok={house:1,house2:1,house3:1,shop:1,med:1};let best=null,bd=1e18;for(const b of blds){if(!ok[b.st])continue;if(R()<(TK==='village'?1:TK==='medina'?.85:city?.5:.55))b.tunRoof=R()<.2?'dome':'house';if(city){const d=dd2(b.x+b.w/2,b.y+b.h/2,POIS[0].x,POIS[0].y)-b.w*b.h*40;if(b.w>110&&b.h>110&&d<bd){bd=d;best=b}}}if(best)best.tunRoof='mosq'}
   let nb=0;const capB=Math.round((city?26:forest?10:20)*Math.max(1,HM));
@@ -4544,7 +4565,7 @@ const MSTY={
  galite:{h:'stone',rp:.9,tr:{apine:2,hendi:2},cv:.6,sig:[['light','Phare']],st:'#8f8679',tint:'rgba(55,45,60,.08)'},
  gafsa:{h:'stone',h2:'ksar',p2:.4,rp:.75,tr:{olive:3,dpalm:2,hendi:1},cv:.6,sig:[['kasbah','Gafsa']],st:'#b49d7a',tint:'rgba(140,120,100,.07)'}};
 function mstyle(){return MSTY[MAP.id]||MSTY[MAP.st]||MSTY.seddik}
-const MONK={fort:1,kasbah:1,ribat:1,light:1,clock:1,amphi:1,gate:1,bmin:1,trog:1,mausol:1};
+const MONK={fort:1,kasbah:1,ribat:1,light:1,clock:1,amphi:1,gate:1,bmin:1,trog:1,mausol:1,hotel:1};
 Object.assign(TUNTREE,{dpalm:1,cork:1,ficus:1,apine:1,cypress:1,jasmin:1});
 function wpick(R,o){let s=0;for(const k in o)s+=o[k];let r=R()*s;for(const k in o){r-=o[k];if(r<=0)return k}return Object.keys(o)[0]}
 function mapTint(X,Y,S){const t=mstyle().tint;if(!t)return;ctx.fillStyle=t.replace(/,(\.\d+)\)$/,(m,a)=>','+Math.min(.08,parseFloat(a)*1.05).toFixed(3)+')');ctx.fillRect(X,Y,S,S)}
@@ -4558,6 +4579,10 @@ function mapSpecific(R,rr,rectFree,house,tree){const M=mstyle();
   // palmeraies, orangeraies, oliveraies, chênaies
   if(M.gv){const [k,n]=M.gv;for(let g=0,t=0;g<n&&t<90;t++){const x0=rr(380,WS-760),y0=rr(380,WS-760);if(!free(x0+140,y0+110,150))continue;const sp=k==='dpalm'?66:k==='cork'?78:68;
     for(let i=0;i<4;i++)for(let j=0;j<5;j++){const jit=k==='cork'?18:5;tree(x0+j*sp+rr(-jit,jit),y0+i*sp+rr(-jit,jit),k==='dpalm'?rr(28,36):k==='cork'?rr(26,32):k==='orange'?rr(18,22):rr(22,27),k)}g++}}
+  // hôtels des zones touristiques
+  {const HOT={tozeur:[['Tozeur',2],['Nefta',1]],capbon:[['Nabeul',2],['Kélibia',1]],mahdia:[['Hiboun',2]],kerkennah:[['Remla',1]],sousse:[['Skanès',1],['Kantaoui',1]],hammamet:[['Yasmine',1],['Nabeul',1]],djerba:[['Midoun',1],['Houmt',1]],sidibou:[['Gammarth',1]],tabarka:[['Tabarka',2]],bizerte:[['Corniche',1]],sfax:[['Sidi Mansour',1]],gabes:[['Matmata',1]],sahara:[['Douz',1],['Tozeur',1]],tunis:[['Lac',1]],cote:[['Hammamet',1],['Marsa',1]]}[MAP.id]||[];
+   for(const [kw,n] of HOT){const i=MAP.poi.findIndex(p=>p.includes(kw));const P=i>=0?POIS[i]:null;if(!P)continue;for(let k=0;k<n;k++){for(let t=0;t<90;t++){const w=rr(230,270),h=rr(140,160),a=R()*TAU,d=rr(180,560),x=P.x+Math.cos(a)*d-w/2,y=P.y+Math.sin(a)*d-h/2;if(x<160||y<160||x+w>WS-160||y+h>WS-160||isWater(x+w/2,y+h/2)||isWater(x+w+90,y+h/2)||!rectFree(x,y,w+120,h)){continue}const b=house(x,y,w,h,'hotel');b.fh=40;break}}}
+   for(const b of blds)if(b.label==='HÔTEL'&&!b.tun){b.tunRoof='hotel';b.hs=null;b.fh=40}}
   // monuments
   const near=(kw)=>{if(kw){const i=MAP.poi.findIndex(p=>p.includes(kw));if(i>=0&&POIS[i])return POIS[i]}return POIS[Math.floor(R()*POIS.length)]};
   const SZ={fort:[210,190],kasbah:[200,180],ribat:[190,190],light:[84,84],clock:[120,120],amphi:[300,236],gate:[150,84],bmin:[150,140],trog:[150,150],mausol:[230,200]},FH={mausol:44,fort:30,kasbah:28,ribat:36,light:70,clock:56,amphi:24,gate:32,bmin:52,trog:3};
@@ -4652,6 +4677,13 @@ function drawMonument(b){const K=b.tun||b.tunRoof,c=ctx,x=b.x,y=b.y,w=b.w,h=b.h,
     const old=b.hs;b.hs='brick';drawStyledHouse(b);b.hs=old;const ms=Math.min(w,h)*.34,mx=x+w-ms-8,my=y+8;c.fillStyle='rgba(0,0,0,.3)';c.fillRect(mx+12,my+16,ms,ms);c.fillStyle='#b67d48';c.fillRect(mx,my,ms,ms);
     for(let i=0;i<4;i++){const k=i*ms*.12;c.strokeStyle=i%2?'#e7c38f':'#7a4a24';c.lineWidth=2;c.strokeRect(mx+k+2,my+k+2,ms-k*2-4,ms-k*2-4)}c.fillStyle='#e7c38f';c.beginPath();c.moveTo(mx+ms/2,my+ms*.3);c.lineTo(mx+ms*.7,my+ms/2);c.lineTo(mx+ms/2,my+ms*.7);c.lineTo(mx+ms*.3,my+ms/2);c.closePath();c.fill();c.fillStyle='#d8b23a';c.beginPath();c.arc(mx+ms/2,my+ms/2,2.4,0,TAU);c.fill();
     const dr=Math.min(w,h)*.15,dx=x+w*.3,dy=y+h*.62;c.fillStyle='#d9a76a';c.beginPath();c.arc(dx,dy,dr,0,TAU);c.fill();c.strokeStyle='#8f5c34';c.lineWidth=1;c.stroke();c.restore();return}
+  if(K==='hotel'){// hôtel de station balnéaire : façade blanche, balcons à parasols, atrium vitré, panneaux solaires
+    const vert=h>w;c.fillStyle='rgba(0,0,0,.28)';c.fillRect(x+12,y+14,w,h);c.fillStyle='#d9d3c6';c.fillRect(x,y,w,h);c.fillStyle='#f4f1ea';c.fillRect(x+6,y+6,w-12,h-12);
+    const bal=(bx,by,bw,bh,n,hz)=>{for(let i=0;i<n;i++){const px=hz?bx+i*(bw/n):bx,py=hz?by:by+i*(bh/n),pw=hz?bw/n-3:bw,ph=hz?bh:bh/n-3;c.fillStyle='#e6e0d2';c.fillRect(px,py,pw,ph);c.fillStyle=['#1d70b8','#2a9d8f','#e9c46a','#e76f51'][(i+(hz?0:2))%4];c.beginPath();c.arc(px+pw/2,py+ph/2,Math.min(pw,ph)*.32,0,TAU);c.fill();c.strokeStyle='rgba(40,50,60,.5)';c.lineWidth=.8;c.strokeRect(px,py,pw,ph)}};
+    const nb=Math.max(4,Math.round((vert?h:w)/26));if(vert){bal(x+2,y+8,14,h-16,nb,0);bal(x+w-16,y+8,14,h-16,nb,0)}else{bal(x+8,y+2,w-16,14,nb,1);bal(x+8,y+h-16,w-16,14,nb,1)}
+    const ax=x+w*.36,ay=y+h*.3,aw=w*.28,ah=h*.4,g=c.createLinearGradient(ax,ay,ax+aw,ay+ah);g.addColorStop(0,'#bfe6f2');g.addColorStop(1,'#5aa7c4');c.fillStyle=g;c.fillRect(ax,ay,aw,ah);c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=1;for(let i=1;i<4;i++){c.beginPath();c.moveTo(ax+aw*i/4,ay);c.lineTo(ax+aw*i/4,ay+ah);c.stroke()}c.beginPath();c.moveTo(ax,ay+ah/2);c.lineTo(ax+aw,ay+ah/2);c.stroke();
+    c.fillStyle='#2b3e5c';for(let i=0;i<3;i++)for(let j=0;j<2;j++)c.fillRect(x+w*.7+i*11,y+h*.3+j*15,9,12);c.fillStyle='#9aa3ab';c.fillRect(x+w*.14,y+h*.34,14,10);c.fillRect(x+w*.14,y+h*.56,14,10);
+    c.fillStyle='#c0392b';c.font='700 11px system-ui,sans-serif';c.textAlign='center';c.fillText('HÔTEL',x+w*.5,y+h*.84);c.restore();return}
   if(K==='mausol'){// mausolée Bourguiba de Monastir : marbre blanc, grande coupole dorée, deux coupoles vertes, deux minarets
     const cx=x+w/2,cy=y+h*.52;c.fillStyle='rgba(0,0,0,.25)';c.fillRect(x+10,y+12,w,h);c.fillStyle='#e9e5dc';c.fillRect(x,y,w,h);c.strokeStyle='#c9c1b0';c.lineWidth=2;c.strokeRect(x+3,y+3,w-6,h-6);
     c.strokeStyle='rgba(150,140,120,.35)';c.lineWidth=.8;for(let i=x+14;i<x+w;i+=14){c.beginPath();c.moveTo(i,y+4);c.lineTo(i,y+h-4);c.stroke()}
@@ -6027,9 +6059,14 @@ for(const[k,id,f]of OPTS){const el=$(id);el.addEventListener('input',()=>{stats[
   if(k==='sfxV')el.addEventListener('change',()=>{initAudio();if(typeof blip==='function'){blip(520,.07,.25);setTimeout(()=>blip(780,.09,.25),90)}})}
 const optsEl=$('#opts');
 function openOpts(){syncOpts();radioLbl();profUI();optsEl.hidden=false}
-function radioLbl(){const m=stats.radio||'voice',b=$('#radioBtn');if(b)b.textContent='Radio d’équipe : '+(m==='voice'?'voix':m==='text'?'texte':'désactivée');const l=$('#radioLangBtn');if(l)l.textContent='Langue de la radio : '+(RLN[stats.radioLang||'auto']||'comme le jeu')}
+function radioLbl(){const m=stats.radio||'voice',b=$('#radioBtn');if(b)b.textContent='Radio d’équipe : '+(m==='voice'?'voix':m==='text'?'texte':'désactivée');const l=$('#radioLangBtn');if(l)l.textContent='Langue de la radio : '+(RLN[stats.radioLang||'auto']||'comme le jeu');
+  const st=$('#radioVoiceSt'),ib=$('#radioInstBtn');if(st)voiceStatus().then(r=>{const ar=radioLang()==='ar'||radioLang()==='tn';if(r.ok){st.textContent='✓ Voix disponible sur cet appareil'+(r.lang?' ('+r.lang+')':'')+(radioLang()==='tn'&&r.lang&&r.lang!=='ar-TN'?' · le tunisien est lu avec la voix arabe':'');st.className='vst ok';if(ib)ib.hidden=true}
+    else{st.textContent=ar?'✗ Aucune voix arabe installée sur cet appareil. '+(r.app?'Touchez « Installer la voix arabe », choisissez Arabe dans les données vocales, puis revenez.':'Android : Paramètres ▸ Langues ▸ Synthèse vocale ▸ Moteur Google ▸ Installer les données vocales ▸ Arabe. Sur ordinateur, Chrome ou Edge ont une voix arabe.'):'✗ Pas de voix pour cette langue sur cet appareil.';st.className='vst ko';if(ib)ib.hidden=!(ar&&r.app)}}).catch(()=>{})}
 const RLN={auto:'comme le jeu',fr:'français',ar:'العربية الفصحى (arabe)',tn:'تونسي · الدارجة (tunisien)',en:'English'},RLO=['auto','tn','ar','fr','en'];
 $('#radioLangBtn').addEventListener('click',()=>{const i=RLO.indexOf(stats.radioLang||'auto');stats.radioLang=RLO[(i+1)%RLO.length];saveStats();radioLbl();if((stats.radio||'voice')!=='off'){try{const T=RADIO_TXT[radioLang()]||RADIO_TXT.en,nm=String(stats.name||'').trim(),t=(nm?(['ar','tn'].includes(radioLang())?nm+'، ':nm+', '):'')+T.kill;if((stats.radio||'voice')==='voice')radioSpeak(t)}catch(e){}}});
+$('#radioTestBtn').addEventListener('click',()=>{initAudio&&initAudio();const T=RADIO_TXT[radioLang()]||RADIO_TXT.en,nm=String(stats.name||'').trim()||'Seddik',t=(['ar','tn'].includes(radioLang())?nm+'، ':nm+', ')+T.zone.replace('{d}',T.dirs[2]);VOICEMISS.ar=0;radioSpeak(t);setTimeout(radioLbl,600)});
+$('#radioInstBtn').addEventListener('click',()=>{const P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;if(P&&P.openInstall)P.openInstall().catch(()=>{});for(const k in TTSOK)delete TTSOK[k];VOICEMISS.ar=0;setTimeout(radioLbl,1500)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){for(const k in TTSOK)delete TTSOK[k];VOICEMISS.ar=0;if(optsEl&&!optsEl.hidden)radioLbl()}});
 $('#radioBtn').addEventListener('click',()=>{const m=stats.radio||'voice';stats.radio=m==='voice'?'text':m==='text'?'off':'voice';saveStats();radioLbl();if(stats.radio==='voice'){try{radioSpeak((RADIO_TXT[radioLang()]||RADIO_TXT.en).kill)}catch(e){}}});
 $('#optBtn').addEventListener('click',openOpts);$('#optBtn2').addEventListener('click',openOpts);
 $('#oClose').addEventListener('click',()=>{optsEl.hidden=true});
@@ -6100,11 +6137,20 @@ function radioSay(k,vars,cd,prio){const mode=stats.radio||'voice';if(mode==='off
   RAD.el.classList.remove('on');if(k!=='win'&&game.mode==='play')sysFeed('📻 '+T.who+' : '+s,Math.max(3.4,s.length*.07),'radio');RAD.hT=Math.max(3.2,s.length*.065);
   radioClick();if(mode==='voice')radioSpeak(s);return true}
 function radioClick(){if(!AC||!stats.sound)return;try{const t=AC.currentTime,o=sOut(.22*(stats.sfxV??1),0);nz(o,t,.12,'bandpass',1800,2,.5);tone(o,t+.02,.06,'square',1250,1250,.12)}catch(e){}}
+// voix : on cherche une voix réellement installée (tunisienne, puis arabe…) ; sinon on le dit au lieu de rester muet
+const TTSOK={},VOICEMISS={};
+function ttsChain(lang){const b=lang.slice(0,2);return b==='ar'?[lang,'ar','ar-SA','ar-EG','ar-AE','ar-MA','ar-DZ'].filter((v,i,a)=>a.indexOf(v)===i):[lang,b]}
+async function ttsPick(P,lang){for(const l of ttsChain(lang)){if(TTSOK[l]===undefined){try{const r=await P.isLanguageSupported({lang:l});TTSOK[l]=!!(r&&r.supported)}catch(e){TTSOK[l]=false}}if(TTSOK[l])return l}return null}
+function webVoice(lang){const S=window.speechSynthesis;const vs=(S&&S.getVoices())||[];const n=x=>(x.lang||'').replace('_','-').toLowerCase();for(const l of ttsChain(lang)){const v=vs.find(x=>n(x)===l.toLowerCase())||(l.length===2?vs.find(x=>n(x).startsWith(l+'-')||n(x)===l):null);if(v)return v}return null}
+function voiceMissing(lang){const b=lang.slice(0,2);if(VOICEMISS[b])return;VOICEMISS[b]=1;try{if(game.mode==='play')sysFeed(b==='ar'?'🔇 Aucune voix arabe sur cet appareil : Réglages ▸ Langue de la radio ▸ Installer la voix':'🔇 Voix '+lang+' absente de cet appareil',6,'alert')}catch(e){}try{radioLbl()}catch(e){}}
 function radioSpeak(s){const vol=clamp((stats.sfxV??1)*1.1,0,1),lang=RADIO_VOICE[radioLang()]||'en-US';
   const P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;
-  if(P&&P.speak){try{P.stop&&P.stop().catch(()=>{});P.speak({text:s,lang,rate:1.05,pitch:.92,volume:vol,category:'ambient'}).catch(()=>{if(lang.startsWith('ar')&&lang!=='ar-SA')P.speak({text:s,lang:'ar-SA',rate:1.05,pitch:.92,volume:vol,category:'ambient'}).catch(()=>{})})}catch(e){}return}
+  if(P&&P.speak){ttsPick(P,lang).then(l=>{if(!l){voiceMissing(lang);return}try{P.stop&&P.stop().catch(()=>{})}catch(e){}P.speak({text:s,lang:l,rate:1.0,pitch:.95,volume:vol,category:'ambient'}).catch(()=>{TTSOK[l]=false;voiceMissing(lang)})}).catch(()=>voiceMissing(lang));return}
   const S=window.speechSynthesis;if(!S||!window.SpeechSynthesisUtterance)return;
-  try{S.cancel();const u=new SpeechSynthesisUtterance(s);u.lang=lang;u.rate=1.06;u.pitch=.9;u.volume=vol;const vs=S.getVoices()||[];const v=vs.find(x=>x.lang&&x.lang.replace('_','-').toLowerCase()===lang.toLowerCase())||vs.find(x=>x.lang&&x.lang.toLowerCase().startsWith(lang.slice(0,2)));if(v)u.voice=v;else if(lang==='ar-TN')u.lang='ar';S.speak(u)}catch(e){}}
+  const go=()=>{try{const v=webVoice(lang);if(!v&&lang.startsWith('ar')){voiceMissing(lang);return}S.cancel();const u=new SpeechSynthesisUtterance(s);u.lang=v?v.lang:lang;if(v)u.voice=v;u.rate=1.02;u.pitch=.95;u.volume=vol;S.speak(u)}catch(e){}};
+  if(!(S.getVoices()||[]).length){let done=false;const f=()=>{if(done)return;done=true;go()};S.addEventListener&&S.addEventListener('voiceschanged',f,{once:true});setTimeout(f,900)}else go()}
+async function voiceStatus(){const lang=RADIO_VOICE[radioLang()]||'en-US',P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;
+  if(P&&P.isLanguageSupported){const l=await ttsPick(P,lang);return{ok:!!l,lang:l,app:true}}const S=window.speechSynthesis;if(!S)return{ok:false};if(!(S.getVoices()||[]).length)await new Promise(r=>{S.addEventListener&&S.addEventListener('voiceschanged',r,{once:true});setTimeout(r,900)});const v=webVoice(lang);return{ok:!!v,lang:v&&v.lang,app:false}}
 function radioTick(dt){if(RAD.hT>0){RAD.hT-=dt;if(RAD.hT<=0&&RAD.el)RAD.el.classList.remove('on')}
   if(game.mode!=='play'||!player||(stats.radio||'voice')==='off')return;const p=player;if(!p.alive||p.inPlane)return;
   if(!RAD.landed){if(p.air<=0){RAD.landed=true;RAD.land=matchT;RAD.kills=p.kills;RAD.vest=p.vest;radioSay('land',null,999,1)}return}
@@ -6261,7 +6307,7 @@ function buildMaps(){const box=$('#maps');const glyph={seddik:'🏝️',cote:'�
   box.querySelectorAll('.map-card').forEach(b=>b.addEventListener('click',()=>setMap(b.dataset.k)));markMap()}
 function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mode];return MAPS[(M&&M.map)||stats.map]}
 function mapBiome(k){const m=MAPS[k]||{},st=m.like||k;if(['djerba','kerkennah','galite','seddik'].includes(k))return'ÎLE';if(m.gen==='desert'||st==='sahara'||['gafsa'].includes(k))return'DÉSERT';if(m.gen==='city'||st==='ville')return'VILLE';if(m.gen==='forest'||st==='foret')return'FORÊT';if(st==='hautes')return'MONTAGNE';return'CÔTE'}
-function mapHero(){const k=stats.mode&&MODES[stats.mode]&&MODES[stats.mode].map||stats.map,m=MAPS[k];if(!m)return;const im=$('#mapHeroImg');if(!im)return;const src='thumbs/'+k+'.jpg';if(!im.src.endsWith(src)){im.classList.remove('on');im.onload=()=>im.classList.add('on');im.src=src;if(im.complete)im.classList.add('on')}
+function mapHero(){const k=stats.mode&&MODES[stats.mode]&&MODES[stats.mode].map||stats.map,m=MAPS[k];if(!m)return;try{const lb=document.getElementById('lobby');if(lb)lb.style.setProperty('--mapbg','url(thumbs/'+k+'.jpg)')}catch(e){}const im=$('#mapHeroImg');if(!im)return;const src='thumbs/'+k+'.jpg';if(!im.src.endsWith(src)){im.classList.remove('on');im.onload=()=>im.classList.add('on');im.src=src;if(im.complete)im.classList.add('on')}
   $('#mapHeroName').textContent=m.n;$('#mapHeroPoi').textContent=m.poi.length+' lieux · '+m.poi.slice(0,4).join(' · ');$('#mapHeroTag').textContent=mapBiome(k);const c=document.querySelector('#maps .map-card[data-k="'+k+'"]');if(c&&c.parentElement.scrollWidth>c.parentElement.clientWidth){const p=c.parentElement;p.scrollTo({left:c.offsetLeft-p.clientWidth/2+c.clientWidth/2,behavior:reduceMotion?'auto':'smooth'})}}
 function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];try{setTimeout(mapHero,0)}catch(_){}$('#mapD').textContent=(stats.mode==='cup'?'Parcours : l’étape choisit sa carte, mais vous pouvez en prendre une autre. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .map-card').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
 function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby'){const go=()=>{if(stats.map===id&&MAP.id!==id&&game.mode==='lobby'){genWorld(id);tunisify();markMap()}};Promise.race([gcLoad(id),new Promise(r=>setTimeout(r,1200))]).then(go,go)}markMap();const stamp=document.querySelector('.stamp');if(stamp){const M=MODES[stats.mode]||MODES.classic,active=selMap();stamp.textContent=active.n+' · '+M.np+' combattants · '+(M.team?'équipes':'1 survivant')}}
@@ -6927,6 +6973,14 @@ body.p3 #game{filter:none}
 .feed .sys.radio{box-shadow:inset 3px 0 0 #3ddc97,0 6px 18px rgba(0,0,0,.2)!important;color:#e9fbf1;unicode-bidi:plaintext}
 .feed .sys.tip{box-shadow:inset 3px 0 0 #4cc3ff,0 6px 18px rgba(0,0,0,.2)!important}
 @media (pointer:fine){#hud .count,#hud .zone,#hud .slot,#hud .pist,#hud .vit,#hud .iconbtn,#hud .tresc{-webkit-backdrop-filter:blur(10px) saturate(1.25);backdrop-filter:blur(10px) saturate(1.25)}}
+
+#opts .vst{font-size:12px;margin:4px 2px 10px;line-height:1.35}#opts .vst.ok{color:#6fdc9a}#opts .vst.ko{color:#ffb4a0}
+
+/* v2.38 — lobby moderne : la carte choisie en fond plein écran, dégradé cinématographique */
+#lobby{isolation:isolate}
+#lobby::before{content:"";position:fixed;inset:-4%;z-index:-2;background:var(--mapbg,none) center 30%/cover no-repeat,#0b0f14;filter:saturate(1.15) brightness(.62) contrast(1.05);transform:scale(1.06);transition:background-image .4s}
+#lobby::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 70% 42% at 50% 38%,rgba(255,150,70,.18),transparent 70%),linear-gradient(180deg,rgba(8,11,16,.55) 0%,rgba(8,11,16,.15) 22%,rgba(8,11,16,.35) 50%,rgba(8,11,16,.92) 78%,rgba(8,11,16,.98) 100%)}
+#lobby{background:transparent!important}
 </style>
 </body>
 </html>

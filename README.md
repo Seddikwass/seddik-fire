@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Nouveautés 2.39 — Voix tunisienne en partie réparée, cartes plus grandes et plus nettes
+- **Voix en partie réparée** : au début d'une partie, le moteur vocal d'Android n'est souvent pas encore prêt. La 2.38 prenait ce premier refus pour « voix absente » et restait muette toute la partie (le bouton Tester marchait car le moteur était déjà prêt). Désormais le jeu réessaie, met les messages en file d'attente au lieu de se couper l'un l'autre, et prépare le moteur vocal dès l'appui sur JOUER.
+- **Cartes plus grandes** : caméra rapprochée d'environ 16 % sur téléphone (6 % sur ordinateur) ; arbres, bâtiments, hôtels, souks et panneaux sont plus grands. Le bouton de zoom reste disponible.
+- **Détails plus nets** : décors au sol, souks, panneaux et particularités dessinés en 1,35× plus de pixels sur téléphone (1,5× sur ordinateur), avec un cache limité pour la mémoire.
+
 ## Nouveautés 2.38 — Voix arabe et tunisienne réparée, hôtels, ponts, trains, lobby moderne
 - **Voix de la radio en arabe et en tunisien réparée** : le jeu cherche une voix réellement installée sur le téléphone (tunisienne, puis arabe générale, saoudienne, égyptienne, émiratie, marocaine, algérienne). Avant, il demandait « ar-TN » puis « ar-SA » et restait muet si le téléphone n'avait que la voix arabe générale.
 - **Nouveaux boutons** dans Réglages ▸ Radio : « ▶ Tester la voix », état de la voix sur l'appareil, et « Installer la voix arabe » qui ouvre l'installation des voix Android si elle manque. Si aucune voix n'existe, un message le dit au lieu de rester silencieux.

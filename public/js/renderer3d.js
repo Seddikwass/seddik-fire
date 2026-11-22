@@ -598,8 +598,20 @@ function spectator(out, x, y, z, facing, shirt, skin, scarf) {
   const off = (u, v, w) => [x + sx * u + facing[0] * w, y + v, z + sz * u + facing[2] * w];
   const n = facing;
   const panel = (u0, u1, v0, v1, w, c) => { const a = off(u0, v0, w), b = off(u1, v0, w), cc = off(u1, v1, w), d = off(u0, v1, w); pushVertex(out, a, n, c); pushVertex(out, b, n, c); pushVertex(out, cc, n, c); pushVertex(out, a, n, c); pushVertex(out, cc, n, c); pushVertex(out, d, n, c); };
-  panel(-0.27, 0.27, 0.0, 0.78, 0, shirt);
-  panel(-0.13, 0.13, 0.8, 1.1, 0.02, skin);
+  const tri = (p0, p1, p2, c) => { pushVertex(out, p0, n, c); pushVertex(out, p1, n, c); pushVertex(out, p2, n, c); };
+  // Buste trapézoïdal (épaules plus larges que la taille) + bras le long du corps.
+  const sh = shirt.map(v => v * 0.82);
+  tri(off(-0.2, 0, 0), off(0.2, 0, 0), off(0.27, 0.62, 0), shirt); tri(off(-0.2, 0, 0), off(0.27, 0.62, 0), off(-0.27, 0.62, 0), shirt);
+  tri(off(-0.27, 0.62, 0), off(0.27, 0.62, 0), off(0.17, 0.76, 0), shirt); tri(off(-0.27, 0.62, 0), off(0.17, 0.76, 0), off(-0.17, 0.76, 0), shirt);
+  panel(-0.33, -0.25, 0.08, 0.64, 0.01, sh); panel(0.25, 0.33, 0.08, 0.64, 0.01, sh);
+  // Tête arrondie (octogone) avec cheveux.
+  const hc = off(0, 0.95, 0.02), R = 0.135, hair = (Math.abs(x * 7.3 + z * 3.1) % 1) < 0.5 ? [0.07, 0.05, 0.04] : [0.16, 0.11, 0.07];
+  for (let k = 0; k < 8; k++) {
+    const a0 = k / 8 * Math.PI * 2, a1 = (k + 1) / 8 * Math.PI * 2;
+    const q = (a, r) => off(Math.cos(a) * r * 0.85, 0.95 + Math.sin(a) * r, 0.02);
+    tri(hc, q(a0, R), q(a1, R), Math.sin((a0 + a1) / 2) > 0.45 ? hair : skin);
+  }
+  panel(-0.05, 0.05, 0.76, 0.84, 0.015, skin);
   if (scarf) panel(-0.42, 0.42, 1.22, 1.36, 0.05, scarf);
 }
 function seatBlock(out, x, y, z, facing, color) {

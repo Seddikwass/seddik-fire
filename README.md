@@ -2,6 +2,9 @@
 
 > Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
 
+## Version 3.54.0
+- **Public plus humain** : chaque supporter a désormais des épaules, des bras, un cou et une tête arrondie avec cheveux (au lieu de deux rectangles).
+
 ## Version 3.53.0
 - **Rendu « cinéma »** : courbe de tons filmique (type ACES) et étalonnage des couleurs sur les joueurs, le stade et le public (contraste et saturation de retransmission), la pelouse garde sa teinte naturelle.
 - **Packs de voix de commentateurs sous licence** : le jeu peut lire des commentaires enregistrés (fichiers par événement, `public/voices/manifest.json`) avec repli sur la synthèse ; un pack n'apparaît que si sa licence (détenteur, contrat) est renseignée. Aucun pack livré tant qu'aucun accord écrit n'est signé ; aucune imitation de voix.

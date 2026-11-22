@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Nouveautés 2.37 — Radio en arabe et en tunisien, particularités réelles de chaque lieu
+- **Radio d'équipe en arabe standard (الفصحى) et en tunisien (الدارجة)**, avec le prénom du joueur au début de chaque message, à l'écrit et à la voix. Nouveau réglage « Langue de la radio » : comme le jeu, tunisien, arabe, français, anglais. Voix arabe du téléphone (voix tunisienne si l'appareil en a une). La voix d'équipe est réactivée une fois pour tous.
+- **Particularités réelles** : flamants roses (lac de Tunis, salines de Thyna, chotts, Kerkennah, Bizerte), caravanes de dromadaires (Douz, Ong Jemel, Nefta, Djerba, Matmata), calèches (Tozeur, Hammamet, Sousse, Houmt Souk), dinosaures de Tataouine, train Lézard Rouge sur sa voie entre les mines de Gafsa, piscines romaines de Gafsa, mosaïques romaines (Carthage, Dougga, Sbeitla, El Jem, Thyna, Kerkouane), dolmens (Le Kef, Siliana), phoques moines de La Galite, fauconnerie d'El Haouaria, tentes bédouines, parasols et transats sur les plages des stations.
+- **Mausolée Bourguiba à Monastir** : marbre blanc, coupole dorée, coupoles vertes et deux minarets.
+
 ## Nouveautés 2.36 — Audit du cahier des charges, phase 1
 - **Interface honnête** : l'écran d'accueil annonçait « 30 guerriers · 6 cartes » ; il affiche maintenant « Battle royale tunisien · 23 cartes · vous contre 29 soldats IA ».
 - **« Combattants » au lieu de « joueurs »** dans les modes et le bandeau du lobby (français, anglais, arabe), car les adversaires sont des soldats contrôlés par l'IA : le jeu n'a pas de multijoueur en ligne.

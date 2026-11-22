@@ -9,12 +9,14 @@ export const TACTIC_PRESETS = {
   balanced: { label: 'Équilibré', icon: '⚖️', mentality: 0, pressing: 1, width: 1, line: 0 },
   press: { label: 'Pressing haut', icon: '🔥', mentality: 1, pressing: 2, width: 1, line: 1 },
   allout: { label: 'Tout pour l\'attaque', icon: '🚀', mentality: 2, pressing: 2, width: 2, line: 1 },
+  possession: { label: 'Possession', icon: '🔄', mentality: 0, pressing: 1, width: 1, line: 0, style: 'possession' },
+  wings: { label: 'Jeu sur les ailes', icon: '↔️', mentality: 1, pressing: 1, width: 2, line: 0, style: 'wings' },
 };
 
 export function applyPreset(team, key) {
   const p = TACTIC_PRESETS[key];
   if (!team || !p) return false;
-  team.mentality = p.mentality; team.pressing = p.pressing; team.width = p.width; team.line = p.line;
+  team.mentality = p.mentality; team.pressing = p.pressing; team.width = p.width; team.line = p.line; team.style = p.style || null;
   team.preset = key;
   return true;
 }

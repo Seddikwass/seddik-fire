@@ -1023,7 +1023,7 @@ export class Match {
       side, id: t.id, name: t.name, short: t.short, kit: t.kit || { shirt: t.colors[0], trim: t.colors[1], shorts: t.colors[1] },
       gkKit: t.gkKit || { shirt: '#2fb84a', trim: '#111', shorts: '#111' },
       ps, bench: (t.bench || []).map(b => ({ ...b })), mentality: t.mentality || 0, pressing: t.pressing ?? 1, formation: t.formation,
-      width: t.width ?? 1, line: t.line ?? 0, takers: t.takers || {},
+      width: t.width ?? 1, line: t.line ?? 0, style: t.style || null, takers: t.takers || {},
       dir: side === 0 ? 1 : -1, stadium: t.stadium,
     };
   }
@@ -1474,6 +1474,7 @@ export class Match {
       p.motionAccel = (Number.isFinite(p.motionAccel) ? p.motionAccel : 0) * Math.exp(-dt * 2.6);
       const sp = Math.hypot(p.vx, p.vy);
       if (sp > 0.18) p.anim += getRunningCadence(sp, p.a.pac) * dt;
+      if (this.state === 'play' && !celebrate) p.dist = (p.dist || 0) + sp * dt;
       p.jumpT = Math.max(0, (p.jumpT || 0) - dt);
       p.jumpCd = Math.max(0, (p.jumpCd || 0) - dt);
       p.kickT = Math.max(0, (p.kickT || 0) - dt);
@@ -1902,8 +1903,9 @@ export class Match {
     // Une solution de passe réellement ouverte réduit les tirs forcés.
     const passAdvantage = opt ? clamp((opt.score - 2) / 26, 0, 1) : 0;
     const urgency = Math.max(0, Number(T.liveMentality) || 0);
+    const styleShot = T.style === 'possession' ? (distG > 20 ? 0.55 : 0.85) : 1; // possession : on cherche le tir de près
     const shootP = clamp((shotQuality.score - 0.52) * 2.0 + urgency * 0.055, 0, 0.8) *
-      (1 - passAdvantage * 0.26);
+      (1 - passAdvantage * 0.26) * styleShot;
     if (angleOK && this.r() < shootP) {
       // L'IA choisit sa technique : piqué face à un gardien sorti, enroulé côté opposé pour les techniciens.
       const keeperOut = Math.abs(HL * T.dir - (keeper?.x ?? HL * T.dir));
@@ -1943,6 +1945,9 @@ export class Match {
       if (th && dx * d > 5) score += Math.min(12, Math.max(0, open - 2) * 1.4) + Math.min(7, dx * d * 0.12);
       if (t.run > 0) score += 4;
       if (t.isGK) score -= 12;
+      // Style d'équipe : possession = passes courtes et sûres ; ailes = recherche des couloirs dans le dernier tiers.
+      if (T.style === 'possession') score += Math.min(open, 8) * 0.6 - Math.max(0, dist - 18) * 0.55 - lane.risk * 0.6 - (th ? 4 : 0);
+      if (T.style === 'wings' && Math.abs(ty) > 17 && tx * d > -10) score += 6 + (tx * d > 20 ? 4 : 0);
       // Un partenaire déjà hors-jeu n'est pas une option : passe annulée par l'arbitre.
       { const od = getOffsideDecision(t, this.ball, opp, d);
         // Hors-jeu de quelques dizaines de centimètres : le passeur ne le voit pas toujours (selon sa vision de jeu).
@@ -3156,7 +3161,7 @@ export class Match {
     for (const T of this.teams) for (const p of T.ps) players.push({ id: p.id, name: p.name, num: p.num, pos: p.pos, team: T.side, minutes: Math.round(p.minutes), goals: p.goals, assists: p.assists, rating: clamp(Math.round(p.rating * 10) / 10, 3, 10), stamina: p.stamina, injured: p.injured, yellow: p.yellow, red: p.sentOff });
     const tp = this.stats.poss[0] + this.stats.poss[1] || 1;
     const pens = this.shootout?.status?.decided ? this.shootout.status.goals.slice() : undefined;
-    return { hg: this.score[0], ag: this.score[1], pens, events: this.events, stats: { ...this.stats, possPct: [Math.round(this.stats.poss[0] / tp * 100), Math.round(this.stats.poss[1] / tp * 100)] }, players, played: true };
+    return { hg: this.score[0], ag: this.score[1], pens, events: this.events, stats: { ...this.stats, possPct: [Math.round(this.stats.poss[0] / tp * 100), Math.round(this.stats.poss[1] / tp * 100)], distKm: this.distanceKm() }, players, played: true };
   }
   // termine le match en simulation rapide (minutes restantes)
   simulateRest(strengthH, strengthA) {
@@ -3199,6 +3204,11 @@ export class Match {
     this.events.push({ type: 'tactic', min: Math.round(this.minute), team: side, name: `Formation ${formation}` });
     this.banner(`FORMATION ${formation}`, 1.8);
     return true;
+  }
+  // Distance réellement parcourue par l'équipe pendant la durée jouée (pas d'extrapolation à 90 minutes :
+  // le temps de match est accéléré, une conversion donnerait des chiffres trompeurs).
+  distanceKm() {
+    return this.teams.map(T => Math.round(T.ps.reduce((a, p) => a + (p.dist || 0), 0) / 100) / 10);
   }
   setTacticPreset(side, key) {
     const T = this.teams[side];
@@ -4181,7 +4191,7 @@ export class Match {
     }
     // bandeau commentaire
     const celebrating = (!isReplay && this.goalFxT > 0) || this.matchIntroT > 0;
-    if (this.tickerT > 0 && this.ticker && !celebrating) {
+    if (this.tickerT > 0 && this.ticker && !celebrating && this.settings.subtitles !== false) {
       c.font = `600 ${12.5 * d}px system-ui,Arial`; c.textAlign = 'center'; c.textBaseline = 'middle';
       const text = this.ticker.length > 90 ? this.ticker.slice(0, 88) + '…' : this.ticker;
       const w = Math.min(this.W - 40 * d, c.measureText(text).width + 48 * d), ty = y0 + h + 10 * d;
@@ -4218,7 +4228,9 @@ export class Match {
     c.beginPath(); c.arc(mx + mw / 2, my + mh / 2, mh * 0.13, 0, Math.PI * 2); c.stroke();
     c.strokeRect(mx, my + mh * 0.22, mw * 0.16, mh * 0.56); c.strokeRect(mx + mw * 0.84, my + mh * 0.22, mw * 0.16, mh * 0.56);
     c.beginPath(); c.moveTo(mx + mw / 2, my); c.lineTo(mx + mw / 2, my + mh); c.stroke();
-    for (const Tm of T) for (const p of Tm.ps) { if (p.sentOff) continue; c.fillStyle = p === this.selected ? '#ffe14a' : Tm.kit.shirt; c.beginPath(); c.arc(mx + (p.x + HL) / (2 * HL) * mw, my + (HW - p.y) / (2 * HW) * mh, (p === this.selected ? 2.8 : 2) * d, 0, 7); c.fill(); }
+    // Mode daltonien : formes distinctes (rond = domicile, carré = extérieur) et contour clair, en plus de la couleur.
+    const cb = !!this.settings.colorblind;
+    for (const Tm of T) for (const p of Tm.ps) { if (p.sentOff) continue; const px = mx + (p.x + HL) / (2 * HL) * mw, py = my + (HW - p.y) / (2 * HW) * mh, r = (p === this.selected ? 2.8 : 2) * d; c.fillStyle = p === this.selected ? '#ffe14a' : Tm.kit.shirt; c.beginPath(); if (cb && Tm.side === 1) c.rect(px - r, py - r, r * 2, r * 2); else c.arc(px, py, r, 0, 7); c.fill(); if (cb) { c.lineWidth = 0.8 * d; c.strokeStyle = Tm.side === 1 ? '#000' : '#fff'; c.stroke(); } }
     const radarBall = frame ? frame.b : [this.ball.x, this.ball.y];
     c.fillStyle = '#fff'; c.beginPath(); c.arc(mx + (radarBall[0] + HL) / (2 * HL) * mw, my + (HW - radarBall[1]) / (2 * HW) * mh, 2 * d, 0, 7); c.fill();
     c.textBaseline = 'alphabetic';

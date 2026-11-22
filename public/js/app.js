@@ -15,13 +15,14 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION, KIT_PROVENANCE, KIT_STATUS_DEFAULT } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp, jerseySVG } from './util.js';
 
-export const APP_VERSION = '3.58.0';
+export const APP_VERSION = '3.59.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
 const app = () => $('#app');
 setLang(settings.lang);
 A.setAudio(settings.sound, settings.volume); A.setVoice(settings.voice);
+queueMicrotask(() => applyAccessibility());
 A.loadVoicePacks().then(() => A.setVoicePack(settings.voicePack || '')).catch(() => {});
 
 // ------------------------------------------------------------------ utilitaires UI
@@ -79,6 +80,7 @@ VIEWS.home = () => {
     <button class="btn big ${has ? '' : 'primary'}" data-a="nav" data-v="newCareer">🏆 ${t('Nouvelle carrière')}</button>
     <button class="btn big" data-a="nav" data-v="quick">⚡ ${t('Match rapide')}</button>
     <button class="btn big" data-a="nav" data-v="online">🌐 Match en ligne</button>
+    <button class="btn" data-a="tutorial">🎓 ${t('Tutoriel')}</button>
     <div class="row"><button class="btn" data-a="nav" data-v="settingsHome">⚙ ${t('Paramètres')}</button><button class="btn" data-a="nav" data-v="account">👤 ${t('Compte')}</button></div>
    </div>
    <p class="fine">v${APP_VERSION} · données ${DATA_VERSION} (vérifiées le ${VERIFIED_ON}) · ${settings.realNames === false ? 'joueurs fictifs' : 'effectifs réels de 5 clubs + dernier onze des 16 clubs (snapshot du 22/11/2026, à revalider)'} · <a href="privacy.html" target="_blank">Confidentialité</a></p>
@@ -498,6 +500,29 @@ VIEWS.president = () => {
 };
 
 // ------------------------------------------------------------------ paramètres / compte
+// Qualité « Automatique » : profil choisi selon la mémoire et les cœurs de l'appareil.
+function resolveQuality(q) {
+  if (q && q !== 'auto') return q;
+  const mem = navigator.deviceMemory || 4, cores = navigator.hardwareConcurrency || 4, mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  if (mem <= 2 || (mobile && cores <= 4)) return 'low';
+  if (mobile && (mem <= 4 || cores <= 6)) return 'medium';
+  return 'high';
+}
+// Touches clavier configurables (PC). Chaque action accepte plusieurs touches.
+const KEY_ACTIONS = [['up', 'Haut', ['ArrowUp', 'KeyW']], ['down', 'Bas', ['ArrowDown', 'KeyS']], ['left', 'Gauche', ['ArrowLeft', 'KeyA']], ['right', 'Droite', ['ArrowRight', 'KeyD']],
+  ['sprint', 'Sprint', ['ShiftLeft', 'ShiftRight']], ['pass', 'Passe', ['KeyC']], ['through', 'Profondeur / pressing', ['KeyV']], ['shoot', 'Tir / tacle', ['Space', 'KeyX']], ['switch', 'Changer de joueur', ['KeyQ']], ['pause', 'Pause', ['Escape', 'KeyP']]];
+function keyBindings() {
+  const custom = settings.keys || {}, out = {};
+  for (const [id, , def] of KEY_ACTIONS) out[id] = Array.isArray(custom[id]) && custom[id].length ? [...new Set([...custom[id], ...(id === 'pause' ? ['Escape'] : [])])] : def;
+  return out;
+}
+const keyLabel = c => ({ ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', ShiftLeft: 'Maj', ShiftRight: 'Maj droite', Space: 'Espace', Escape: 'Échap', Enter: 'Entrée' })[c] || c.replace(/^Key/, '').replace(/^Digit/, '').replace(/^Numpad/, 'Pavé ');
+function applyAccessibility() {
+  const r = document.documentElement;
+  r.style.setProperty('--ui-zoom', String(Number(settings.textScale) || 1));
+  r.classList.toggle('hc', !!settings.contrast);
+  A.setMix({ fx: settings.volFx ?? 1, crowd: settings.volCrowd ?? 1, comment: settings.volComment ?? 1 });
+}
 function settingsHTML() {
   const sel = (k, arr) => `<select data-a="setting" data-k="${k}">${arr.map(([v, l]) => `<option value="${v}" ${String(settings[k]) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
   const va = A.voiceAvailable();
@@ -507,13 +532,16 @@ function settingsHTML() {
    <label>${t('Voix du commentateur')}${sel('voicePack', [['', 'Voix de synthèse (originale)'], ...A.getVoicePacks().map(p => [p.id, `${p.name} (licence ${p.licence.holder})`])])}</label>
    <p class="hint">Voix de commentateurs réels : proposées uniquement après accord écrit des commentateurs et des diffuseurs concernés. Aucune imitation de voix.</p>
    <label>${t('Son')}${sel('sound', [[true, 'Activé'], [false, 'Coupé']])}</label>
-   <label>Volume<input type="range" min="0" max="1" step="0.1" value="${settings.volume}" data-a="setting" data-k="volume"></label>
+   <label>Volume général<input type="range" min="0" max="1" step="0.1" value="${settings.volume}" data-a="setting" data-k="volume"></label>
+   <label>Volume du public<input type="range" min="0" max="1" step="0.1" value="${settings.volCrowd ?? 1}" data-a="setting" data-k="volCrowd"></label>
+   <label>Volume des effets (frappes, sifflet)<input type="range" min="0" max="1" step="0.1" value="${settings.volFx ?? 1}" data-a="setting" data-k="volFx"></label>
+   <label>Volume des commentaires<input type="range" min="0" max="1" step="0.1" value="${settings.volComment ?? 1}" data-a="setting" data-k="volComment"></label>
    <label>${t('Commentaires vocaux')} <small>(${va ? 'synthèse ' + va : 'non disponible sur cet appareil — commentaires texte uniquement'})</small>${sel('voice', [[true, 'Activés'], [false, 'Texte seulement']])}</label>
    <label>${t('Durée du match')}${sel('duration', [[3, '3 min'], [5, '5 min'], [8, '8 min'], [10, '10 min'], [15, '15 min']])}</label>
    <label>${t('Difficulté')} (matchs)${sel('difficulty', C.DIFFS.map((d, i) => [i, t(d)]))}</label>
    <label>${t('Assistance passe/tir')}${sel('assist', [[true, 'Activée'], [false, 'Désactivée']])}</label>
    <label>${t('Caméra')}${sel('camera', [['near', 'TV proche (joueurs plus grands)'], ['tv', 'TV standard'], ['far', 'TV large (vue tactique)']])}</label>
-   <label>${t('Qualité graphique')}${sel('quality', [['low', 'Basse (économie batterie)'], ['medium', 'Moyenne'], ['high', 'Haute']])}</label>
+   <label>${t('Qualité graphique')}${sel('quality', [['auto', `Automatique (${resolveQuality('auto') === 'low' ? 'basse' : resolveQuality('auto') === 'medium' ? 'moyenne' : 'haute'} sur cet appareil)`], ['low', 'Basse (économie batterie)'], ['medium', 'Moyenne'], ['high', 'Haute']])}</label>
    <label>${t('Images/seconde')}${sel('fps', [[30, '30'], [60, '60']])}</label>
    <label>Ralentis après les buts${sel('replays', [[true, 'Oui'], [false, 'Non']])}</label>
    <label>Cérémonie d'avant-match (TV)${sel('ceremony', [[true, 'Oui'], [false, 'Non']])}</label>
@@ -521,8 +549,14 @@ function settingsHTML() {
    <label>Météo des matchs${sel('weather', [['auto', 'Variable (aléatoire)'], ['night', 'Nuit claire'], ['day', 'Plein soleil'], ['rain', 'Pluie'], ['fog', 'Brouillard']])}</label>
    <label>Disposition des commandes${sel('leftHanded', [[false, 'Joystick à gauche'], [true, 'Joystick à droite (gaucher)']])}</label>
    <label>Taille des boutons${sel('btnScale', [[0.85, 'Petits'], [1, 'Normaux'], [1.2, 'Grands']])}</label>
+   <label>Taille du texte (menus)${sel('textScale', [[0.9, 'Petite'], [1, 'Normale'], [1.15, 'Grande'], [1.3, 'Très grande']])}</label>
+   <label>Contraste élevé${sel('contrast', [[false, 'Non'], [true, 'Oui']])}</label>
+   <label>Mode daltonien (radar : ronds / carrés)${sel('colorblind', [[false, 'Non'], [true, 'Oui']])}</label>
+   <label>Sous-titres des commentaires${sel('subtitles', [[true, 'Affichés'], [false, 'Masqués']])}</label>
    <label>Publicités personnalisées${sel('adsConsent', [[null, 'Non choisi'], [true, 'Accepter'], [false, 'Refuser (pubs non personnalisées)']])}</label></div>
-   <p class="hint">Test de la voix : <button class="btn small" data-a="testVoice">🔊 Tester</button></p></div>`;
+   <p class="hint">Test de la voix : <button class="btn small" data-a="testVoice">🔊 Tester</button></p>
+   <h4>Clavier (PC) — touches configurables</h4><div class="keymap">${KEY_ACTIONS.map(([id, lbl]) => `<div class="kmrow"><span>${lbl}</span><b>${keyBindings()[id].map(keyLabel).join(' / ')}</b><button class="btn small" data-a="rebind" data-k="${id}">Changer</button></div>`).join('')}</div>
+   <p class="hint">Manette : stick gauche = déplacement, A = passe, X = profondeur, B = tir (maintenir pour la puissance), RB/RT = sprint, LB = changer de joueur, Start = pause. <button class="btn small" data-a="resetKeys">Touches par défaut</button></p></div>`;
 }
 VIEWS.settings = () => `<div class="ph"><h2>${t('Paramètres')}</h2></div>${settingsHTML()}${accountHTML()}<div class="card"><h3>Sauvegarde</h3><div class="row wrap"><button class="btn" data-a="saveNow">💾 ${t('Sauvegarder')} maintenant</button><button class="btn" data-a="exportSave">⬇ Exporter (fichier)</button><label class="btn">⬆ Importer<input type="file" accept=".json" data-a="importSave" hidden></label></div></div>`;
 VIEWS.settingsHome = () => `<div class="page narrow"><div class="ph"><button class="btn ghost" data-a="nav" data-v="home">← ${t('Retour')}</button><h2>${t('Paramètres')}</h2></div>${settingsHTML()}</div>`;
@@ -546,7 +580,7 @@ function startMatchView() {
   const cv = $('#cv'); const ctx = args;
   const m = new Match({
     canvas: cv, home: ctx.home, away: ctx.away, userSide: ctx.userSide, knockout: ctx.knockout || null,
-    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: settings.quality, camera: settings.camera || 'near', fps: Number(settings.fps), voice: settings.voice, lang: getLang(), commentary: settings.commentary || 'auto', replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
+    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: resolveQuality(settings.quality), camera: settings.camera || 'near', colorblind: !!settings.colorblind, subtitles: settings.subtitles !== false, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), commentary: settings.commentary || 'auto', replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
     onEnd: res => onMatchEnd(res), onPause: () => pauseMenu(),
   });
   match = m;
@@ -555,6 +589,31 @@ function startMatchView() {
   bindControls(m);
   m.start();
   A.whistle();
+  // Tutoriel interactif : au premier match joué (ou à la demande depuis l'accueil).
+  if (m.userSide != null && !ctx.online && (ctx.tutorial || !settings.tutorialDone)) startTutorial(m);
+}
+const TUTO_STEPS = [
+  { id: 'move', txt: m => `Déplacez votre joueur : joystick à gauche${matchMedia('(pointer:fine)').matches ? ' ou ' + keyBindings().up.map(keyLabel)[0] + '/' + keyBindings().left.map(keyLabel)[0] + '/' + keyBindings().down.map(keyLabel)[0] + '/' + keyBindings().right.map(keyLabel)[0] : ''}.`, done: (m, s) => Math.hypot(m.input.jx, m.input.jy) > 0.4 && (s.t += s.dt) > 1.2 },
+  { id: 'sprint', txt: () => 'Maintenez SPRINT en courant pour accélérer (la fatigue augmente).', done: m => m.input.sprint && Math.hypot(m.input.jx, m.input.jy) > 0.4 },
+  { id: 'pass', txt: () => 'Balle au pied, touchez PASSE pour servir un coéquipier (PROFONDEUR = passe dans la course).', done: (m, s) => m.stats.passes[m.userSide] > s.p0 },
+  { id: 'shoot', txt: () => 'Dans le camp adverse, maintenez TIR puis relâchez : plus longtemps = plus fort.', done: (m, s) => m.stats.shots[m.userSide] > s.s0 },
+  { id: 'defend', txt: () => 'Sans le ballon, TIR = tacle et PROFONDEUR (maintenu) = pressing. Le joueur actif change automatiquement.', done: (m, s) => (s.t += s.dt) > 6 },
+];
+function startTutorial(m) {
+  const box = document.createElement('div'); box.className = 'tuto'; box.setAttribute('role', 'status');
+  document.querySelector('.match-wrap, #app')?.appendChild(box);
+  let i = 0; const s = { t: 0, p0: m.stats.passes[m.userSide], s0: m.stats.shots[m.userSide] };
+  const show = () => { const st = TUTO_STEPS[i]; box.innerHTML = `<b>Tutoriel ${i + 1}/${TUTO_STEPS.length}</b><span>${st.txt(m)}</span><button class="btn small" data-tuto="skip">Passer</button>`; };
+  const finish = () => { clearInterval(timer); box.remove(); settings.tutorialDone = true; S.saveSettings(settings); };
+  box.addEventListener('click', e => { if (e.target.closest('[data-tuto=skip]')) { finish(); toast('Tutoriel disponible à tout moment depuis l’accueil.'); } });
+  show();
+  let last = performance.now();
+  const timer = setInterval(() => {
+    const now = performance.now(); s.dt = Math.min(0.5, (now - last) / 1000); last = now;
+    if (m._ended || !document.body.contains(box)) return finish();
+    if (m.ceremony || m.breakShow || m.paused || (m.state !== 'play' && !(i === 0 && m.state === 'kickoff'))) return;
+    if (TUTO_STEPS[i].done(m, s)) { i++; s.t = 0; s.p0 = m.stats.passes[m.userSide]; s.s0 = m.stats.shots[m.userSide]; A.click?.(); if (i >= TUTO_STEPS.length) { finish(); toast('Tutoriel terminé — bon match !', 'ok'); } else show(); }
+  }, 100);
 }
 function bindControls(m) {
   const joy = $('#joy'), knob = joy.querySelector('.knob'), zone = $('#joyZone');
@@ -613,20 +672,52 @@ function bindControls(m) {
     bTac.onclick = () => { tacBar.hidden = !tacBar.hidden; bTac.setAttribute('aria-expanded', String(!tacBar.hidden)); markPreset(); };
     tacBar.onclick = e => { const b = e.target.closest('[data-preset]'); if (!b) return; setPreset(b.dataset.preset); tacBar.hidden = true; bTac.setAttribute('aria-expanded', 'false'); };
   }
-  m._presetKeys = { Digit1: 'park', Digit2: 'counter', Digit3: 'balanced', Digit4: 'press', Digit5: 'allout' };
+  m._presetKeys = { Digit1: 'park', Digit2: 'counter', Digit3: 'balanced', Digit4: 'press', Digit5: 'allout', Digit6: 'possession', Digit7: 'wings' };
   m._setPreset = setPreset;
   $('#cv').addEventListener('pointerdown', () => { if (m.ceremony) m.endCeremony(); else if (m.breakShow) m.endBreak(); else if (m.replay) m.skipReplay(); });
   // clavier (PC)
   const keys = {};
-  const upd = () => { m.input.jx = (keys.ArrowRight || keys.KeyD ? 1 : 0) - (keys.ArrowLeft || keys.KeyA ? 1 : 0); m.input.jy = (keys.ArrowUp || keys.KeyW ? 1 : 0) - (keys.ArrowDown || keys.KeyS ? 1 : 0); m.input.sprint = !!(keys.ShiftLeft || keys.ShiftRight); };
-  m._kd = e => { if (keys[e.code]) return; keys[e.code] = true; upd(); A.audioInit(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootDown(); if (e.code === 'KeyC') m.btnPass(false); if (e.code === 'KeyV') m.btnPass(true); if (e.code === 'KeyQ') m.switchPlayer(); if (m._presetKeys?.[e.code]) m._setPreset(m._presetKeys[e.code]); if (e.code === 'Escape' || e.code === 'KeyP') { m.paused = true; pauseMenu(); } if (m.ceremony && (e.code === 'Enter' || e.code === 'Space')) m.endCeremony(); else if (m.breakShow && (e.code === 'Enter' || e.code === 'Space')) m.endBreak(); else if (m.replay && e.code === 'Enter') m.skipReplay(); };
-  m._ku = e => { keys[e.code] = false; upd(); if (e.code === 'Space' || e.code === 'KeyX') m.btnShootUp(); if (e.code === 'KeyV') m.input.press = false; };
+  const K = keyBindings();
+  const on = list => list.some(c => keys[c]);
+  const upd = () => { m.input.jx = (on(K.right) ? 1 : 0) - (on(K.left) ? 1 : 0); m.input.jy = (on(K.up) ? 1 : 0) - (on(K.down) ? 1 : 0); m.input.sprint = on(K.sprint); };
+  m._kd = e => { if (keys[e.code]) return; keys[e.code] = true; upd(); A.audioInit(); const c = e.code;
+    if (K.shoot.includes(c)) m.btnShootDown(); if (K.pass.includes(c)) m.btnPass(false); if (K.through.includes(c)) m.btnPass(true); if (K.switch.includes(c)) m.switchPlayer();
+    if (m._presetKeys?.[c]) m._setPreset(m._presetKeys[c]);
+    if (K.pause.includes(c)) { m.paused = true; pauseMenu(); }
+    if (m.ceremony && (c === 'Enter' || K.shoot.includes(c))) m.endCeremony(); else if (m.breakShow && (c === 'Enter' || K.shoot.includes(c))) m.endBreak(); else if (m.replay && c === 'Enter') m.skipReplay(); };
+  m._ku = e => { keys[e.code] = false; upd(); if (K.shoot.includes(e.code)) m.btnShootUp(); if (K.through.includes(e.code)) m.input.press = false; };
+  // Manette (API Gamepad) : stick gauche, A passe, X profondeur, B tir (maintenir = puissance), RB/RT sprint, LB changement, Start pause.
+  const pad = { prev: [] };
+  const pollPad = () => {
+    if (m._ended) return;
+    const gp = (navigator.getGamepads ? [...navigator.getGamepads()] : []).find(Boolean);
+    if (gp) {
+      const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0, dz = 0.22;
+      const btn = i => !!gp.buttons[i]?.pressed, was = i => !!pad.prev[i];
+      const dl = btn(14), dr = btn(15), du = btn(12), dd = btn(13);
+      if (Math.hypot(ax, ay) > dz || dl || dr || du || dd || pad.active) {
+        pad.active = Math.hypot(ax, ay) > dz || dl || dr || du || dd;
+        m.input.jx = Math.abs(ax) > dz ? ax : (dr ? 1 : 0) - (dl ? 1 : 0);
+        m.input.jy = Math.abs(ay) > dz ? -ay : (du ? 1 : 0) - (dd ? 1 : 0);
+      }
+      m.input.sprint = btn(5) || btn(7) || on(K.sprint);
+      if (btn(0) && !was(0)) { A.audioInit(); if (m.ceremony) m.endCeremony(); else if (m.breakShow) m.endBreak(); else if (m.replay) m.skipReplay(); else m.btnPass(false); }
+      if (btn(2) && !was(2)) m.btnPass(true); if (!btn(2) && was(2)) m.input.press = false;
+      if (btn(1) && !was(1)) m.btnShootDown(); if (!btn(1) && was(1)) m.btnShootUp();
+      if (btn(4) && !was(4)) m.switchPlayer();
+      if (btn(9) && !was(9)) { m.paused = true; pauseMenu(); }
+      pad.prev = gp.buttons.map(b => b.pressed);
+    }
+    m._padRaf = requestAnimationFrame(pollPad);
+  };
+  m._padRaf = requestAnimationFrame(pollPad);
   addEventListener('keydown', m._kd); addEventListener('keyup', m._ku);
   const od = m.destroy.bind(m); m.destroy = () => {
     releaseAll();
     window.removeEventListener('blur', releaseAll);
     document.removeEventListener('visibilitychange', onVisibility);
     removeEventListener('keydown', m._kd); removeEventListener('keyup', m._ku);
+    m._ended = true; cancelAnimationFrame(m._padRaf);
     clearInterval(m._lbl); od();
   };
   // libellés contextuels (attaque / défense)
@@ -787,7 +878,7 @@ function statBars(s) {
   const pct = (a, b) => (a + b) ? a / (a + b) * 100 : 50;
   const rows = [['Possession', s.possPct[0], s.possPct[1], '%'], ['Tirs', s.shots[0], s.shots[1]], ['Tirs cadrés', s.onTarget[0], s.onTarget[1]],
     ['Passes réussies', s.passOk[0], s.passOk[1]], ['Précision des passes', s.passes[0] ? Math.round(s.passOk[0] / s.passes[0] * 100) : 0, s.passes[1] ? Math.round(s.passOk[1] / s.passes[1] * 100) : 0, '%'],
-    ['Corners', s.corners[0], s.corners[1]], ['Fautes', s.fouls[0], s.fouls[1]], ['Cartons', s.yellows[0] + s.reds[0], s.yellows[1] + s.reds[1]]];
+    ['Corners', s.corners[0], s.corners[1]], ['Fautes', s.fouls[0], s.fouls[1]], ['Cartons', s.yellows[0] + s.reds[0], s.yellows[1] + s.reds[1]], ...(s.offsides ? [['Hors-jeu', s.offsides[0], s.offsides[1]]] : []), ...(s.distKm ? [['Distance parcourue (km, durée jouée)', s.distKm[0], s.distKm[1]]] : [])];
   return `<div class="statbars">${rows.map(([l, a, b, u = '']) => { const p = pct(Number(a) || 0, Number(b) || 0); return `<div class="sb-row"><div class="sb-top"><b class="${a > b ? 'lead' : ''}">${a}${u}</b><span>${l}</span><b class="${b > a ? 'lead' : ''}">${b}${u}</b></div><div class="sb-bar"><i style="width:${p.toFixed(1)}%"></i><i style="width:${(100 - p).toFixed(1)}%"></i></div></div>`; }).join('')}</div>`;
 }
 function postHTML(hn, an, hg, ag, res, f = null) {
@@ -909,6 +1000,12 @@ const ACT = {
   resign: () => confirmBox('Démissionner de la présidence ? Votre mandat prend fin immédiatement.', () => { C.resign(st); save(); go('gameOver'); }, 'Démissionner'),
   sponsor: el => { const r = C.chooseSponsor(st, el.dataset.id); if (r) toast(r, 'err'); save(); render(); },
   newClub: el => confirmBox(`Prendre la présidence de ${esc(C.clubName(st, el.dataset.id))} ?`, () => { C.takeNewClub(st, el.dataset.id); save(); go('hub'); }),
+  rebind: el => { const id = el.dataset.k; el.textContent = 'Appuyez sur une touche…'; const h = e => { e.preventDefault(); removeEventListener('keydown', h, true); if (e.code !== 'Escape' || id === 'pause') { settings.keys = { ...(settings.keys || {}), [id]: [e.code] }; S.saveSettings(settings); } render(); }; addEventListener('keydown', h, true); },
+  resetKeys: () => { settings.keys = null; S.saveSettings(settings); render(); toast('Touches par défaut rétablies.'); },
+  tutorial: () => {
+    const fake = C.newCareer({ clubId: 'est', seed: 99, realNames: settings.realNames !== false });
+    go('match', { home: C.matchTeam(fake, 'est', false), away: C.matchTeam(fake, 'ca', C.awayKitMode('est', 'ca')), userSide: 0, duration: 5, tutorial: true, strH: C.teamStrength(fake, 'est', false), strA: C.teamStrength(fake, 'ca', false) });
+  },
   testVoice: () => { A.audioInit(); A.setVoice(true); A.speak(getLang() === 'ar' ? 'هدف رائع في الملعب' : 'But magnifique ! Le stade explose !', getLang(), true); A.setVoice(settings.voice); A.roar(); },
   saveNow: () => save('Sauvegardé'),
   retryServer: async () => { toast('Connexion au serveur… (peut prendre ~1 min si le serveur était en veille)'); try { serverInfo = await S.health(); toast('Serveur joignable ✓', 'ok'); } catch (e) { toast(e.message, 'err'); } render(); },
@@ -978,7 +1075,7 @@ document.addEventListener('change', e => {
   const el = e.target; const a = el.dataset.a; if (!a) return;
   const v = el.type === 'checkbox' ? el.checked : el.value;
   const val = v === 'true' ? true : v === 'false' ? false : v === 'null' ? null : (el.type !== 'checkbox' && v !== '' && !isNaN(v) ? Number(v) : v);
-  if (a === 'setting') { settings[el.dataset.k] = val; S.saveSettings(settings); if (el.dataset.k === 'lang') setLang(val); A.setAudio(settings.sound, settings.volume); A.setVoice(settings.voice); A.setVoicePack(settings.voicePack || ''); render(); }
+  if (a === 'setting') { settings[el.dataset.k] = val; S.saveSettings(settings); if (el.dataset.k === 'lang') setLang(val); applyAccessibility(); A.setAudio(settings.sound, settings.volume); A.setVoice(settings.voice); A.setVoicePack(settings.voicePack || ''); render(); }
   if (!st) return;
   const tac = st.clubs[st.userClub].tactics;
   if (a === 'tacSet') { tac[el.dataset.k] = el.dataset.k === 'formation' ? v : Number(v); if (el.dataset.k === 'formation') C.repairLineup(st, st.userClub); save(); render(); }

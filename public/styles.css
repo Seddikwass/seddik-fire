@@ -405,3 +405,12 @@ button:disabled,.btn:disabled{
 .xihist{margin:6px 0 10px;font-size:12px}.xihist summary{cursor:pointer;color:#ffdf45;font-weight:700}
 .xih{padding:6px 0;border-bottom:1px solid #ffffff14}.xih small{color:#c5d2df}.xih .src{color:#8fa1b6}
 .kitnote{font-size:10.5px;color:#8fa1b6;text-align:center;margin:6px 0 0}.kitnote i{color:#ffcf5a;font-style:normal}
+/* Accessibilité : taille du texte des menus et contraste élevé */
+.page,.title-in,.modal .card{zoom:var(--ui-zoom,1)}
+html.hc{--tx:#ffffff}
+html.hc .hint,html.hc small,html.hc .muted{color:#e6edf5 !important}
+html.hc .btn{outline:2px solid #ffffffb0;outline-offset:-2px}
+html.hc .card{border:1px solid #ffffff66}
+.keymap{display:grid;gap:6px;margin:6px 0}.kmrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center}.kmrow b{color:#ffdf45;font-weight:700}
+.tuto{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 60px);transform:translateX(-50%);z-index:40;display:flex;gap:10px;align-items:center;max-width:min(480px,70vw);padding:7px 12px;font-size:12px !important;border-radius:14px;background:rgba(8,14,26,.92);border:1px solid #ffdf4566;color:#fff;font-size:13px;box-shadow:0 8px 24px #0008}
+.tuto b{color:#ffdf45;white-space:nowrap}.tuto span{flex:1}

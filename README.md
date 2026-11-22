@@ -2,6 +2,15 @@
 
 > Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
 
+## Version 3.59.0 — Cahier des charges de finalisation
+- Commandes PC configurables (touches remappables) et prise en charge des manettes (API Gamepad).
+- Tutoriel interactif au premier match (déplacement, sprint, passe, tir, défense), relançable depuis l'accueil.
+- Accessibilité : taille du texte des menus, contraste élevé, mode daltonien (radar ronds/carrés), sous-titres des commentaires désactivables.
+- Volumes indépendants : général, public, effets, commentaires. Qualité graphique « Automatique ».
+- Nouvelles tactiques : Possession (passes courtes et sûres, tirs de près) et Jeu sur les ailes (recherche des couloirs).
+- Fin de match : hors-jeu et distance parcourue (mesurée sur la durée jouée).
+- Rapport de finalisation : `docs/RAPPORT-FINALISATION.md` (audit, tests, maillots, limites, lancement local, retour arrière) et captures dans `docs/audit/`.
+
 ## Version 3.58.0 — Joueurs redessinés, mouvements réalistes, compositions du 22/11
 - Joueurs : membres lissés (plus de facettes), tête proportionnée (~1/7,5 de la taille), cou court et trapèzes, maillot qui tombe droit sur le short, short évasé, avant-bras galbés, mains orientées avec pouce, éclairage enveloppant, occlusion au sol et teinte de peau plus naturelle.
 - Niveau de détail par joueur : pleine résolution près de la caméra, allégée au loin (charge géométrique +5 % seulement).

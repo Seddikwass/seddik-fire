@@ -3,7 +3,7 @@ const KEY = 'ft26_career', KEY_SET = 'ft26_settings', KEY_AUTH = 'ft26_auth', KE
 export const API = (window.FT26_API || '') + '/api';
 
 export function loadSettings() {
-  const def = { lang: 'fr', sound: true, volume: 0.8, voice: true, commentary: 'auto', duration: 5, difficulty: 1, assist: true, quality: 'high', camera: 'near', fps: 60, replays: true, ceremony: true, weather: 'auto', realNames: true, leftHanded: false, btnScale: 1, adsConsent: null };
+  const def = { lang: 'fr', sound: true, volume: 0.8, voice: true, commentary: 'auto', duration: 5, difficulty: 1, assist: true, quality: 'auto', camera: 'near', volCrowd: 1, volFx: 1, volComment: 1, textScale: 1, contrast: false, colorblind: false, subtitles: true, keys: null, tutorialDone: false, fps: 60, replays: true, ceremony: true, weather: 'auto', realNames: true, leftHanded: false, btnScale: 1, adsConsent: null };
   try { return Object.assign(def, JSON.parse(localStorage.getItem(KEY_SET) || '{}')); } catch (e) { return def; }
 }
 export function saveSettings(s) { try { localStorage.setItem(KEY_SET, JSON.stringify(s)); } catch (e) {} }

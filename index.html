@@ -1688,6 +1688,26 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 #touch [data-t=stunt].hidden{display:none!important}
 #touch [data-t=stunt] svg{width:54%;height:auto}#touch [data-t=stunt] b{font:900 10px 'Chakra Petch',sans-serif;letter-spacing:.06em}
 #touch [data-t=stunt].on{filter:brightness(1.3);transform:scale(.95)}
+
+/* V236 — menu principal moderne : cartes vitrées, icônes, reflet animé, nouveautés */
+#scr-main .mainnav .nbtn{backdrop-filter:blur(10px) saturate(1.3);-webkit-backdrop-filter:blur(10px) saturate(1.3);background:linear-gradient(120deg,rgba(22,30,46,.88),rgba(10,14,24,.62))!important;box-shadow:0 8px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+#scr-main .mainnav .nbtn::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.09) 45%,transparent 60%);transform:translateX(-120%);animation:navshine 6s ease-in-out infinite;pointer-events:none}
+#scr-main .mainnav .nbtn:nth-child(2)::before{animation-delay:.7s}#scr-main .mainnav .nbtn:nth-child(3)::before{animation-delay:1.4s}#scr-main .mainnav .nbtn:nth-child(4)::before{animation-delay:2.1s}#scr-main .mainnav .nbtn:nth-child(5)::before{animation-delay:2.8s}#scr-main .mainnav .nbtn:nth-child(6)::before{animation-delay:3.5s}
+@keyframes navshine{0%,70%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
+#scr-main .mainnav .nbtn:hover,#scr-main .mainnav .nbtn:focus-visible{transform:translateY(-2px);border-color:var(--acc,#ff8a1f)!important;box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 0 1px var(--acc,#ff8a1f),0 0 22px color-mix(in srgb,var(--acc,#ff8a1f) 40%,transparent)}
+#scr-main .mainnav .nbtn:active{transform:scale(.98)}
+#scr-main .nbtn .nico{position:absolute;inset-inline-end:14px;top:50%;width:40px;height:40px;transform:translateY(-50%);color:var(--acc,#ff8a1f);opacity:.55;pointer-events:none}
+#scr-main .nbtn .nico svg{width:100%;height:100%;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--acc,#ff8a1f) 50%,transparent))}
+#scr-main .nbtn.play{background:linear-gradient(115deg,color-mix(in srgb,var(--acc,#ff8a1f) 38%,#141a28),rgba(12,16,26,.7))!important}
+#scr-main .logo.big span{background:linear-gradient(100deg,var(--acc,#ff8a1f) 0%,#ffd27a 25%,var(--acc,#ff8a1f) 50%,#ff5a2a 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:logoshine 5s linear infinite}
+#scr-main .logo.big span i{-webkit-text-fill-color:#e8f6ff}
+@keyframes logoshine{to{background-position:-220% 0}}
+.mnews{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;max-width:660px}
+.mnew{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(10,14,24,.72);backdrop-filter:blur(8px);color:#eef3fa;font:700 12px var(--fb,'Inter',sans-serif);cursor:pointer;transition:transform .15s,border-color .15s}
+.mnew em{font-style:normal;font:900 9.5px 'Chakra Petch',sans-serif;letter-spacing:.08em;padding:3px 7px;border-radius:999px;background:linear-gradient(90deg,#ff3d6e,#ff8a1f);color:#fff;box-shadow:0 0 10px rgba(255,80,90,.5)}
+.mnew:hover{transform:translateY(-1px);border-color:var(--acc,#ff8a1f)}
+@media (max-height:430px){.mnews{margin-top:6px}.mnew{padding:4px 10px 4px 4px;font-size:11px}#scr-main .nbtn .nico{width:30px;height:30px}}
+@media (max-width:560px){#scr-main .nbtn .nico{width:28px;height:28px;opacity:.4}}
 </style>
 </head>
 <body>
@@ -1702,7 +1722,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V235</span>
+    <span id="build-tag" aria-label="Version">V236</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1711,12 +1731,13 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <div class="hero"><div class="logo big">SUPER<span>SEDDIK<i>&amp;</i>JOUD</span><b class="ar" lang="ar" dir="rtl">سوبر صدّيق@جود</b></div><div class="tag" data-i18n="tagline">Courses de rue · Police · Nitro</div></div>
     <nav class="mainnav">
       <button id="m-play" class="nbtn play"><b><svg viewBox="0 0 24 24" class="ic"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg><span data-i18n="play">JOUER</span></b><small id="m-play-sub"></small></button>
-      <button data-go="career" class="nbtn"><b data-i18n="career">CARRIÈRE</b><small id="m-career"></small></button>
-      <button data-go="quick" class="nbtn"><b data-i18n="quick">COURSE RAPIDE</b><small data-i18n="quickSub"></small></button>
-      <button data-go="garage" class="nbtn"><b data-i18n="garage">GARAGE</b><small data-i18n="garageSub"></small></button>
-      <button data-go="options" class="nbtn"><b data-i18n="options">OPTIONS</b><small data-i18n="optionsSub"></small></button>
-      <button data-go="help" class="nbtn"><b data-i18n="help">COMMENT JOUER</b><small data-i18n="helpSub"></small></button>
+      <button data-go="career" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M9 17h6"/></svg></i><b data-i18n="career">CARRIÈRE</b><small id="m-career"></small></button>
+      <button data-go="quick" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 13l3-3M10 3h4M12 3v3M19 6l1.5-1.5"/></svg></i><b data-i18n="quick">COURSE RAPIDE</b><small data-i18n="quickSub"></small></button>
+      <button data-go="garage" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L4 16.8V20h3.2l5.3-5.3a4 4 0 0 0 5.2-5.4l-2.5 2.5-2.6-.6-.6-2.6z"/></svg></i><b data-i18n="garage">GARAGE</b><small data-i18n="garageSub"></small></button>
+      <button data-go="options" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></i><b data-i18n="options">OPTIONS</b><small data-i18n="optionsSub"></small></button>
+      <button data-go="help" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12a4 4 0 0 1 4 4v1a4 4 0 0 1-7 2.6L14 14h-4l-1 1.6A4 4 0 0 1 2 13v-1a4 4 0 0 1 4-4zM7 11v3M5.5 12.5h3M16 12h.01M18 14h.01"/></svg></i><b data-i18n="help">COMMENT JOUER</b><small data-i18n="helpSub"></small></button>
     </nav>
+    <div class="mnews" id="mnews"><button class="mnew" data-nm="quad"><em>NEW</em><span data-i18n="m_quad">Course de quads</span></button><button class="mnew" data-nm="velo"><em>NEW</em><span data-i18n="m_velo">Course de vélos</span></button><button class="mnew" data-nm="stunt"><em>NEW</em><span data-i18n="st_wh">Roue arrière</span></button></div>
     <div class="carline" id="maincar"></div>
   </section>
 
@@ -1959,6 +1980,20 @@ class MB {
     }
   }
   append(o) { for (let i = 0; i < o.a.length; i++) this.a.push(o.a[i]); }
+  smoothFast(crease = 40) {
+    // V236 — lissage rapide (clés numériques) pour les décors : têtes, arbres, rochers arrondis ; les arêtes vives (> crease) restent nettes
+    const a = this.a, n = this.n, cosT = Math.cos(crease * Math.PI / 180), head = new Map(), next = new Int32Array(n).fill(-1);
+    const kx = new Int32Array(n), ky = new Int32Array(n), kz = new Int32Array(n);
+    for (let i = 0; i < n; i++) { const o = i * STRIDE; kx[i] = Math.round(a[o] * 100); ky[i] = Math.round(a[o + 1] * 100); kz[i] = Math.round(a[o + 2] * 100); const h = (kx[i] * 73856093) ^ (ky[i] * 19349663) ^ (kz[i] * 83492791); const f = head.get(h); if (f !== undefined) next[i] = f; head.set(h, i); }
+    const out = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const o = i * STRIDE, h = (kx[i] * 73856093) ^ (ky[i] * 19349663) ^ (kz[i] * 83492791); let sx = 0, sy = 0, sz = 0;
+      for (let j = head.get(h); j !== undefined && j >= 0; j = next[j]) { if (kx[j] !== kx[i] || ky[j] !== ky[i] || kz[j] !== kz[i]) continue; const p = j * STRIDE; if (a[o + 3] * a[p + 3] + a[o + 4] * a[p + 4] + a[o + 5] * a[p + 5] >= cosT) { sx += a[p + 3]; sy += a[p + 4]; sz += a[p + 5]; } }
+      const ln = Math.hypot(sx, sy, sz); if (ln > 1e-6) { out[i * 3] = sx / ln; out[i * 3 + 1] = sy / ln; out[i * 3 + 2] = sz / ln; } else { out[i * 3] = a[o + 3]; out[i * 3 + 1] = a[o + 4]; out[i * 3 + 2] = a[o + 5]; }
+    }
+    for (let i = 0; i < n; i++) { a[i * STRIDE + 3] = out[i * 3]; a[i * STRIDE + 4] = out[i * 3 + 1]; a[i * STRIDE + 5] = out[i * 3 + 2]; }
+    return this;
+  }
   smooth(crease = 45) {
     const a = this.a, n = this.n, map = new Map(), cosT = Math.cos(crease * Math.PI / 180);
     const key = i => Math.round(a[i * STRIDE] * 200) + ',' + Math.round(a[i * STRIDE + 1] * 200) + ',' + Math.round(a[i * STRIDE + 2] * 200);
@@ -6161,7 +6196,7 @@ function buildTrack(def, quality) {
     for (let i = 0; i < N; i++) { if (i % 3 === 2) continue; const j = (i + 1) % N, v = vp[i], c = v > 48 ? [0.15, 0.95, 0.35] : v > 30 ? [1, 0.82, 0.1] : [1, 0.16, 0.1], hw = 0.45, mb = ch('L' + Math.floor(i / 40)), up = 0.05;
       mb.quad(pos(i, off[i] - hw, up), pos(i, off[i] + hw, up), pos(j, off[j] + hw * 0.2, up), pos(j, off[j] - hw * 0.2, up), c, 15); }
   }
-  for (const [key, mb] of chunks) { const m = R.upload(mb); if (m) { m.always = key === 'always'; if (key[0] === 'G') { m.nosh = true; m.maxD = 110; } if (key[0] === 'L') { m.nosh = true; m.rline = true; m.maxD = 140; } T.meshes.push(m); } }
+  for (const [key, mb] of chunks) { if (key[0] !== 'L' && mb.n) mb.smoothFast(38); const m = R.upload(mb); if (m) { m.always = key === 'always'; if (key[0] === 'G') { m.nosh = true; m.maxD = 110; } if (key[0] === 'L') { m.nosh = true; m.rline = true; m.maxD = 140; } T.meshes.push(m); } }
   T.verts = T.meshes.reduce((s, m) => s + m.n, 0);
   // fonctions d'accès
   T.wrap = s => ((s % total) + total) % total;
@@ -7796,6 +7831,7 @@ function collide(a, b) {
 function buzz(imp) { try { if (SAVE.settings.vibe && navigator.vibrate) navigator.vibrate(Math.min(90, 15 + imp * 5)); } catch (e) { } }
 // V235 — figures (motos, vélos : roue arrière ; quads : deux roues)
 const V235_TXT = {"fr": ["FIGURE", "Roue arrière", "Deux roues", "Figure de 5 secondes"], "en": ["STUNT", "Wheelie", "Two wheels", "5-second stunt"], "es": ["TRUCO", "Caballito", "Dos ruedas", "Truco de 5 segundos"], "pt": ["MANOBRA", "Cavalinho", "Duas rodas", "Manobra de 5 segundos"], "de": ["STUNT", "Wheelie", "Zwei Räder", "5-Sekunden-Stunt"], "it": ["ACROBAZIA", "Impennata", "Due ruote", "Acrobazia di 5 secondi"], "tr": ["NUMARA", "Şahlanma", "İki teker", "5 saniyelik numara"], "ar": ["حركة", "على العجلة الخلفية", "على عجلتين", "حركة لمدة 5 ثوانٍ"], "tn": ["حركة", "على الروضة اللورانية", "على زوز روايض", "حركة 5 ثواني"]};
+const V236_H = {"fr": "Avec une moto, un vélo ou un quad, maintiens le bouton FIGURE en course pour frimer !", "en": "On a motorbike, bicycle or quad, hold the STUNT button during a race to show off!", "es": "Con moto, bici o quad, mantén el botón TRUCO en carrera para lucirte.", "pt": "Com mota, bicicleta ou quad, mantém o botão MANOBRA na corrida para te exibires!", "de": "Mit Motorrad, Fahrrad oder Quad halte im Rennen die STUNT-Taste gedrückt!", "it": "Con moto, bici o quad, tieni premuto ACROBAZIA in gara per metterti in mostra!", "tr": "Motosiklet, bisiklet veya ATV ile yarışta NUMARA tuşunu basılı tut!", "ar": "بالدراجة النارية أو الهوائية أو الكواد، اضغط مطولًا على زر حركة أثناء السباق للاستعراض!", "tn": "بالموتور ولا البيسكلات ولا الكواد، اضغط على زر حركة في الكورسة باش تفرفش!"}; for (const l in V236_H) if (LANGS[l]) LANGS[l].st_help = V236_H[l];
 for (const l in V235_TXT) { const v = V235_TXT[l]; if (LANGS[l]) Object.assign(LANGS[l], { st_btn: v[0], st_wh: v[1], st_2w: v[2], ach_wh5: v[3] }); }
 function stuntKind(c) { if (c.stK === undefined) { const k = c.car ? catOf(c.car) : ''; c.stK = k === 'moto' || k === 'velo' || k === 'quad' ? k : null; } return c.stK; }
 function stuntTick(c, dt, want) {
@@ -8514,7 +8550,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V235';
+const GAME_VERSION = 'V236';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -9472,6 +9508,8 @@ function bindInputs() {
   const up = () => { GAR.drag = false; }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
   cv.addEventListener('wheel', e => { if (G.state === 'menu') GAR.zoom = clamp(GAR.zoom + e.deltaY * 0.001, 0.7, 1.4); }, { passive: true });
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { AU.shot(700, 0.04, 'sine', 0.05); UI.show(b.dataset.go); }));
+  // V236 — raccourcis « nouveautés » du menu principal
+  document.querySelectorAll('#mnews .mnew').forEach(b => b.addEventListener('click', () => { AU.shot(820, 0.04, 'sine', 0.05); const m = b.dataset.nm; if (m === 'stunt') { UI.show('garage'); toast(t('st_help')); } else { UI.show('quick'); UI.q.mode = m; UI.renderQuick(); } }));
   $('m-play').onclick = () => { AU.shot(900, 0.06, 'sine', 0.07); UI.startRace(UI.nextCfg()); };
   $('lang-sel').innerHTML = LANG_LIST.map(([v, l]) => `<option value="${v}">${l}</option>`).join(''); $('lang-sel').value = LANG;
   $('lang-sel').onchange = e => { SAVE.settings.lang = LANG = e.target.value; saveGame(); UI.refresh(); };

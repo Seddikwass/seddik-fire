@@ -513,7 +513,7 @@ export function matchTeam(st, id, kitAway = false) {
     const t = c.tactics; const form = FORMATION_POS[t.formation];
     // Le moral pèse légèrement sur le rendement réel en match (−3 % à +2 %).
     const withMorale = p => { const k = Dr.moraleFactor(p.morale ?? 70); const a = {}; for (const [key, v] of Object.entries(p.attrs)) a[key] = typeof v === 'number' ? Math.round(v * k) : v; return a; };
-    const mk = p => ({ id: p.id, name: p.name, num: p.num, pos: p.pos, attrs: withMorale(p), fitness: p.fitness, instr: t.instr?.[p.id] || '' });
+    const mk = p => ({ id: p.id, name: p.name, num: p.num, pos: p.pos, attrs: withMorale(p), fitness: p.fitness, instr: t.instr?.[p.id] || '', foot: p.foot === 'Gauche' ? 'L' : p.foot === 'Droit' ? 'R' : p.foot === 'Les deux' ? 'R' : undefined, weakFoot: p.foot === 'Les deux' ? 5 : undefined });
     const kit = clubKit(id, kitAway), kitCols = kitAway === true ? c.away : c.colors;
     return { id, name: c.name, short: c.short, colors: kit ? [kit.shirt, kit.trim] : kitCols, kit: kit || { shirt: kitCols[0], trim: kitCols[1], shorts: kitAway ? kitCols[0] : '#f2f2f2' }, formation: t.formation, mentality: t.mentality, pressing: t.pressing, width: t.width, line: t.line, takers: t.takers || {}, stadium: c.stadium, players: t.lineup.map(i => mk(st.players[i])), bench: t.bench.map(i => st.players[i]).filter(Boolean).map(mk), formPos: form };
   }

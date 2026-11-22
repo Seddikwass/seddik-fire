@@ -2,6 +2,11 @@
 
 > Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
 
+## Version 3.60.0 — Pied fort / pied faible, défis et récompenses
+- Pied fort et note de pied faible (1 à 5) pour chaque joueur : frapper ou passer du mauvais pied disperse le ballon et réduit la puissance ; frapper en pivotant dégrade aussi la précision. Données estimées (non officielles), affichées dans la fiche joueur.
+- 10 défis (première victoire, clean sheet, remontada, derby, but de la tête, du mauvais pied, de loin, etc.) avec récompenses uniquement esthétiques : ballons Radès, Médina et Nuit dorée, chaussures Or et Jasmin pour votre équipe. Aucun avantage de jeu.
+- Équilibre mesuré sur 40 matchs simulés : environ 70 % d'arrêts sur tirs cadrés, 1,65 but par match de 5 minutes.
+
 ## Version 3.59.0 — Cahier des charges de finalisation
 - Commandes PC configurables (touches remappables) et prise en charge des manettes (API Gamepad).
 - Tutoriel interactif au premier match (déplacement, sprint, passe, tir, défense), relançable depuis l'accueil.

@@ -762,18 +762,45 @@ export function getPassLaneAssessment(from = {}, to = {}, opponents = [], flight
 }
 
 // Dispersion des frappes : qualité technique, pression, équilibre et puissance influencent le geste.
-export function getShotAccuracy({ shooting = 50, technique = 50, pressure = 99, movingSpeed = 0, power = 0.7, assist = 1 } = {}) {
+// ---------------- Pied fort / pied faible ----------------
+// Données non officielles : pied et note de pied faible (1 à 5) estimés de façon stable à partir du nom et de la technique,
+// tant qu'aucune source vérifiée n'est disponible. Un pied explicite (p.foot / p.weakFoot) est toujours prioritaire.
+export function getPlayerFooting(player = {}) {
+  let h = 2166136261; const s = String(player.name || player.id || '');
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  const foot = player.foot === 'L' || player.foot === 'R' ? player.foot : (h % 100) < 22 ? 'L' : 'R';
+  const tec = clamp(Number(player.a?.tec) || 50, 0, 100);
+  const weak = Number.isFinite(player.weakFoot) ? clamp(Math.round(player.weakFoot), 1, 5) : clamp(Math.round(1.2 + tec / 33 + ((h >>> 8) % 3 - 1) * 0.6), 1, 5);
+  return { foot, weak, estimated: !(player.foot && Number.isFinite(player.weakFoot)) };
+}
+// Côté du ballon par rapport au corps : −1 = pied gauche, +1 = pied droit (le ballon à gauche du joueur se frappe du gauche).
+export function getKickingFoot(player, ball) {
+  const h = Number.isFinite(player.heading) ? player.heading : Math.atan2(player.vy || 0, player.vx || player.face || 1);
+  const lateral = (ball.x - player.x) * Math.sin(h) - (ball.y - player.y) * Math.cos(h);
+  if (Math.abs(lateral) < 0.055) return getPlayerFooting(player).foot === 'L' ? -1 : 1; // ballon dans l'axe : on prend son bon pied
+  return lateral > 0 ? 1 : -1;
+}
+// Pénalité du mauvais pied : 0 avec le bon pied ou un pied faible noté 5, jusqu'à 1 pour un pied faible noté 1.
+export function getWeakFootLoad(player, ball) {
+  const f = getPlayerFooting(player), side = getKickingFoot(player, ball);
+  const strong = f.foot === 'L' ? -1 : 1;
+  return side === strong ? 0 : (5 - f.weak) / 4;
+}
+export function getShotAccuracy({ shooting = 50, technique = 50, pressure = 99, movingSpeed = 0, power = 0.7, assist = 1, weakFoot = 0, turn = 0 } = {}) {
   const shotSkill = clamp(Number(shooting) || 50, 0, 100) / 100;
   const techSkill = clamp(Number(technique) || 50, 0, 100) / 100;
   const pressureLoad = clamp((4.2 - (Number.isFinite(pressure) ? pressure : 99)) / 4.2, 0, 1);
   const balanceLoad = clamp(((Number.isFinite(movingSpeed) ? movingSpeed : 0) - 3) / 11, 0, 1);
   const powerLoad = clamp(((Number.isFinite(power) ? power : 0.7) - 0.72) / 0.28, 0, 1);
   const support = clamp(Number(assist) || 1, 0.45, 1.2);
+  // Équilibre : frapper en pivotant (corps de travers par rapport au but) dégrade la précision.
+  const turnLoad = clamp(Number(turn) || 0, 0, 1) * clamp((Number(movingSpeed) || 0) / 5, 0.3, 1);
+  const weakLoad = clamp(Number(weakFoot) || 0, 0, 1);
   const spread = (0.26 + (1 - shotSkill) * 1.15 + (1 - techSkill) * 0.42 +
-    pressureLoad * 1.05 + balanceLoad * 0.58 + powerLoad * 0.36) * support;
+    pressureLoad * 1.05 + balanceLoad * 0.58 + powerLoad * 0.36 + weakLoad * 0.7 + turnLoad * 0.45) * support;
   const verticalSpread = (0.1 + (1 - techSkill) * 0.44 +
-    pressureLoad * 0.24 + balanceLoad * 0.16 + powerLoad * 0.12) * support;
-  return { spread: clamp(spread, 0.2, 4.5), verticalSpread: clamp(verticalSpread, 0.08, 1.25), pressureLoad, balanceLoad };
+    pressureLoad * 0.24 + balanceLoad * 0.16 + powerLoad * 0.12 + weakLoad * 0.26 + turnLoad * 0.14) * support;
+  return { spread: clamp(spread, 0.2, 4.5), verticalSpread: clamp(verticalSpread, 0.08, 1.25), pressureLoad, balanceLoad, weakLoad, turnLoad };
 }
 
 // Évalue une occasion de tir de l'IA avant de déclencher la frappe :
@@ -1014,7 +1041,7 @@ export class Match {
   makeTeam(t, side) {
     const form = FORMATIONS[t.formation] || FORMATIONS['4-3-3'];
     const ps = t.players.slice(0, 11).map((p, i) => ({
-      id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: withDerivedAttrs(p.attrs), team: side, i,
+      id: p.id, name: p.name, num: p.num || i + 1, pos: p.pos, a: withDerivedAttrs(p.attrs), team: side, i, foot: p.foot, weakFoot: p.weakFoot,
       isGK: i === 0, base: form[i], x: 0, y: 0, vx: 0, vy: 0, face: side === 0 ? 1 : -1, heading: side === 0 ? 0 : Math.PI, turn: 0, bodyLean: 0, keeperReactShot: null, diveHeight: 0, diveStretch: 0, anim: Math.random() * 6,
       stamina: clamp(p.fitness ?? 1, 0.5, 1), cd: 0, tackleCd: 0, aiThink: 0, motionAccel: 0, run: 0, diveT: 0, slideT: 0, slideDuration: 0.38, slideDir: 1, jumpT: 0, jumpCd: 0, headerT: 0, headerDir: side === 0 ? 1 : -1, firstTouchT: 0, firstTouchDir: 1, stumbleT: 0, stumbleDir: 1, keeperCatchT: 0, keeperPunchT: 0, saveT: 0, kickT: 0, kickDir: 1, kickFootSide: i % 2 === 0 ? -1 : 1, yellow: 0, sentOff: false, injured: false, celebrateT: 0, contactT: 0, contactDir: 1,
       instr: p.instr || '', skin: SKIN[(p.name || '').length % SKIN.length], rating: 6.5, touches: 0, goals: 0, assists: 0, minutes: 0,
@@ -1967,7 +1994,7 @@ export class Match {
     const ballDx = b.x - p.x, ballDy = b.y - p.y;
     const lateralBallOffset = ballDx * Math.sin(headingBeforeKick) - ballDy * Math.cos(headingBeforeKick);
     if (Math.abs(lateralBallOffset) > 0.055) p.kickFootSide = Math.sign(lateralBallOffset);
-    else if (!Number.isFinite(p.kickFootSide) || p.kickFootSide === 0) p.kickFootSide = p.i % 2 === 0 ? -1 : 1;
+    else p.kickFootSide = getPlayerFooting(p).foot === 'L' ? -1 : 1; // ballon dans l'axe : bon pied
     b.owner = null; b.vx = vx; b.vy = vy; b.vz = vz; b.z = Math.max(b.z, 0.12); b.last = p; b.lastTeam = p.team;
     p.kickT = 0.34; p.kickStyle = this.setPiece === 'throw' ? 'throw' : vz > 3.2 ? 'lob' : power >= 0.65 ? 'shot' : 'pass'; p.kickPower = power;
     if (Math.hypot(vx, vy) > 0.1) p.heading = Math.atan2(vy, vx);
@@ -1990,7 +2017,8 @@ export class Match {
     for (const o of this.teams[1 - p.team].ps) if (!o.sentOff) pressure = Math.min(pressure, Math.hypot(o.x - p.x, o.y - p.y));
     const pressureError = clamp((3.8 - pressure) / 3.8, 0, 1) * 0.075;
     const balanceError = clamp(Math.hypot(p.vx, p.vy) / 12, 0, 1) * 0.035;
-    const err = (1 - p.a.pas / 100) * 0.11 * assist + pressureError + balanceError + (p.team !== this.userSide ? 0.02 : 0);
+    const weakError = getWeakFootLoad(p, this.ball) * (lob ? 0.06 : 0.045);
+    const err = (1 - p.a.pas / 100) * 0.11 * assist + pressureError + balanceError + weakError + (p.team !== this.userSide ? 0.02 : 0);
     let ang = Math.atan2(ty - p.y, tx - p.x) + (this.r() - 0.5) * 2 * err;
     const dist = Math.hypot(tx - p.x, ty - p.y);
     speed = clamp(dist * (lob ? 0.55 : 0.75) + 7, 9, lob ? 20 : 22);
@@ -2058,9 +2086,12 @@ export class Match {
     const powerShot = power > 0.82;
     const assist = p.team === this.userSide && this.settings.assist ? 0.72 : (p.team === this.userSide ? 1 : 1.08);
     const skill = clamp(Number(p.a.sho) || 50, 0, 100) / 100;
+    const weakFoot = shotOrigin.kind === 'penalty' ? 0 : getWeakFootLoad(p, this.ball);
+    const bodyTurn = Math.abs(Math.atan2(Math.sin(Math.atan2(-p.y, gx - p.x) - (p.heading ?? 0)), Math.cos(Math.atan2(-p.y, gx - p.x) - (p.heading ?? 0)))) / Math.PI;
     const accuracy = getShotAccuracy({
-      shooting: p.a.sho, technique: p.a.tec, pressure, movingSpeed, power, assist
+      shooting: p.a.sho, technique: p.a.tec, pressure, movingSpeed, power, assist, weakFoot, turn: bodyTurn
     });
+    p.lastWeakFoot = weakFoot > 0.001 || (getKickingFoot(p, this.ball) !== (getPlayerFooting(p).foot === 'L' ? -1 : 1));
     const targetY = getShotTargetY(gk.y, p.y, aimY);
     // Techniques : piqué si le gardien est sorti, enroulé du plat du pied pour les techniciens.
     const tech = getShotTechnique({ power, distance: Math.hypot(gx - p.x, p.y), keeperOut: Math.abs(gx - gk.x), technique: p.a.tec, shooterY: p.y, targetY, setPiece: this.setPiece });
@@ -2075,7 +2106,7 @@ export class Match {
       for (const w of this.wall || []) if (w.p && !w.p.sentOff) w.p.jumpT = 0.46;
     }
     const dist = Math.hypot(gx - p.x, ty - p.y);
-    const speed = freeKick ? freeKick.speed : 17 + power * 15 + skill * 4 + Math.min(2, movingSpeed * 0.18) - (tech === 'curl' ? 2 : 0);
+    const speed = (freeKick ? freeKick.speed : 17 + power * 15 + skill * 4 + Math.min(2, movingSpeed * 0.18) - (tech === 'curl' ? 2 : 0)) * (1 - weakFoot * 0.09);
     const t = dist / speed;
     const gravity = G + (freeKick ? freeKick.dip : 0);
     const vz = clamp((tz - 0.12 + 0.5 * gravity * t * t) / t, 0.5, 14);
@@ -2603,7 +2634,8 @@ export class Match {
     const T = this.teams[team];
     let name = scorer ? scorer.name : 'c.s.c.';
     if (scorer) { scorer.goals++; scorer.rating += 1; if (scorer.lastPasser) { scorer.lastPasser.assists++; scorer.lastPasser.rating += 0.5; } }
-    this.events.push({ type: 'goal', min: Math.max(1, Math.round(this.minute)), team, pid: scorer?.id, name, own: !scorer, assist: scorer?.lastPasser?.name });
+    this.events.push({ type: 'goal', min: Math.max(1, Math.round(this.minute)), team, pid: scorer?.id, name, own: !scorer, assist: scorer?.lastPasser?.name,
+      kind: shotInfo?.type === 'header' || shotInfo?.kind === 'header' ? 'header' : shotInfo?.kind === 'penalty' ? 'penalty' : shotInfo?.kind === 'freekick' ? 'freekick' : (shotInfo?.distance || 0) > 22 ? 'long' : 'shot', weakFoot: !!(scorer?.lastWeakFoot && shotInfo?.kind !== 'header') });
     b.vx *= 0.2; b.vy *= 0.2; b.inFlightShot = null;
     // Avec le rendu 3D : célébration plus longue (course vers le poteau de corner, accolades) ; simulation inchangée sans rendu.
     const celebLen = this.renderer3d && !this.net ? 4.2 : 2.2;

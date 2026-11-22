@@ -1,6 +1,6 @@
 // SEDDIK LEAGUE — interface et navigation
 import * as C from './career.js';
-import { Match } from './match.js';
+import { Match, getPlayerFooting, withDerivedAttrs } from './match.js';
 import { TACTIC_PRESETS, getCoachAdvice } from './tactics.js';
 import * as Dr from './dressing.js';
 import * as Tx from './transfers.js';
@@ -10,12 +10,13 @@ import * as Online from './online.js';
 import * as A from './audio.js';
 import { COMMENTARY_STYLES } from './commentary.js';
 import { lineupHistory } from './lineups.js';
+import * as CH from './challenges.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION, KIT_PROVENANCE, KIT_STATUS_DEFAULT } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp, jerseySVG } from './util.js';
 
-export const APP_VERSION = '3.59.0';
+export const APP_VERSION = '3.60.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -50,7 +51,7 @@ function go(v, a = {}) { view = v; args = a; render(); const m = $('main'); if (
 function render() {
   if (match && view !== 'match') { match.destroy(); match = null; }
   const V = VIEWS[view] || VIEWS.home;
-  if (['home', 'newCareer', 'quick', 'online', 'settingsHome', 'account', 'match', 'gameOver', 'postmatchQuick'].includes(view)) app().innerHTML = V();
+  if (['home', 'newCareer', 'quick', 'online', 'settingsHome', 'challenges', 'account', 'match', 'gameOver', 'postmatchQuick'].includes(view)) app().innerHTML = V();
   else app().innerHTML = shell(V());
   if (view === 'match') startMatchView();
   if (view === 'online') loadLeaderboard();
@@ -80,11 +81,19 @@ VIEWS.home = () => {
     <button class="btn big ${has ? '' : 'primary'}" data-a="nav" data-v="newCareer">🏆 ${t('Nouvelle carrière')}</button>
     <button class="btn big" data-a="nav" data-v="quick">⚡ ${t('Match rapide')}</button>
     <button class="btn big" data-a="nav" data-v="online">🌐 Match en ligne</button>
-    <button class="btn" data-a="tutorial">🎓 ${t('Tutoriel')}</button>
+    <div class="row"><button class="btn" data-a="tutorial">🎓 ${t('Tutoriel')}</button><button class="btn" data-a="nav" data-v="challenges">🏅 ${t('Défis')} (${Object.keys(settings.challenges?.done || {}).length}/${CH.CHALLENGES.length})</button></div>
     <div class="row"><button class="btn" data-a="nav" data-v="settingsHome">⚙ ${t('Paramètres')}</button><button class="btn" data-a="nav" data-v="account">👤 ${t('Compte')}</button></div>
    </div>
    <p class="fine">v${APP_VERSION} · données ${DATA_VERSION} (vérifiées le ${VERIFIED_ON}) · ${settings.realNames === false ? 'joueurs fictifs' : 'effectifs réels de 5 clubs + dernier onze des 16 clubs (snapshot du 22/11/2026, à revalider)'} · <a href="privacy.html" target="_blank">Confidentialité</a></p>
   </div></div>`;
+};
+VIEWS.challenges = () => {
+  const done = settings.challenges?.done || {}, un = CH.unlockedSkins(settings.challenges);
+  const opt = (k, map, list, cur) => `<select data-a="setting" data-k="${k}">${Object.entries(map).map(([id, s]) => `<option value="${id}" ${id === cur ? 'selected' : ''} ${list.includes(id) ? '' : 'disabled'}>${s.label}${list.includes(id) ? '' : ' 🔒'}</option>`).join('')}</select>`;
+  return `<div class="page"><div class="ph"><button class="btn ghost" data-a="nav" data-v="home">← ${t('Retour')}</button><h2>🏅 ${t('Défis')}</h2></div>
+    <p class="hint">Les récompenses sont uniquement esthétiques (ballon, chaussures de votre équipe) : aucun avantage de jeu.</p>
+    <div class="card"><div class="chlist">${CH.CHALLENGES.map(c => `<div class="chrow ${done[c.id] ? 'ok' : ''}"><span class="chi">${done[c.id] ? '✅' : '⬜'}</span><div><b>${c.label}</b><br><small>${c.desc}${c.reward ? ` — 🎁 ${(c.reward.type === 'ball' ? 'Ballon ' : 'Chaussures ') + (c.reward.type === 'ball' ? CH.BALL_SKINS : CH.BOOT_SKINS)[c.reward.id].label}` : ''}</small></div><small>${done[c.id] ? 'Réussi le ' + done[c.id].split('-').reverse().join('/') : ''}</small></div>`).join('')}</div></div>
+    <div class="card"><h3>Équipement</h3><div class="form2"><label>Ballon${opt('ballSkin', CH.BALL_SKINS, un.balls, settings.ballSkin || 'classic')}</label><label>Chaussures de votre équipe${opt('bootSkin', CH.BOOT_SKINS, un.boots, settings.bootSkin || 'auto')}</label></div></div></div>`;
 };
 VIEWS.newCareer = () => {
   const step = args.step || 1;
@@ -260,6 +269,7 @@ function playerModal(id) {
   modal(`<div class="pcard"><div class="phead"><div class="pnum">${p.num || ''}</div><div><h3>${esc(p.name)} <small>${p.nat} · ${p.age} ans · ${p.height} cm · pied ${p.foot.toLowerCase()}</small></h3>
    <p>${p.pos}${p.pos2 ? ' / ' + p.pos2 : ''} · ${esc(C.clubName(st, p.loan ? p.loan.to : p.clubId) || 'Libre')} · <b class="${ovrCls(p.ovr)}">${p.ovr}</b> (pot. ${mine ? p.pot : '~' + p.pot}) · ${fmtMoney(p.value)}</p>
    <p class="hint">Joueur fictif généré. ${Tx.AGENT_STYLES[Tx.agentOf(p)].label}${p.releaseClause ? ` · 🔓 clause libératoire ${fmtMoney(p.releaseClause)}` : ''} · Contrat jusqu'en juin ${p.contractEnd + 1} · ${fmtMoney(p.wage)}/mois · ${t('Moral')} ${Math.round(p.morale)} · ${t('Forme')} ${Math.round(p.fitness * 100)}%${mine ? ` · ${Dr.PERSONALITIES[Dr.personalityOf(p)].label} · satisfaction ${Math.round(p.happiness)} · temps de jeu ${playShareText(p)}` : ''}</p></div></div>
+   ${(() => { const f = getPlayerFooting({ name: p.name, id: p.id, foot: p.foot === 'Gauche' ? 'L' : p.foot === 'Droit' || p.foot === 'Les deux' ? 'R' : undefined, weakFoot: p.foot === 'Les deux' ? 5 : undefined, a: withDerivedAttrs(a) }); return `<p class="hint">Pied faible : ${'★'.repeat(f.weak)}${'☆'.repeat(5 - f.weak)}${f.estimated ? ' <i>(estimation, non officielle)</i>' : ''}</p>`; })()}
    <div class="attrs">${attr('pac', 'Vitesse')}${attr('sho', 'Tir')}${attr('pas', 'Passe')}${attr('dri', 'Dribble')}${attr('def', 'Défense')}${attr('phy', 'Physique')}${attr('gk', 'Gardien')}</div>
    ${p.injury ? `<p class="inj">🩹 ${p.injury.diagnosed ? esc(p.injury.name) + ' (' + p.injury.sev + ')' : 'Blessure (diagnostic en attente)'} — ${Math.ceil(p.injury.left)} sem.</p>` : ''}
    <p class="hint">Saison : ${p.stats.apps} MJ, ${p.stats.goals} buts, ${p.stats.assists} passes D.${p.career.length ? ' · Historique : ' + p.career.slice(-3).map(c => `${c.season} ${C.clubShort(st, c.club)} ${c.apps}MJ/${c.goals}b`).join(', ') : ''}</p>
@@ -580,7 +590,7 @@ function startMatchView() {
   const cv = $('#cv'); const ctx = args;
   const m = new Match({
     canvas: cv, home: ctx.home, away: ctx.away, userSide: ctx.userSide, knockout: ctx.knockout || null,
-    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: resolveQuality(settings.quality), camera: settings.camera || 'near', colorblind: !!settings.colorblind, subtitles: settings.subtitles !== false, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), commentary: settings.commentary || 'auto', replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
+    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: resolveQuality(settings.quality), camera: settings.camera || 'near', ...cosmeticSettings(), colorblind: !!settings.colorblind, subtitles: settings.subtitles !== false, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), commentary: settings.commentary || 'auto', replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
     onEnd: res => onMatchEnd(res), onPause: () => pauseMenu(),
   });
   match = m;
@@ -599,12 +609,22 @@ const TUTO_STEPS = [
   { id: 'shoot', txt: () => 'Dans le camp adverse, maintenez TIR puis relâchez : plus longtemps = plus fort.', done: (m, s) => m.stats.shots[m.userSide] > s.s0 },
   { id: 'defend', txt: () => 'Sans le ballon, TIR = tacle et PROFONDEUR (maintenu) = pressing. Le joueur actif change automatiquement.', done: (m, s) => (s.t += s.dt) > 6 },
 ];
+function cosmeticSettings() {
+  const un = CH.unlockedSkins(settings.challenges), ball = un.balls.includes(settings.ballSkin) ? settings.ballSkin : 'classic', boot = un.boots.includes(settings.bootSkin) ? settings.bootSkin : 'auto';
+  return { ballPalette: ball === 'classic' ? null : CH.BALL_SKINS[ball].colors, bootColors: CH.BOOT_SKINS[boot].colors };
+}
+function grantChallenges(ids) {
+  const { progress, fresh } = CH.recordChallenges(settings.challenges, ids);
+  settings.challenges = progress; S.saveSettings(settings);
+  fresh.forEach((id, k) => { const c = CH.CHALLENGES.find(x => x.id === id); const rw = c.reward ? ` — récompense : ${c.reward.type === 'ball' ? 'ballon' : 'chaussures'} « ${(c.reward.type === 'ball' ? CH.BALL_SKINS : CH.BOOT_SKINS)[c.reward.id].label} »` : ''; setTimeout(() => toast(`🏅 Défi réussi : ${c.label}${rw}`, 'ok'), 600 + k * 1800); });
+  return fresh;
+}
 function startTutorial(m) {
   const box = document.createElement('div'); box.className = 'tuto'; box.setAttribute('role', 'status');
   document.querySelector('.match-wrap, #app')?.appendChild(box);
   let i = 0; const s = { t: 0, p0: m.stats.passes[m.userSide], s0: m.stats.shots[m.userSide] };
   const show = () => { const st = TUTO_STEPS[i]; box.innerHTML = `<b>Tutoriel ${i + 1}/${TUTO_STEPS.length}</b><span>${st.txt(m)}</span><button class="btn small" data-tuto="skip">Passer</button>`; };
-  const finish = () => { clearInterval(timer); box.remove(); settings.tutorialDone = true; S.saveSettings(settings); };
+  const finish = (ok = false) => { clearInterval(timer); box.remove(); settings.tutorialDone = true; S.saveSettings(settings); if (ok === true) grantChallenges(['tuto']); };
   box.addEventListener('click', e => { if (e.target.closest('[data-tuto=skip]')) { finish(); toast('Tutoriel disponible à tout moment depuis l’accueil.'); } });
   show();
   let last = performance.now();
@@ -612,7 +632,7 @@ function startTutorial(m) {
     const now = performance.now(); s.dt = Math.min(0.5, (now - last) / 1000); last = now;
     if (m._ended || !document.body.contains(box)) return finish();
     if (m.ceremony || m.breakShow || m.paused || (m.state !== 'play' && !(i === 0 && m.state === 'kickoff'))) return;
-    if (TUTO_STEPS[i].done(m, s)) { i++; s.t = 0; s.p0 = m.stats.passes[m.userSide]; s.s0 = m.stats.shots[m.userSide]; A.click?.(); if (i >= TUTO_STEPS.length) { finish(); toast('Tutoriel terminé — bon match !', 'ok'); } else show(); }
+    if (TUTO_STEPS[i].done(m, s)) { i++; s.t = 0; s.p0 = m.stats.passes[m.userSide]; s.s0 = m.stats.shots[m.userSide]; A.click?.(); if (i >= TUTO_STEPS.length) { finish(true); toast('Tutoriel terminé — bon match !', 'ok'); } else show(); }
   }, 100);
 }
 function bindControls(m) {
@@ -789,6 +809,7 @@ function subMenu(m, side) {
 }
 function onMatchEnd(res) {
   const ctx = args; match = null;
+  if (ctx.userSide === 0 || ctx.userSide === 1) grantChallenges(CH.evaluateChallenges(res, { userSide: ctx.userSide, homeId: ctx.home?.id, awayId: ctx.away?.id, difficulty: settings.difficulty }));
   if (ctx.career) {
     const f = st.fixtures.find(x => x.id === ctx.fixtureId);
     const full = res;

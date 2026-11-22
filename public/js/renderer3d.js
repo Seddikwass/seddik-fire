@@ -426,11 +426,13 @@ function rotateMatrix3(M, w, dt) {
 }
 const PHI = (1 + Math.sqrt(5)) / 2;
 const BALL_PENTAGONS = [[0,1,PHI],[0,1,-PHI],[0,-1,PHI],[0,-1,-PHI],[1,PHI,0],[1,-PHI,0],[-1,PHI,0],[-1,-PHI,0],[PHI,0,1],[PHI,0,-1],[-PHI,0,1],[-PHI,0,-1]].map(v => { const l = Math.hypot(...v); return v.map(c => c / l); });
-export function ballPanelColor(local) {
+const BALL_DEFAULT_PALETTE = [[0.95, 0.96, 0.93], [0.42, 0.44, 0.46], [0.05, 0.06, 0.08]];
+export function ballPanelColor(local, palette = null) {
   let best = -1; for (const c of BALL_PENTAGONS) best = Math.max(best, local[0]*c[0] + local[1]*c[1] + local[2]*c[2]);
-  return best > 0.968 ? [0.05, 0.06, 0.08] : best > 0.958 ? [0.42, 0.44, 0.46] : [0.95, 0.96, 0.93];
+  const P = palette || BALL_DEFAULT_PALETTE;
+  return best > 0.968 ? P[2] : best > 0.958 ? P[1] : P[0];
 }
-function addPanelBall(out, c, r, M, seg, rings) {
+function addPanelBall(out, c, r, M, seg, rings, palette = null) {
   const pt = (lat, lon) => { const d = [Math.sin(lat) * Math.cos(lon), Math.cos(lat), Math.sin(lat) * Math.sin(lon)]; return { p: [c[0] + d[0] * r, c[1] + d[1] * r, c[2] + d[2] * r], n: d }; };
   for (let iy = 0; iy < rings; iy++) for (let ix = 0; ix < seg; ix++) {
     const A = pt(Math.PI * iy / rings, Math.PI * 2 * ix / seg), B = pt(Math.PI * (iy + 1) / rings, Math.PI * 2 * ix / seg);
@@ -439,7 +441,7 @@ function addPanelBall(out, c, r, M, seg, rings) {
     const ml = Math.hypot(...m) || 1;
     // Direction dans le repère du ballon : transposée de la rotation.
     const local = [(M[0]*m[0]+M[3]*m[1]+M[6]*m[2])/ml, (M[1]*m[0]+M[4]*m[1]+M[7]*m[2])/ml, (M[2]*m[0]+M[5]*m[1]+M[8]*m[2])/ml];
-    const col = ballPanelColor(local);
+    const col = ballPanelColor(local, palette);
     pushVertex(out, A.p, A.n, col); pushVertex(out, B.p, B.n, col); pushVertex(out, C.p, C.n, col);
     pushVertex(out, A.p, A.n, col); pushVertex(out, C.p, C.n, col); pushVertex(out, D.p, D.n, col);
   }
@@ -1024,7 +1026,9 @@ export class MatchRenderer3D {
     const detail=this.quality.detail;
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
     const build=0.98+physique*0.18;
-    const look=playerLook(player,index);
+    let look=playerLook(player,index);
+    // Récompense cosmétique : chaussures de l'équipe du joueur humain.
+    const bs=match.settings?.bootColors; if(bs&&player.team===match.userSide&&!player.isOfficial) look={...look,boot:parseColor(bs[0],look.boot),bootAccent:parseColor(bs[1],look.bootAccent)};
     const hair=look.hair;
     const phase=pose.phase, lift=pose.jump+pose.celebrateHop, slide=pose.slide, dive=pose.dive;
     const action=getPlayer3DActionWeights(pose);
@@ -1612,7 +1616,7 @@ export class MatchRenderer3D {
     let wx=vrz/R0, wy=-bspin*1.5, wz=-vrx/R0;
     if(bz>0.4){ wx*=0.35; wz*=0.35; }
     this.ballRot=rotateMatrix3(this.ballRot||[1,0,0,0,1,0,0,0,1],[wx,wy,wz],bdt*(match.paused&&!frame?0:replaySlow));
-    addPanelBall(g,[ballX,ballY,ballZ],R0,this.ballRot,Math.max(12,this.quality.sphereSegments+4),Math.max(8,this.quality.sphereSegments));
+    addPanelBall(g,[ballX,ballY,ballZ],R0,this.ballRot,Math.max(12,this.quality.sphereSegments+4),Math.max(8,this.quality.sphereSegments),match.settings?.ballPalette||null);
   }
   bindGeometry(buffer, geometry, usage) {
     const gl=this.gl,data=new Float32Array(geometry);

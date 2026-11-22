@@ -1,7 +1,7 @@
 # Rapport de finalisation — cahier des charges « Football Tunisia 2026 »
 
 Projet : SEDDIK LEAGUE (ex-Football Tunisia 2026, renommé à la demande du propriétaire), https://football-tunisia-2026.onrender.com
-Dépôt : `Seddikwass/seddik-fire`, branche `football-tunisia-2026`. Version livrée : **3.59.0**. Date : 22/11/2026.
+Dépôt : `Seddikwass/seddik-fire`, branche `football-tunisia-2026`. Version livrée : **3.60.0**. Date : 22/11/2026.
 
 Ce rapport répond au §15 du cahier des charges. Tout ce qui est marqué « fait » a été testé (tests automatisés et/ou navigateur réel) ; ce qui ne l'est pas est listé dans « Restant ».
 
@@ -24,6 +24,8 @@ Ce rapport répond au §15 du cahier des charges. Tout ce qui est marqué « fai
 | P2 | Pas de profil graphique automatique | Corrigé (3.59) : « Automatique » selon mémoire et cœurs de l'appareil |
 | P3 | Tactiques « possession » et « jeu sur les ailes » absentes | Ajoutées (3.59), avec effet réel sur le choix des passes et des tirs |
 | P3 | Hors-jeu et distance parcourue absents de l'écran de fin de match | Ajoutés (3.59) |
+| P1 | Pas de pied fort / pied faible, précision indépendante de l'équilibre | Corrigé (3.60) : pied faible noté 1 à 5, pénalité de pivot |
+| P3 | Pas de défis ni de récompenses | Ajoutés (3.60) : 10 défis, récompenses esthétiques uniquement |
 
 Captures (dans `docs/audit/`) : accueil, paramètres, accessibilité activée, tutoriel en match et match, en version mobile (844×390) et ordinateur (1366×768).
 
@@ -36,11 +38,12 @@ Captures (dans `docs/audit/`) : accueil, paramètres, accessibilité activée, t
 - `public/js/tactics.js` : préréglages Possession et Jeu sur les ailes.
 - `public/js/data.js`, `public/js/lineups.js` : compositions réconciliées et du 22/11/2026, historique par match, provenance des tenues.
 - `public/js/storage.js`, `public/js/i18n.js`, `public/styles.css`, `public/js/commentary.js` : réglages, traductions, styles, commentaires « avantage ».
-- Tests : `tests/keeper.test.mjs`, `tests/referee.test.mjs` (nouveaux), `tests/career.test.mjs`, `tests/match-motion.test.mjs`.
+- `public/js/challenges.js` (nouveau) : défis et récompenses esthétiques.
+- Tests : `tests/keeper.test.mjs`, `tests/referee.test.mjs`, `tests/challenges.test.mjs` (nouveaux), `tests/career.test.mjs`, `tests/match-motion.test.mjs`.
 
 ## 3. Tests réalisés
 
-- Suite automatique `npm test` : 21 suites, toutes réussies (règles, score, chronomètre, classement, sauvegarde, gardien 26 situations × 20 essais, arbitrage, tactique, rendu, réseau).
+- Suite automatique `npm test` : 22 suites, toutes réussies (règles, score, chronomètre, classement, sauvegarde, gardien 26 situations × 20 essais, arbitrage, tactique, rendu, réseau).
 - Navigateur réel (Chromium, rendu WebGL logiciel) : parcours complet mobile (`tests/e2e.mjs`), match en ligne à deux joueurs (`tests/online-e2e.mjs`), et contrôle de cette version sur mobile **et** ordinateur : réglages d'accessibilité appliqués, touche remappée enregistrée, manette simulée qui déplace le joueur, tutoriel qui progresse, aucune erreur JavaScript.
 - Simulation de 40 matchs : environ 60-70 % d'arrêts sur tirs cadrés, 1,5 but par match de 5 minutes, ~0,4 carton jaune et 0,04 rouge par match court.
 - Non testé ici : appareils Android physiques (pas d'appareil ni de SDK dans cet environnement) ; manette physique (testée par simulation de l'API).
@@ -93,6 +96,6 @@ npm test                          # suite complète
 ## 7. Retour à la version précédente
 
 - Sur Render : tableau de bord du service → *Deploys* → choisir le déploiement précédent → *Rollback*.
-- Dans Git : `git revert <commit>` puis pousser ; ou redéployer un commit connu (3.58.0 = `234ed59`, 3.57.0 = `009214c`).
+- Dans Git : `git revert <commit>` puis pousser ; ou redéployer un commit connu (3.59.0 = `a1cbff5`, 3.58.0 = `234ed59`, 3.57.0 = `009214c`).
 - État stable de référence sauvegardé : branche `stable-v3.54.0` (commit `e0fc42c`).
 - Cache : le service worker est versionné (`ft26-v<version>`) ; chaque nouvelle version invalide l'ancien cache au premier chargement.

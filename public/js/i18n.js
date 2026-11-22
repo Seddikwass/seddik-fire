@@ -15,7 +15,7 @@ const AR = {
   'Coupe de la Confédération CAF': 'كأس الكونفدرالية الإفريقية', 'Supercoupe': 'الكأس الممتازة', 'Amical': 'ودية',
   'Passe': 'تمرير', 'Profondeur': 'بينية', 'Tir': 'تسديد', 'Sprint': 'جري', 'Tacle': 'افتكاك', 'Changer': 'تبديل', 'Pressing': 'ضغط',
   'Pause': 'إيقاف', 'Reprendre': 'استئناف', 'Quitter': 'خروج', 'Mi-temps': 'نهاية الشوط الأول', 'Fin du match': 'نهاية المباراة', 'BUT !': '! هدف',
-  'Ralenti': 'إعادة', 'Langue': 'اللغة', 'Son': 'الصوت', 'Commentaires vocaux': 'التعليق الصوتي', 'Qualité graphique': 'جودة الرسوم', 'Caméra': 'الكاميرا', 'Tutoriel': 'الدرس التعليمي',
+  'Ralenti': 'إعادة', 'Langue': 'اللغة', 'Son': 'الصوت', 'Commentaires vocaux': 'التعليق الصوتي', 'Qualité graphique': 'جودة الرسوم', 'Caméra': 'الكاميرا', 'Tutoriel': 'الدرس التعليمي', 'Défis': 'التحديات',
   'Durée du match': 'مدة المباراة', 'Assistance passe/tir': 'مساعدة التمرير/التسديد', 'Images/seconde': 'الإطارات/ثانية',
   'Élections': 'الانتخابات', 'Satisfaction': 'الرضا', 'Confiance': 'الثقة', 'Réputation': 'السمعة', 'Moral': 'المعنويات', 'Forme': 'الجاهزية',
   'Blessé': 'مصاب', 'Suspendu': 'موقوف', 'Titulaires': 'الأساسيون', 'Remplaçants': 'الاحتياط', 'Capitaine': 'القائد',
@@ -29,7 +29,7 @@ const AR = {
   'Contrats': 'العقود', 'À traiter': 'مهام عاجلة', 'Club': 'النادي', 'Cohésion': 'الانسجام', 'Mercato': 'الميركاتو', 'Jeunes': 'الشبان', 'Réserve': 'الاحتياطي', 'Diagnostic': 'التشخيص', 'Traitement': 'العلاج',
 };
 const EN = {
-  'Accueil': 'Home', 'Caméra': 'Camera', 'Tutoriel': 'Tutorial', 'Carrière': 'Career', 'Effectif': 'Squad', 'Tactique': 'Tactics', 'Transferts': 'Transfers', 'Finances': 'Finances',
+  'Accueil': 'Home', 'Caméra': 'Camera', 'Tutoriel': 'Tutorial', 'Défis': 'Challenges', 'Carrière': 'Career', 'Effectif': 'Squad', 'Tactique': 'Tactics', 'Transferts': 'Transfers', 'Finances': 'Finances',
   'Infrastructures': 'Facilities', 'Compétitions': 'Competitions', 'Classements': 'Standings', 'Paramètres': 'Settings', 'Médical': 'Medical',
   'Nouvelle carrière': 'New career', 'Continuer': 'Continue', 'Match rapide': 'Quick match', 'Jouer': 'Play', 'Simuler': 'Simulate',
   'Passe': 'Pass', 'Profondeur': 'Through', 'Tir': 'Shoot', 'Tacle': 'Tackle', 'Changer': 'Switch', 'Valider': 'Confirm', 'Annuler': 'Cancel', 'Retour': 'Back',

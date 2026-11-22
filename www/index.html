@@ -1056,7 +1056,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.34</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.35</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1741,7 +1741,7 @@ const PLANS={
  gafsa:{cst:[3720,0,1,0,0,1,0,0,1,0],wat:[],lake:[2600,1950,70],
   p:[[2500,1800],[1350,1400],[500,700],[700,1700],[900,2400],[1500,2600],[3000,2500],[2900,700]],
   f:[['medina',2450,1750,480,380,'stone'],['oasis',2700,2050,260],['mine',1350,1400],['mine',500,700],['mine',700,1750],['mine',900,2400],['mountain',1500,2650,360],['oasis',3000,2500,240],['village',2900,700,6],['base',2000,800]]}};
-function planInit(P){MAP.dunes=[];MAP.cst=P.cst;MAP.wat=P.wat||[];MAP.isl=P.isl||[];if(P.lake){LAKE.x=P.lake[0];LAKE.y=P.lake[1];LAKE.r=P.lake[2]}LX.mc=[-2000,-2000];LX.heli=[-2000,-2000];PIER.y=-900;PIER.x=-900}
+function planInit(P){MAP.dunes=[];MAP.medinas=[];MAP.cst=P.cst;MAP.wat=P.wat||[];MAP.isl=P.isl||[];if(P.lake){LAKE.x=P.lake[0];LAKE.y=P.lake[1];LAKE.r=P.lake[2]}LX.mc=[-2000,-2000];LX.heli=[-2000,-2000];PIER.y=-900;PIER.x=-900}
 function waterAt(x,y){const M=MAP;if(M&&M.isl)for(const e of M.isl)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return false;if(M&&M.wat)for(const e of M.wat)if(((x-e.x)/e.rx)**2+((y-e.y)/e.ry)**2<1)return true;return false}
 function buildPlan(P){planInit(P);PAVED.length=0;const grz=[];
   const X=(x,y)=>x<0?coastX(y)+x:x;const rnd=(a,b)=>sr(a,b);
@@ -1749,7 +1749,7 @@ function buildPlan(P){planInit(P);PAVED.length=0;const grz=[];
   const house=(cx,cy,R,st,lab)=>{for(let t=0;t<30;t++){const w=rnd(120,170),h=rnd(100,130),a=SR()*TAU,d=SR()*R,x=cx+Math.cos(a)*d-w/2,y=cy+Math.sin(a)*d-h/2;if(okR(x,y,w,h,70)){return bld(x,y,w,h,st||'med',rdoors(),lab?{label:lab}:undefined)}}return null};
   const spot=(x,y,w,h)=>{for(let t=0;t<40;t++){const a=t*2.4,d=t?60+t*28:0,nx=x+Math.cos(a)*d,ny=y+Math.sin(a)*d;if(okR(nx-w/2,ny-h/2,w,h,40))return[nx,ny]}return[x,y]};
   const B={
-   medina(x,y,W,H,kind){x=X(x,y);[x,y]=spot(x,y,W+20,H+20);const x0=x-W/2,y0=y-H/2,T2=22,G=90,st=kind==='brick'||kind==='stone'?'ksar':'ksar';
+   medina(x,y,W,H,kind){x=X(x,y);[x,y]=spot(x,y,W+20,H+20);MAP.medinas.push([x-W/2,y-H/2,W,H]);const x0=x-W/2,y0=y-H/2,T2=22,G=90,st=kind==='brick'||kind==='stone'?'ksar':'ksar';
      PAVED.push({x:x0,y:y0,w:W,h:H,c:kind==='brick'?'#c99a68':kind==='stone'?'#b9ad94':'#cdb48b',g:36});
      const seg=(sx,sy,len,hz)=>{const m=len/2;if(hz){wall(sx,sy,m-G/2,T2,st);wall(sx+m+G/2,sy,m-G/2,T2,st)}else{wall(sx,sy,T2,m-G/2,st);wall(sx,sy+m+G/2,T2,m-G/2,st)}};
      seg(x0,y0,W,1);seg(x0,y0+H-T2,W,1);seg(x0,y0+T2,H-2*T2,0);seg(x0+W-T2,y0+T2,H-2*T2,0);
@@ -3358,7 +3358,7 @@ function drawDetailCached(x0,y0,x1,y1,z){const k=MAP.id+'|'+Q.lv+'|'+LOWD+'|'+wa
   for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){const id=cx+','+cy;let t=DC.m.get(id);
     if(t&&t.sc<sc&&budget>0)t=null;
     if(!t){if(budget<=0)continue;budget--;const c=document.createElement('canvas'),px=Math.ceil(S*sc);c.width=c.height=px;const g=c.getContext('2d'),save=ctx,X=cx*S,Y=cy*S;
-      const qh=Q.hi;ctx=g;Q.hi=true;try{g.setTransform(sc,0,0,sc,-X*sc,-Y*sc);g.beginPath();g.rect(X,Y,S,S);g.clip();mapTint(X,Y,S);if(MAP.charfia)drawCharfia(X-80,Y-80,X+S+80,Y+S+80);drawGroundMacro(X,Y,S);drawBiome(X,Y,S);drawPoiSigns(X,Y,S);drawContactAO(X-60,Y-60,X+S+60,Y+S+60);draw2DSurfaceDetail(X-70,Y-70,X+S+70,Y+S+70);drawGroundDecor(X-40,Y-40,X+S+40,Y+S+40);drawLandmarks(X,Y,X+S,Y+S);drawWorldMicroDetail(X-70,Y-70,X+S+70,Y+S+70);drawTunisianRelief(X-70,Y-70,X+S+70,Y+S+70)}catch(e){console.warn(e)}finally{ctx=save;Q.hi=qh}
+      const qh=Q.hi;ctx=g;Q.hi=true;try{g.setTransform(sc,0,0,sc,-X*sc,-Y*sc);g.beginPath();g.rect(X,Y,S,S);g.clip();mapTint(X,Y,S);if(MAP.charfia)drawCharfia(X-80,Y-80,X+S+80,Y+S+80);drawGroundMacro(X,Y,S);drawBiome(X,Y,S);drawSouk(X,Y,S);drawPoiSigns(X,Y,S);drawContactAO(X-60,Y-60,X+S+60,Y+S+60);draw2DSurfaceDetail(X-70,Y-70,X+S+70,Y+S+70);drawGroundDecor(X-40,Y-40,X+S+40,Y+S+40);drawLandmarks(X,Y,X+S,Y+S);drawWorldMicroDetail(X-70,Y-70,X+S+70,Y+S+70);drawTunisianRelief(X-70,Y-70,X+S+70,Y+S+70)}catch(e){console.warn(e)}finally{ctx=save;Q.hi=qh}
       t={c,sc};DC.m.set(id,t);if(DC.m.size>40)DC.m.delete(DC.m.keys().next().value)}
     else{DC.m.delete(id);DC.m.set(id,t)}
     ctx.drawImage(t.c,cx*S,cy*S,S,S)}}
@@ -3437,6 +3437,26 @@ const GRD={sahara:['255,190,110','95,45,10','255,140,60',1.15],tozeur:['255,200,
  cote:['170,215,240','10,35,55','240,190,140',1],seddik:['170,215,235','10,35,50','240,190,140',1]};
 function vnz(x,y,s,k){x/=s;y/=s;const xi=Math.floor(x),yi=Math.floor(y),fx=x-xi,fy=y-yi,h=(a,b)=>{let n=(Math.imul(a,374761393)+Math.imul(b,668265263)+Math.imul(k,1442695041))|0;n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967295},u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy);
   return (h(xi,yi)*(1-u)+h(xi+1,yi)*u)*(1-v)+(h(xi,yi+1)*(1-u)+h(xi+1,yi+1)*u)*v}
+// souk : étals à auvents rayés, tapis, épices, poteries et lanternes dans les ruelles des médinas
+function drawSouk(X,Y,S){const M=MAP.medinas;if(!M||!M.length)return;const c=ctx;
+  for(const [mx,my,mw,mh] of M){if(mx>X+S||mx+mw<X||my>Y+S||my+mh<Y)continue;const R=mulberry32((mx*13+my*7)|0);
+    for(let gx=mx+40;gx<mx+mw-40;gx+=44)for(let gy=my+40;gy<my+mh-40;gy+=44){const p=R(),q=R(),k=R();if(gx<X-40||gx>X+S+40||gy<Y-40||gy>Y+S+40)continue;if(p>.42)continue;
+      if(bldAt(gx,gy)||bldAt(gx+18,gy)||bldAt(gx-18,gy)||bldAt(gx,gy+14)||bldAt(gx,gy-14))continue;let near=false;for(const o of solids)if(o.t==='c'&&dd2(gx,gy,o.x,o.y)<(o.r+26)**2){near=true;break}if(near)continue;
+      c.save();c.translate(gx,gy);if(q<.5)c.rotate(Math.PI/2);
+      if(k<.42){// étal à auvent rayé
+        const cols=[['#c0392b','#f4efe4'],['#1f7a4d','#f4efe4'],['#1d5fa8','#f4efe4'],['#d9a21a','#7a2f1a']][(R()*4)|0];c.fillStyle='rgba(0,0,0,.25)';c.fillRect(-15,-8,34,22);
+        for(let i=0;i<6;i++){c.fillStyle=cols[i%2];c.fillRect(-17+i*5.6,-11,5.6,20)}c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=.8;c.strokeRect(-17,-11,33.6,20);
+        for(let i=0;i<5;i++){c.fillStyle=['#e67e22','#c0392b','#f1c40f','#8e44ad','#27ae60'][(R()*5)|0];c.beginPath();c.arc(-13+i*6.5,13,2.6,0,TAU);c.fill()}}
+      else if(k<.6){// tapis kilim
+        c.fillStyle='rgba(0,0,0,.2)';c.fillRect(-12,-8,28,20);c.fillStyle=['#a5322a','#2a4f8a','#8a5a1e'][(R()*3)|0];c.fillRect(-14,-10,28,20);c.strokeStyle='#e8d6a8';c.lineWidth=1.4;c.strokeRect(-11,-7,22,14);c.fillStyle='#e8d6a8';c.beginPath();c.moveTo(0,-5);c.lineTo(5,0);c.lineTo(0,5);c.lineTo(-5,0);c.closePath();c.fill()}
+      else if(k<.76){// paniers d'épices
+        for(let i=0;i<4;i++){const ex=-12+(i%2)*14,ey=-6+Math.floor(i/2)*13;c.fillStyle='#7a5a32';c.beginPath();c.arc(ex,ey,6.2,0,TAU);c.fill();c.fillStyle=['#d9541e','#e8b320','#7a8f2a','#9b2d1f','#c98a3a'][(R()*5)|0];c.beginPath();c.arc(ex,ey,4.6,0,TAU);c.fill()}}
+      else if(k<.9){// poteries de Nabeul et Guellala
+        for(let i=0;i<5;i++){const ex=(R()-.5)*22,ey=(R()-.5)*16,r=3.5+R()*3.5;c.fillStyle='rgba(0,0,0,.22)';c.beginPath();c.arc(ex+1.5,ey+2,r,0,TAU);c.fill();c.fillStyle=R()<.5?'#b9643a':'#2f6aa8';c.beginPath();c.arc(ex,ey,r,0,TAU);c.fill();c.fillStyle='rgba(255,255,255,.3)';c.beginPath();c.arc(ex-r*.3,ey-r*.3,r*.35,0,TAU);c.fill();c.fillStyle='#3a2414';c.beginPath();c.arc(ex,ey,r*.35,0,TAU);c.fill()}}
+      else{// lanterne en fer forgé et pot de géranium
+        c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.arc(3,4,6,0,TAU);c.fill();c.fillStyle='#2b2b2b';c.beginPath();c.arc(0,0,6,0,TAU);c.fill();c.fillStyle='#ffd36a';c.beginPath();c.arc(0,0,3.4,0,TAU);c.fill();
+        c.fillStyle='#a5532f';c.beginPath();c.arc(14,6,5,0,TAU);c.fill();c.fillStyle='#3f7a3a';c.beginPath();c.arc(14,6,4,0,TAU);c.fill();c.fillStyle='#e0303a';c.beginPath();c.arc(13,5,1.6,0,TAU);c.arc(15.5,7,1.4,0,TAU);c.fill()}
+      c.restore()}}}
 function poiSignPos(p){if(p._sg!==undefined&&p._sgM===MAP.id)return p._sg;p._sgM=MAP.id;p._sg=null;for(let t=0;t<24;t++){const a=t*1.7+.6,d=150+t*14,x=p.x+Math.cos(a)*d,y=p.y+Math.sin(a)*d;if(x<150||y<150||x>WS-150||y>WS-150)continue;let ok=!isWater(x,y)&&!isWater(x+70,y)&&!bldAt(x,y)&&!bldAt(x+70,y-30)&&!bldAt(x-70,y-30);if(ok)for(const c of solids)if(c.t==='c'&&dd2(x,y,c.x,c.y)<(c.r+40)**2){ok=false;break}if(ok){p._sg=[x,y];break}}return p._sg}
 function drawPoiSigns(X,Y,S){if(game.mode==='lobby')return;const c=ctx;for(const p of POIS){if(!p.n)continue;const q=poiSignPos(p);if(!q)continue;const [x,y]=q;if(x<X-160||x>X+S+160||y<Y-80||y>Y+S+80)continue;
   c.save();c.font='900 15px system-ui,sans-serif';const tw=Math.min(220,c.measureText(p.n).width),w=tw+26,h=30;c.fillStyle='rgba(0,0,0,.28)';c.fillRect(x-w/2+5,y-h-22+6,w,h);
@@ -5959,7 +5979,7 @@ addEventListener('pagehide',()=>saveStats());
 // --- Grille des 50 étapes du Parcours
 function cupGrid(){const box=$('#cupGrid');if(!box)return;const on=stats.mode==='cup';box.hidden=!on;if(!on)return;const best=stats.cupBest|0,cur=stats.stage|0;
   box.innerHTML='<span class="lbl">Étapes du parcours</span><div class="cg">'+STAGES.map((t,i)=>{const lk=i>best,done=i<best;return '<button class="cgb'+(lk?' lk':'')+(done?' ok':'')+(i===cur?' cur':'')+'" data-i="'+i+'" title="'+escH(t.n+' · '+t.difficulty)+'"'+(lk?' disabled':'')+'>'+(i+1)+'</button>'}).join('')+'</div><small class="czn">Touchez une étape débloquée pour la jouer.</small>';
-  box.querySelectorAll('.cgb:not(.lk)').forEach(b=>b.addEventListener('click',()=>{stats.stage=+b.dataset.i;saveStats();setMode('cup')}))}
+  box.querySelectorAll('.cgb:not(.lk)').forEach(b=>b.addEventListener('click',()=>{stats.stage=+b.dataset.i;const sm=STAGES[stats.stage].map;saveStats();setMode('cup');if(MAPS[sm]&&sm!==stats.map)try{setMap(sm)}catch(_){}}))}
 // difficulté croissante : équipement des adversaires selon l'étape
 function cupGear(){if(stats.mode!=='cup')return;const i=stats.stage|0,PR=Object.keys(WEAP).filter(k=>{const c=WEAP[k].cls;return(c==='ar'||c==='smg'||c==='sg'||c==='dmr')&&!WEAP[k].drop});
   for(const e of ents){if(!e.bot)continue;
@@ -5987,7 +6007,7 @@ function radioSay(k,vars,cd,prio){const mode=stats.radio||'voice';if(mode==='off
   if((RAD.cd[k]||-99)>now)return false;if(!prio&&now-RAD.last<4.5)return false;
   const T=RADIO_TXT[LANG]||RADIO_TXT.en;let s=T[k];if(!s)return false;vars=vars||{};
   if(vars.d!=null)s=s.replace('{d}',T.dirs[vars.d]);if(vars.m!=null)s=s.replace('{m}',vars.m);if(vars.n!=null)s=s.replace('{n}',vars.n);
-  {const nm=String(stats.name||'').trim();if(nm&&nm.length<=18&&!/^(joueur|player|soldat)\b/i.test(nm)&&k!=='who'){RAD.nmN=(RAD.nmN||0)+1;if(prio||RAD.nmN%2===1||k==='land'||k==='win')s=LANG==='ar'?nm+'، '+s:nm+', '+(/^(de)$/.test(LANG)?s:s.charAt(0).toLowerCase()+s.slice(1))}}
+  {const pf=(PROFS.list.find(x=>x.id===PROFS.cur)||{}).n,nm=String(stats.name||pf||(player&&player.name)||'').trim();if(nm&&nm.length<=18&&!/^(joueur|player|soldat)\b/i.test(nm)&&k!=='who'){s=LANG==='ar'?nm+'، '+s:nm+', '+(/^(de)$/.test(LANG)?s:s.charAt(0).toLowerCase()+s.slice(1))}}
   RAD.cd[k]=now+(cd||20);RAD.last=now;
   if(!RAD.el){RAD.el=document.createElement('div');RAD.el.id='sfRadio';RAD.el.setAttribute('role','status');RAD.el.setAttribute('aria-live','polite');document.body.appendChild(RAD.el)}
   RAD.el.classList.remove('on');if(k!=='win'&&game.mode==='play')sysFeed('📻 '+T.who+' : '+s,Math.max(3.4,s.length*.07),'radio');RAD.hT=Math.max(3.2,s.length*.065);
@@ -6127,9 +6147,9 @@ function buildCust(){
   mk('#czBag','bag',BAGC,BAG_LV,(c,i)=>c?'<span class="sw" style="--c:'+c+'"></span>':'<span>Aucune</span>')}
 /* ===== modes, missions, succès (lot 3) ===== */
 const STAGES=(()=>{const mp=['seddik','ville','foret','cote','hautes','sahara','djerba','capbon','sousse','tozeur','kef','tunis','tabarka','tataouine','sfax','gabes','bizerte','gafsa'],nm=['Échauffement','Rue de la Médina','Bord de mer','Palmeraie de Chenini','Dunes de Douz','Plateau du Kef','Port de Bizerte','Oasis de Tozeur','Forêt de Tabarka','Vent de Gabès','Marché de Sousse','Crête de Kasserine','Sables de Nefta','Falaise de Carthage','Vallée de Béja','Désert de Tataouine','Ruelles de Hammamet','Mont de Siliana','Chott de Kébili','Phare de Monastir','Steppe de Sbeitla','Cap Bon','Montagne de Jendouba','Mer de Mahdia','Nuit de Matmata','Route de Sfax','Îles Kerkennah','Lac de Bizerte','Djerba la Douce','Ksar Ghilane','Jebel Chambi','Port El Kantaoui','Remparts de Sousse','Grand Erg Oriental','Thuburbo Majus','Dougga','Bulla Regia','Amphithéâtre d’El Jem','Source de Zaghouan','Fort de Kélibia','Côte de Korbous','Forêt d’Aïn Draham','Gafsa la Rouge','Médenine','Plage de Zarzis','Canyon de Tamerza','Oasis de Chebika','Gorges de Midès','Dernier rempart','Finale des champions'];
-  return nm.map((n,i)=>({n,map:mp[i%mp.length],np:Math.min(30,12+Math.round(i*.38)),sk:Math.min(1.25,.62+i*.013),zt:Math.max(.55,1.14-i*.0115),rank:i+1,difficulty:i<10?'Recrue':i<20?'Soldat':i<30?'Vétéran':i<40?'Élite':'Légende',threat:Math.round(10+i*1.8)}))})();
+  const SMAP=['seddik','tunis','cote','gabes','sahara','kef','bizerte','tozeur','tabarka','gabes','sousse','hautes','tozeur','sidibou','hautes','tataouine','hammamet','hautes','sahara','sousse','hautes','capbon','foret','mahdia','gabes','sfax','kerkennah','bizerte','djerba','tataouine','hautes','sousse','sousse','sahara','hautes','kef','foret','mahdia','hautes','capbon','capbon','tabarka','gafsa','tataouine','djerba','tozeur','tozeur','tozeur','galite','ville'];return nm.map((n,i)=>({n,map:SMAP[i]||mp[i%mp.length],np:Math.min(30,12+Math.round(i*.38)),sk:Math.min(1.25,.62+i*.013),zt:Math.max(.55,1.14-i*.0115),rank:i+1,difficulty:i<10?'Recrue':i<20?'Soldat':i<30?'Vétéran':i<40?'Élite':'Légende',threat:Math.round(10+i*1.8)}))})();
 const CUPRW={5:'bottes violettes',10:'lunettes dorées et sac violet',15:'bottes turquoise',20:'la couronne',25:'le sac argenté',30:'la peinture de guerre',35:'les bottes argent',40:'le sac noir',45:'le sac flamme',50:'la couronne de feu et TOUT le contenu débloqué'};
-function cupAdv(){const i=stats.stage|0;stats.cupBest=Math.max(stats.cupBest|0,i+1);const rw=CUPRW[i+1]?' · récompense : '+CUPRW[i+1]:'';if(i>=STAGES.length-1){stats.stage=0;stats.champ=(stats.champ|0)+1;saveStats();try{buildCust()}catch(e){}return 'Champion des '+STAGES.length+' étapes ! Tout est débloqué'+rw}stats.stage=i+1;saveStats();return 'Étape réussie · étape '+(i+2)+' débloquée : '+STAGES[i+1].n+rw}
+function cupAdv(){const i=stats.stage|0;stats.cupBest=Math.max(stats.cupBest|0,i+1);const rw=CUPRW[i+1]?' · récompense : '+CUPRW[i+1]:'';if(STAGES[i+1]&&MAPS[STAGES[i+1].map])stats.map=STAGES[i+1].map;if(i>=STAGES.length-1){stats.stage=0;stats.champ=(stats.champ|0)+1;saveStats();try{buildCust()}catch(e){}return 'Champion des '+STAGES.length+' étapes ! Tout est débloqué'+rw}stats.stage=i+1;saveStats();return 'Étape réussie · étape '+(i+2)+' débloquée : '+STAGES[i+1].n+rw}
 const MODES={
   classic:{n:'Classique',d:'30 joueurs · 1 survivant',np:30,zt:1,xp:1},
   quick:{n:'Rapide',d:'16 joueurs · tempête plus rapide',np:16,zt:.55,xp:.8},
@@ -6137,7 +6157,7 @@ const MODES={
   surv:{n:'Survie',d:'20 joueurs · personne n’a d’arme au départ : fouillez vite',np:20,zt:.8,xp:1.3,bare:1},
   cup:{n:'Parcours',xp:1.3,
     get st(){return STAGES[Math.min(stats.stage|0,STAGES.length-1)]},
-    get np(){return this.st.np},get zt(){return this.st.zt},get sk(){return this.st.sk},get map(){return this.st.map},
+    get np(){return this.st.np},get zt(){return this.st.zt},get sk(){return this.st.sk},get map(){return null},
     get d(){const i=Math.min(stats.stage|0,STAGES.length-1),t=this.st;return 'Étape '+(i+1)+'/'+STAGES.length+' · '+t.difficulty+' · menace '+t.threat+'/100 · '+t.np+' combattants · '+t.n+' · gagnez pour débloquer la suivante'}},
   train:{n:'Entraînement',d:'8 adversaires faibles · tempête lente · XP réduit, sans stats ni missions',np:8,zt:1.7,xp:.25,easy:1,nostat:1}};
 let MDcur=MODES.classic,ZTm=1;
@@ -6156,7 +6176,7 @@ function selMap(){if(!MAPS[stats.map])stats.map='seddik';const M=MODES[stats.mod
 function mapBiome(k){const m=MAPS[k]||{},st=m.like||k;if(['djerba','kerkennah','galite','seddik'].includes(k))return'ÎLE';if(m.gen==='desert'||st==='sahara'||['gafsa'].includes(k))return'DÉSERT';if(m.gen==='city'||st==='ville')return'VILLE';if(m.gen==='forest'||st==='foret')return'FORÊT';if(st==='hautes')return'MONTAGNE';return'CÔTE'}
 function mapHero(){const k=stats.mode&&MODES[stats.mode]&&MODES[stats.mode].map||stats.map,m=MAPS[k];if(!m)return;const im=$('#mapHeroImg');if(!im)return;const src='thumbs/'+k+'.jpg';if(!im.src.endsWith(src)){im.classList.remove('on');im.onload=()=>im.classList.add('on');im.src=src;if(im.complete)im.classList.add('on')}
   $('#mapHeroName').textContent=m.n;$('#mapHeroPoi').textContent=m.poi.length+' lieux · '+m.poi.slice(0,4).join(' · ');$('#mapHeroTag').textContent=mapBiome(k);const c=document.querySelector('#maps .map-card[data-k="'+k+'"]');if(c&&c.parentElement.scrollWidth>c.parentElement.clientWidth){const p=c.parentElement;p.scrollTo({left:c.offsetLeft-p.clientWidth/2+c.clientWidth/2,behavior:reduceMotion?'auto':'smooth'})}}
-function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];try{setTimeout(mapHero,0)}catch(_){}$('#mapD').textContent=(stats.mode==='cup'?'Parcours : la carte dépend de l’étape. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .map-card').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
+function markMap(){if(!MAPS[stats.map])stats.map='seddik';const mm=MAPS[stats.map];try{setTimeout(mapHero,0)}catch(_){}$('#mapD').textContent=(stats.mode==='cup'?'Parcours : l’étape choisit sa carte, mais vous pouvez en prendre une autre. ':'')+mm.d+' Villes : '+mm.poi.join(', ')+'.';document.querySelectorAll('#maps .map-card').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.k===stats.map)));setMode(stats.mode)}
 function setMap(id){if(!MAPS[id])return;stats.map=id;saveStats();if(id!==MAP.id&&game.mode==='lobby'){const go=()=>{if(stats.map===id&&MAP.id!==id&&game.mode==='lobby'){genWorld(id);tunisify();markMap()}};Promise.race([gcLoad(id),new Promise(r=>setTimeout(r,1200))]).then(go,go)}markMap();const stamp=document.querySelector('.stamp');if(stamp){const M=MODES[stats.mode]||MODES.classic,active=selMap();stamp.textContent=active.n+' · '+M.np+' joueurs · '+(M.team?'équipes':'1 survivant')}}
 const MPOOL=[
   {id:'kills',n:k=>'Éliminez '+k+' adversaires',g:[2,3,5],xp:[120,180,280],key:'kills'},
@@ -6801,6 +6821,25 @@ body.p3 #game{filter:none}
 @media (hover:hover){#lobby #maps .map-card:hover .map-art img{transform:scale(1.07)}}
 @media (max-width:760px){#lobby #maps{grid-auto-columns:minmax(150px,44%)!important;padding:4px 2px 8px!important}}
 @media(prefers-reduced-motion:reduce){#lobby .map-hero img,#lobby .map-hero img.on{transition:opacity .2s;transform:none}}
+
+/* v2.35 — HUD moderne 2026 : panneaux givrés, accents lumineux, chiffres nets (positions inchangées) */
+#hud .count,#hud .zone,#hud .slot,#hud .pist,#hud .vit,#hud .med,#hud .iconbtn,#hud .tresc,#hud .act{background:linear-gradient(155deg,rgba(30,37,49,.7),rgba(8,11,16,.62))!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:0 10px 24px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25)!important}
+#hud .count,#hud .zone,#hud .slot,#hud .pist,#hud .tresc{border-radius:14px!important}
+#hud .iconbtn,#hud .med{border-radius:15px!important}
+#hud .count b,#hud .zone b,#hud .slot b,#hud .pist b,#hud .vit b{font-variant-numeric:tabular-nums;letter-spacing:.02em;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+#hud .count.k{background:linear-gradient(155deg,rgba(120,30,24,.62),rgba(30,8,8,.6))!important;border-color:rgba(255,120,100,.32)!important}
+#hud .slot.on{border:1.5px solid rgba(255,170,90,.9)!important;box-shadow:0 0 0 3px rgba(255,140,60,.16),0 0 22px rgba(255,130,50,.28),0 10px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.16)!important}
+#hud .slot.on::before{content:"";position:absolute;left:10px;right:10px;top:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#ff7a2f,#ffd166)}
+#hud .slot{position:relative}
+#hud .zone{border-color:rgba(120,200,255,.28)!important}
+#hud .fire{background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.28),rgba(255,140,70,.30) 42%,rgba(40,14,6,.58) 75%)!important;border:2px solid rgba(255,196,140,.85)!important;box-shadow:0 0 0 7px rgba(255,140,60,.12),0 0 26px rgba(255,120,40,.32),0 12px 28px rgba(0,0,0,.36),inset 0 2px 0 rgba(255,255,255,.25)!important}
+#hud .fire:active{transform:scale(.95);box-shadow:0 0 0 10px rgba(255,140,60,.2),0 0 36px rgba(255,120,40,.5)!important}
+#hud .iconbtn:active,#hud .med:active,#hud .act:active{transform:scale(.94)}
+#hud .vit{border-radius:16px!important}
+.feed .sys{background:linear-gradient(90deg,rgba(14,19,27,.82) 72%,rgba(14,19,27,.2))!important;border-radius:10px!important;border:1px solid rgba(255,255,255,.08);backdrop-filter:none}
+.feed .sys.radio{box-shadow:inset 3px 0 0 #3ddc97,0 6px 18px rgba(0,0,0,.2)!important;color:#e9fbf1}
+.feed .sys.tip{box-shadow:inset 3px 0 0 #4cc3ff,0 6px 18px rgba(0,0,0,.2)!important}
+@media (pointer:fine){#hud .count,#hud .zone,#hud .slot,#hud .pist,#hud .vit,#hud .iconbtn,#hud .tresc{-webkit-backdrop-filter:blur(10px) saturate(1.25);backdrop-filter:blur(10px) saturate(1.25)}}
 </style>
 </body>
 </html>

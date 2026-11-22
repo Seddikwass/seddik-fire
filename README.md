@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Nouveautés 2.40 — Voix arabe et tunisienne réparée sur Android et sur le site
+- **Android** : le module vocal refuse toute langue dont le code ne correspond pas exactement à celui annoncé par le moteur du téléphone. Le moteur Google annonce souvent l'arabe sous « ar-XA » : les demandes « ar-TN », « ar » et « ar-SA » étaient toutes refusées et le jeu se croyait sans voix arabe. Le jeu lit maintenant la vraie liste des langues et des voix du téléphone et utilise exactement le code et la voix arabes qu'il annonce. En cas de refus, il réessaie sans voix précise, puis avec « ar ».
+- **Site (Render)** : quand le navigateur n'avait pas encore chargé ses voix, les premiers messages étaient perdus. Ils sont désormais dits avec la langue arabe, puis avec la voix arabe dès qu'elle est chargée.
+- **Diagnostic** dans Réglages ▸ Radio : nombre de langues et de voix du téléphone et codes arabes trouvés.
+
 ## Nouveautés 2.39 — Voix tunisienne en partie réparée, cartes plus grandes et plus nettes
 - **Voix en partie réparée** : au début d'une partie, le moteur vocal d'Android n'est souvent pas encore prêt. La 2.38 prenait ce premier refus pour « voix absente » et restait muette toute la partie (le bouton Tester marchait car le moteur était déjà prêt). Désormais le jeu réessaie, met les messages en file d'attente au lieu de se couper l'un l'autre, et prépare le moteur vocal dès l'appui sur JOUER.
 - **Cartes plus grandes** : caméra rapprochée d'environ 16 % sur téléphone (6 % sur ordinateur) ; arbres, bâtiments, hôtels, souks et panneaux sont plus grands. Le bouton de zoom reste disponible.

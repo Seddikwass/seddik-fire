@@ -2,6 +2,10 @@
 
 > Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
 
+## Version 3.53.0
+- **Rendu « cinéma »** : courbe de tons filmique (type ACES) et étalonnage des couleurs sur les joueurs, le stade et le public (contraste et saturation de retransmission), la pelouse garde sa teinte naturelle.
+- **Packs de voix de commentateurs sous licence** : le jeu peut lire des commentaires enregistrés (fichiers par événement, `public/voices/manifest.json`) avec repli sur la synthèse ; un pack n'apparaît que si sa licence (détenteur, contrat) est renseignée. Aucun pack livré tant qu'aucun accord écrit n'est signé ; aucune imitation de voix.
+
 ## Version 3.52.0 — SEDDIK LEAGUE
 - **Nouveau nom et nouvelle identité** : SEDDIK LEAGUE partout (accueil, chargement, manifeste, application Android, panneaux du stade), logo et icônes originaux. Identifiant Android, URL et sauvegardes conservés.
 - **VAR réelle** : hors-jeu serrés manqués par l'arbitre assistant puis repris par la VAR (but annulé, score et résumé corrigés, lignes de hors-jeu au ralenti), penalty sifflé à tort revu en coup franc, contrôle de routine de chaque but.

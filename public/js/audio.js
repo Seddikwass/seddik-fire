@@ -251,3 +251,21 @@ export function speak(text, lang = 'fr', priority = false, opts = {}) {
     speechSynthesis.speak(u);
   } catch (e) {}
 }
+
+// ---------------------------------------------------------------- packs de voix enregistrées (sous licence)
+// Un pack = fichiers audio par événement (goal, save, miss, kickoff…). Proposé uniquement si sa licence est renseignée.
+let voicePacks = [], activePack = null, clipBusyUntil = 0;
+export async function loadVoicePacks() {
+  try { const r = await fetch('voices/manifest.json', { cache: 'no-cache' }); const j = await r.json(); voicePacks = (j.packs || []).filter(p => p && p.id && p.licence && p.licence.holder && p.licence.contract && p.clips); } catch (e) { voicePacks = []; }
+  return voicePacks;
+}
+export function getVoicePacks() { return voicePacks; }
+export function setVoicePack(id) { activePack = voicePacks.find(p => p.id === id) || null; }
+// Joue une réplique enregistrée pour l'événement ; renvoie false s'il n'y en a pas (le jeu utilise alors la synthèse vocale).
+export function playCommentClip(key, priority = false) {
+  if (!activePack || !voiceOn || !enabled) return false;
+  const list = activePack.clips[key] || activePack.clips[String(key).split('_')[0]];
+  if (!list || !list.length) return false;
+  const now = performance.now(); if (!priority && now < clipBusyUntil) return true;
+  try { const a = new Audio(`voices/${activePack.id}/${list[Math.floor(Math.random() * list.length)]}`); a.volume = volume; a.play().catch(() => {}); clipBusyUntil = now + 3200; return true; } catch (e) { return false; }
+}

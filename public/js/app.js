@@ -14,13 +14,14 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp, jerseySVG } from './util.js';
 
-export const APP_VERSION = '3.52.0';
+export const APP_VERSION = '3.53.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
 const app = () => $('#app');
 setLang(settings.lang);
 A.setAudio(settings.sound, settings.volume); A.setVoice(settings.voice);
+A.loadVoicePacks().then(() => A.setVoicePack(settings.voicePack || '')).catch(() => {});
 
 // ------------------------------------------------------------------ utilitaires UI
 function toast(msg, type = 'info') {
@@ -501,6 +502,8 @@ function settingsHTML() {
   return `<div class="card"><h3>${t('Paramètres')}</h3><div class="form2">
    <label>${t('Langue')}${sel('lang', [['fr', 'Français'], ['ar', 'العربية'], ['en', 'English (partiel)']])}</label>
    <label>${t('Commentaire du match')}${sel('commentary', COMMENTARY_STYLES)}</label>
+   <label>${t('Voix du commentateur')}${sel('voicePack', [['', 'Voix de synthèse (originale)'], ...A.getVoicePacks().map(p => [p.id, `${p.name} (licence ${p.licence.holder})`])])}</label>
+   <p class="hint">Voix de commentateurs réels : proposées uniquement après accord écrit des commentateurs et des diffuseurs concernés. Aucune imitation de voix.</p>
    <label>${t('Son')}${sel('sound', [[true, 'Activé'], [false, 'Coupé']])}</label>
    <label>Volume<input type="range" min="0" max="1" step="0.1" value="${settings.volume}" data-a="setting" data-k="volume"></label>
    <label>${t('Commentaires vocaux')} <small>(${va ? 'synthèse ' + va : 'non disponible sur cet appareil — commentaires texte uniquement'})</small>${sel('voice', [[true, 'Activés'], [false, 'Texte seulement']])}</label>
@@ -972,7 +975,7 @@ document.addEventListener('change', e => {
   const el = e.target; const a = el.dataset.a; if (!a) return;
   const v = el.type === 'checkbox' ? el.checked : el.value;
   const val = v === 'true' ? true : v === 'false' ? false : v === 'null' ? null : (el.type !== 'checkbox' && v !== '' && !isNaN(v) ? Number(v) : v);
-  if (a === 'setting') { settings[el.dataset.k] = val; S.saveSettings(settings); if (el.dataset.k === 'lang') setLang(val); A.setAudio(settings.sound, settings.volume); A.setVoice(settings.voice); render(); }
+  if (a === 'setting') { settings[el.dataset.k] = val; S.saveSettings(settings); if (el.dataset.k === 'lang') setLang(val); A.setAudio(settings.sound, settings.volume); A.setVoice(settings.voice); A.setVoicePack(settings.voicePack || ''); render(); }
   if (!st) return;
   const tac = st.clubs[st.userClub].tactics;
   if (a === 'tacSet') { tac[el.dataset.k] = el.dataset.k === 'formation' ? v : Number(v); if (el.dataset.k === 'formation') C.repairLineup(st, st.userClub); save(); render(); }

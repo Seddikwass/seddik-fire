@@ -1084,6 +1084,7 @@ export class Match {
     this.ticker = s; this.tickerT = 4; this.lastCommentKey = line.key;
     if (!this.settings.voice) return;
     const hype = /^goal/.test(line.key) ? 'goal' : /^(save|post|penalty|red|chance)/.test(line.key) ? 'high' : null;
+    if (A.playCommentClip(line.key, priority)) return;
     A.speak(s, lang, priority, { mood: hype });
     // Style TV : le consultant réagit après un but.
     if (lang === 'ar_tv' && hype === 'goal') { const an = pickLine(lang, 'analyst', this.r, this.commentMemory); if (an) A.speak(an.text, lang, false, { mood: 'analyst', queue: true }); }

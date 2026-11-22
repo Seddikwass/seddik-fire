@@ -1,0 +1,4 @@
+{
+  "_doc": "Packs de commentaires enregistrés. Un pack n'est proposé dans le jeu que si son champ licence est rempli (détenteur, contrat, date de fin). Aucun pack n'est livré tant qu'aucune autorisation écrite n'a été signée. Voir docs/DEMANDE-AUTORISATION-COMMENTATEURS.md.",
+  "packs": []
+}

@@ -1238,6 +1238,7 @@ export class MatchRenderer3D {
         if(sig==='yellow'||sig==='red'||sig==='flag'){ al=2.95; be=0.05; ab=0.12; }
         else if(sig==='foul'||sig==='penalty'||sig==='goal'||sig==='point'){ al=1.55; be=0.02; ab=sig==='goal'||sig==='point'?0.1:0.5; }
       }
+      if(sig==='advantage'){ al=1.45; be=0.05; ab=0.32; } // avantage : les deux bras tendus vers l'avant
       if(sig==='head'){ al=2.5; be=2.25; ab=0.55; }
       if(sig==='board'){ al=2.75; be=0.25; ab=0.18; }
       if(sig==='clap'){ const w=Math.sin((Number(match.clock)||0)*14+index)*0.12; al=1.25; be=0.9+w; ab=-0.12; }
@@ -1357,7 +1358,7 @@ export class MatchRenderer3D {
     const live=call&&age>=0&&age<2.6;
     for(const o of this.officials){
       let t=o.k===0?targets.ref:o.k===1?targets.ar1:targets.ar2;
-      if(o.k===0&&live&&call.type!=='offside'&&call.type!=='goal') t={x:clamp(call.x-2.4,-50,50),y:clamp(call.y+(call.y>0?-2:2),-32,32)};
+      if(o.k===0&&live&&call.type!=='offside'&&call.type!=='goal'&&call.type!=='advantage') t={x:clamp(call.x-2.4,-50,50),y:clamp(call.y+(call.y>0?-2:2),-32,32)};
       const dx=t.x-o.x, dy=t.y-o.y, d=Math.hypot(dx,dy);
       const vmax=o.k===0?7.2:6.5, want=d>0.4?Math.min(vmax,d*1.4):0;
       const tvx=d>0.01?dx/d*want:0, tvy=d>0.01?dy/d*want:0;
@@ -1371,7 +1372,7 @@ export class MatchRenderer3D {
       o.signal=null;
       if(live){
         if(o.k===0&&(call.type==='yellow'||call.type==='red')) o.signal=call.type;
-        else if(o.k===0&&(call.type==='foul'||call.type==='penalty'||call.type==='goal')) o.signal=call.type;
+        else if(o.k===0&&(call.type==='foul'||call.type==='penalty'||call.type==='goal'||call.type==='advantage')) o.signal=call.type;
         else if(o.k>0&&call.type==='offside'&&Math.sign(call.x||1)===(o.k===1?1:-1)) o.signal='flag';
       }
     }

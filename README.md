@@ -2,6 +2,13 @@
 
 > Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
 
+## Version 3.57.0 — Master Production Bible, lot 3 (arbitrage)
+- Règle de l'avantage : si l'équipe fautée garde le ballon, l'arbitre laisse jouer (bras tendus, bandeau « AVANTAGE ») ; perte du ballon dans les 3 s = retour à la faute ; carton montré au prochain arrêt de jeu.
+- Sanctions selon la Loi 12 au lieu d'un tirage au sort : occasion de but manifeste annulée (rouge, jaune dans la surface), attaque prometteuse stoppée et tacle imprudent (jaune), force excessive (rouge).
+- Penalty : le gardien parie sur un côté avant la frappe (bon côté ≈ 45 % d'arrêts près du poteau, mauvais côté ≈ 3 %).
+- Gardien recalibré sur 40 matchs simulés : environ 60-65 % d'arrêts sur tirs cadrés en match.
+- Nouveau test d'arbitrage (`tests/referee.test.mjs`) : sanctions, avantage concrétisé/annulé, touche, corner, six mètres.
+
 ## Version 3.56.0 — Master Production Bible, lot 2 (gardien)
 - Machine à états du gardien (placement, lecture du tir, plongeon, relevé, sortie aérienne, ballon en main, boxe), lisible en test.
 - Temps de réaction humain (0,17 à 0,32 s selon la note) et jugement de l'arrêt depuis la position d'appui : fini le gardien qui traverse son but avant le plongeon.

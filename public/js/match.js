@@ -1205,6 +1205,7 @@ export class Match {
     this.goalFxT = Math.max(0, (this.goalFxT || 0) - dt);
     this.matchIntroT = Math.max(0, (this.matchIntroT || 0) - dt);
     for (const T of this.teams) for (const p of T.ps) { p.diveT = Math.max(0, (p.diveT || 0) - dt); p.slideT = Math.max(0, (p.slideT || 0) - dt); p.saveT = Math.max(0, (p.saveT || 0) - dt); }
+    if (this.pendingCard && this.state !== 'play') { const C = this.pendingCard; this.pendingCard = null; if (!C.p.sentOff) { this.refSignal(C.sanction, C.p); this.applySanction(C.p, C.sanction); } }
     if (this.state === 'restart') return this.stepRestart(dt);
     if (this.state === 'goal') {
       this.stateT -= dt; this.goalCrowdT = Math.max(0, (this.goalCrowdT || 0) - dt);
@@ -1243,6 +1244,7 @@ export class Match {
     const own = this.ball.owner ? this.ball.owner.team : this.ball.lastTeam;
     this.stats.poss[own] += dt;
     this.ai(dt); this.userControl(dt); this.moveAll(dt); this.physics(dt); this.contacts(dt); this.rules();
+    if (this.state === 'play') this.updateAdvantage(dt); else this.advantage = null;
     this.record();
     for (const T of this.teams) for (const p of T.ps) if (!p.sentOff) p.minutes += dt / this.secondsPerMinute;
     // ambiance
@@ -2160,7 +2162,7 @@ export class Match {
     // augmente sur une arrivée rapide ou par derrière.
     const missDuration = assessment.closingSpeed > 3.2 ? 0.22 : 0.14;
     p.slideT = Math.max(p.slideT || 0, missDuration); p.slideDuration = missDuration;
-    if (this.r() < assessment.foulChance * (user ? USER_FOUL_SCALE : AI_FOUL_SCALE)) this.foul(p, c);
+    if (this.r() < assessment.foulChance * (user ? USER_FOUL_SCALE : AI_FOUL_SCALE)) this.foul(p, c, assessment);
     else if (dist < 2.8) { p.stumbleT = Math.max(p.stumbleT || 0, 0.13); p.stumbleDir = Math.sign(c.y - p.y) || 1; }
     return false;
   }
@@ -2174,22 +2176,49 @@ export class Match {
     this.setRestart('freekick', 1 - p.team,
       clamp(p.x, -HL + 1, HL - 1), clamp(p.y, -HW + 1, HW - 1));
   }
-  foul(p, victim) {
-    this.stats.fouls[p.team]++; p.rating -= 0.2; this.refSignal('foul', victim);
-    A.whistle();
+  foul(p, victim, tackle = null) {
+    this.stats.fouls[p.team]++; p.rating -= 0.2;
     const T = this.teams[victim.team], d = T.dir;
     const inBox = victim.x * d > HL - 16.5 && Math.abs(victim.y) < 20.16;
     // Faute juste devant la surface (< 1 m) : l'arbitre se trompe une fois sur deux et siffle penalty ; la VAR corrigera.
     const nearBox = !inBox && victim.x * d > HL - 17.5 && Math.abs(victim.y) < 20.16 && varHash(victim.x + this.clock, victim.y * 1.7) < 0.5;
-    const card = this.r();
-    if (card < 0.04) this.sendOff(p, 'red');
-    else if (card < 0.22 || inBox && card < 0.4) { p.yellow++; this.stats.yellows[p.team]++; this.addEvent('yellow', p); this.say('yellow', { p: p.name }); if (p.yellow >= 2) this.sendOff(p, 'red2'); }
-    else this.say('foul', { p: p.name });
-    this.crowdReact(card < 0.22 || (inBox && card < 0.4) ? 'card' : 'foul', p.team);
+    const ctx = getFoulContext(victim, p, T.dir, this.teams[p.team].ps);
+    const sanction = getFoulSanction({ closingSpeed: tackle?.closingSpeed ?? 3, rear: tackle?.rear ?? 0.2, dogso: ctx.dogso, spa: ctx.spa, inBox, variance: this.r() });
     if (this.r() < 0.03) { victim.injured = true; this.addEvent('injury', victim); this.say('injury', { p: victim.name }, true); }
+    // Loi 12 / avantage : si l'équipe fautée garde le ballon dans une phase prometteuse, l'arbitre laisse jouer.
+    if (!inBox && !nearBox && sanction !== 'red' && !victim.injured && shouldPlayAdvantage(victim, this.ball, T.dir, this.teams[p.team].ps)) {
+      this.advantage = { team: victim.team, x: victim.x, y: victim.y, age: 0, fouler: p, sanction };
+      this.stats.advantages = this.stats.advantages || [0, 0]; this.stats.advantages[victim.team]++;
+      this.refSignal('advantage', victim); this.banner('AVANTAGE', 1.3); this.say('advantage', { p: victim.name });
+      return;
+    }
+    this.refSignal('foul', victim);
+    A.whistle();
+    this.applySanction(p, sanction, inBox);
     if (inBox || nearBox) { if (this.refCall?.type === 'foul') this.refSignal('penalty', victim); this.banner('PENALTY !', 1.8); this.say('penalty', { t: T.short }, true); this.setRestart('penalty', victim.team, d * (HL - 11), 0);
       if (nearBox) { this.varReview = { t: this.clock, team: victim.team, x: victim.x, y: victim.y, dist: HL - 16.5 - victim.x * d }; this.stateT = 7.5; if (!this.net) this.varCheck = { t: performance.now() - 2300, reason: 'Penalty — faute dans la surface ?', decided: false, overturn: true, review: true }; } }
     else this.setRestart('freekick', victim.team, clamp(victim.x, -HL + 1, HL - 1), clamp(victim.y, -HW + 1, HW - 1));
+  }
+  applySanction(p, sanction, inBox = false) {
+    if (sanction === 'red') this.sendOff(p, 'red');
+    else if (sanction === 'yellow') { p.yellow++; this.stats.yellows[p.team]++; this.addEvent('yellow', p); this.say('yellow', { p: p.name }); if (p.yellow >= 2) this.sendOff(p, 'red2'); }
+    else this.say('foul', { p: p.name });
+    this.crowdReact(sanction !== 'none' ? 'card' : 'foul', p.team);
+  }
+  // Avantage : ~3 s pour se concrétiser ; perte immédiate du ballon = retour à la faute ; carton montré au prochain arrêt de jeu.
+  updateAdvantage(dt) {
+    const V = this.advantage; if (!V) return;
+    V.age += dt;
+    const b = this.ball, lost = b.owner && b.owner.team !== V.team;
+    if (lost && V.age < ADVANTAGE_WINDOW) {
+      this.advantage = null;
+      this.refSignal('foul', V.fouler); A.whistle(); this.banner('RETOUR À LA FAUTE', 1.4);
+      this.stats.advantages[V.team]--;
+      this.applySanction(V.fouler, V.sanction);
+      this.setRestart('freekick', V.team, clamp(V.x, -HL + 1, HL - 1), clamp(V.y, -HW + 1, HW - 1));
+      return;
+    }
+    if (V.age >= ADVANTAGE_WINDOW) { this.advantage = null; if (V.sanction !== 'none') this.pendingCard = { p: V.fouler, sanction: V.sanction }; }
   }
   sendOff(p, why) {
     p.sentOff = true; this.stats.reds[p.team]++; this.addEvent('red', p);
@@ -2356,12 +2385,12 @@ export class Match {
             // Position d'appui au moment de la réaction : le plongeon (reach) couvre le reste ; le pas chassé avant plongeon reste limité.
             const rd = getKeeperReactionDelay(gk.a?.gk ?? 50);
             if (shot.gkReactY == null && (shot.t || 0) >= rd) { shot.gkReactY = gk.y; shot.gkReactT = shot.t; }
-            const shuffle = shot.gkReactY == null ? 0 : Math.min(0.9, ((shot.t || 0) - shot.gkReactT) * 1.6);
+            const shuffle = shot.gkReactY == null ? 0 : Math.min(2.2, ((shot.t || 0) - shot.gkReactT) * 4.5);
             const setY = shot.gkReactY == null ? gk.y : shot.gkReactY + clamp(gk.y - shot.gkReactY, -shuffle, shuffle);
             const assessment = getKeeperSaveAssessment({
               rating: gk.a.gk, keeperY: setY,
               // Temps réellement disponible pour plonger après la réaction : une frappe à bout portant réduit l'allonge utile.
-              reachScale: clamp(((shot.t || 0) + tcross - rd) / 0.5, 0.55, 1), shotY: yc, shotZ: zc,
+              reachScale: clamp(((shot.t || 0) + tcross - rd) / 0.35, 0.85, 1), shotY: yc, shotZ: zc,
               shotSpeed: sp, crossingTime: tcross, difficulty
             });
             const { reach, need, reaction } = assessment;
@@ -2377,7 +2406,9 @@ export class Match {
             }
             if (!shot.judged && tcross < 0.18) {
               shot.judged = true;
-              let pSave = assessment.chance;
+              let pSave = assessment.chance + KEEPER_SAVE_CALIBRATION;
+              // Penalty : le gardien choisit son côté avant la frappe (pari), comme dans la réalité.
+              if (shot.kind === 'penalty') pSave = getPenaltySaveChance(shot.gkGuess ??= (this.r() < 0.16 ? 0 : this.r() < 0.5 ? -1 : 1), yc, gk.a?.gk ?? 50);
               pSave *= getShotTypeSaveFactor(shot.type, Math.abs(HL * (gk.x > 0 ? 1 : -1) - gk.x));
               if (Math.abs(yc) > GOAL_W - 0.5 && zc > GOAL_H - 0.6) pSave -= 0.25; // lucarne
               if (this.r() < clamp(pSave, 0.02, 0.95)) {
@@ -2398,7 +2429,9 @@ export class Match {
                 A.crowd(0.82); A.saveSound(); this.crowdReact('save', gk.team);
                 return;
               }
-              shot.beaten = true; // gardien battu : il ne peut plus « ramasser » ce tir avant la ligne
+              // Gardien battu sur un ballon hors de portée du corps : il ne peut plus le « ramasser » avant la ligne.
+              // Un tir dans le corps (need faible) reste capté par le contact normal.
+              if (need > 1.3 || shot.kind === 'penalty') shot.beaten = true;
             }
           } else if (!shot.missSaid && tcross < 0.15) { shot.missSaid = true; this.say('miss'); if (Math.abs(yc) < GOAL_W + 2.5 && zc < GOAL_H + 1.5) this.crowdReact('miss', shot.team); }
         }
@@ -4194,8 +4227,49 @@ export function quickSim(strH, strA, r = Math.random, homeAdv = 1.08) {
 
 // ---------- Réseau : état compact d'un match (même champs que le ralenti) ----------
 
+
+// ---------------- Arbitrage (Loi 12) ----------------
+export const ADVANTAGE_WINDOW = 3;
+// Calibrage global des arrêts (mesuré sur 40 matchs simulés pour viser ~60-70 % d'arrêts sur tirs cadrés, ordre de grandeur du football professionnel).
+export const KEEPER_SAVE_CALIBRATION = 0.14;
+// Contexte de la faute : occasion manifeste de but (DOGSO) ou attaque prometteuse (SPA).
+export function getFoulContext(victim, fouler, dir, defenders) {
+  const gx = HL * dir, dist = Math.hypot(gx - victim.x, victim.y);
+  const towardGoal = ((victim.vx || 0) * dir) > 0.8 || Math.cos(Math.atan2(-victim.y, gx - victim.x) - (victim.heading ?? Math.atan2(victim.vy || 0, victim.vx || dir))) > 0.5;
+  let between = 0;
+  for (const o of defenders) if (o !== fouler && !o.sentOff && !o.isGK && (o.x - victim.x) * dir > 0 && Math.abs(o.y - victim.y) < 14) between++;
+  const central = Math.abs(victim.y) < 16;
+  const dogso = dist < 22 && central && towardGoal && between === 0;
+  const spa = !dogso && (victim.x * dir) > 18 && between <= 1 && towardGoal;
+  return { dogso, spa, between, dist };
+}
+// Sanction : DOGSO = rouge (jaune dans la surface : « triple peine » allégée), SPA ou imprudence = jaune, force excessive = rouge.
+export function getFoulSanction({ closingSpeed = 3, rear = 0.2, dogso = false, spa = false, inBox = false, variance = 0.5 } = {}) {
+  const excessive = closingSpeed > 9.5 && rear > 0.6;
+  if (excessive || (dogso && !inBox)) return 'red';
+  const reckless = closingSpeed > 7.5 || rear > 0.85;
+  if (dogso && inBox) return 'yellow';
+  if (spa) return variance < 0.8 ? 'yellow' : 'none';
+  if (reckless) return variance < 0.6 ? 'yellow' : 'none';
+  return variance < 0.07 ? 'yellow' : 'none';
+}
+// L'avantage n'est joué que si le fauté garde le ballon, dans une phase utile, sans être immédiatement repris.
+export function shouldPlayAdvantage(victim, ball, dir, defenders) {
+  if (ball.owner !== victim || victim.sentOff) return false;
+  if (victim.x * dir < -HL * 0.25) return false; // pas d'avantage dans son propre camp profond
+  let close = 0;
+  for (const o of defenders) if (!o.sentOff && Math.hypot(o.x - victim.x, o.y - victim.y) < 2.2) close++;
+  return close <= 1;
+}
+// Penalty : pari du gardien (−1/0/+1). Bon côté ≈ 45 % d'arrêt sur un tir près du poteau ; mauvais côté ≈ 3 % ; frappe axiale battue si le gardien plonge.
+export function getPenaltySaveChance(guess, shotY, rating = 50) {
+  const side = Math.abs(shotY) < 0.8 ? 0 : Math.sign(shotY), r = (Number(rating) || 50) / 100;
+  if (side === 0) return guess === 0 ? 0.8 + r * 0.1 : 0.22;
+  if (guess === side) return clamp(0.3 + r * 0.2 - Math.max(0, Math.abs(shotY) - 2.6) * 0.25, 0.1, 0.55);
+  return 0.03;
+}
 // Temps de réaction humain avant le premier appui (0,30 s pour un gardien faible, ~0,17 s pour un excellent gardien).
-export function getKeeperReactionDelay(rating = 50) { return clamp(0.32 - (Number(rating) || 50) / 100 * 0.16, 0.15, 0.32); }
+export function getKeeperReactionDelay(rating = 50) { return clamp(0.23 - (Number(rating) || 50) / 100 * 0.11, 0.12, 0.23); }
 // Machine à états du gardien (lisible en test et en debug) :
 // set = placement, track = lecture d'un tir, dive = plongeon, hold = ballon en main, recover = relevé après plongeon.
 export function resolveKeeperState(p, b) {

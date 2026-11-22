@@ -15,7 +15,7 @@ import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION, KIT_PROVENANCE, KIT_STATUS_DEFAULT } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp, jerseySVG } from './util.js';
 
-export const APP_VERSION = '3.57.0';
+export const APP_VERSION = '3.58.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -512,6 +512,7 @@ function settingsHTML() {
    <label>${t('Durée du match')}${sel('duration', [[3, '3 min'], [5, '5 min'], [8, '8 min'], [10, '10 min'], [15, '15 min']])}</label>
    <label>${t('Difficulté')} (matchs)${sel('difficulty', C.DIFFS.map((d, i) => [i, t(d)]))}</label>
    <label>${t('Assistance passe/tir')}${sel('assist', [[true, 'Activée'], [false, 'Désactivée']])}</label>
+   <label>${t('Caméra')}${sel('camera', [['near', 'TV proche (joueurs plus grands)'], ['tv', 'TV standard'], ['far', 'TV large (vue tactique)']])}</label>
    <label>${t('Qualité graphique')}${sel('quality', [['low', 'Basse (économie batterie)'], ['medium', 'Moyenne'], ['high', 'Haute']])}</label>
    <label>${t('Images/seconde')}${sel('fps', [[30, '30'], [60, '60']])}</label>
    <label>Ralentis après les buts${sel('replays', [[true, 'Oui'], [false, 'Non']])}</label>
@@ -545,7 +546,7 @@ function startMatchView() {
   const cv = $('#cv'); const ctx = args;
   const m = new Match({
     canvas: cv, home: ctx.home, away: ctx.away, userSide: ctx.userSide, knockout: ctx.knockout || null,
-    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: settings.quality, fps: Number(settings.fps), voice: settings.voice, lang: getLang(), commentary: settings.commentary || 'auto', replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
+    settings: { duration: ctx.duration || settings.duration, difficulty: settings.difficulty, assist: settings.assist, quality: settings.quality, camera: settings.camera || 'near', fps: Number(settings.fps), voice: settings.voice, lang: getLang(), commentary: settings.commentary || 'auto', replays: settings.replays, ceremony: settings.ceremony !== false, weather: ctx.online ? 'night' : settings.weather },
     onEnd: res => onMatchEnd(res), onPause: () => pauseMenu(),
   });
   match = m;

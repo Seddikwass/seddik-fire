@@ -94,6 +94,8 @@ export function getPlayer3DPose(player = {}, frame = null) {
   const celebrate = Number.isFinite(player.celebrateT) ? player.celebrateT : 0;
   return {
     x, y, vx, vy, speed, heading, phase: anim * 1.12,
+    // Déplacement arrière (> 0,5 = recul face au jeu) : la foulée s'inverse au lieu de « patiner ».
+    backpedal: speed > 0.3 ? clamp(-(vx * Math.cos(heading) + vy * Math.sin(heading)) / speed, 0, 1) : 0,
     kickProgress: 1 - clamp(kick / 0.34, 0, 1),
     headerProgress: 1 - clamp(header / 0.44, 0, 1),
     firstTouchProgress: 1 - clamp(firstTouch / 0.32, 0, 1),
@@ -285,7 +287,9 @@ export function get3DCameraPose(match = {}, replay = null, aspect = 16 / 9) {
   // Sur écran étroit, on recule modérément pour garder les appels et les lignes
   // latérales visibles sans rendre les joueurs minuscules.
   const portrait = clamp((1.25 - safeAspect) / 0.7, 0, 1);
-  const distanceScale = 1 + portrait * 0.16;
+  // Réglage « Caméra » : TV proche (défaut, joueurs ~25 % plus grands), standard ou large (lecture tactique).
+  const camPref = { near: 0.8, tv: 1, far: 1.2 }[match?.settings?.camera] || 1;
+  const distanceScale = (1 + portrait * 0.16) * camPref;
   // Caméra de retransmission : assez proche pour lire les joueurs, assez haute
   // pour voir les lignes de passe (≈ 23 m de haut, ≈ 30 m en retrait du ballon).
   // v3.47 : angle « TV moderne » plus bas (≈ 27° au lieu de 38°) et focale plus longue :
@@ -363,7 +367,12 @@ function cylinder(out, a, b, radius, color, segments = 8, radiusTop = radius) {
     const ab = [a[0] + r1[0] * radius, a[1] + r1[1] * radius, a[2] + r1[2] * radius];
     const ba = [b[0] + r0[0] * radiusTop, b[1] + r0[1] * radiusTop, b[2] + r0[2] * radiusTop];
     const bb = [b[0] + r1[0] * radiusTop, b[1] + r1[1] * radiusTop, b[2] + r1[2] * radiusTop];
-    quad(out, aa, ba, bb, ab, color, norm3([r0[0] + r1[0], r0[1] + r1[1], r0[2] + r1[2]]));
+    // Normales lissées par sommet (avec la pente du cône) : membres ronds, sans facettes visibles.
+    const L = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) || 1, k = (radius - radiusTop) / L;
+    const n0 = norm3([r0[0] + axis[0] * k, r0[1] + axis[1] * k, r0[2] + axis[2] * k]);
+    const n1 = norm3([r1[0] + axis[0] * k, r1[1] + axis[1] * k, r1[2] + axis[2] * k]);
+    triangle(out, aa, ba, bb, color, [n0, n0, n1]);
+    triangle(out, aa, bb, ab, color, [n0, n1, n1]);
   }
 }
 function orientedEllipsoid(out, c, fx, uy, sz, rf, ru, rs, color, seg = 8, rings = 6) {
@@ -511,21 +520,32 @@ function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glov
   if (glove || longSleeve) cylinder(out, shoulder, elbow, 0.105, sleeve, 8, 0.075);
   else {
     const cuff = [shoulder[0] + (elbow[0] - shoulder[0]) * 0.52, shoulder[1] + (elbow[1] - shoulder[1]) * 0.52, shoulder[2] + (elbow[2] - shoulder[2]) * 0.52];
-    cylinder(out, shoulder, cuff, 0.108, sleeve, 8, 0.092);
-    cylinder(out, cuff, elbow, 0.075, skin, 7, 0.064);
+    cylinder(out, shoulder, cuff, 0.106, sleeve, 10, 0.094);
+    // Biceps : léger galbe sous la manche.
+    cylinder(out, cuff, elbow, 0.074, skin, 9, 0.062);
     if (detail > 0) { const k = 0.07, c2 = [cuff[0] - (elbow[0] - shoulder[0]) * k, cuff[1] - (elbow[1] - shoulder[1]) * k, cuff[2] - (elbow[2] - shoulder[2]) * k]; cylinder(out, c2, cuff, 0.1, trim, 8, 0.096); }
   }
-  cylinder(out, elbow, hand, glove || longSleeve ? 0.07 : 0.062, glove || longSleeve ? sleeve : skin, 7, 0.042);
+  // Avant-bras galbé (plus épais sous le coude, poignet fin).
+  const fm = [elbow[0] + (hand[0] - elbow[0]) * 0.35, elbow[1] + (hand[1] - elbow[1]) * 0.35, elbow[2] + (hand[2] - elbow[2]) * 0.35];
+  const fc = glove || longSleeve ? sleeve : skin;
+  cylinder(out, elbow, fm, glove || longSleeve ? 0.07 : 0.06, fc, 9, glove || longSleeve ? 0.066 : 0.058);
+  cylinder(out, fm, hand, glove || longSleeve ? 0.066 : 0.058, fc, 9, 0.038);
   if (detail > 0) {
-    sphere(out, elbow, [0.066,0.066,0.066], glove || longSleeve ? sleeve : skin, 6, 4);
-    sphere(out, hand, glove ? [0.095,0.075,0.08] : [0.048,0.062,0.04], glove ? trim : skin, 7, 4);
+    sphere(out, elbow, [0.062,0.062,0.062], fc, 7, 5);
+    // Main orientée dans l'axe de l'avant-bras : paume aplatie + pouce (gant plus large pour le gardien).
+    let d = [hand[0] - elbow[0], hand[1] - elbow[1], hand[2] - elbow[2]]; const dl = Math.hypot(...d) || 1; d = d.map(v => v / dl);
+    const ref = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+    const u = norm3(cross3(d, ref)), w = norm3(cross3(d, u));
+    const hc = [hand[0] + d[0] * 0.05, hand[1] + d[1] * 0.05, hand[2] + d[2] * 0.05];
+    orientedEllipsoid(out, hc, u, d, w, glove ? 0.05 : 0.026, glove ? 0.085 : 0.07, glove ? 0.072 : 0.045, glove ? trim : skin, 8, 5);
+    orientedEllipsoid(out, [hc[0] + w[0] * 0.04 + d[0] * -0.01, hc[1] + w[1] * 0.04 - d[1] * 0.01, hc[2] + w[2] * 0.04 - d[2] * 0.01], u, d, w, glove ? 0.03 : 0.016, glove ? 0.04 : 0.032, 0.016, glove ? trim : skin, 5, 3);
   } else {
     sphere(out, hand, [0.07,0.075,0.07], glove ? trim : skin, 6, 4);
   }
 }
 
 const VS = 'attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; attribute float aAnim; uniform mat4 uViewProjection; uniform float uTime; uniform float uExcite; uniform float uFx; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; varying float vFxA; varying float vFx; void main(){ vec3 p=aPosition; vFxA=aAnim; vFx=uFx; if(uFx<0.5&&aAnim>0.0){ float beat=sin(uTime*(4.2+fract(aAnim*7.31)*2.6)+aAnim*61.0); p.y+=max(beat,0.0)*(0.05+0.2*uExcite)*(0.4+fract(aAnim*3.7)); p.x+=sin(uTime*1.3+aAnim*17.0)*0.04; } vNormal=aNormal; vColor=aColor; if(uFx<0.5&&aAnim<0.0){ float w=0.5+0.5*sin(uTime*2.4-(p.x+p.z)*0.45); vColor=aColor*(0.7+0.45*w)+vec3(0.3*uExcite*max(sin(uTime*15.0),0.0)); } vWorld=p; gl_Position=uViewProjection*vec4(p,1.0); vDepth=gl_Position.w; }';
-const FS = '#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\nuniform vec3 uFog; uniform vec3 uEye; uniform float uRim; uniform vec3 uFogRange; uniform vec3 uLight; uniform float uWet; uniform float uAlpha; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; varying float vFxA; varying float vFx; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); vec3 lp=vColor*(amb*0.78+0.62*key+0.16*rim+0.1*fill)+vec3(sh*0.16)+vec3(1.0,0.94,0.82)*fres*0.32*(0.4+0.6*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } if(uWet>0.0&&n.y>0.85){ vec3 Vw=normalize(uEye-vWorld); float gl2=pow(max(dot(n,normalize(sun+Vw)),0.0),46.0); float fr=pow(1.0-max(dot(n,Vw),0.0),4.0); lit+=vec3(0.75,0.8,0.9)*(gl2*0.6+fr*0.34)*uWet; lit*=1.0-0.12*uWet*(1.0-uRim); } float grassM=step(0.95,n.y)*step(vWorld.y,0.05)*step(vColor.r*1.55,vColor.g)*step(vColor.b*1.5,vColor.g)*step(abs(vWorld.x),57.0)*step(abs(vWorld.z),39.0); if(grassM>0.5){ vec2 q=vWorld.xz; float f1=fract(sin(dot(floor(q*3.0),vec2(12.9898,78.233)))*43758.5453); float f2=fract(sin(dot(floor(q*0.9+0.37),vec2(39.346,11.135)))*24634.6345); float mid=sin(q.x*0.9+sin(q.y*0.7)*1.6)*sin(q.y*1.1+q.x*0.23); vec3 Vg=normalize(uEye-vWorld); float bandI=floor((q.x+52.5)/5.25); float dirB=mod(bandI,2.0)*2.0-1.0; float inPitch=step(abs(q.x),52.5)*step(abs(q.y),34.0); float sheen=Vg.x/(length(Vg.xz)+0.001)*dirB*inPitch; lit*=1.0+(f1-0.5)*0.07+(f2-0.5)*0.06+mid*0.03+sheen*0.075; } lit*=uLight; vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(uFogRange.x,uFogRange.y,vDepth)*uFogRange.z; color=mix(color,uFog,fog); if(vFx<0.5){ vec3 x=color; vec3 ac=clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.0,1.0); color=mix(color,ac,grassM>0.5?0.0:0.5); float lum=dot(color,vec3(0.2126,0.7152,0.0722)); color=mix(vec3(lum),color,grassM>0.5?0.96:1.05); color=mix(color,color*color*(3.0-2.0*color),grassM>0.5?0.1:0.22); } gl_FragColor=vec4(color,vFx>0.5?uAlpha*clamp(vFxA,0.0,1.0):uAlpha); }';
+const FS = '#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\nuniform vec3 uFog; uniform vec3 uEye; uniform float uRim; uniform vec3 uFogRange; uniform vec3 uLight; uniform float uWet; uniform float uAlpha; varying vec3 vNormal; varying vec3 vColor; varying float vDepth; varying vec3 vWorld; varying float vFxA; varying float vFx; void main(){ vec3 n=normalize(vNormal); vec3 sun=normalize(vec3(-0.42,0.86,0.31)); vec3 fillA=normalize(vec3(0.58,0.42,-0.66)); vec3 fillB=normalize(vec3(-0.76,0.28,-0.36)); float key=max(dot(n,sun),0.0); float rim=max(dot(n,fillA),0.0); float fill=max(dot(n,fillB),0.0); float hemi=0.5+0.5*max(n.y,0.0); float spec=pow(max(dot(n,normalize(sun+vec3(0.0,0.8,0.15))),0.0),24.0)*0.14; float lighting=0.42+0.6*key+0.18*rim+0.12*fill+0.13*hemi; vec3 lit=vColor*lighting+vec3(spec); if(uRim>0.0){ vec3 V=normalize(uEye-vWorld); vec3 amb=mix(vec3(0.26,0.4,0.24),vec3(0.6,0.66,0.84),0.5+0.5*n.y); float nv=max(dot(n,V),0.0); float fres=pow(1.0-nv,2.6); float sh=pow(max(dot(n,normalize(sun+V)),0.0),30.0); float wkey=clamp((dot(n,sun)+0.38)/1.38,0.0,1.0); float ao=0.74+0.26*smoothstep(0.02,0.95,vWorld.y); float lum0=dot(vColor,vec3(0.3,0.59,0.11)); float warm=step(vColor.b*1.18,vColor.g)*step(vColor.g*1.08,vColor.r)*step(0.12,lum0)*step(lum0,0.75); vec3 sss=vec3(0.09,0.03,0.0)*warm*(1.0-key); vec3 lp=(vColor*(amb*0.66+0.7*wkey*wkey+0.18*rim+0.1*fill)+sss)*ao+vec3(sh*(0.1+0.1*warm))+vec3(1.0,0.95,0.86)*fres*0.36*(0.35+0.65*max(n.y+0.3,0.0)); lit=mix(lit,lp,uRim); } if(uWet>0.0&&n.y>0.85){ vec3 Vw=normalize(uEye-vWorld); float gl2=pow(max(dot(n,normalize(sun+Vw)),0.0),46.0); float fr=pow(1.0-max(dot(n,Vw),0.0),4.0); lit+=vec3(0.75,0.8,0.9)*(gl2*0.6+fr*0.34)*uWet; lit*=1.0-0.12*uWet*(1.0-uRim); } float grassM=step(0.95,n.y)*step(vWorld.y,0.05)*step(vColor.r*1.55,vColor.g)*step(vColor.b*1.5,vColor.g)*step(abs(vWorld.x),57.0)*step(abs(vWorld.z),39.0); if(grassM>0.5){ vec2 q=vWorld.xz; float f1=fract(sin(dot(floor(q*3.0),vec2(12.9898,78.233)))*43758.5453); float f2=fract(sin(dot(floor(q*0.9+0.37),vec2(39.346,11.135)))*24634.6345); float mid=sin(q.x*0.9+sin(q.y*0.7)*1.6)*sin(q.y*1.1+q.x*0.23); vec3 Vg=normalize(uEye-vWorld); float bandI=floor((q.x+52.5)/5.25); float dirB=mod(bandI,2.0)*2.0-1.0; float inPitch=step(abs(q.x),52.5)*step(abs(q.y),34.0); float sheen=Vg.x/(length(Vg.xz)+0.001)*dirB*inPitch; lit*=1.0+(f1-0.5)*0.07+(f2-0.5)*0.06+mid*0.03+sheen*0.075; } lit*=uLight; vec3 color=pow(max(lit,vec3(0.0)),vec3(0.94)); float fog=smoothstep(uFogRange.x,uFogRange.y,vDepth)*uFogRange.z; color=mix(color,uFog,fog); if(vFx<0.5){ vec3 x=color; vec3 ac=clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.0,1.0); color=mix(color,ac,grassM>0.5?0.0:0.5); float lum=dot(color,vec3(0.2126,0.7152,0.0722)); color=mix(vec3(lum),color,grassM>0.5?0.96:1.05); color=mix(color,color*color*(3.0-2.0*color),grassM>0.5?0.1:0.22); } gl_FragColor=vec4(color,vFx>0.5?uAlpha*clamp(vFxA,0.0,1.0):uAlpha); }';
 
 function compile(gl, type, source) {
   const shader = gl.createShader(type);
@@ -579,9 +599,9 @@ export function playerLook(player = {}, index = 0) {
   return { style, hair, beard: ((h >>> 9) % 4) === 0, boot: boots[0], bootAccent: boots[1] };
 }
 // Coiffure posée sur une tête de demi-axes 0.125 (avant) × 0.15 (haut) × 0.112 (côté).
-function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0) {
+function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0, k = 1) {
   const c = look.hair, y = bodyY + 0.62;
-  const E = (df, dy, rf, ru, rs, seg = 9, rings = 5) => ell(bodyPoint(f + df, y + dy, 0), rf, ru, rs, c, seg, rings, tilt);
+  const E = (df, dy, rf, ru, rs, seg = 10, rings = 6) => ell(bodyPoint(f + df * k, y + dy * k, 0), rf * k, ru * k, rs * k, c, seg, rings, tilt);
   switch (look.style) {
     case 'bald': break;
     case 'buzz': E(-0.012, 0.03, 0.128, 0.13, 0.116); break;
@@ -1112,17 +1132,20 @@ export class MatchRenderer3D {
     const shoulderY=bodyY+0.23;
     const torsoF=lean*0.45;
     // ---- Buste : poitrine, épaules, bassin (vraies proportions, orientés avec le joueur) ----
-    const hi=detail===2;
+    // LOD par joueur : pleine résolution près de la caméra (action, ralentis, gros plans), allégée au loin.
+    const camE=this.lastCamera?.eye, camDist=camE?Math.hypot(x-camE[0],(-pose.y)-camE[2],1.1-camE[1]):0;
+    const hi=detail===2&&camDist<36;
     // Rotation des épaules opposée au bassin pendant la course.
     const twist=-Math.sin(phase)*0.22*clamp(pose.speed/8.5,0,1)*action.gait*(1-pose.idle)*(pose.kick>0.005?0:1);
     // Silhouette athlétique en V : taille fine, poitrine et épaules larges.
     ell(bodyPoint(torsoF,bodyY+0.03,0),0.128*build,0.3-low*0.08,0.18*build,shirtPat,hi?20:12,hi?10:7,tilt,twist*0.5);
     ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.19,0),0.135*build,0.14,0.27*build,kit?.sleeves?sleeveCol:shirtPat,hi?20:12,hi?6:5,tilt,twist);
-    ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?10:8,5,tilt*0.5);
+    ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?12:8,hi?6:5,tilt*0.5);
+    // Bas du maillot qui tombe droit sur le short (plus de taille de guêpe).
+    ell(bodyPoint(lean*0.32+torsoF*0.15-0.012,hipY+0.2,0),0.112*build,0.17,0.19*build,shirtPat,hi?20:12,hi?7:5,tilt*0.6,twist*0.25);
     // Col et bande de taille.
-    cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.31,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.36,0),0.082,trim,hi?10:8,0.088);
+    cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.295,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.33,0),0.086,trim,hi?14:8,0.08);
     if(detail>0){
-      ell(bodyPoint(lean*0.32,hipY+0.13,0),0.122*build,0.022,0.172*build,trim,10,3,tilt*0.5);
       // Écusson sur le cœur.
       ell(bodyPoint(torsoF+0.128*build+tilt*0.06,bodyY+0.17,-0.09),0.012,0.034,0.028,trim,6,4,tilt);
     }
@@ -1137,9 +1160,11 @@ export class MatchRenderer3D {
     const reach=style==='shot'?1.0+pose.kickPower*0.3:style==='curl'?0.95:style==='lob'?1.05:0.55+pose.kickPower*0.2;
     const legAngles=[];
     for(const side of [-1,1]){
-      const ph=phase+(side>0?Math.PI:0);
+      const ph=(pose.backpedal>0.5?-phase:phase)+(side>0?Math.PI:0);
       // Foulée : la cuisse balance, le genou plie surtout pendant le retour de la jambe.
-      let th=Math.sin(ph)*(0.08+0.5*sp)*(1-pose.idle*0.85);
+      // Amplitude de foulée liée à la longueur de pas réelle (évite les pieds qui « patinent »).
+      const stride=clamp(0.06+0.095*pose.speed,0.06,0.88)*action.gait*(1-pose.backpedal*0.45);
+      let th=Math.sin(ph)*stride*(1-pose.idle*0.85);
       let fl=0.13+pose.idle*0.06+(0.12+1.05*sp)*Math.pow(Math.max(0,Math.cos(ph+0.35)),1.5)*(1-pose.idle);
       const isKickLeg=side===kickFootSide;
       if(kicking){
@@ -1189,14 +1214,14 @@ export class MatchRenderer3D {
       const knee=legPoint(kF,kU,side*0.125);
       const ankle=legPoint(ankF,ankU,sideOff+side*0.02);
       const mid=[hip[0]+(knee[0]-hip[0])*0.55,hip[1]+(knee[1]-hip[1])*0.55,hip[2]+(knee[2]-hip[2])*0.55];
-      cylinder(g,hip,mid,0.122*build,shorts,8,0.112*build);
+      cylinder(g,hip,mid,0.122*build,shorts,hi?12:8,0.128*build);
       if(detail>0&&!player.isOfficial) cylinder(g,legPoint(lean*0.25,hipY+0.04,side*0.205*build),[mid[0]+(legPoint(0,0,side*0.1)[0]-legPoint(0,0,0)[0]),mid[1],mid[2]+(legPoint(0,0,side*0.1)[2]-legPoint(0,0,0)[2])],0.016,trim,4,0.014);
       const legSkin=player.longPants?shorts:skin;
-      cylinder(g,mid,knee,player.longPants?0.1:0.098*build,legSkin,8,player.longPants?0.085:0.072);
+      cylinder(g,mid,knee,player.longPants?0.1:0.098*build,legSkin,hi?12:8,player.longPants?0.085:0.07);
       sphere(g,knee,[0.068,0.072,0.068],legSkin,6,4);
       const sockTop=[knee[0]+(ankle[0]-knee[0])*0.14,knee[1]+(ankle[1]-knee[1])*0.14,knee[2]+(ankle[2]-knee[2])*0.14];
       cylinder(g,knee,sockTop,0.07,legSkin,7,0.07);
-      cylinder(g,sockTop,ankle,0.072*build,sock,hi?10:7,0.05);
+      cylinder(g,sockTop,ankle,0.072*build,sock,hi?12:7,0.048);
       if(detail>0){ const tp=[sockTop[0]+(ankle[0]-sockTop[0])*0.18,sockTop[1]+(ankle[1]-sockTop[1])*0.18,sockTop[2]+(ankle[2]-sockTop[2])*0.18]; ring(g,sockTop[0],sockTop[1],sockTop[2],0.074,trim,10,0.014); if(!player.isOfficial) ring(g,tp[0],tp[1],tp[2],0.075,[0.92,0.92,0.9],10,0.022);
         // Mollet : léger galbe derrière le tibia.
         const cv=[sockTop[0]+(ankle[0]-sockTop[0])*0.3,sockTop[1]+(ankle[1]-sockTop[1])*0.3,sockTop[2]+(ankle[2]-sockTop[2])*0.3]; const back=legPoint(kF+Math.sin(shinA)*L2*0.3-0.035,kU-Math.cos(shinA)*L2*0.3,sideOff*0.8+side*0.03); sphere(g,[(cv[0]+back[0])/2,(cv[1]+back[1])/2,(cv[2]+back[2])/2],[0.06,0.085,0.06],sock,6,4); }
@@ -1275,8 +1300,11 @@ export class MatchRenderer3D {
     }
     // ---- Cou, tête, coiffure, visage ----
     const neckF=torsoF+tilt*0.2;
-    cylinder(g,bodyPoint(neckF,bodyY+0.32,0),bodyPoint(neckF+headSnap*0.06,bodyY+0.46,0),0.062,skin,8);
-    const headF=neckF+headSnap*0.13+tilt*0.08, headY=bodyY+0.6-headSnap*0.03;
+    // Cou court et puissant + trapèzes sous le maillot (silhouette d'athlète, tête proportionnée ~1/7,5 de la taille).
+    cylinder(g,bodyPoint(neckF,bodyY+0.3,0),bodyPoint(neckF+headSnap*0.06,bodyY+0.45,0),0.071,skin,hi?12:8,0.064);
+    if(detail>0) ell(bodyPoint(torsoF+tilt*0.15,bodyY+0.285,0),0.085,0.055,0.165*build,kit?.sleeves?sleeveCol:shirtPat,hi?14:10,5,tilt,twist);
+    const HK=0.88;
+    const headF=neckF+headSnap*0.13+tilt*0.08, headY=bodyY+0.545-headSnap*0.03;
     const headTilt=tilt*0.4+headSnap*0.5+archPre*0.6;
     // Regard : la tête suit le ballon (rotation limitée du cou, lissée dans le temps).
     let lookYaw=0;
@@ -1290,22 +1318,22 @@ export class MatchRenderer3D {
     const cyh=Math.cos(headYaw), syh=Math.sin(headYaw);
     const headPoint=(f,h,sd)=>{ const df=f-headF; return bodyPoint(headF+df*cyh-sd*syh,h,df*syh+sd*cyh); };
     const ellH=(c,rf,ru,rs,color,seg,rings,t=0,yo=0)=>ell(c,rf,ru,rs,color,seg,rings,t,yo+headYaw);
-    ellH(headPoint(headF,headY,0),0.125,0.15,0.112,skin,hi?12:10,hi?9:7,headTilt);
-    ellH(headPoint(headF-0.005,headY,-0.112),0.03,0.045,0.02,skin,6,4);
-    ellH(headPoint(headF-0.005,headY,0.112),0.03,0.045,0.02,skin,6,4);
-    addHair(g,headPoint,headF,headY-0.62,look,detail,ellH,headTilt);
+    ellH(headPoint(headF,headY,0),0.125*HK,0.15*HK,0.112*HK,skin,hi?14:10,hi?10:7,headTilt);
+    ellH(headPoint(headF-0.005,headY,-0.112*HK),0.027,0.04,0.018,skin,6,4);
+    ellH(headPoint(headF-0.005,headY,0.112*HK),0.027,0.04,0.018,skin,6,4);
+    addHair(g,headPoint,headF,headY-0.62,look,detail,ellH,headTilt,HK);
     if(detail>0){
-      const ff=headF+0.105, fy=headY;
+      const ff=headF+0.105*HK, fy=headY;
       for(const side of [-1,1]){
-        ellH(headPoint(ff,fy+0.035,side*0.045),0.012,0.016,0.019,[0.94,0.92,0.84],6,4,headTilt);
-        ellH(headPoint(ff+0.01,fy+0.035,side*0.045),0.008,0.01,0.009,[0.035,0.03,0.025],5,3,headTilt);
-        tube(g,headPoint(ff,fy+0.07,side*0.075),headPoint(ff+0.004,fy+0.074,side*0.022),0.01,hair,5);
+        ellH(headPoint(ff,fy+0.03,side*0.04),0.011,0.014,0.017,[0.94,0.92,0.84],6,4,headTilt);
+        ellH(headPoint(ff+0.009,fy+0.03,side*0.04),0.007,0.009,0.008,[0.035,0.03,0.025],5,3,headTilt);
+        tube(g,headPoint(ff,fy+0.062,side*0.066),headPoint(ff+0.004,fy+0.066,side*0.02),0.009,hair,5);
       }
-      ellH(headPoint(ff+0.025,fy-0.005,0),0.03,0.035,0.022,skin,6,4,headTilt);
+      ellH(headPoint(ff+0.022,fy-0.008,0),0.026,0.032,0.019,skin,6,4,headTilt);
       // Mâchoire et pommettes : visage moins rond, plus adulte.
-      ellH(headPoint(headF+0.008,headY-0.075,0),0.108,0.065,0.096,skin,8,5,headTilt);
-      ellH(headPoint(headF+0.085,headY-0.115,0),0.032,0.028,0.04,skin,6,4,headTilt);
-      tube(g,headPoint(ff+0.004,fy-0.06,-0.03),headPoint(ff+0.004,fy-0.06,0.03),0.008,[0.22,0.08,0.065],5);
+      ellH(headPoint(headF+0.008,headY-0.066,0),0.095,0.058,0.085,skin,10,5,headTilt);
+      ellH(headPoint(headF+0.075,headY-0.102,0),0.028,0.025,0.036,skin,6,4,headTilt);
+      tube(g,headPoint(ff+0.004,fy-0.053,-0.026),headPoint(ff+0.004,fy-0.053,0.026),0.007,[0.32,0.13,0.11],5);
     }
     // Gardien : gants renforcés.
     if(player.isGK&&detail>0) for(const side of [-1,1]) {

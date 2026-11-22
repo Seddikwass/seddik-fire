@@ -49,14 +49,14 @@ const steps = (m, n) => { for (let i = 0; i < n; i++) m.step(1 / 60); };
   for (const p of m.teams[1].ps) if (!p.isGK) { p.x = -d * 40; p.y = (p.i || 0) - 5; }
   v.x = d * 5; v.y = 0; v.vx = d * 5; f.x = d * 3.8; f.y = 0.4;
   m.ball.owner = v; m.ball.x = v.x; m.ball.y = v.y;
-  m.foul(f, v, { closingSpeed: 8.2, rear: 0.4 });
+  { const r0 = m.r; m.r = () => 0.2; m.foul(f, v, { closingSpeed: 8.2, rear: 0.4 }); m.r = r0; } // tirage fixé : tacle imprudent sanctionné
   assert.ok(m.advantage, 'l arbitre laisse l avantage');
   assert.equal(m.refCall.type, 'advantage', 'geste d avantage');
   assert.equal(m.state, 'play', 'le jeu continue');
   const y0 = m.stats.yellows[1];
   steps(m, Math.ceil(ADVANTAGE_WINDOW * 60) + 5);
   assert.ok(!m.advantage, 'avantage terminé après la fenêtre');
-  assert.ok(m.pendingCard && m.pendingCard.sanction === 'yellow', 'carton en attente du prochain arrêt de jeu');
+  assert.ok(m.pendingCard && m.pendingCard.sanction === 'yellow', 'carton en attente du prochain arrêt de jeu ' + JSON.stringify({ st: m.state, rt: m.restart?.type, ow: m.ball.owner?.team, y: m.stats.yellows }));
   assert.equal(m.stats.yellows[1], y0, 'pas de carton pendant le jeu');
   m.ball.owner = null; m.ball.x = 0; m.ball.y = HW + 1; m.ball.z = 0; m.ball.vx = m.ball.vy = 0; m.ball.lastTeam = 0;
   steps(m, 3);

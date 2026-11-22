@@ -2,6 +2,14 @@
 
 > Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
 
+## Version 3.58.0 — Joueurs redessinés, mouvements réalistes, compositions du 22/11
+- Joueurs : membres lissés (plus de facettes), tête proportionnée (~1/7,5 de la taille), cou court et trapèzes, maillot qui tombe droit sur le short, short évasé, avant-bras galbés, mains orientées avec pouce, éclairage enveloppant, occlusion au sol et teinte de peau plus naturelle.
+- Niveau de détail par joueur : pleine résolution près de la caméra, allégée au loin (charge géométrique +5 % seulement).
+- Mouvements : fréquence de pas réelle (≈1,9 pas/s en marche, 3,4 en footing, 4,4 en sprint) et amplitude de foulée liée à la vitesse (fini les pieds qui patinent) ; replacement en recul ou en pas chassé en gardant le ballon devant soi.
+- Nouveau réglage « Caméra » : TV proche (par défaut, joueurs ~25 % plus grands), standard ou large.
+- Compositions du 22/11/2026 : Club Africain et Espérance (derby 0-0, source Tunisie Foot/Kawarji), ES Zarzis et US Ben Guerdane (1-0, source FootballTunisien) ; 13 nouveaux joueurs ajoutés aux effectifs, postes estimés ; anciens onzes conservés dans l'historique.
+- Correctif : rayures invisibles (séparateurs noirs) quand le nombre de facettes égalait le nombre de bandes.
+
 ## Version 3.57.0 — Master Production Bible, lot 3 (arbitrage)
 - Règle de l'avantage : si l'équipe fautée garde le ballon, l'arbitre laisse jouer (bras tendus, bandeau « AVANTAGE ») ; perte du ballon dans les 3 s = retour à la faute ; carton montré au prochain arrêt de jeu.
 - Sanctions selon la Loi 12 au lieu d'un tirage au sort : occasion de but manifeste annulée (rouge, jaune dans la surface), attaque prometteuse stoppée et tacle imprudent (jaune), force excessive (rouge).

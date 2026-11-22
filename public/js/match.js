@@ -136,7 +136,9 @@ export function getMovementTuning(attrs = {}, stamina = 1) {
 export function getRunningCadence(speed = 0, pace = 50) {
   const velocity = clamp(Number.isFinite(speed) ? Math.max(0, speed) : 0, 0, 12);
   const acceleration = clamp(Number.isFinite(pace) ? pace : 50, 0, 100) / 100;
-  return clamp(6.8 + velocity * 0.9 + acceleration * 1.6, 6.8, 18.5);
+  // Fréquence de pas réelle : ~1,9 pas/s en marche, ~3,4 en footing, ~4,4 en sprint (un cycle = 2 pas ; phase rendue = anim × 1,12).
+  const steps = 2.5 + velocity * 0.21 + acceleration * 0.25;
+  return clamp(Math.PI * steps / 1.12, 6.8, 13.6);
 }
 
 // Distance de conduite et décalage latéral du ballon selon le contrôle technique.
@@ -1423,7 +1425,13 @@ export class Match {
     const turnFactor = getTurnSpeedFactor(currentHeading, wx, wy, currentSpeed);
     const controlledWx = wx * turnFactor, controlledWy = wy * turnFactor;
     const targetSpeed = Math.hypot(controlledWx, controlledWy);
-    const targetHeading = requestedSpeed > 0.15 ? Math.atan2(wy, wx) : currentHeading;
+    let targetHeading = requestedSpeed > 0.15 ? Math.atan2(wy, wx) : currentHeading;
+    // Replacement court sans ballon : le joueur garde le ballon devant lui (recul, pas chassé) au lieu de lui tourner le dos.
+    const B = this.ball;
+    if (B && B.owner !== p && !p.isGK && this.state === 'play' && requestedSpeed > 0.15 && requestedSpeed < 3.4) {
+      const bh = Math.atan2(B.y - p.y, B.x - p.x), off = Math.atan2(Math.sin(bh - targetHeading), Math.cos(bh - targetHeading));
+      if (Math.abs(off) > 1.75 && Math.hypot(B.x - p.x, B.y - p.y) < 32) targetHeading = bh;
+    }
     const delta = Math.atan2(Math.sin(targetHeading - currentHeading), Math.cos(targetHeading - currentHeading));
     p.turn = clamp(delta / Math.PI, -1, 1);
     // Crochet / feinte de corps : virage sec balle au pied face à un défenseur proche.

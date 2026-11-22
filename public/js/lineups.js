@@ -14,12 +14,15 @@ const EARLIER = [
       ca: { raw: ['Abdelmouhib Chamakh', 'Ghassen Mahersi', 'Yassine Bouabid', 'Hamza Khadhraoui', 'Ghaith Zaalouni', 'Phillippe Kinzumbi', 'Saido Khan', 'Motaz Zaddem', 'Osama Elsharimi', 'Ismaila Simpara', 'Sadok Kadida'], source: `${LA_PRESSE} ; ${BIBLE} (S21)` },
       st: { raw: ['Aziz Saihi', 'Skander Sghaier', 'Wael Ouerghemmi', 'Youssef Dabou Saafi', 'Amadou Dia N’Diaye', 'Youssouf Oumarou', 'Baraket Hmidi', 'Youssouf Touré', 'Noureddine Farhati', 'Rayed Derbali', 'Mame Thioune'], source: `${BIBLE} (S21)` } } },
   { id: '2026-11-07-est-usm', date: '07/11/2026', comp: 'Ligue 1 2026-27', home: 'est', away: 'usm', score: '1-0',
-    sides: { usm: { raw: ['Yassine Amri', 'Ahmed Slimane', 'Mahmoud Ghorbel', 'Rayane Azzouz', 'Raed Bouchniba', 'Salah Barhoumi', 'Youssef Herch', 'Ousmane Diané', 'Mazen Slama', 'Rayan Boukadida', 'Béchir Yacoub'], source: `${BIBLE} (S18-S19)` } } },
+    sides: { est: { raw: ['Bechir Ben Said', 'Mohamed Dräger', 'Hamza Jelassi', 'Raed Chikhaoui', 'Nidhal Laifi', 'Castillo', 'Mohamed Hadj Mahmoud', 'Imad Faraj', 'Lucas Ribeiro', 'Youcef Belaili', 'Hazem Mastouri'], source: 'Site officiel EST (fiche de match)' }, usm: { raw: ['Yassine Amri', 'Ahmed Slimane', 'Mahmoud Ghorbel', 'Rayane Azzouz', 'Raed Bouchniba', 'Salah Barhoumi', 'Youssef Herch', 'Ousmane Diané', 'Mazen Slama', 'Rayan Boukadida', 'Béchir Yacoub'], source: `${BIBLE} (S18-S19)` } } },
   { id: '2026-11-07-ess-css', date: '07/11/2026', comp: 'Ligue 1 2026-27', home: 'ess', away: 'css', score: null,
     sides: {
       ess: { raw: ['Sabri Ben Hassen', 'Boubacar Diarra', 'Ambrose Ochigbo', 'Najeh Ferjani', 'Wajdi Kechrida', 'Ousmane Diakité', 'Oussama Abid', 'Rayane Anane', 'Achraf Ben Dhiaf', 'Abdallah Amri', 'Oscar Wellington'], source: LA_PRESSE },
       css: { raw: ['Aymen Dahmen', 'Kevin Mondeko', 'Hamza Mathlouthi', 'Ali Maâloul', 'Mohamed Salah Mhadhebi', 'Jack Mbe', 'Mohamed Trabelsi', 'Louay Traii', 'Jamal Mutyaba', 'Iyad Belouafi', 'Josna Loulendo'], source: LA_PRESSE } } },
-  { id: '2026-11-08-esm-esz', date: '08/11/2026', comp: 'Ligue 1 2026-27', home: 'esm', away: 'esz', score: '2-1', sides: {} },
+  { id: '2026-11-07-ca-psse', date: '07/11/2026', comp: 'Ligue 1 2026-27', home: 'ca', away: 'psse', score: '0-0',
+    sides: { ca: { raw: ['Abdelmouhib Chamakh', 'Ghassen Mahersi', 'Ismaïl Simpara', 'Houssem Ben Ali', 'Yassine Bouabid', 'Franck Alain Kanté', 'Oussama Cherifi', 'Rayane Jebali', 'Hamza Khadhraoui', 'Phillippe Kinzumbi', 'Sadok Kadida'], source: 'La Presse de Tunisie, onze publié' } } },
+  { id: '2026-11-08-esm-esz', date: '08/11/2026', comp: 'Ligue 1 2026-27', home: 'esm', away: 'esz', score: '2-1',
+    sides: { esz: { raw: ['Yosri Dhiflaoui', 'Jassem Belkilani', 'Ousseynou Toure', 'Hamdi Labidi', 'Yakubu Sadik Abubakar', 'Adepoju Oluwaseun', 'Yacine El Kassah', 'Lamjed Rjili', 'Hamza Ghanmi', 'Dhiaeddine Jouini', 'Mohamed Firas Ghouma'], source: 'African Football, feuille de match' } } },
 ];
 
 const parseDate = d => { const [dd, mm, yy] = String(d).split('/').map(Number); return new Date(yy, mm - 1, dd).getTime(); };

@@ -2,6 +2,12 @@
 
 > Le football tunisien, version premium (anciennement « Football Tunisia 2026 »). URL Render, identifiant Android `com.footballtunisia.ft2026` et clés de sauvegarde inchangés pour préserver les installations et les carrières existantes.
 
+## Version 3.55.0 — Master Production Bible, lot 1 (données)
+- Sauvegarde de l'état stable : tag `v3.54.0-stable` (commit e0fc42c) pour restauration.
+- Onzes ESHS, PSSE, ESS réconciliés avec le dossier de production (noms complets, Nour Karoui à la place de « N. El Beji »), conflits notés et statut « publié, en attente de validation FTF ».
+- Nouvel historique des compositions par match (`lineups.js`), consultable dans l'effectif, sans écraser les onzes antérieurs.
+- Stade Tunisien : maillot à bandes bordeaux/vert/noir ; provenance des tenues affichée (« à confirmer », sans logos ni sponsors).
+
 ## Version 3.54.0
 - **Public plus humain** : chaque supporter a désormais des épaules, des bras, un cou et une tête arrondie avec cheveux (au lieu de deux rectangles).
 

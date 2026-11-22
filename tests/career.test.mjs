@@ -91,3 +91,18 @@ console.log('OK — tous les tests carrière passent');
   assert.ok(Object.values(KIT_DESIGNS).every(k => /^#[0-9a-f]{6}$/i.test(k.shirt) && /^#[0-9a-f]{6}$/i.test(k.alt)), 'couleurs de maillot valides');
   console.log('REAL SQUADS OK — 5 effectifs réels, numéros uniques, option fictive, maillots réels');
 }
+
+// Historique des compositions (archive non destructive, Master Production Bible)
+{
+  const L = await import('../public/js/lineups.js');
+  const D2 = await import('../public/js/data.js');
+  for (const cid of Object.keys(D2.REAL_XI)) {
+    const H = L.lineupHistory(cid);
+    if (!H.length || !H[0].latest) throw new Error('historique sans dernier onze : ' + cid);
+    for (const h of H) if (h.xi.length !== 11 || !h.source) throw new Error('entrée historique invalide : ' + cid + ' ' + h.date);
+  }
+  if (L.lineupHistory('ca').length < 2) throw new Error('historique CA incomplet');
+  if (!D2.REAL_XI.eshs.xi.includes('Nour Karoui') || D2.REAL_XI.eshs.xi.includes('N. El Beji')) throw new Error('ESHS non réconcilié');
+  if (!D2.KIT_PROVENANCE.est || D2.KIT_PROVENANCE.est.status !== 'à confirmer') throw new Error('provenance maillot');
+  console.log('LINEUP HISTORY OK — ' + Object.keys(D2.REAL_XI).length + ' clubs, archive et provenance des tenues');
+}

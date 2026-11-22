@@ -393,6 +393,7 @@ export function kitPatternColor(kit, shirt, alt, alt2 = alt) {
   const n = Number(kit.stripes || kit.hoops) || (pattern === 'hoops' ? 7 : 10);
   const sep = kit.sep ? parseColor(kit.sep, null) : null;
   return (a, y, b) => {
+    if (pattern === 'stripes3') { const lon = Math.atan2(b, a), u = Math.floor((lon / (Math.PI * 2) + 0.5) * n + 0.5); return [shirt, alt, alt2][((u % 3) + 3) % 3]; }
     if (pattern === 'stripes') { const lon = Math.atan2(b, a), u = (lon / (Math.PI * 2) + 0.5) * n + 0.5, f = u - Math.floor(u); if (sep && (f < 0.035 || f > 0.965)) return sep; return Math.floor(u) % 2 ? alt : shirt; }
     if (pattern === 'hoops') return Math.floor((y + 1) / 2 * n) % 2 ? alt : shirt;
     if (pattern === 'centerStripe') return Math.abs(b) < 0.34 ? alt : shirt;

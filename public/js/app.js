@@ -9,12 +9,13 @@ import * as CAF from './caf.js';
 import * as Online from './online.js';
 import * as A from './audio.js';
 import { COMMENTARY_STYLES } from './commentary.js';
+import { lineupHistory } from './lineups.js';
 import * as S from './storage.js';
 import { t, setLang, getLang } from './i18n.js';
 import { CLUBS, CAF_CLUBS, STAFF_ROLES, INFRA, FORMATIONS, FORMATION_POS, POS_GROUP, SEASON_LABEL, VERIFIED_ON, DATA_VERSION } from './data.js';
 import { esc, fmtMoney, fmtShort, crestSVG, clamp, jerseySVG } from './util.js';
 
-export const APP_VERSION = '3.54.0';
+export const APP_VERSION = '3.55.0';
 let settings = S.loadSettings();
 let st = null, view = 'home', args = {}, match = null, syncStatus = '', dataOverrides = null, serverInfo = null;
 const $ = s => document.querySelector(s);
@@ -176,7 +177,8 @@ function kitDuel(h, a) {
   const mode = C.awayKitMode(h, a), kh = kitFor(h, false), ka = kitFor(a, mode);
   const lbl = mode === false ? 'domicile' : mode === true ? 'extérieur' : 'third';
   const xiNote = id => { const t = C.clubObj(st, id)?.tactics; return t?.realXI && settings.realNames !== false ? `<div class="xinote">📋 <b>${esc(C.clubObj(st, id).short || id)}</b> : onze du dernier match — ${esc(t.realXI)} · source ${esc(t.realXISource || '')} · <i>à revalider</i></div>` : ''; };
-  return `${xiNote(h)}${xiNote(a)}<div class="kitduel"><figure>${jerseySVG(kh, 70, 10)}<figcaption>Domicile</figcaption></figure><span class="vsx">VS</span><figure>${jerseySVG(ka, 70, 10)}<figcaption>${lbl === 'third' ? '3e maillot' : 'Maillot ' + lbl}</figcaption></figure></div>`;
+  const kp = id => (D.KIT_PROVENANCE[id] || D.KIT_STATUS_DEFAULT);
+  return `${xiNote(h)}${xiNote(a)}<p class="kitnote">Tenues reproduites aux couleurs des clubs, sans logos ni sponsors — <i>${esc(kp(h).status)}</i> / <i>${esc(kp(a).status)}</i></p><div class="kitduel"><figure>${jerseySVG(kh, 70, 10)}<figcaption>Domicile</figcaption></figure><span class="vsx">VS</span><figure>${jerseySVG(ka, 70, 10)}<figcaption>${lbl === 'third' ? '3e maillot' : 'Maillot ' + lbl}</figcaption></figure></div>`;
 }
 function prematchExtras(f) {
   const trip = C.nextTrip(st, f), rot = C.rotationAdvice(st);
@@ -199,7 +201,7 @@ VIEWS.squad = () => {
   if (tab === 'contrats') list = list.slice().sort((a, b) => a.contractEnd - b.contractEnd);
   const tabs = [['liste', 'Joueurs'], ['vestiaire', '🗣️ Vestiaire'], ['contrats', t('Contrats')], ['entrainement', t('Entraînement')], ['stats', t('Statistiques')]];
   let body = '';
-  if (tab === 'liste') body = `${tac.realXI && settings.realNames !== false ? `<p class="xinote">📋 Onze de départ réel : ${esc(tac.realXI)} · source ${esc(tac.realXISource || '')} · <i>à revalider sur la feuille de match officielle</i></p>` : ''}<p class="hint">T = ${t('Titulaires')} · R = ${t('Remplaçants')} · J = ${t('Jeunes')} · X = ${t('Réserve')}. Touchez un joueur pour sa fiche. <button class="btn small" data-a="autoXI">Composition automatique</button></p>
+  if (tab === 'liste') body = `${tac.realXI && settings.realNames !== false ? `<p class="xinote">📋 Onze de départ réel : ${esc(tac.realXI)} · source ${esc(tac.realXISource || '')} · <i>publié, en attente de validation sur la feuille FTF</i></p>${(() => { const H = lineupHistory(st.clubId); return H.length > 1 ? `<details class="xihist"><summary>Historique des compositions (${H.length})</summary>${H.map(h => `<div class="xih"><b>${esc(h.date)}</b> — ${esc(h.match)}${h.latest ? ' <em class="tag">dernier</em>' : ''}<br><small>${h.xi.map(esc).join(' · ')}</small><br><small class="src">Source : ${esc(h.source)} · ${esc(h.status)}</small></div>`).join('')}</details>` : ''; })()}` : ''}<p class="hint">T = ${t('Titulaires')} · R = ${t('Remplaçants')} · J = ${t('Jeunes')} · X = ${t('Réserve')}. Touchez un joueur pour sa fiche. <button class="btn small" data-a="autoXI">Composition automatique</button></p>
     <table class="tbl"><thead><tr><th></th><th>#</th><th>Joueur</th><th>Poste</th><th>Âge</th><th>Note</th><th>Pot.</th><th>${t('Forme')}</th><th>${t('Moral')}</th><th>Valeur</th><th></th></tr></thead><tbody>
     ${list.map(p => `<tr data-a="player" data-id="${p.id}" class="${p.injury ? 'inj' : ''}"><td><span class="role r${role(p)}">${role(p)}</span></td><td>${p.num}</td><td>${esc(p.name)}${tac.captain === p.id ? ' <b class="cap">C</b>' : ''}${p.loan && p.loan.to === st.userClub ? ' <em class="tag">prêt</em>' : ''}${p.listed ? ' <em class="tag">transférable</em>' : ''}</td><td>${p.pos}${p.pos2 ? '/' + p.pos2 : ''}${p.posEstimated ? ' <em class="tag" title="Poste non fourni par la source : estimé par le jeu, à valider">estimé</em>' : ''}</td><td>${p.age}</td><td><b class="${ovrCls(p.ovr)}">${p.ovr}</b></td><td>${p.pot}</td><td>${bar(p.fitness * 100, 100, 'sm')}</td><td>${bar(p.morale, 100, 'sm')}</td><td>${fmtShort(p.value)}</td><td>${p.injury ? '🩹' : p.suspended ? '🟥' : ''}</td></tr>`).join('')}</tbody></table>`;
   if (tab === 'contrats') body = `<table class="tbl"><thead><tr><th>Joueur</th><th>Note</th><th>Salaire</th><th>Fin</th><th>Rôle</th><th>Satisfaction</th><th></th></tr></thead><tbody>

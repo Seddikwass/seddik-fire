@@ -47,6 +47,7 @@ export function jerseySVG(kit = {}, size = 64, num = '') {
   let pat = '';
   const p = kit.pattern;
   if (p === 'stripes') { const n = Math.min(6, Math.max(4, Math.round((kit.stripes || 10) / 3))), w = 32 / (n * 2); for (let i = 0; i < n; i++) pat += `<rect x="${16 + (i * 2 + 1) * w}" y="0" width="${w}" height="64" fill="${a}"/>`; }
+  else if (p === 'stripes3') { const w = 32 / 9; for (let i = 0; i < 9; i++) if (i % 3) pat += `<rect x="${16 + i * w}" y="0" width="${w}" height="64" fill="${i % 3 === 1 ? a : (kit.alt2 || tr)}"/>`; }
   else if (p === 'hoops') { for (let i = 0; i < 4; i++) pat += `<rect x="0" y="${12 + i * 12}" width="64" height="6" fill="${a}"/>`; }
   else if (p === 'checkers') { for (let i = 0; i < 8; i++) for (let j = 0; j < 9; j++) if ((i + j) % 2) pat += `<rect x="${i * 8}" y="${j * 7}" width="8" height="7" fill="${a}"/>`; }
   else if (p === 'chestBand') pat = `<rect x="0" y="20" width="64" height="9" fill="${a}"/>`;

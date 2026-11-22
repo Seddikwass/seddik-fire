@@ -195,7 +195,7 @@ export const REAL_SQUADS = {
     ['Youssef Becha', 'A'],
   ],
   ess: [
-    ['N. Smichi', 'A'], ['M. Bouslama', 'M'], ['Sabri Ben Hsan', 'G', 'TUN', 1996, null, 'GK'], ['Wajdi Kechrida', 'D', null, null, null, 'DD'],
+    ['Nizar Smichi', 'A'], ['Mohamed Hedi Bouslama', 'M'], ['Sabri Ben Hsan', 'G', 'TUN', 1996, null, 'GK'], ['Wajdi Kechrida', 'D', null, null, null, 'DD'],
     ['Ambrose Ochigbo', 'D', null, null, null, 'DC'], ['Najeh Ferjani', 'D', null, null, null, 'DC'], ['Boubacar Diarra', 'D', null, null, null, 'DG'], ['Oussama Abid', 'M', null, null, null, 'MC'],
     ['Ousmane Diakité', 'M', null, null, null, 'MDC'], ['Mohamed Rayan Anan', 'M', null, null, null, 'MC'], ['Achraf Ben Dhiaf', 'A', null, null, null, 'AD'], ['Abdallah Amri', 'A', null, null, null, 'BU'],
     ['Oscar Wellington', 'A', null, null, null, 'AG'], ['Raed Gazzeh', 'G', 'TUN', 2003], ['Alphonce Otieno Omija', 'D'], ['Ghofrane Naouali', 'D'],
@@ -215,14 +215,14 @@ export const REAL_SQUADS = {
     ['Béchir Yacoub', 'A', null, null, 15, 'AG'],
   ],
   eshs: [
-    ['T. Ben Zitoun', 'A'], ['O. Martin', 'A'], ['N. El Beji', 'A'], ['M. Sassi', 'M'],
-    ['M. Baayou', 'M'], ['Figo Kizito', 'M'], ['M. A. Jarraya', 'D'], ['O. Tenguiano', 'D'],
-    ['G. Abderrazzak', 'D'], ['J. Moussa', 'D'], ['M. Hazgui', 'G'],
+    ['Taieb Ben Zitoun', 'G'], ['Obiri Martin', 'A'], ['Nour Karoui', 'A'], ['Mossaab Sassi', 'M'],
+    ['Malek Baayou', 'M'], ['Rayn Kizito', 'M'], ['Mohamed Amine Jarraya', 'D'], ['Ousmane Tenguiano', 'D'],
+    ['Ghazi Abderrazzak', 'D'], ['Jaafer Moussa', 'D'], ['Mohamed Amine Hazgui', 'D'],
   ],
   psse: [
-    ['A. Chouaya', 'A'], ['A. Ba', 'A'], ['R. Ouni', 'A'], ['I. Bationo Bertrand', 'M'],
-    ['H. Rebaii', 'M'], ['M. Laajili Trabelsi', 'M'], ['F. Ajroudi', 'D'], ['B. Mouelhi', 'D'],
-    ['M. Omri', 'D'], ['A. Jaouadi', 'D'], ['A. Al-Alawi', 'G'],
+    ['Abdelkader Chouaya', 'A'], ['Amadou Ba', 'A'], ['Charfeddine Ouni', 'A'], ['Bationo Bertrand Ibrahima', 'M'],
+    ['Hamza Rebaii', 'M'], ['Mossaab Laajili Trabelsi', 'M'], ['Frej Ajroudi', 'D'], ['Bahaeddine Mouelhi', 'D'],
+    ['Mohamed Ali Omri', 'D'], ['Amir Jaouadi', 'D'], ['Zied Aloui', 'G'],
   ],
   ob: [
     ['Ossema Sayari', 'A'], ['Ravel Djoumekou', 'A'], ['Alpha Sidibé', 'A'], ['Chérif Camara', 'M'],
@@ -276,12 +276,12 @@ export const REAL_SQUADS = {
 // Ordre des noms = ordre de la source ; postes non fournis par la source : estimés par le jeu (posEstimated) et signalés « à valider ».
 export const REAL_XI_SNAPSHOT = '22/11/2026';
 export const REAL_XI = {
-  eshs: { match: 'ES Hammam-Sousse 0-0 Progrès Sakiet Eddaïer', date: '20/11/2026', source: 'Derbista (lineups)', url: 'https://derbista.com/en/match/hammam-sousse-vs-progres-sakiet-eddaier-2026-10-21', status: 'official', verified: 'à revalider', note: 'URL datée du 21/10 alors que le match est du 20/11 : à revalider',
-    xi: ['M. Hazgui', 'J. Moussa', 'G. Abderrazzak', 'O. Tenguiano', 'M. A. Jarraya', 'Figo Kizito', 'M. Baayou', 'M. Sassi', 'N. El Beji', 'O. Martin', 'T. Ben Zitoun'],
-    posEstimated: ['M. Hazgui', 'J. Moussa', 'G. Abderrazzak', 'O. Tenguiano', 'M. A. Jarraya', 'Figo Kizito', 'M. Baayou', 'M. Sassi', 'N. El Beji', 'O. Martin', 'T. Ben Zitoun'] },
-  psse: { match: 'ES Hammam-Sousse 0-0 Progrès Sakiet Eddaïer', date: '20/11/2026', source: 'Derbista (lineups)', url: 'https://derbista.com/en/match/hammam-sousse-vs-progres-sakiet-eddaier-2026-10-21', status: 'official', verified: 'à revalider', note: 'URL datée du 21/10 alors que le match est du 20/11 : à revalider',
-    xi: ['A. Al-Alawi', 'A. Jaouadi', 'M. Omri', 'B. Mouelhi', 'F. Ajroudi', 'M. Laajili Trabelsi', 'H. Rebaii', 'I. Bationo Bertrand', 'R. Ouni', 'A. Ba', 'A. Chouaya'],
-    posEstimated: ['A. Al-Alawi', 'A. Jaouadi', 'M. Omri', 'B. Mouelhi', 'F. Ajroudi', 'M. Laajili Trabelsi', 'H. Rebaii', 'I. Bationo Bertrand', 'R. Ouni', 'A. Ba', 'A. Chouaya'] },
+  eshs: { match: 'ES Hammam-Sousse 0-0 Progrès Sakiet Eddaïer', date: '20/11/2026', source: 'Football Tunisien, compositions du 20/11/2026 (réf. S17, Master Production Bible)', url: 'https://derbista.com/en/match/hammam-sousse-vs-progres-sakiet-eddaier-2026-10-21', status: 'official', verified: 'à revalider', note: 'Conflit Derbista / Football Tunisien : « N. El Beji » remplacé par Nour Karoui (source prioritaire) ; ordre et gardien à confirmer sur la feuille FTF',
+    xi: ['Taieb Ben Zitoun', 'Malek Baayou', 'Ghazi Abderrazzak', 'Mohamed Amine Hazgui', 'Mossaab Sassi', 'Mohamed Amine Jarraya', 'Nour Karoui', 'Jaafer Moussa', 'Rayn Kizito', 'Obiri Martin', 'Ousmane Tenguiano'],
+    posEstimated: ['Taieb Ben Zitoun', 'Malek Baayou', 'Ghazi Abderrazzak', 'Mohamed Amine Hazgui', 'Mossaab Sassi', 'Mohamed Amine Jarraya', 'Nour Karoui', 'Jaafer Moussa', 'Rayn Kizito', 'Obiri Martin', 'Ousmane Tenguiano'] },
+  psse: { match: 'ES Hammam-Sousse 0-0 Progrès Sakiet Eddaïer', date: '20/11/2026', source: 'Football Tunisien, compositions du 20/11/2026 (réf. S17, Master Production Bible)', url: 'https://derbista.com/en/match/hammam-sousse-vs-progres-sakiet-eddaier-2026-10-21', status: 'official', verified: 'à revalider', note: 'Variantes à valider : A. Al-Alawi / Zied Aloui ; R. Ouni / Charfeddine Ouni (initiales différentes) ; URL de la feuille à renseigner',
+    xi: ['Zied Aloui', 'Hamza Rebaii', 'Mohamed Ali Omri', 'Charfeddine Ouni', 'Abdelkader Chouaya', 'Amir Jaouadi', 'Frej Ajroudi', 'Mossaab Laajili Trabelsi', 'Bahaeddine Mouelhi', 'Amadou Ba', 'Bationo Bertrand Ibrahima'],
+    posEstimated: ['Zied Aloui', 'Hamza Rebaii', 'Mohamed Ali Omri', 'Charfeddine Ouni', 'Abdelkader Chouaya', 'Amir Jaouadi', 'Frej Ajroudi', 'Mossaab Laajili Trabelsi', 'Bahaeddine Mouelhi', 'Amadou Ba', 'Bationo Bertrand Ibrahima'] },
   ob: { match: 'Olympique Béja 1-1 AS Marsa', date: '20/11/2026', source: 'FootballTunisien, compositions officielles', url: 'https://footballtunisien.com/2026/11/olympique-de-beja-as-marsa-les-compositions-officielles/', status: 'official', verified: 'à revalider', note: '',
     xi: ['Rabii Hamri', 'Hamza Mabrouk', 'Mehrez Ben Rajeh', 'Ibrahim Ogoulola', 'Khaled Hammami', 'Youssef Azib', 'Chahine Smaoui', 'Chérif Camara', 'Alpha Sidibé', 'Ravel Djoumekou', 'Ossema Sayari'],
     posEstimated: ['Rabii Hamri', 'Hamza Mabrouk', 'Mehrez Ben Rajeh', 'Ibrahim Ogoulola', 'Khaled Hammami', 'Youssef Azib', 'Chahine Smaoui', 'Chérif Camara', 'Alpha Sidibé', 'Ravel Djoumekou', 'Ossema Sayari'] },
@@ -306,12 +306,12 @@ export const REAL_XI = {
   cab: { match: 'Stade Tunisien 1-0 CA Bizertin', date: '21/11/2026', source: 'FootballTunisien, compositions officielles', url: 'https://footballtunisien.com/2026/11/stade-tunisien-ca-bizertin-les-compositions-officielles/', status: 'official', verified: 'à revalider', note: '',
     xi: ['Alaeddine Dridi', 'Zied Berrima', 'Mohamd Aziz Gasmi', 'Malek Doukali', 'Rayane Rehimi', 'Achref Ferchichi', 'Mohamed Amine Allela', 'Wahid Timi', 'Aziz Gueblia', 'Youssef Maktouf', 'Omar Faty'],
     posEstimated: ['Alaeddine Dridi', 'Zied Berrima', 'Mohamd Aziz Gasmi', 'Malek Doukali', 'Rayane Rehimi', 'Achref Ferchichi', 'Mohamed Amine Allela', 'Wahid Timi', 'Aziz Gueblia', 'Youssef Maktouf', 'Omar Faty'] },
-  usm: { match: 'US Monastir 2-0 ES Sahel', date: '21/11/2026', source: 'YS Scores (composition et système)', url: 'https://www.ysscores.com/en/lineup/83534840/US-Monastir-vs-Etoile-Sportive-du-Sahel', status: 'official', verified: 'à revalider', note: '',
+  usm: { match: 'US Monastir 2-0 ES Sahel', date: '21/11/2026', source: 'YS Scores (composition et système)', url: 'https://www.ysscores.com/en/lineup/83534840/US-Monastir-vs-Etoile-Sportive-du-Sahel', status: 'official', verified: 'à revalider', note: 'Variantes à valider : Ousmane Diané / Diane, Aboubakar Benga Youssouf / Benga Youssouf Aboubakar',
     xi: ['Ahmed Slimane', 'Youssef Herch', 'Aboubakar Benga Youssouf', 'Rayan Boukadida', 'Mahmoud Ghorbel', 'Adem Boulila', 'Chaïm El Djebali', 'Ousmane Diané', 'Raed Bouchniba', 'Béchir Yacoub', 'Yassine Amri'],
     posEstimated: [] },
-  ess: { match: 'US Monastir 2-0 ES Sahel', date: '21/11/2026', source: 'YS Scores (composition et système)', url: 'https://www.ysscores.com/en/lineup/83534840/US-Monastir-vs-Etoile-Sportive-du-Sahel', status: 'official', verified: 'à revalider', note: '',
-    xi: ['Raed Gazzeh', 'Najeh Ferjani', 'Abdallah Amri', 'Boubacar Diarra', 'Wajdi Kechrida', 'M. Bouslama', 'Ambrose Ochigbo', 'Ousmane Diakité', 'Oussama Abid', 'N. Smichi', 'Oscar Wellington'],
-    posEstimated: ['M. Bouslama', 'N. Smichi'] },
+  ess: { match: 'US Monastir 2-0 ES Sahel', date: '21/11/2026', source: 'YS Scores (composition et système)', url: 'https://www.ysscores.com/en/lineup/83534840/US-Monastir-vs-Etoile-Sportive-du-Sahel', status: 'official', verified: 'à revalider', note: 'Variantes à valider : Ousmane Diakité / Diakhaté, Boubacar / Babacar Diarra, Oscar Wellington / Wellington Oscar Emuwahen',
+    xi: ['Raed Gazzeh', 'Najeh Ferjani', 'Abdallah Amri', 'Boubacar Diarra', 'Wajdi Kechrida', 'Mohamed Hedi Bouslama', 'Ambrose Ochigbo', 'Ousmane Diakité', 'Oussama Abid', 'Nizar Smichi', 'Oscar Wellington'],
+    posEstimated: ['Mohamed Hedi Bouslama', 'Nizar Smichi'] },
   ca: { match: 'Club Africain 0-0 Progrès Sakiet Eddaïer', date: '07/11/2026', source: 'La Presse de Tunisie, onze publié', url: 'https://www.lapresse.tn/2026/11/07/club-africain-la-composition-officielle-face-au-progres-de-sakiet-eddaier/', status: 'official', verified: 'à revalider', note: '',
     xi: ['Abdelmouhib Chamakh', 'Ghassen Mahersi', 'Ismaïl Simpara', 'Houssem Ben Ali', 'Yassine Bouabid', 'Franck Alain Kanté', 'Oussama Cherifi', 'Rayane Jebali', 'Hamza Khadhraoui', 'Phillippe Kinzumbi', 'Sadok Kadida'],
     posEstimated: [] },
@@ -327,12 +327,12 @@ export const REAL_XI = {
 };
 // Maillots domicile vérifiés (footballkitarchive / footyheadlines, saisons 2024-25 → 2026-27).
 export const KIT_DESIGNS = {
-  est: { pattern: 'stripes', shirt: '#d4141c', alt: '#f7c600', sep: '#111111', trim: '#111111', shorts: '#111111', socks: '#d4141c', stripes: 18 },
+  est: { pattern: 'stripes', shirt: '#d4141c', alt: '#f7c600', sep: '#111111', sleeves: '#d4141c', trim: '#111111', shorts: '#111111', socks: '#d4141c', stripes: 18 },
   ca: { pattern: 'hoops', shirt: '#e30613', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#ffffff', hoops: 7 },
   css: { pattern: 'stripes', shirt: '#111111', alt: '#ffffff', sleeves: '#ffffff', trim: '#111111', shorts: '#111111', socks: '#111111', stripes: 12 },
   ess: { pattern: 'plain', shirt: '#c8102e', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#c8102e' },
   usm: { pattern: 'centerStripe', shirt: '#ffffff', alt: '#1d4fa3', sleeves: '#1d4fa3', trim: '#d4af37', shorts: '#1d4fa3', socks: '#ffffff' },
-  st: { pattern: 'stripes', shirt: '#b5121b', alt: '#0f7b3c', trim: '#ffffff', shorts: '#ffffff', socks: '#b5121b', stripes: 14 },
+  st: { pattern: 'stripes3', shirt: '#6b1022', alt: '#0f6b35', alt2: '#141414', trim: '#ffffff', shorts: '#ffffff', socks: '#6b1022', stripes: 15 },
   esz: { pattern: 'stripes', shirt: '#d71920', alt: '#f6c400', trim: '#f6c400', shorts: '#f6c400', socks: '#d71920', stripes: 18 },
   esm: { pattern: 'stripes', shirt: '#c8161d', alt: '#f4c20d', trim: '#f4c20d', shorts: '#c8161d', socks: '#c8161d', stripes: 14 },
   jso: { pattern: 'chestBand', shirt: '#1d3f9a', alt: '#f2c200', trim: '#f2c200', shorts: '#1d3f9a', socks: '#1d3f9a' },
@@ -344,6 +344,17 @@ export const KIT_DESIGNS = {
   psse: { pattern: 'plain', shirt: '#0d6e3a', alt: '#f0f0f0', trim: '#f0f0f0', shorts: '#f0f0f0', socks: '#0d6e3a' },
   cshl: { pattern: 'stripes', shirt: '#0b7a3b', alt: '#ffffff', trim: '#ffffff', shorts: '#ffffff', socks: '#0b7a3b', stripes: 18 },
 };
+// Provenance des tenues (fenêtre demandée : 23/09 → 22/11/2026). Aucune n'est un asset officiel sous licence :
+// les couleurs et motifs sont reproduits sans logos ni sponsors, statut « à confirmer » tant qu'une photo de match datée n'a pas été validée.
+export const KIT_PROVENANCE = {
+  est: { brand: 'Kappa', season: '2026-27', basis: 'annonce officielle du 16/08/2026 (rayures rouge/jaune, épaules rouges, détails noirs)', status: 'à confirmer' },
+  ca: { brand: 'Kelme', season: '2026-27', basis: 'annonce d’août 2026 (cerceaux rouge/blanc, manches blanches)', status: 'à confirmer' },
+  css: { brand: 'Umbro', season: '2026-27', basis: 'catalogue (rayures noir/blanc)', status: 'à confirmer' },
+  st: { brand: 'Club', season: '2026-27', basis: 'catalogue (bandes bordeaux, vert et noir)', status: 'à confirmer' },
+  ess: { brand: 'Umbro', season: '2026-27', basis: 'catalogue (rouge, détails blancs)', status: 'à confirmer' },
+  usm: { brand: 'Azuro', season: '2026-27', basis: 'catalogue (blanc, bande centrale bleue)', status: 'à confirmer' },
+};
+export const KIT_STATUS_DEFAULT = { status: 'prototype aux couleurs du club', basis: 'aucune photo de match datée validée' };
 // 3e maillots 2026-27 connus (Footy Headlines) ; sinon un 3e maillot neutre est utilisé.
 export const KIT_DESIGNS_THIRD = {
   ca: { pattern: 'plain', shirt: '#141414', alt: '#e30613', trim: '#e30613', shorts: '#141414', socks: '#141414' },

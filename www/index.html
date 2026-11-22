@@ -1059,7 +1059,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.39</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.40</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -6060,13 +6060,13 @@ for(const[k,id,f]of OPTS){const el=$(id);el.addEventListener('input',()=>{stats[
 const optsEl=$('#opts');
 function openOpts(){syncOpts();radioLbl();profUI();optsEl.hidden=false}
 function radioLbl(){const m=stats.radio||'voice',b=$('#radioBtn');if(b)b.textContent='Radio d’équipe : '+(m==='voice'?'voix':m==='text'?'texte':'désactivée');const l=$('#radioLangBtn');if(l)l.textContent='Langue de la radio : '+(RLN[stats.radioLang||'auto']||'comme le jeu');
-  const st=$('#radioVoiceSt'),ib=$('#radioInstBtn');if(st)voiceStatus().then(r=>{const ar=radioLang()==='ar'||radioLang()==='tn';if(r.ok){st.textContent='✓ Voix disponible sur cet appareil'+(r.lang?' ('+r.lang+')':'')+(radioLang()==='tn'&&r.lang&&r.lang!=='ar-TN'?' · le tunisien est lu avec la voix arabe':'');st.className='vst ok';if(ib)ib.hidden=true}
-    else{st.textContent=ar?'✗ Aucune voix arabe installée sur cet appareil. '+(r.app?'Touchez « Installer la voix arabe », choisissez Arabe dans les données vocales, puis revenez.':'Android : Paramètres ▸ Langues ▸ Synthèse vocale ▸ Moteur Google ▸ Installer les données vocales ▸ Arabe. Sur ordinateur, Chrome ou Edge ont une voix arabe.'):'✗ Pas de voix pour cette langue sur cet appareil.';st.className='vst ko';if(ib)ib.hidden=!(ar&&r.app)}}).catch(()=>{})}
+  const st=$('#radioVoiceSt'),ib=$('#radioInstBtn');if(st)voiceStatus().then(r=>{const ar=radioLang()==='ar'||radioLang()==='tn';if(r.ok){st.textContent='✓ Voix disponible sur cet appareil'+(r.lang?' ('+r.lang+')':'')+(radioLang()==='tn'&&r.lang&&r.lang!=='ar-TN'?' · le tunisien est lu avec la voix arabe':'');st.className='vst ok';if(ib)ib.hidden=true;if(r.diag)st.textContent+=' — '+r.diag}
+    else{st.textContent=ar?'✗ Aucune voix arabe installée sur cet appareil. '+(r.app?'Touchez « Installer la voix arabe », choisissez Arabe dans les données vocales, puis revenez.':'Android : Paramètres ▸ Langues ▸ Synthèse vocale ▸ Moteur Google ▸ Installer les données vocales ▸ Arabe. Sur ordinateur, Chrome ou Edge ont une voix arabe.'):'✗ Pas de voix pour cette langue sur cet appareil.';st.className='vst ko';if(ib)ib.hidden=!(ar&&r.app);if(r.diag)st.textContent+=' — '+r.diag}}).catch(()=>{})}
 const RLN={auto:'comme le jeu',fr:'français',ar:'العربية الفصحى (arabe)',tn:'تونسي · الدارجة (tunisien)',en:'English'},RLO=['auto','tn','ar','fr','en'];
 $('#radioLangBtn').addEventListener('click',()=>{const i=RLO.indexOf(stats.radioLang||'auto');stats.radioLang=RLO[(i+1)%RLO.length];saveStats();radioLbl();if((stats.radio||'voice')!=='off'){try{const T=RADIO_TXT[radioLang()]||RADIO_TXT.en,nm=String(stats.name||'').trim(),t=(nm?(['ar','tn'].includes(radioLang())?nm+'، ':nm+', '):'')+T.kill;if((stats.radio||'voice')==='voice')radioSpeak(t)}catch(e){}}});
 $('#radioTestBtn').addEventListener('click',()=>{initAudio&&initAudio();const T=RADIO_TXT[radioLang()]||RADIO_TXT.en,nm=String(stats.name||'').trim()||'Seddik',t=(['ar','tn'].includes(radioLang())?nm+'، ':nm+', ')+T.zone.replace('{d}',T.dirs[2]);VOICEMISS.ar=0;radioSpeak(t);setTimeout(radioLbl,600)});
-$('#radioInstBtn').addEventListener('click',()=>{const P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;if(P&&P.openInstall)P.openInstall().catch(()=>{});for(const k in TTSOK)delete TTSOK[k];VOICEMISS.ar=0;setTimeout(radioLbl,1500)});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){for(const k in TTSOK)delete TTSOK[k];VOICEMISS.ar=0;if(optsEl&&!optsEl.hidden)radioLbl()}});
+$('#radioInstBtn').addEventListener('click',()=>{const P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;if(P&&P.openInstall)P.openInstall().catch(()=>{});TTSL.ok=false;for(const k in TTSOK)delete TTSOK[k];VOICEMISS.ar=0;setTimeout(radioLbl,1500)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){TTSL.ok=false;for(const k in TTSOK)delete TTSOK[k];VOICEMISS.ar=0;if(optsEl&&!optsEl.hidden)radioLbl()}});
 $('#radioBtn').addEventListener('click',()=>{const m=stats.radio||'voice';stats.radio=m==='voice'?'text':m==='text'?'off':'voice';saveStats();radioLbl();if(stats.radio==='voice'){try{radioSpeak((RADIO_TXT[radioLang()]||RADIO_TXT.en).kill)}catch(e){}}});
 $('#optBtn').addEventListener('click',openOpts);$('#optBtn2').addEventListener('click',openOpts);
 $('#oClose').addEventListener('click',()=>{optsEl.hidden=true});
@@ -6140,25 +6140,36 @@ function radioClick(){if(!AC||!stats.sound)return;try{const t=AC.currentTime,o=s
 // voix : on cherche une voix réellement installée (tunisienne, puis arabe…) ; sinon on le dit au lieu de rester muet
 const TTSOK={},VOICEMISS={};
 function ttsChain(lang){const b=lang.slice(0,2);return b==='ar'?[lang,'ar','ar-SA','ar-EG','ar-AE','ar-MA','ar-DZ'].filter((v,i,a)=>a.indexOf(v)===i):[lang,b]}
-async function ttsPick(P,lang){for(const l of ttsChain(lang)){if(TTSOK[l]===undefined){try{const r=await P.isLanguageSupported({lang:l});TTSOK[l]=!!(r&&r.supported)}catch(e){TTSOK[l]=false}}if(TTSOK[l])return l}return null}
+// Android : on demande au téléphone sa vraie liste de langues et de voix (le code arabe peut être « ar-XA », « ar-EG »…)
+const TTSL={ok:false,langs:[],voices:[]};
+async function ttsList(P){if(TTSL.ok)return TTSL;try{const r=P.getSupportedLanguages?await P.getSupportedLanguages():null;TTSL.langs=(r&&r.languages)||[]}catch(e){TTSL.langs=[]}try{const v=P.getSupportedVoices?await P.getSupportedVoices():null;TTSL.voices=(v&&v.voices)||[]}catch(e){TTSL.voices=[]}TTSL.ok=TTSL.langs.length>0||TTSL.voices.length>0;return TTSL}
+async function ttsPick(P,lang){const base=lang.slice(0,2).toLowerCase(),L=await ttsList(P),norm=x=>String(x||'').replace('_','-').toLowerCase();
+  const pref=ttsChain(lang).map(norm);let tag=null;
+  for(const p of pref){const f=L.langs.find(x=>norm(x)===p);if(f){tag=f;break}}
+  if(!tag)tag=L.langs.find(x=>norm(x).split('-')[0]===base)||null;
+  let vi=-1;L.voices.forEach((v,i)=>{const vl=norm(v.lang);if(vi<0&&vl.split('-')[0]===base&&(!tag||vl===norm(tag)||true))vi=i});
+  if(vi>=0){const v=L.voices[vi];if(!tag)tag=v.lang;const lv=L.voices.findIndex(x=>norm(x.lang)===norm(tag)&&!/network|online/i.test(x.voiceURI||x.name||''));if(lv>=0)vi=lv}
+  if(tag)return{lang:tag,voice:vi>=0?vi:undefined};
+  for(const l of ttsChain(lang)){if(TTSOK[l]===undefined){try{const r=await P.isLanguageSupported({lang:l});TTSOK[l]=!!(r&&r.supported)}catch(e){TTSOK[l]=false}}if(TTSOK[l])return{lang:l}}
+  return null}
 function webVoice(lang){const S=window.speechSynthesis;const vs=(S&&S.getVoices())||[];const n=x=>(x.lang||'').replace('_','-').toLowerCase();for(const l of ttsChain(lang)){const v=vs.find(x=>n(x)===l.toLowerCase())||(l.length===2?vs.find(x=>n(x).startsWith(l+'-')||n(x)===l):null);if(v)return v}return null}
 function voiceMissing(lang){const b=lang.slice(0,2);if(VOICEMISS[b])return;VOICEMISS[b]=1;try{if(game.mode==='play')sysFeed(b==='ar'?'🔇 Aucune voix arabe sur cet appareil : Réglages ▸ Langue de la radio ▸ Installer la voix':'🔇 Voix '+lang+' absente de cet appareil',6,'alert')}catch(e){}try{radioLbl()}catch(e){}}
 function radioSpeak(s){const vol=clamp((stats.sfxV??1)*1.1,0,1),lang=RADIO_VOICE[radioLang()]||'en-US';
   const P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;
-  if(P&&P.speak){ttsPick(P,lang).then(l=>{if(!l){voiceMissing(lang);return}ttsQueue(P,{text:s,lang:l,rate:1.0,pitch:.95,volume:vol,category:'ambient'})}).catch(()=>{});return}
+  if(P&&P.speak){ttsPick(P,lang).then(r=>{if(!r){voiceMissing(lang);return}const o={text:s,lang:r.lang,rate:1.0,pitch:.95,volume:vol,category:'ambient'};if(r.voice!=null)o.voice=r.voice;ttsQueue(P,o)}).catch(()=>{});return}
   const S=window.speechSynthesis;if(!S||!window.SpeechSynthesisUtterance)return;
-  const go=()=>{try{const v=webVoice(lang);if(!v&&lang.startsWith('ar')){voiceMissing(lang);return}if(S.speaking&&S.pending)S.cancel();const u=new SpeechSynthesisUtterance(s);u.lang=v?v.lang:lang;if(v)u.voice=v;u.rate=1.02;u.pitch=.95;u.volume=vol;S.speak(u)}catch(e){}};
+  const go=()=>{try{const v=webVoice(lang),all=S.getVoices()||[];if(!v&&lang.startsWith('ar')&&all.length)voiceMissing(lang);if(S.speaking&&S.pending)S.cancel();if(S.paused)S.resume();const u=new SpeechSynthesisUtterance(s);u.lang=v?v.lang:(lang==='ar-TN'?'ar-SA':lang);if(v)u.voice=v;u.rate=1.02;u.pitch=.95;u.volume=vol;S.speak(u)}catch(e){}};
   if(!(S.getVoices()||[]).length){let done=false;const f=()=>{if(done)return;done=true;go()};S.addEventListener&&S.addEventListener('voiceschanged',f,{once:true});setTimeout(f,900)}else go()}
 // file d'attente : un message ne coupe plus le précédent ; si le moteur n'est pas prêt, on réessaie au lieu d'abandonner
 const TQ={busy:false,q:[]};
 function ttsQueue(P,o){if(TQ.busy){TQ.q.push(o);if(TQ.q.length>2)TQ.q.shift();return}TQ.busy=true;let tries=0;
-  const run=x=>{P.speak(x).then(next,()=>{if(++tries<=3)setTimeout(()=>run(x),650*tries);else next()})},next=()=>{tries=0;const n=TQ.q.shift();if(n)run(n);else TQ.busy=false};
+  const run=x=>{P.speak(x).then(next,()=>{if(++tries<=3){if(tries===2&&x.voice!=null){x=Object.assign({},x);delete x.voice}if(tries===3&&x.lang&&x.lang.startsWith('ar')&&x.lang!=='ar')x=Object.assign({},x,{lang:'ar'});setTimeout(()=>run(x),650*tries)}else next()})},next=()=>{tries=0;const n=TQ.q.shift();if(n)run(n);else TQ.busy=false};
   run(o);setTimeout(()=>{if(TQ.busy&&!TQ.q.length)TQ.busy=false},9000)}
 function ttsWarm(){try{const lang=RADIO_VOICE[radioLang()]||'en-US',P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;
-  if(P&&P.isLanguageSupported){for(const k in TTSOK)if(!TTSOK[k])delete TTSOK[k];VOICEMISS.ar=0;ttsPick(P,lang).catch(()=>{});return}
+  if(P&&P.speak){for(const k in TTSOK)if(!TTSOK[k])delete TTSOK[k];TTSL.ok=false;VOICEMISS.ar=0;ttsPick(P,lang).catch(()=>{});return}
   const S=window.speechSynthesis;if(S&&window.SpeechSynthesisUtterance&&!TQ.webPrimed){TQ.webPrimed=true;const u=new SpeechSynthesisUtterance(' ');u.volume=0;S.speak(u);S.getVoices()}}catch(e){}}
 async function voiceStatus(){const lang=RADIO_VOICE[radioLang()]||'en-US',P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.TextToSpeech;
-  if(P&&P.isLanguageSupported){const l=await ttsPick(P,lang);return{ok:!!l,lang:l,app:true}}const S=window.speechSynthesis;if(!S)return{ok:false};if(!(S.getVoices()||[]).length)await new Promise(r=>{S.addEventListener&&S.addEventListener('voiceschanged',r,{once:true});setTimeout(r,900)});const v=webVoice(lang);return{ok:!!v,lang:v&&v.lang,app:false}}
+  if(P&&P.speak){TTSL.ok=false;const r=await ttsPick(P,lang);const ar=TTSL.langs.filter(x=>/^ar/i.test(x));return{ok:!!r,lang:r&&r.lang,app:true,diag:'Android · '+TTSL.langs.length+' langues, '+TTSL.voices.length+' voix · arabe : '+(ar.join(', ')||'aucune')}}const S=window.speechSynthesis;if(!S)return{ok:false};if(!(S.getVoices()||[]).length)await new Promise(r=>{S.addEventListener&&S.addEventListener('voiceschanged',r,{once:true});setTimeout(r,900)});const v=webVoice(lang),all=S.getVoices()||[],ar=all.filter(x=>/^ar/i.test(x.lang||'')).map(x=>x.lang);return{ok:!!v,lang:v&&v.lang,app:false,diag:'Navigateur · '+all.length+' voix · arabe : '+([...new Set(ar)].join(', ')||'aucune')}}
 function radioTick(dt){if(RAD.hT>0){RAD.hT-=dt;if(RAD.hT<=0&&RAD.el)RAD.el.classList.remove('on')}
   if(game.mode!=='play'||!player||(stats.radio||'voice')==='off')return;const p=player;if(!p.alive||p.inPlane)return;
   if(!RAD.landed){if(p.air<=0){RAD.landed=true;RAD.land=matchT;RAD.kills=p.kills;RAD.vest=p.vest;radioSay('land',null,999,1)}return}

@@ -598,7 +598,10 @@ export function playerLook(player = {}, index = 0) {
   const style = styles[h % styles.length];
   const hair = HAIR_COLORS[(h >>> 4) % (style === 'afro' ? 2 : HAIR_COLORS.length)];
   const boots = BOOT_COLORS[(h >>> 13) % BOOT_COLORS.length];
-  return { style, hair, beard: ((h >>> 9) % 4) === 0, boot: boots[0], bootAccent: boots[1] };
+  const eyePalette = [[0.12,0.075,0.035],[0.22,0.12,0.055],[0.08,0.13,0.16],[0.24,0.2,0.12]];
+  const eye = eyePalette[(h >>> 17) % eyePalette.length];
+  const beardStyle = ((h >>> 9) % 5);
+  return { style, hair, eye, beard: beardStyle < 3, beardStyle, boot: boots[0], bootAccent: boots[1] };
 }
 // Coiffure posée sur une tête de demi-axes 0.125 (avant) × 0.15 (haut) × 0.112 (côté).
 function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0, k = 1) {
@@ -613,7 +616,12 @@ function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0, k = 1) {
     case 'fade': E(-0.02, 0.075, 0.12, 0.09, 0.105); break;
     default: E(-0.025, 0.05, 0.13, 0.12, 0.118); if (detail > 0) E(0.07, 0.1, 0.04, 0.03, 0.09, 6, 3);
   }
-  if (look.beard && detail > 0) E(0.055, -0.075, 0.07, 0.06, 0.095, 7, 4);
+  if (look.beard && detail > 0) {
+    // Barbe courte, bouc ou moustache : variation stable par joueur.
+    if (look.beardStyle === 0) E(0.055, -0.075, 0.07, 0.06, 0.095, 7, 4);
+    else if (look.beardStyle === 1) E(0.058, -0.09, 0.052, 0.045, 0.08, 7, 4);
+    else E(0.075, -0.045, 0.06, 0.025, 0.075, 7, 3);
+  }
 }
 function spectator(out, x, y, z, facing, shirt, skin, scarf) {
   // Vecteur latéral perpendiculaire à l'orientation (fonctionne aussi dans les virages en arc).
@@ -1334,7 +1342,7 @@ export class MatchRenderer3D {
       for(const side of [-1,1]){
         const eyeSide=side*0.04;
         ellH(headPoint(ff,fy+0.03,eyeSide),0.011,0.014,0.017,[0.94,0.92,0.84],hi?8:6,4,headTilt);
-        ellH(headPoint(ff+0.009,fy+0.03,eyeSide),0.007,0.009,0.008,[0.035,0.03,0.025],6,4,headTilt);
+        ellH(headPoint(ff+0.009,fy+0.03,eyeSide),0.007,0.009,0.008,look.eye||[0.035,0.03,0.025],6,4,headTilt);
         if(hi) ellH(headPoint(ff+0.015,fy+0.035,eyeSide-0.002),0.0028,0.0035,0.003,[1,0.98,0.88],5,3,headTilt);
         tube(g,headPoint(ff-0.006,fy+0.054,side*0.068),headPoint(ff+0.008,fy+0.061,side*0.019),hi?0.012:0.009,hair,6);
         // Oreilles avec un relief interne discret.

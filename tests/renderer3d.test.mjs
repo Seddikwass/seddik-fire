@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats, getWeatherProfile, playerLook } from '../public/js/renderer3d.js';
+import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats, getWeatherProfile, playerLook, kitPatternColor } from '../public/js/renderer3d.js';
 
 const low = get3DQualityProfile('low');
 const medium = get3DQualityProfile('medium');
@@ -107,6 +107,21 @@ assert.equal(lowStadium.finite, true, 'les coordonnées du stade bas détail son
 assert.equal(highStadium.finite, true, 'les coordonnées du stade haut détail sont toutes finies');
 console.log('3D STADIUM GEOMETRY OK — pelouse, tribunes, filets, projecteurs et coordonnées valides');
 
+
+// Les motifs de maillot doivent produire des couleurs déterministes et préserver les couleurs d'équipe.
+{
+  const shirt = [0.8, 0.05, 0.08], alt = [0.95, 0.9, 0.75], alt2 = [0.08, 0.12, 0.2];
+  assert.deepEqual(kitPatternColor({ pattern: 'plain' }, shirt, alt)(1, 0, 0), shirt);
+  const stripe = kitPatternColor({ pattern: 'stripes', stripes: 8 }, shirt, alt);
+  assert.ok([stripe(1, 0, 0), stripe(0, 0, 1)].every(col => Array.isArray(col) && col.length === 3),
+    'les rayures retournent des couleurs RGB valides');
+  const triple = kitPatternColor({ pattern: 'stripes3', stripes: 9 }, shirt, alt, alt2);
+  const colors = [triple(1, 0, 0), triple(0, 0, 1), triple(-1, 0, 0)];
+  assert.ok(colors.every(col => Array.isArray(col) && col.length === 3), 'les trois couleurs du motif restent valides');
+  const sash = kitPatternColor({ pattern: 'sash' }, shirt, alt, alt2);
+  assert.ok(sash(0, 0, 0).length === 3, 'la diagonale du maillot retourne une couleur valide');
+}
+console.log('KIT PATTERNS OK — couleurs unies, rayures, tricolore et diagonale');
 
 const modelMatch = {
   selected: null,

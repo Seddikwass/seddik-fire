@@ -1284,6 +1284,13 @@ export class MatchRenderer3D {
             const stud=legPoint(ankF+fd[0]*studF,Math.max(0.035,ankU+fd[1]*studF-0.052),sideOff);
             cylinder(g,stud,[stud[0],stud[1]-0.018,stud[2]],0.009,bootAcc,5,0.008);
           }
+          // Surpiqûre en arc au bout de la chaussure, visible uniquement en gros plan.
+          const toeF=ankF+fd[0]*0.112, toeH=Math.max(0.052,ankU+fd[1]*0.112-0.012);
+          for(let stitch=0;stitch<8;stitch++){
+            const a=-0.044+stitch*0.011, b=a+0.009;
+            const p0=legPoint(toeF,toeH,sideOff+a), p1=legPoint(toeF,toeH,sideOff+b);
+            tube(g,p0,p1,0.0024,bootAcc,4);
+          }
           // Côtes du tricot sur les chaussettes : trois reliefs fins, visibles en gros plan.
           for(let rib=1;rib<=3;rib++){
             const t=0.24+rib*0.16;

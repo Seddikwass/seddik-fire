@@ -9,6 +9,10 @@ const night = getWeatherProfile('night');
 const day = getWeatherProfile('day');
 assert.ok(night.light[0] > 1 && night.light[1] > 1, 'le mode nuit conserve une luminosité suffisante pour lire les joueurs et la pelouse');
 assert.ok(night.fogRange[2] < 0.5, 'la brume nocturne ne masque pas les détails du stade');
+assert.ok(night.light[0] >= 1.2 && night.light[1] >= 1.15,
+  'les projecteurs gardent les joueurs et les tribunes lisibles la nuit');
+assert.ok(night.fogRange[2] <= 0.36 && night.fogRange[1] >= 200,
+  'la visibilité nocturne reste longue avec une brume discrète');
 assert.ok(day.light[0] > night.light[0], 'le plein jour reste plus lumineux que le mode nuit');
 assert.ok(low.pixelRatio <= medium.pixelRatio && medium.pixelRatio <= high.pixelRatio,
   'le ratio de pixels progresse avec la qualité');

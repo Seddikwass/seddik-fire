@@ -1271,7 +1271,7 @@ export class MatchRenderer3D {
     // ---- Buste : poitrine, épaules, bassin (vraies proportions, orientés avec le joueur) ----
     // LOD par joueur : pleine résolution près de la caméra (action, ralentis, gros plans), allégée au loin.
     const camE=this.lastCamera?.eye, camDist=camE?Math.hypot(x-camE[0],(-pose.y)-camE[2],1.1-camE[1]):0;
-    const hi=detail===2&&camDist<36;
+    const hi=detail===2&&camDist<48; // conserver les visages et les mains détaillés dans les plans TV rapprochés
     // Rotation des épaules opposée au bassin pendant la course.
     const twist=-Math.sin(phase)*0.22*clamp(pose.speed/8.5,0,1)*action.gait*(1-pose.idle)*(pose.kick>0.005?0:1);
     // Silhouette athlétique : torse continu et modelé, sans empilement de volumes.
@@ -1382,14 +1382,14 @@ export class MatchRenderer3D {
       const knee=legPoint(kF,kU,side*0.125);
       const ankle=legPoint(ankF,ankU,sideOff+side*0.02);
       const mid=[hip[0]+(knee[0]-hip[0])*0.55,hip[1]+(knee[1]-hip[1])*0.55,hip[2]+(knee[2]-hip[2])*0.55];
-      cylinder(g,hip,mid,0.122*build,shorts,hi?12:8,0.128*build);
+      cylinder(g,hip,mid,0.122*build,shorts,hi?18:detail>0?13:9,0.128*build);
       if(detail>0&&!player.isOfficial) cylinder(g,legPoint(lean*0.25,hipY+0.04,side*0.205*build),[mid[0]+(legPoint(0,0,side*0.1)[0]-legPoint(0,0,0)[0]),mid[1],mid[2]+(legPoint(0,0,side*0.1)[2]-legPoint(0,0,0)[2])],0.016,trim,4,0.014);
       const legSkin=player.longPants?shorts:skin;
-      cylinder(g,mid,knee,player.longPants?0.1:0.098*build,legSkin,hi?12:8,player.longPants?0.085:0.07);
-      sphere(g,knee,[0.068,0.072,0.068],legSkin,6,4);
+      cylinder(g,mid,knee,player.longPants?0.1:0.098*build,legSkin,hi?18:detail>0?13:9,player.longPants?0.085:0.07);
+      sphere(g,knee,[0.071,0.076,0.071],legSkin,hi?12:8,hi?9:5);
       const sockTop=[knee[0]+(ankle[0]-knee[0])*0.14,knee[1]+(ankle[1]-knee[1])*0.14,knee[2]+(ankle[2]-knee[2])*0.14];
       cylinder(g,knee,sockTop,0.07,legSkin,7,0.07);
-      cylinder(g,sockTop,ankle,0.072*build,sock,hi?12:7,0.048);
+      cylinder(g,sockTop,ankle,0.072*build,sock,hi?18:detail>0?12:8,0.048);
       if(detail>0){ const tp=[sockTop[0]+(ankle[0]-sockTop[0])*0.18,sockTop[1]+(ankle[1]-sockTop[1])*0.18,sockTop[2]+(ankle[2]-sockTop[2])*0.18]; ring(g,sockTop[0],sockTop[1],sockTop[2],0.074,trim,10,0.014); if(!player.isOfficial) ring(g,tp[0],tp[1],tp[2],0.075,[0.92,0.92,0.9],10,0.022);
         // Mollet : léger galbe derrière le tibia.
         const cv=[sockTop[0]+(ankle[0]-sockTop[0])*0.3,sockTop[1]+(ankle[1]-sockTop[1])*0.3,sockTop[2]+(ankle[2]-sockTop[2])*0.3]; const back=legPoint(kF+Math.sin(shinA)*L2*0.3-0.035,kU-Math.cos(shinA)*L2*0.3,sideOff*0.8+side*0.03); sphere(g,[(cv[0]+back[0])/2,(cv[1]+back[1])/2,(cv[2]+back[2])/2],[0.06,0.085,0.06],sock,6,4); }

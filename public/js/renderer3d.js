@@ -1405,6 +1405,12 @@ export class MatchRenderer3D {
         ellH(headPoint(ff+0.038,fy-0.063,0),0.018,0.008,0.024,lip,7,3,headTilt);
         tube(g,headPoint(ff+0.052,fy-0.014,-0.006),headPoint(ff+0.043,fy-0.038,-0.006),0.003,[0.43,0.25,0.2],5);
         tube(g,headPoint(ff+0.052,fy-0.014,0.006),headPoint(ff+0.043,fy-0.038,0.006),0.003,[0.43,0.25,0.2],5);
+        // Plis nasogéniens très légers : relient naturellement les ailes du nez aux commissures.
+        const fold=skin.map(v=>v*0.84);
+        for(const side of [-1,1]){
+          tube(g,headPoint(ff+0.048,fy-0.021,side*0.025),headPoint(ff+0.031,fy-0.048,side*0.038),0.0027,fold,5);
+          ellH(headPoint(ff+0.034,fy-0.051,side*0.039),0.0045,0.004,0.004,fold,5,3,headTilt);
+        }
         // Pommettes et pli sous les yeux avec une teinte chaude très subtile.
         for(const side of [-1,1]){
           ellH(headPoint(ff-0.006,fy-0.012,side*0.073),0.026,0.018,0.018,skin.map(v=>Math.min(1,v*1.035)),8,4,headTilt);

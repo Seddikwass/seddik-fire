@@ -597,11 +597,12 @@ export function playerLook(player = {}, index = 0) {
   const styles = ['crop', 'crop', 'buzz', 'afro', 'fade', 'long', 'bald', 'quiff'];
   const style = styles[h % styles.length];
   const hair = HAIR_COLORS[(h >>> 4) % (style === 'afro' ? 2 : HAIR_COLORS.length)];
+  const hairHighlight = hair.map(v => Math.min(1, v * 1.22 + 0.035));
   const boots = BOOT_COLORS[(h >>> 13) % BOOT_COLORS.length];
   const eyePalette = [[0.12,0.075,0.035],[0.22,0.12,0.055],[0.08,0.13,0.16],[0.24,0.2,0.12]];
   const eye = eyePalette[(h >>> 17) % eyePalette.length];
   const beardStyle = ((h >>> 9) % 5);
-  return { style, hair, eye, beard: beardStyle < 3, beardStyle, boot: boots[0], bootAccent: boots[1] };
+  return { style, hair, hairHighlight, eye, beard: beardStyle < 3, beardStyle, boot: boots[0], bootAccent: boots[1] };
 }
 // Coiffure posée sur une tête de demi-axes 0.125 (avant) × 0.15 (haut) × 0.112 (côté).
 function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0, k = 1) {
@@ -615,6 +616,11 @@ function addHair(out, bodyPoint, f, bodyY, look, detail, ell, tilt = 0, k = 1) {
     case 'quiff': E(-0.025, 0.045, 0.128, 0.12, 0.118); E(0.045, 0.13, 0.075, 0.05, 0.08, 7, 4); break;
     case 'fade': E(-0.02, 0.075, 0.12, 0.09, 0.105); break;
     default: E(-0.025, 0.05, 0.13, 0.12, 0.118); if (detail > 0) E(0.07, 0.1, 0.04, 0.03, 0.09, 6, 3);
+  }
+  if (detail > 0 && look.hairHighlight && (look.style === 'long' || look.style === 'quiff')) {
+    // Mèche légèrement éclaircie pour casser l'aspect uniforme des cheveux en gros plan.
+    ell(bodyPoint(f + (look.style === 'quiff' ? 0.055 : -0.075) * k, y + 0.115 * k, -0.018 * k),
+      0.052 * k, 0.018 * k, 0.035 * k, look.hairHighlight, 7, 4, tilt);
   }
   if (look.beard && detail > 0) {
     // Barbe courte, bouc ou moustache : variation stable par joueur.

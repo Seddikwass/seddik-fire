@@ -1267,7 +1267,17 @@ export class MatchRenderer3D {
           // Trois lacets fins sur le dessus : détail discret, limité aux gros plans.
           for(let lace=0;lace<3;lace++){
             const f=ankF+fd[0]*(0.035+lace*0.025), h=Math.max(0.055,ankU+fd[1]*(0.035+lace*0.025));
-            cylinder(g,legPoint(f,h,sideOff-0.022),legPoint(f,h,sideOff+0.022),0.0045,bootAcc,5,0.008);
+            const laceA=legPoint(f,h,sideOff-0.022), laceB=legPoint(f,h,sideOff+0.022);
+            cylinder(g,laceA,laceB,0.0045,bootAcc,5,0.008);
+            // Œillets métalliques minuscules de chaque côté des lacets.
+            ell(laceA,0.0055,0.0055,0.004,bootAcc,5,3);
+            ell(laceB,0.0055,0.0055,0.004,bootAcc,5,3);
+          }
+          // Fine couture latérale qui suit la forme de l'empeigne.
+          for(const sideSign of [-1,1]){
+            const seamA=legPoint(ankF+fd[0]*0.005,Math.max(0.052,ankU+fd[1]*0.005-0.01),sideOff+sideSign*0.052);
+            const seamB=legPoint(ankF+fd[0]*0.095,Math.max(0.052,ankU+fd[1]*0.095-0.01),sideOff+sideSign*0.052);
+            tube(g,seamA,seamB,0.0022,bootAcc,5);
           }
           // Crampons sous la semelle, répartis sous l'avant et le talon.
           for(const studF of [-0.035,0.025,0.075]){

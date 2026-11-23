@@ -66,5 +66,4 @@ $('speed').textContent=Math.round(speed*9);$('score').textContent=String(score).
 roadZ+=speed*dt;if(roadZ>160){roadZ=0;stage++;if(stage>50)finish(true);else{$('stage').textContent=String(stage).padStart(2,'0');hp=Math.min(100,hp+10);toast('ÉPREUVE '+stage+' / 50')}}if(toastTime>0){toastTime-=dt;if(toastTime<=0)$('toast').style.opacity=0}}
 function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.04);if(mode==='race')update(dt);if(renderer&&scene)renderer.render(scene,camera)}
 clock=new THREE.Clock();addEventListener('resize',()=>{if(camera&&renderer){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7))}});animate();
-})();
 </script></body></html>

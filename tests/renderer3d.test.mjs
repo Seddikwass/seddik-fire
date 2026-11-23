@@ -1,9 +1,15 @@
 import assert from 'node:assert/strict';
-import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats } from '../public/js/renderer3d.js';
+import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats, getWeatherProfile } from '../public/js/renderer3d.js';
 
 const low = get3DQualityProfile('low');
 const medium = get3DQualityProfile('medium');
 const high = get3DQualityProfile('high');
+
+const night = getWeatherProfile('night');
+const day = getWeatherProfile('day');
+assert.ok(night.light[0] > 1 && night.light[1] > 1, 'le mode nuit conserve une luminosité suffisante pour lire les joueurs et la pelouse');
+assert.ok(night.fogRange[2] < 0.5, 'la brume nocturne ne masque pas les détails du stade');
+assert.ok(day.light[0] > night.light[0], 'le plein jour reste plus lumineux que le mode nuit');
 assert.ok(low.pixelRatio <= medium.pixelRatio && medium.pixelRatio <= high.pixelRatio,
   'le ratio de pixels progresse avec la qualité');
 assert.ok(low.crowd < medium.crowd && medium.crowd < high.crowd,

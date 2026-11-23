@@ -1375,7 +1375,13 @@ export class MatchRenderer3D {
         const eyeSide=side*0.04;
         ellH(headPoint(ff,fy+0.03,eyeSide),0.011,0.014,0.017,[0.94,0.92,0.84],hi?8:6,4,headTilt);
         ellH(headPoint(ff+0.009,fy+0.03,eyeSide),0.007,0.009,0.008,look.eye||[0.035,0.03,0.025],6,4,headTilt);
-        if(hi) ellH(headPoint(ff+0.015,fy+0.035,eyeSide-0.002),0.0028,0.0035,0.003,[1,0.98,0.88],5,3,headTilt);
+        if(hi){
+          ellH(headPoint(ff+0.015,fy+0.035,eyeSide-0.002),0.0028,0.0035,0.003,[1,0.98,0.88],5,3,headTilt);
+          // Paupières supérieure et inférieure : deux lignes fines pour mieux intégrer l'œil au visage.
+          const lid=skin.map(v=>v*0.78);
+          tube(g,headPoint(ff-0.004,fy+0.046,side*0.06),headPoint(ff+0.012,fy+0.046,side*0.022),0.0038,lid,5);
+          tube(g,headPoint(ff-0.002,fy+0.014,side*0.058),headPoint(ff+0.012,fy+0.014,side*0.025),0.0028,lid,5);
+        }
         tube(g,headPoint(ff-0.006,fy+0.054,side*0.068),headPoint(ff+0.008,fy+0.061,side*0.019),hi?0.012:0.009,hair,6);
         // Oreilles avec un relief interne discret.
         ellH(headPoint(headF-0.005,headY+0.005,side*0.116),0.027,0.043,0.018,skin,hi?9:6,5,headTilt);

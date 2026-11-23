@@ -1157,9 +1157,17 @@ export class MatchRenderer3D {
     ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?12:8,hi?6:5,tilt*0.5);
     // Bas du maillot qui tombe droit sur le short (plus de taille de guêpe).
     ell(bodyPoint(lean*0.32+torsoF*0.15-0.012,hipY+0.2,0),0.112*build,0.17,0.19*build,shirtPat,hi?20:12,hi?7:5,tilt*0.6,twist*0.25);
-    // Col et bande de taille.
+    // Col double : liseré contrasté pour donner une finition textile au maillot.
     cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.295,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.33,0),0.086,trim,hi?14:8,0.08);
     if(detail>0){
+      const seam=kit?.seam?parseColor(kit.seam,kitAlt):kitAlt;
+      // Coutures d'épaules et passepoils latéraux, visibles en gros plan sans surcharger le modèle.
+      for(const side of [-1,1]){
+        cylinder(g,bodyPoint(torsoF+0.105,bodyY+0.245,side*0.19),bodyPoint(torsoF+0.035,bodyY+0.29,side*0.105),0.0075,seam,6,0.012);
+        cylinder(g,bodyPoint(torsoF+0.105,bodyY-0.12,side*0.155),bodyPoint(torsoF+0.112,hipY+0.17,side*0.155),0.006,seam,6,0.01);
+      }
+      // Fine bande sous le col : effet de finition cousue.
+      cylinder(g,bodyPoint(torsoF+tilt*0.15,bodyY+0.282,0),bodyPoint(torsoF+tilt*0.15,bodyY+0.29,0),0.088,seam,hi?14:8,0.01);
       // Écusson sur le cœur.
       ell(bodyPoint(torsoF+0.128*build+tilt*0.06,bodyY+0.17,-0.09),0.012,0.034,0.028,trim,6,4,tilt);
     }

@@ -1381,6 +1381,9 @@ export class MatchRenderer3D {
           const lid=skin.map(v=>v*0.78);
           tube(g,headPoint(ff-0.004,fy+0.046,side*0.06),headPoint(ff+0.012,fy+0.046,side*0.022),0.0038,lid,5);
           tube(g,headPoint(ff-0.002,fy+0.014,side*0.058),headPoint(ff+0.012,fy+0.014,side*0.025),0.0028,lid,5);
+          // Pli palpébral supérieur très fin : donne du relief à l'orbite sans épaissir le contour de l'œil.
+          const crease=skin.map(v=>v*0.9);
+          tube(g,headPoint(ff-0.006,fy+0.061,side*0.059),headPoint(ff+0.006,fy+0.067,side*0.022),0.0022,crease,5);
         }
         tube(g,headPoint(ff-0.006,fy+0.054,side*0.068),headPoint(ff+0.008,fy+0.061,side*0.019),hi?0.012:0.009,hair,6);
         // Oreilles avec un relief interne discret.

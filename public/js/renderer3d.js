@@ -1022,7 +1022,9 @@ export class MatchRenderer3D {
     const shirt=parseColor(kit?.shirt,[0.8,0.1,0.1]), trim=parseColor(kit?.trim,[0.95,0.88,0.72]);
     const shorts=parseColor(kit?.shorts||kit?.trim,[0.08,0.1,0.13]);
     const kitAlt=parseColor(kit?.alt,trim), shirtPat=player.isOfficial?shirt:kitPatternColor(kit,shirt,kitAlt,parseColor(kit?.alt2,kitAlt)), sleeveCol=kit?.sleeves?parseColor(kit.sleeves,shirt):(kit?.pattern==='hoops'?kitAlt:shirt);
-    const skin=parseColor(player.skin,[0.59,0.36,0.23]), dark=[0.035,0.045,0.06], sock=player.sockColor||parseColor(kit?.socks,shirt.map(v=>v*0.92));
+    const skinPalette=[[0.91,0.72,0.57],[0.78,0.55,0.39],[0.62,0.39,0.25],[0.43,0.27,0.19],[0.3,0.19,0.14],[0.84,0.64,0.48]];
+    const skinSeed=nameHash((player.id??'')+'|'+(player.name||index));
+    const skin=parseColor(player.skin,skinPalette[(skinSeed>>>5)%skinPalette.length]), dark=[0.035,0.045,0.06], sock=player.sockColor||parseColor(kit?.socks,shirt.map(v=>v*0.92));
     const detail=this.quality.detail;
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
     const build=0.98+physique*0.18;
@@ -1327,17 +1329,34 @@ export class MatchRenderer3D {
     ellH(headPoint(headF-0.005,headY,0.112*HK),0.027,0.04,0.018,skin,6,4);
     addHair(g,headPoint,headF,headY-0.62,look,detail,ellH,headTilt,HK);
     if(detail>0){
-      const ff=headF+0.105*HK, fy=headY;
+      const ff=headF+0.105*HK, fy=headY, faceDetail=hi?1:0;
+      // Yeux enfoncés sous des arcades légères : blanc cassé, iris brun/noir et petit reflet.
       for(const side of [-1,1]){
-        ellH(headPoint(ff,fy+0.03,side*0.04),0.011,0.014,0.017,[0.94,0.92,0.84],6,4,headTilt);
-        ellH(headPoint(ff+0.009,fy+0.03,side*0.04),0.007,0.009,0.008,[0.035,0.03,0.025],5,3,headTilt);
-        tube(g,headPoint(ff,fy+0.062,side*0.066),headPoint(ff+0.004,fy+0.066,side*0.02),0.009,hair,5);
+        const eyeSide=side*0.04;
+        ellH(headPoint(ff,fy+0.03,eyeSide),0.011,0.014,0.017,[0.94,0.92,0.84],hi?8:6,4,headTilt);
+        ellH(headPoint(ff+0.009,fy+0.03,eyeSide),0.007,0.009,0.008,[0.035,0.03,0.025],6,4,headTilt);
+        if(hi) ellH(headPoint(ff+0.015,fy+0.035,eyeSide-0.002),0.0028,0.0035,0.003,[1,0.98,0.88],5,3,headTilt);
+        tube(g,headPoint(ff-0.006,fy+0.054,side*0.068),headPoint(ff+0.008,fy+0.061,side*0.019),hi?0.012:0.009,hair,6);
+        // Oreilles avec un relief interne discret.
+        ellH(headPoint(headF-0.005,headY+0.005,side*0.116),0.027,0.043,0.018,skin,hi?9:6,5,headTilt);
+        if(hi) ellH(headPoint(headF+0.002,headY+0.005,side*0.13),0.009,0.022,0.006,[0.48,0.27,0.2],6,4,headTilt);
       }
-      ellH(headPoint(ff+0.022,fy-0.008,0),0.026,0.032,0.019,skin,6,4,headTilt);
-      // Mâchoire et pommettes : visage moins rond, plus adulte.
-      ellH(headPoint(headF+0.008,headY-0.066,0),0.095,0.058,0.085,skin,10,5,headTilt);
-      ellH(headPoint(headF+0.075,headY-0.102,0),0.028,0.025,0.036,skin,6,4,headTilt);
-      tube(g,headPoint(ff+0.004,fy-0.053,-0.026),headPoint(ff+0.004,fy-0.053,0.026),0.007,[0.32,0.13,0.11],5);
+      // Nez sculpté en trois volumes, narines et arête douce.
+      ellH(headPoint(ff+0.026,fy+0.005,0),0.024,0.044,0.025,skin,hi?10:6,5,headTilt);
+      ellH(headPoint(ff+0.047,fy-0.012,0),0.026,0.021,0.027,skin,hi?10:6,5,headTilt);
+      if(hi) for(const side of [-1,1])
+        ellH(headPoint(ff+0.057,fy-0.025,side*0.015),0.008,0.006,0.009,[0.25,0.12,0.09],5,3,headTilt);
+      // Mâchoire, pommettes et lèvres : volumes fins plutôt qu'une tête parfaitement lisse.
+      ellH(headPoint(headF+0.008,headY-0.066,0),0.095,0.058,0.085,skin,hi?14:10,hi?7:5,headTilt);
+      ellH(headPoint(headF+0.075,headY-0.102,0),0.028,0.025,0.036,skin,hi?8:6,4,headTilt);
+      tube(g,headPoint(ff+0.036,fy-0.052,-0.025),headPoint(ff+0.036,fy-0.052,0.025),hi?0.009:0.007,[0.38,0.16,0.14],6);
+      if(hi){
+        // Pommettes et pli sous les yeux avec une teinte chaude très subtile.
+        for(const side of [-1,1]){
+          ellH(headPoint(ff-0.006,fy-0.012,side*0.073),0.026,0.018,0.018,skin.map(v=>Math.min(1,v*1.035)),8,4,headTilt);
+          tube(g,headPoint(ff-0.008,fy+0.008,side*0.023),headPoint(ff-0.004,fy+0.004,side*0.059),0.0035,[0.36,0.19,0.15],5);
+        }
+      }
     }
     // Gardien : gants renforcés.
     if(player.isGK&&detail>0) for(const side of [-1,1]) {

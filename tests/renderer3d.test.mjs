@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats, getWeatherProfile } from '../public/js/renderer3d.js';
+import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats, getWeatherProfile, playerLook } from '../public/js/renderer3d.js';
 
 const low = get3DQualityProfile('low');
 const medium = get3DQualityProfile('medium');
@@ -115,6 +115,13 @@ const modelMatch = {
     { kit: { shirt: '#123d91', trim: '#f4d35e', shorts: '#111111' }, gkKit: { shirt: '#f0a52b', trim: '#111111', shorts: '#111111' } },
   ],
 };
+const lookA = playerLook({ id: 'player-a', name: 'Player A' }, 0);
+const lookARepeat = playerLook({ id: 'player-a', name: 'Player A' }, 0);
+const lookB = playerLook({ id: 'player-b', name: 'Player B' }, 1);
+assert.deepEqual(lookA, lookARepeat, 'les détails du visage restent déterministes entre les matchs');
+assert.ok(Array.isArray(lookA.eye) && lookA.eye.length === 3, 'chaque joueur reçoit une couleur d iris valide');
+assert.ok(Number.isInteger(lookA.beardStyle), 'le style de barbe est stable et individualisé');
+
 const modelPlayer = {
   x: 3, y: -2, vx: 2, vy: 1, heading: 0.6, anim: 1.4, team: 0, i: 9,
   num: 10, skin: '#c68642', isGK: false, slideT: 0, diveT: 0,

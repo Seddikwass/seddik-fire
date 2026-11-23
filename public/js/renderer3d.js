@@ -1268,6 +1268,12 @@ export class MatchRenderer3D {
             const stud=legPoint(ankF+fd[0]*studF,Math.max(0.035,ankU+fd[1]*studF-0.052),sideOff);
             cylinder(g,stud,[stud[0],stud[1]-0.018,stud[2]],0.009,bootAcc,5,0.008);
           }
+          // Côtes du tricot sur les chaussettes : trois reliefs fins, visibles en gros plan.
+          for(let rib=1;rib<=3;rib++){
+            const t=0.24+rib*0.16;
+            const p=[sockTop[0]+(ankle[0]-sockTop[0])*t,sockTop[1]+(ankle[1]-sockTop[1])*t,sockTop[2]+(ankle[2]-sockTop[2])*t];
+            ring(g,p[0],p[1],p[2],0.073,[0.78,0.8,0.82],10,0.006);
+          }
         }
       }
     }

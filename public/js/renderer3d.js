@@ -1391,6 +1391,11 @@ export class MatchRenderer3D {
       ellH(headPoint(headF+0.075,headY-0.102,0),0.028,0.025,0.036,skin,hi?8:6,4,headTilt);
       tube(g,headPoint(ff+0.036,fy-0.052,-0.025),headPoint(ff+0.036,fy-0.052,0.025),hi?0.009:0.007,[0.38,0.16,0.14],6);
       if(hi){
+        // Lèvre inférieure et philtrum : détails discrets, calculés uniquement en gros plan.
+        const lip=skin.map((v,i)=>Math.min(1,v*0.72+[0.09,0.035,0.03][i]));
+        ellH(headPoint(ff+0.038,fy-0.063,0),0.018,0.008,0.024,lip,7,3,headTilt);
+        tube(g,headPoint(ff+0.052,fy-0.014,-0.006),headPoint(ff+0.043,fy-0.038,-0.006),0.003,[0.43,0.25,0.2],5);
+        tube(g,headPoint(ff+0.052,fy-0.014,0.006),headPoint(ff+0.043,fy-0.038,0.006),0.003,[0.43,0.25,0.2],5);
         // Pommettes et pli sous les yeux avec une teinte chaude très subtile.
         for(const side of [-1,1]){
           ellH(headPoint(ff-0.006,fy-0.012,side*0.073),0.026,0.018,0.018,skin.map(v=>Math.min(1,v*1.035)),8,4,headTilt);

@@ -117,7 +117,6 @@ const modelMatch = {
 };
 const lookA = playerLook({ id: 'player-a', name: 'Player A' }, 0);
 const lookARepeat = playerLook({ id: 'player-a', name: 'Player A' }, 0);
-const lookB = playerLook({ id: 'player-b', name: 'Player B' }, 1);
 assert.deepEqual(lookA, lookARepeat, 'les détails du visage restent déterministes entre les matchs');
 assert.ok(Array.isArray(lookA.eye) && lookA.eye.length === 3, 'chaque joueur reçoit une couleur d iris valide');
 assert.ok(Number.isInteger(lookA.beardStyle), 'le style de barbe est stable et individualisé');

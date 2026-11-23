@@ -135,6 +135,9 @@ const lookARepeat = playerLook({ id: 'player-a', name: 'Player A' }, 0);
 assert.deepEqual(lookA, lookARepeat, 'les détails du visage restent déterministes entre les matchs');
 assert.ok(Array.isArray(lookA.eye) && lookA.eye.length === 3, 'chaque joueur reçoit une couleur d iris valide');
 assert.ok(Number.isInteger(lookA.beardStyle), 'le style de barbe est stable et individualisé');
+assert.ok(Array.isArray(lookA.hairHighlight) && lookA.hairHighlight.length === 3 && lookA.hairHighlight.every(Number.isFinite),
+  'chaque joueur reçoit une teinte de reflet capillaire RGB valide');
+assert.deepEqual(lookA.hairHighlight, lookARepeat.hairHighlight, 'les reflets des cheveux restent déterministes');
 
 const modelPlayer = {
   x: 3, y: -2, vx: 2, vy: 1, heading: 0.6, anim: 1.4, team: 0, i: 9,

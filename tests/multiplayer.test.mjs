@@ -2,6 +2,7 @@
 // reconnexion, abandon et classement.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import WebSocket from 'ws';
 const { encodeFrame, decodeFrames, acceptKey } = await import('../lib/ws.js');
 
 // Protocole : clé d'acceptation officielle (exemple de la RFC 6455) et trames.

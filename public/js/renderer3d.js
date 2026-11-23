@@ -571,7 +571,7 @@ const SKY_HORIZON = [0.2, 0.25, 0.34], SKY_MID = [0.07, 0.11, 0.2], SKY_TOP = [0
 // Ambiances : ciel, brume, lumière globale, pelouse mouillée, type d'ombres et pluie.
 export function getWeatherProfile(kind = 'night') {
   const P = {
-    night: { sky: [[0.28, 0.33, 0.43], [0.095, 0.14, 0.24], [0.025, 0.045, 0.095]], fog: [0.28, 0.33, 0.43], fogRange: [58, 190, 0.42], light: [1.16, 1.12, 1.08], wet: 0, shadows: 'flood', rain: 0 },
+    night: { sky: [[0.31, 0.36, 0.47], [0.11, 0.16, 0.27], [0.03, 0.052, 0.105]], fog: [0.31, 0.36, 0.47], fogRange: [62, 214, 0.36], light: [1.22, 1.18, 1.14], wet: 0, shadows: 'flood', rain: 0 },
     day: { sky: [[0.66, 0.77, 0.9], [0.4, 0.6, 0.86], [0.2, 0.42, 0.8]], fog: [0.7, 0.79, 0.9], fogRange: [70, 230, 0.32], light: [1.24, 1.19, 1.07], wet: 0, shadows: 'sun', rain: 0 },
     rain: { sky: [[0.2, 0.22, 0.26], [0.12, 0.13, 0.16], [0.06, 0.07, 0.09]], fog: [0.22, 0.24, 0.28], fogRange: [26, 130, 0.72], light: [0.72, 0.76, 0.84], wet: 1, shadows: 'soft', rain: 1 },
     fog: { sky: [[0.46, 0.48, 0.52], [0.36, 0.38, 0.42], [0.26, 0.28, 0.32]], fog: [0.5, 0.52, 0.56], fogRange: [12, 78, 0.9], light: [0.93, 0.94, 0.97], wet: 0.25, shadows: 'soft', rain: 0 },
@@ -779,7 +779,7 @@ export class MatchRenderer3D {
       for(const side of [-1,1]){
         const fx=s*52.1,fz=side*33.7;
         cylinder(g,[fx,0,fz],[fx,1.55,fz],0.035,[0.92,0.92,0.88],6);
-        box(g,[fx+s*0.27,1.36,fz+side*0.06],[0.55,0.3,0.06],s===side?[0.86,0.08,0.12]:[0.95,0.82,0.24]);
+        box(g,[fx+s*0.27,1.36,fz+side*0.06],[0.55,0.3,0.06],s===side?home:away);
       }
     }
     // Panneaux LED lumineux autour de la pelouse (couleurs des clubs et bandeaux clairs).
@@ -866,6 +866,13 @@ export class MatchRenderer3D {
         box(g, [0, top, sign * (reach + depth / 2)], [len + 8, 0.6, depth], [0.06,0.07,0.09]);
         box(g, [0, top - 0.45, sign * reach], [len + 8, 0.35, 0.4], [1.25,1.18,0.95]);
         box(g, [0, top / 2, sign * (reach + depth)], [len + 8, top, 0.8], [0.09,0.1,0.13]);
+        // Ruban lumineux continu sous la rive du toit : repère visuel du stade de nuit.
+        box(g, [0, top + 0.08, sign * (reach + depth - 0.38)], [len + 7.6, 0.095, 0.12], [1.25, 1.02, 0.76]);
+        // Consoles diagonales de charpente, espacées pour garder une tribune lisible.
+        if(profile.detail>=1) for(let k=-2;k<=2;k++){
+          const tx=k*(len/6);
+          tube(g,[tx,top-0.45,sign*(reach+1.2)],[tx,Math.max(3,top-4.2),sign*(reach+depth-0.8)],0.105,[0.27,0.3,0.35],6);
+        }
         // Drapeaux sur le bord du toit : la toile ondule avec le rythme de la foule.
         for (let k = 0; k < 9; k++) {
           const fx = -len / 2 + 6 + k * (len - 12) / 8, fz = sign * reach;
@@ -880,6 +887,12 @@ export class MatchRenderer3D {
         box(g, [sign * (reach + depth / 2), top, 0], [depth, 0.6, len + 8], [0.06,0.07,0.09]);
         box(g, [sign * reach, top - 0.45, 0], [0.4, 0.35, len + 8], [1.25,1.18,0.95]);
         box(g, [sign * (reach + depth), top / 2, 0], [0.8, top, len + 8], [0.09,0.1,0.13]);
+        // Même ruban lumineux sur les virages pour une enceinte homogène.
+        box(g, [sign * (reach + depth - 0.38), top + 0.08, 0], [0.12, 0.095, len + 7.6], [1.25, 1.02, 0.76]);
+        if(profile.detail>=1) for(let k=-2;k<=2;k++){
+          const tz=k*(len/6);
+          tube(g,[sign*(reach+1.2),top-0.45,tz],[sign*(reach+depth-0.8),Math.max(3,top-4.2),tz],0.105,[0.27,0.3,0.35],6);
+        }
       }
     };
     stand('x', -1); stand('x', 1); stand('z', -1); stand('z', 1);
@@ -1411,6 +1424,8 @@ export class MatchRenderer3D {
           // Pli palpébral supérieur très fin : donne du relief à l'orbite sans épaissir le contour de l'œil.
           const crease=skin.map(v=>v*0.9);
           tube(g,headPoint(ff-0.006,fy+0.061,side*0.059),headPoint(ff+0.006,fy+0.067,side*0.022),0.0022,crease,5);
+          // Arcade sourcilière fine, adaptée à la couleur de cheveux du joueur.
+          tube(g,headPoint(ff-0.012,fy+0.082,side*0.066),headPoint(ff+0.014,fy+0.085,side*0.019),0.0042,hair,6);
         }
         tube(g,headPoint(ff-0.006,fy+0.054,side*0.068),headPoint(ff+0.008,fy+0.061,side*0.019),hi?0.012:0.009,hair,6);
         // Oreilles avec un relief interne discret.

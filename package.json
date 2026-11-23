@@ -1,6 +1,6 @@
 {
   "name": "football-tunisia-2026",
-  "version": "3.60.0",
+  "version": "3.61.0",
   "private": true,
   "description": "SEDDIK LEAGUE — le football tunisien en version premium (web + Android)",
   "type": "module",
@@ -13,6 +13,7 @@
     "test": "node tests/multiplayer.test.mjs && node tests/caf.test.mjs && node tests/youth.test.mjs && node tests/transfers.test.mjs && node tests/dressing.test.mjs && node tests/tactics.test.mjs && node tests/commentary.test.mjs && node tests/shootout.test.mjs && node tests/match-flow.test.mjs && node tests/keeper.test.mjs && node tests/referee.test.mjs && node tests/challenges.test.mjs && node tests/career.test.mjs && node tests/render-scale.test.mjs && node tests/audio-ambience.test.mjs && node tests/match-actions.test.mjs && node tests/match-motion.test.mjs && node tests/renderer3d.test.mjs && node tests/match-sim.mjs 6 && node tests/match-user.mjs 1 1 && node tests/storage-sync.mjs && node tests/api.test.mjs"
   },
   "dependencies": {
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "ws": "^8.18.0"
   }
 }

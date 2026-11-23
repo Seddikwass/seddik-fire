@@ -9,6 +9,10 @@ const night = getWeatherProfile('night');
 const day = getWeatherProfile('day');
 assert.ok(night.light[0] > 1 && night.light[1] > 1, 'le mode nuit conserve une luminosité suffisante pour lire les joueurs et la pelouse');
 assert.ok(night.fogRange[2] < 0.5, 'la brume nocturne ne masque pas les détails du stade');
+assert.ok(night.light[0] >= 1.2 && night.light[1] >= 1.15,
+  'les projecteurs gardent les joueurs et les tribunes lisibles la nuit');
+assert.ok(night.fogRange[2] <= 0.36 && night.fogRange[1] >= 200,
+  'la visibilité nocturne reste longue avec une brume discrète');
 assert.ok(day.light[0] > night.light[0], 'le plein jour reste plus lumineux que le mode nuit');
 assert.ok(low.pixelRatio <= medium.pixelRatio && medium.pixelRatio <= high.pixelRatio,
   'le ratio de pixels progresse avec la qualité');
@@ -111,7 +115,7 @@ console.log('3D STADIUM GEOMETRY OK — pelouse, tribunes, filets, projecteurs e
 // Les motifs de maillot doivent produire des couleurs déterministes et préserver les couleurs d'équipe.
 {
   const shirt = [0.8, 0.05, 0.08], alt = [0.95, 0.9, 0.75], alt2 = [0.08, 0.12, 0.2];
-  assert.deepEqual(kitPatternColor({ pattern: 'plain' }, shirt, alt)(1, 0, 0), shirt);
+  assert.deepEqual(kitPatternColor({ pattern: 'plain' }, shirt, alt), shirt);
   const stripe = kitPatternColor({ pattern: 'stripes', stripes: 8 }, shirt, alt);
   assert.ok([stripe(1, 0, 0), stripe(0, 0, 1)].every(col => Array.isArray(col) && col.length === 3),
     'les rayures retournent des couleurs RGB valides');

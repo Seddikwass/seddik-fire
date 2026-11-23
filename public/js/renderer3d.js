@@ -1176,6 +1176,16 @@ export class MatchRenderer3D {
       cylinder(g,bodyPoint(torsoF+tilt*0.15,bodyY+0.282,0),bodyPoint(torsoF+tilt*0.15,bodyY+0.29,0),0.088,seam,hi?14:8,0.01);
       // Écusson sur le cœur.
       ell(bodyPoint(torsoF+0.128*build+tilt*0.06,bodyY+0.17,-0.09),0.012,0.034,0.028,trim,6,4,tilt);
+      // Petits points de couture au bas du maillot, devant et dans le dos.
+      for(const facing of [-1,1]){
+        const hemF=torsoF+facing*0.145+tilt*0.12;
+        for(let stitch=0;stitch<12;stitch++){
+          const side=-0.105+stitch*0.019;
+          const a=bodyPoint(hemF,hipY+0.045,side);
+          const b=bodyPoint(hemF,hipY+0.045,side+0.009);
+          tube(g,a,b,0.0025,seam,4);
+        }
+      }
     }
     // Numéros : petit devant, grand dans le dos (lisible quand le joueur s'éloigne).
     if(!player.isOfficial) addKitNumber(g,bodyPoint,torsoF+0.142*build+tilt*0.02,bodyY+0.05,player.num,trim,detail===0?0.6:0.72,-1);

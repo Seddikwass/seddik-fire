@@ -518,31 +518,60 @@ function addKitNumber(out, point, forward, centerY, number, color, scale = 1, fa
   }
 }
 function addArmPose(out, shoulder, elbow, hand, sleeve, skin, trim, detail, glove = false, longSleeve = glove) {
-  // Manche courte jusqu'à mi-bras avec revers ; le gardien garde ses manches longues.
-  if (glove || longSleeve) cylinder(out, shoulder, elbow, 0.105, sleeve, 8, 0.075);
-  else {
-    const cuff = [shoulder[0] + (elbow[0] - shoulder[0]) * 0.52, shoulder[1] + (elbow[1] - shoulder[1]) * 0.52, shoulder[2] + (elbow[2] - shoulder[2]) * 0.52];
-    cylinder(out, shoulder, cuff, 0.106, sleeve, 10, 0.094);
-    // Biceps : léger galbe sous la manche.
-    cylinder(out, cuff, elbow, 0.074, skin, 9, 0.062);
-    if (detail > 0) { const k = 0.07, c2 = [cuff[0] - (elbow[0] - shoulder[0]) * k, cuff[1] - (elbow[1] - shoulder[1]) * k, cuff[2] - (elbow[2] - shoulder[2]) * k]; cylinder(out, c2, cuff, 0.1, trim, 8, 0.096); }
-  }
-  // Avant-bras galbé (plus épais sous le coude, poignet fin).
-  const fm = [elbow[0] + (hand[0] - elbow[0]) * 0.35, elbow[1] + (hand[1] - elbow[1]) * 0.35, elbow[2] + (hand[2] - elbow[2]) * 0.35];
-  const fc = glove || longSleeve ? sleeve : skin;
-  cylinder(out, elbow, fm, glove || longSleeve ? 0.07 : 0.06, fc, 9, glove || longSleeve ? 0.066 : 0.058);
-  cylinder(out, fm, hand, glove || longSleeve ? 0.066 : 0.058, fc, 9, 0.038);
-  if (detail > 0) {
-    sphere(out, elbow, [0.062,0.062,0.062], fc, 7, 5);
-    // Main orientée dans l'axe de l'avant-bras : paume aplatie + pouce (gant plus large pour le gardien).
-    let d = [hand[0] - elbow[0], hand[1] - elbow[1], hand[2] - elbow[2]]; const dl = Math.hypot(...d) || 1; d = d.map(v => v / dl);
-    const ref = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
-    const u = norm3(cross3(d, ref)), w = norm3(cross3(d, u));
-    const hc = [hand[0] + d[0] * 0.05, hand[1] + d[1] * 0.05, hand[2] + d[2] * 0.05];
-    orientedEllipsoid(out, hc, u, d, w, glove ? 0.05 : 0.026, glove ? 0.085 : 0.07, glove ? 0.072 : 0.045, glove ? trim : skin, 8, 5);
-    orientedEllipsoid(out, [hc[0] + w[0] * 0.04 + d[0] * -0.01, hc[1] + w[1] * 0.04 - d[1] * 0.01, hc[2] + w[2] * 0.04 - d[2] * 0.01], u, d, w, glove ? 0.03 : 0.016, glove ? 0.04 : 0.032, 0.016, glove ? trim : skin, 5, 3);
+  // Bras anatomiques : volumes continus, manches mieux profilées et articulation du coude.
+  const high = detail > 1, sides = high ? 18 : detail > 0 ? 13 : 9;
+  const mid = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const axisFrame = (a, b) => {
+    const d = norm3(sub3(b, a)), ref = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+    return { d, u: norm3(cross3(d, ref)), w: norm3(cross3(d, norm3(cross3(d, ref)))) };
+  };
+  const upperMid = mid(shoulder, elbow, 0.48);
+  if (glove || longSleeve) {
+    cylinder(out, shoulder, elbow, 0.108, sleeve, sides, 0.078);
+    if (high) {
+      const f = axisFrame(shoulder, elbow);
+      orientedEllipsoid(out, upperMid, f.u, f.d, f.w, 0.105, 0.19, 0.105, sleeve, 14, 9);
+    }
   } else {
-    sphere(out, hand, [0.07,0.075,0.07], glove ? trim : skin, 6, 4);
+    const cuff = mid(shoulder, elbow, 0.52);
+    cylinder(out, shoulder, cuff, 0.108, sleeve, sides, 0.094);
+    // Galbe du biceps visible sous la manche, sans aspect de tube droit.
+    const bicepsMid = mid(cuff, elbow, 0.42), bf = axisFrame(cuff, elbow);
+    cylinder(out, cuff, elbow, 0.078, skin, sides, 0.058);
+    if (detail > 0) {
+      orientedEllipsoid(out, bicepsMid, bf.u, bf.d, bf.w, 0.078, 0.145, 0.078, skin, high ? 14 : 10, 7);
+      const seamStart = mid(shoulder, cuff, 0.88);
+      cylinder(out, seamStart, cuff, 0.101, trim, high ? 12 : 8, 0.096);
+    }
+  }
+  // Avant-bras naturellement plus large près du coude et resserré au poignet.
+  const fm = mid(elbow, hand, 0.34), fc = glove || longSleeve ? sleeve : skin;
+  const forearmFrame = axisFrame(elbow, hand);
+  cylinder(out, elbow, fm, glove || longSleeve ? 0.074 : 0.066, fc, sides, glove || longSleeve ? 0.068 : 0.06);
+  cylinder(out, fm, hand, glove || longSleeve ? 0.068 : 0.06, fc, sides, glove || longSleeve ? 0.045 : 0.041);
+  if (high) {
+    const forearmMid = mid(elbow, hand, 0.38);
+    orientedEllipsoid(out, forearmMid, forearmFrame.u, forearmFrame.d, forearmFrame.w,
+      glove ? 0.072 : 0.061, 0.17, glove ? 0.072 : 0.061, fc, 14, 8);
+  }
+  if (detail > 0) {
+    sphere(out, elbow, [0.067,0.067,0.067], fc, high ? 11 : 8, high ? 8 : 5);
+    // Paume orientée et doigts séparés en haute qualité : la main ne ressemble plus à une boule.
+    const d = forearmFrame.d, u = forearmFrame.u, w = forearmFrame.w;
+    const hc = [hand[0] + d[0] * 0.045, hand[1] + d[1] * 0.045, hand[2] + d[2] * 0.045];
+    orientedEllipsoid(out, hc, u, d, w, glove ? 0.052 : 0.032, glove ? 0.088 : 0.073, glove ? 0.073 : 0.047, glove ? trim : skin, high ? 12 : 8, high ? 8 : 5);
+    const thumbBase = [hc[0] + w[0] * 0.035, hc[1] + w[1] * 0.035, hc[2] + w[2] * 0.035];
+    orientedEllipsoid(out, thumbBase, u, d, w, glove ? 0.029 : 0.018, glove ? 0.046 : 0.034, 0.018, glove ? trim : skin, 7, 4);
+    if (high && !glove) {
+      for (let finger = 0; finger < 4; finger++) {
+        const offset = (finger - 1.5) * 0.018;
+        const base = [hc[0] + w[0] * offset + d[0] * 0.052, hc[1] + w[1] * offset + d[1] * 0.052, hc[2] + w[2] * offset + d[2] * 0.052];
+        const tip = [base[0] + d[0] * 0.055 + w[0] * offset * 0.16, base[1] + d[1] * 0.055, base[2] + d[2] * 0.055 + w[2] * offset * 0.16];
+        cylinder(out, base, tip, 0.009, skin, 6, 0.006);
+      }
+    }
+  } else {
+    sphere(out, hand, [0.07,0.075,0.07], glove ? trim : skin, 7, 5);
   }
 }
 

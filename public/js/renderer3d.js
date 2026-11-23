@@ -858,6 +858,40 @@ export class MatchRenderer3D {
           }
         }
       }
+      // Poteaux porteurs, passerelles et garde-corps : la tribune a une vraie profondeur architecturale.
+      if (profile.detail >= 1) {
+        const facadeTop = 1.2 + lower * 0.45 + 3.2 + upper * 0.45 + 2.8;
+        const facadeD = base + (lower + upper) * 0.85 + 6.5;
+        const count = axis === 'x' ? 9 : 6;
+        for (let k = 0; k < count; k++) {
+          const along = -len / 2 + (k + 0.5) * len / count;
+          if (axis === 'x') {
+            const px = along, pz = sign * facadeD;
+            cylinder(g, [px, 0.2, pz], [px, facadeTop, pz], 0.22, [0.27,0.3,0.34], 8, 0.16);
+            box(g, [px, facadeTop - 0.25, pz], [0.42, 0.12, 1.05], [0.42,0.46,0.5]);
+          } else {
+            const px = sign * facadeD, pz = along;
+            cylinder(g, [px, 0.2, pz], [px, facadeTop, pz], 0.22, [0.27,0.3,0.34], 8, 0.16);
+            box(g, [px, facadeTop - 0.25, pz], [1.05, 0.12, 0.42], [0.42,0.46,0.5]);
+          }
+        }
+        // Bande vitrée sombre de la coursive supérieure, rythmée par des montants.
+        if (axis === 'x') {
+          box(g, [0, facadeTop * 0.73, sign * (facadeD - 0.18)], [len, 1.65, 0.16], [0.075,0.12,0.17]);
+          for (let k = 0; k <= 18; k++) {
+            const px = -len / 2 + k * len / 18;
+            tube(g, [px, facadeTop * 0.73 - 0.8, sign * (facadeD - 0.28)], [px, facadeTop * 0.73 + 0.8, sign * (facadeD - 0.28)], 0.025, [0.43,0.49,0.56], 5);
+          }
+          tube(g, [-len/2, facadeTop * 0.73 + 0.82, sign * (facadeD - 0.28)], [len/2, facadeTop * 0.73 + 0.82, sign * (facadeD - 0.28)], 0.045, [0.68,0.72,0.76], 6);
+        } else {
+          box(g, [sign * (facadeD - 0.18), facadeTop * 0.73, 0], [0.16, 1.65, len], [0.075,0.12,0.17]);
+          for (let k = 0; k <= 12; k++) {
+            const pz = -len / 2 + k * len / 12;
+            tube(g, [sign * (facadeD - 0.28), facadeTop * 0.73 - 0.8, pz], [sign * (facadeD - 0.28), facadeTop * 0.73 + 0.8, pz], 0.025, [0.43,0.49,0.56], 5);
+          }
+          tube(g, [sign * (facadeD - 0.28), facadeTop * 0.73 + 0.82, -len/2], [sign * (facadeD - 0.28), facadeTop * 0.73 + 0.82, len/2], 0.045, [0.68,0.72,0.76], 6);
+        }
+      }
       // toit : auvent sombre avec rampe lumineuse en façade
       const top = 1.2 + lower * 0.45 + 3.2 + upper * 0.45 + 3.6;
       const reach = base + 4;
@@ -1134,6 +1168,43 @@ export class MatchRenderer3D {
       const fL=[cy*ct,-st,sy*ct], uL=[cy*st,ct,sy*st], sL=[-sy,0,cy];
       orientedEllipsoid(g,c,toW(rotV(fL)),toW(rotV(uL)),toW(rotV(sL)),rf,ru,rs,color,seg,rings);
     };
+
+    // Torse anatomique continu : cage thoracique, taille et bassin sont reliés
+    // par une surface lissée au lieu d'empiler plusieurs ellipsoïdes séparés.
+    const addSculptedTorso = () => {
+      const rings = [
+        { h: hipY + 0.075, f: lean * 0.28, rf: 0.112 * build, rs: 0.168 * build },
+        { h: bodyY - 0.12, f: torsoF * 0.72, rf: 0.132 * build, rs: 0.192 * build },
+        { h: bodyY + 0.015, f: torsoF, rf: 0.151 * build, rs: 0.218 * build },
+        { h: bodyY + 0.15, f: torsoF + tilt * 0.055, rf: 0.166 * build, rs: 0.246 * build },
+        { h: bodyY + 0.255, f: torsoF + tilt * 0.09, rf: 0.145 * build, rs: 0.224 * build },
+        { h: bodyY + 0.325, f: torsoF + tilt * 0.12, rf: 0.092 * build, rs: 0.145 * build },
+      ];
+      const segments = hi ? 32 : detail > 0 ? 24 : 16;
+      const vertex = (r, a) => {
+        const cf = Math.cos(a), ss = Math.sin(a);
+        const p = bodyPoint(r.f + cf * r.rf, r.h, ss * r.rs);
+        const n = norm3([F[0] * cf / Math.max(r.rf, 0.001) + S[0] * ss / Math.max(r.rs, 0.001),
+          0.22 * (r.h - bodyY), F[2] * cf / Math.max(r.rf, 0.001) + S[2] * ss / Math.max(r.rs, 0.001)]);
+        const localY = clamp((r.h - bodyY + 0.17) / 0.52, -1, 1);
+        const col = typeof shirtPat === 'function' ? shirtPat(cf, localY, ss) : shirtPat;
+        return { p, n, col };
+      };
+      for (let j = 0; j < rings.length - 1; j++) {
+        for (let i = 0; i < segments; i++) {
+          const a0 = i / segments * Math.PI * 2, a1 = (i + 1) / segments * Math.PI * 2;
+          const A = vertex(rings[j], a0), B = vertex(rings[j + 1], a0);
+          const C = vertex(rings[j + 1], a1), D = vertex(rings[j], a1);
+          pushVertex(g, A.p, A.n, A.col); pushVertex(g, B.p, B.n, B.col); pushVertex(g, C.p, C.n, C.col);
+          pushVertex(g, A.p, A.n, A.col); pushVertex(g, C.p, C.n, C.col); pushVertex(g, D.p, D.n, D.col);
+        }
+      }
+      // Deltoïdes souples pour une transition naturelle entre le maillot et les bras.
+      for (const side of [-1, 1]) {
+        ell(bodyPoint(torsoF + tilt * 0.08, bodyY + 0.245, side * 0.205 * build),
+          0.112 * build, 0.105, 0.105 * build, sleeveCol, hi ? 14 : 10, hi ? 8 : 6, tilt, twist);
+      }
+    };
     // Ombre douce : noyau sombre sous les pieds, halo plus clair étiré vers l'arrière (projecteurs).
     const up=[[0,1,0],[0,1,0],[0,1,0]];
     // Ombres de match en nocturne : une ombre étirée par pylône d'éclairage (4 coins) + noyau sombre au pied.
@@ -1170,12 +1241,25 @@ export class MatchRenderer3D {
     const hi=detail===2&&camDist<36;
     // Rotation des épaules opposée au bassin pendant la course.
     const twist=-Math.sin(phase)*0.22*clamp(pose.speed/8.5,0,1)*action.gait*(1-pose.idle)*(pose.kick>0.005?0:1);
-    // Silhouette athlétique en V : taille fine, poitrine et épaules larges.
-    ell(bodyPoint(torsoF,bodyY+0.03,0),0.128*build,0.3-low*0.08,0.18*build,shirtPat,hi?20:12,hi?10:7,tilt,twist*0.5);
-    ell(bodyPoint(torsoF+tilt*0.1,bodyY+0.19,0),0.135*build,0.14,0.27*build,kit?.sleeves?sleeveCol:shirtPat,hi?20:12,hi?6:5,tilt,twist);
-    ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?12:8,hi?6:5,tilt*0.5);
-    // Bas du maillot qui tombe droit sur le short (plus de taille de guêpe).
-    ell(bodyPoint(lean*0.32+torsoF*0.15-0.012,hipY+0.2,0),0.112*build,0.17,0.19*build,shirtPat,hi?20:12,hi?7:5,tilt*0.6,twist*0.25);
+    // Silhouette athlétique : torse continu et modelé, sans empilement de volumes.
+    addSculptedTorso();
+    // Tenue d'arbitre identifiable : passepoils jaune vif, écusson et sifflet au col.
+    if (player.isOfficial && (player.role === 'ref' || player.role === 'ar') && detail > 0) {
+      const signalYellow = [1.0, 0.78, 0.08];
+      for (const side of [-1, 1]) {
+        tube(g, bodyPoint(torsoF + 0.105, bodyY + 0.265, side * 0.18),
+          bodyPoint(torsoF + 0.13, bodyY + 0.17, side * 0.205), 0.012, signalYellow, 6);
+        tube(g, bodyPoint(torsoF + 0.14, bodyY + 0.16, side * 0.205),
+          bodyPoint(torsoF + 0.12, hipY + 0.22, side * 0.17), 0.009, signalYellow, 5);
+      }
+      ell(bodyPoint(torsoF + 0.158, bodyY + 0.17, -0.105), 0.012, 0.038, 0.03,
+        [0.96, 0.84, 0.24], 7, 4, tilt);
+      const cordA = bodyPoint(torsoF + 0.08, bodyY + 0.31, 0.025);
+      const cordB = bodyPoint(torsoF + 0.15, bodyY + 0.13, 0.035);
+      tube(g, cordA, cordB, 0.0045, [0.82, 0.82, 0.76], 5);
+      ell(cordB, 0.018, 0.025, 0.014, [0.1, 0.11, 0.12], 7, 4, tilt);
+    }
+    ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?14:9,hi?8:5,tilt*0.5);
     // Col double : liseré contrasté pour donner une finition textile au maillot.
     cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.295,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.33,0),0.086,trim,hi?14:8,0.08);
     if(detail>0){

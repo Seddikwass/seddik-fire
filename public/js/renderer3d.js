@@ -868,6 +868,11 @@ export class MatchRenderer3D {
         box(g, [0, top / 2, sign * (reach + depth)], [len + 8, top, 0.8], [0.09,0.1,0.13]);
         // Ruban lumineux continu sous la rive du toit : repère visuel du stade de nuit.
         box(g, [0, top + 0.08, sign * (reach + depth - 0.38)], [len + 7.6, 0.095, 0.12], [1.25, 1.02, 0.76]);
+        // Consoles diagonales de charpente, espacées pour garder une tribune lisible.
+        if(profile.detail>=1) for(let k=-2;k<=2;k++){
+          const tx=k*(len/6);
+          tube(g,[tx,top-0.45,sign*(reach+1.2)],[tx,Math.max(3,top-4.2),sign*(reach+depth-0.8)],0.105,[0.27,0.3,0.35],6);
+        }
         // Drapeaux sur le bord du toit : la toile ondule avec le rythme de la foule.
         for (let k = 0; k < 9; k++) {
           const fx = -len / 2 + 6 + k * (len - 12) / 8, fz = sign * reach;
@@ -884,6 +889,10 @@ export class MatchRenderer3D {
         box(g, [sign * (reach + depth), top / 2, 0], [0.8, top, len + 8], [0.09,0.1,0.13]);
         // Même ruban lumineux sur les virages pour une enceinte homogène.
         box(g, [sign * (reach + depth - 0.38), top + 0.08, 0], [0.12, 0.095, len + 7.6], [1.25, 1.02, 0.76]);
+        if(profile.detail>=1) for(let k=-2;k<=2;k++){
+          const tz=k*(len/6);
+          tube(g,[sign*(reach+1.2),top-0.45,tz],[sign*(reach+depth-0.8),Math.max(3,top-4.2),tz],0.105,[0.27,0.3,0.35],6);
+        }
       }
     };
     stand('x', -1); stand('x', 1); stand('z', -1); stand('z', 1);
@@ -1415,6 +1424,8 @@ export class MatchRenderer3D {
           // Pli palpébral supérieur très fin : donne du relief à l'orbite sans épaissir le contour de l'œil.
           const crease=skin.map(v=>v*0.9);
           tube(g,headPoint(ff-0.006,fy+0.061,side*0.059),headPoint(ff+0.006,fy+0.067,side*0.022),0.0022,crease,5);
+          // Arcade sourcilière fine, adaptée à la couleur de cheveux du joueur.
+          tube(g,headPoint(ff-0.012,fy+0.082,side*0.066),headPoint(ff+0.014,fy+0.085,side*0.019),0.0042,hair,6);
         }
         tube(g,headPoint(ff-0.006,fy+0.054,side*0.068),headPoint(ff+0.008,fy+0.061,side*0.019),hi?0.012:0.009,hair,6);
         // Oreilles avec un relief interne discret.

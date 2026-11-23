@@ -571,7 +571,7 @@ const SKY_HORIZON = [0.2, 0.25, 0.34], SKY_MID = [0.07, 0.11, 0.2], SKY_TOP = [0
 // Ambiances : ciel, brume, lumière globale, pelouse mouillée, type d'ombres et pluie.
 export function getWeatherProfile(kind = 'night') {
   const P = {
-    night: { sky: [SKY_HORIZON, SKY_MID, SKY_TOP], fog: SKY_HORIZON, fogRange: [48, 170, 0.55], light: [1, 1, 1], wet: 0, shadows: 'flood', rain: 0 },
+    night: { sky: [[0.28, 0.33, 0.43], [0.095, 0.14, 0.24], [0.025, 0.045, 0.095]], fog: [0.28, 0.33, 0.43], fogRange: [58, 190, 0.42], light: [1.16, 1.12, 1.08], wet: 0, shadows: 'flood', rain: 0 },
     day: { sky: [[0.66, 0.77, 0.9], [0.4, 0.6, 0.86], [0.2, 0.42, 0.8]], fog: [0.7, 0.79, 0.9], fogRange: [70, 230, 0.32], light: [1.24, 1.19, 1.07], wet: 0, shadows: 'sun', rain: 0 },
     rain: { sky: [[0.2, 0.22, 0.26], [0.12, 0.13, 0.16], [0.06, 0.07, 0.09]], fog: [0.22, 0.24, 0.28], fogRange: [26, 130, 0.72], light: [0.72, 0.76, 0.84], wet: 1, shadows: 'soft', rain: 1 },
     fog: { sky: [[0.46, 0.48, 0.52], [0.36, 0.38, 0.42], [0.26, 0.28, 0.32]], fog: [0.5, 0.52, 0.56], fogRange: [12, 78, 0.9], light: [0.93, 0.94, 0.97], wet: 0.25, shadows: 'soft', rain: 0 },

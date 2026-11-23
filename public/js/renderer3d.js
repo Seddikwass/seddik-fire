@@ -1094,12 +1094,16 @@ export class MatchRenderer3D {
     const bs=match.settings?.bootColors; if(bs&&player.team===match.userSide&&!player.isOfficial) look={...look,boot:parseColor(bs[0],look.boot),bootAccent:parseColor(bs[1],look.bootAccent)};
     const hair=look.hair;
     const phase=pose.phase, lift=pose.jump+pose.celebrateHop, slide=pose.slide, dive=pose.dive;
+    // Animation d'attente vivante : respiration, transfert d'appui et micro-mouvements distincts par joueur.
+    const idlePhase=(Number(match.clock)||0)*1.7+index*2.37;
+    const idleBreath=Math.sin(idlePhase*0.72)*0.012*pose.idle;
+    const idleShift=Math.sin(idlePhase)*0.026*pose.idle;
     const action=getPlayer3DActionWeights(pose);
     const low=0;
     const keeperVertical=player.isGK?dive*clamp(pose.diveHeight,-1,1)*0.19:0;
     const keeperFlightLow=player.isGK?action.diveFlight*0.085+action.diveLanding*0.035:0;
     const bodyY=1.22-low*0.43-(player.isGK&&!(player.isGK&&dive>0.015)&&pose.speed<4&&!pose.keeperCatch&&!pose.keeperPunch?0.85*0.17:0)+lift-action.stumble*0.065+keeperVertical-keeperFlightLow+action.headerDrive*0.035+pose.bodyBob+
-      pose.idle*Math.sin((Number(match.clock)||0)*2.3+index*1.7)*0.009;
+      pose.idle*Math.sin((Number(match.clock)||0)*2.3+index*1.7)*0.009+idleBreath;
     // ---- Intentions de geste : frappe, passe, lob, tête, touche, armement de la frappe ----
     const style=pose.kickStyle;
     const kicking=pose.kick>0.005&&style!=='header'&&style!=='throw'&&style!=='volley'&&style!=='bicycle';
@@ -1127,7 +1131,7 @@ export class MatchRenderer3D {
     const bodySide=(player.isGK?diveSide*action.diveReach*0.42:0)+
       (pose.stumbleDir||1)*action.stumble*0.075+
       (pose.contactDir||1)*pose.contact*0.045+
-      (pose.slideDir||1)*action.tackleReach*0.13+pose.turnLean*0.55;
+      (pose.slideDir||1)*action.tackleReach*0.13+pose.turnLean*0.55+idleShift;
     // ---- Rotations globales ----
     const diveP=1-dive, diving=player.isGK&&dive>0.015;
     const rollAmt=diving?smooth(diveP/0.22)*(1-smooth((diveP-0.86)/0.14)):0;
@@ -1299,8 +1303,8 @@ export class MatchRenderer3D {
       // Foulée : la cuisse balance, le genou plie surtout pendant le retour de la jambe.
       // Amplitude de foulée liée à la longueur de pas réelle (évite les pieds qui « patinent »).
       const stride=clamp(0.06+0.095*pose.speed,0.06,0.88)*action.gait*(1-pose.backpedal*0.45);
-      let th=Math.sin(ph)*stride*(1-pose.idle*0.85);
-      let fl=0.13+pose.idle*0.06+(0.12+1.05*sp)*Math.pow(Math.max(0,Math.cos(ph+0.35)),1.5)*(1-pose.idle);
+      let th=Math.sin(ph)*stride*(1-pose.idle*0.85)+Math.sin(idlePhase+(side>0?Math.PI:0))*0.035*pose.idle;
+      let fl=0.13+pose.idle*(0.055+Math.max(0,Math.sin(idlePhase+(side>0?Math.PI:0)))*0.045)+(0.12+1.05*sp)*Math.pow(Math.max(0,Math.cos(ph+0.35)),1.5)*(1-pose.idle);
       const isKickLeg=side===kickFootSide;
       if(kicking){
         const w=1-smooth((kp-0.7)/0.3);
@@ -1411,7 +1415,7 @@ export class MatchRenderer3D {
     const A1=0.27, A2=0.25;
     const legTh={}; for(const [side,th] of legAngles) legTh[side]=th;
     for(const side of [-1,1]){
-      let al=-(legTh[side]||0)*0.95*(0.6+sp*0.6), be=0.35+0.95*sp, ab=0.08+sp*0.04;
+      let al=-(legTh[side]||0)*0.95*(0.6+sp*0.6)+Math.sin(idlePhase+(side>0?Math.PI:0))*0.045*pose.idle, be=0.35+0.95*sp+pose.idle*0.035, ab=0.08+sp*0.04+Math.sin(idlePhase*0.8+(side>0?Math.PI:0))*0.025*pose.idle;
       const isKickSide=side===kickFootSide;
       // Frappe : bras côté frappe en arrière, bras opposé ouvert vers l'avant pour l'équilibre.
       const kArm=Math.max(strikeShape,windup);
@@ -1475,7 +1479,7 @@ export class MatchRenderer3D {
     if(detail>0) ell(bodyPoint(torsoF+tilt*0.15,bodyY+0.285,0),0.085,0.055,0.165*build,kit?.sleeves?sleeveCol:shirtPat,hi?14:10,5,tilt,twist);
     const HK=0.88;
     const headF=neckF+headSnap*0.13+tilt*0.08, headY=bodyY+0.545-headSnap*0.03;
-    const headTilt=tilt*0.4+headSnap*0.5+archPre*0.6;
+    const headTilt=tilt*0.4+headSnap*0.5+archPre*0.6+Math.sin(idlePhase*0.55+index)*0.025*pose.idle;
     // Regard : la tête suit le ballon (rotation limitée du cou, lissée dans le temps).
     let lookYaw=0;
     const lb=this._lookBall;

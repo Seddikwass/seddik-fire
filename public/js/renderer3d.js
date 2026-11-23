@@ -1243,6 +1243,22 @@ export class MatchRenderer3D {
     const twist=-Math.sin(phase)*0.22*clamp(pose.speed/8.5,0,1)*action.gait*(1-pose.idle)*(pose.kick>0.005?0:1);
     // Silhouette athlétique : torse continu et modelé, sans empilement de volumes.
     addSculptedTorso();
+    // Tenue d'arbitre identifiable : passepoils jaune vif, écusson et sifflet au col.
+    if (player.isOfficial && (player.role === 'ref' || player.role === 'ar') && detail > 0) {
+      const signalYellow = [1.0, 0.78, 0.08];
+      for (const side of [-1, 1]) {
+        tube(g, bodyPoint(torsoF + 0.105, bodyY + 0.265, side * 0.18),
+          bodyPoint(torsoF + 0.13, bodyY + 0.17, side * 0.205), 0.012, signalYellow, 6);
+        tube(g, bodyPoint(torsoF + 0.14, bodyY + 0.16, side * 0.205),
+          bodyPoint(torsoF + 0.12, hipY + 0.22, side * 0.17), 0.009, signalYellow, 5);
+      }
+      ell(bodyPoint(torsoF + 0.158, bodyY + 0.17, -0.105), 0.012, 0.038, 0.03,
+        [0.96, 0.84, 0.24], 7, 4, tilt);
+      const cordA = bodyPoint(torsoF + 0.08, bodyY + 0.31, 0.025);
+      const cordB = bodyPoint(torsoF + 0.15, bodyY + 0.13, 0.035);
+      tube(g, cordA, cordB, 0.0045, [0.82, 0.82, 0.76], 5);
+      ell(cordB, 0.018, 0.025, 0.014, [0.1, 0.11, 0.12], 7, 4, tilt);
+    }
     ell(bodyPoint(lean*0.3,hipY+0.02,0),0.125*build,0.15,0.2*build,shorts,hi?14:9,hi?8:5,tilt*0.5);
     // Col double : liseré contrasté pour donner une finition textile au maillot.
     cylinder(g,bodyPoint(torsoF+tilt*0.14,bodyY+0.295,0),bodyPoint(torsoF+tilt*0.16,bodyY+0.33,0),0.086,trim,hi?14:8,0.08);

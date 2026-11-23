@@ -1257,6 +1257,18 @@ export class MatchRenderer3D {
         // Semelle et crampons contrastés + virgule latérale.
         ell([bootC[0],bootC[1]-0.04,bootC[2]],0.125,0.014,0.055,bootAcc,hi?8:6,3,-(footA-Math.PI/2),passIn*side*0.9);
         ell(legPoint(ankF+fd[0]*0.08,Math.max(0.05,ankU+fd[1]*0.08-0.03),sideOff+side*0.075),0.06,0.016,0.006,bootAcc,6,3,-(footA-Math.PI/2),passIn*side*0.9);
+        if(hi){
+          // Trois lacets fins sur le dessus : détail discret, limité aux gros plans.
+          for(let lace=0;lace<3;lace++){
+            const f=ankF+fd[0]*(0.035+lace*0.025), h=Math.max(0.055,ankU+fd[1]*(0.035+lace*0.025));
+            cylinder(g,legPoint(f,h,sideOff-0.022),legPoint(f,h,sideOff+0.022),0.0045,bootAcc,5,0.008);
+          }
+          // Crampons sous la semelle, répartis sous l'avant et le talon.
+          for(const studF of [-0.035,0.025,0.075]){
+            const stud=legPoint(ankF+fd[0]*studF,Math.max(0.035,ankU+fd[1]*studF-0.052),sideOff);
+            cylinder(g,stud,[stud[0],stud[1]-0.018,stud[2]],0.009,bootAcc,5,0.008);
+          }
+        }
       }
     }
     // ---- Bras : épaule/coude/main (balancier opposé aux jambes, gestes d'équilibre) ----

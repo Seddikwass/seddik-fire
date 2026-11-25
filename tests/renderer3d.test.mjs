@@ -309,7 +309,7 @@ console.log('3D ACTION MESH OK — corps orienté sur première touche, tête, c
   assert.ok(hi.fans > 5000, 'stade plein en qualité haute : ' + hi.fans);
   assert.ok(hi.animatedVertices >= hi.fans * 12, 'chaque supporter est animé par le shader');
   assert.ok(hi.vertexCount < 400000, 'budget de sommets du stade respecté : ' + hi.vertexCount);
-  assert.deepEqual(hi.features, { walkoutTunnel: true, broadcastCameraRigs: 4 }, 'le stade inclut le tunnel des joueurs et quatre rigs de caméra 3D');
+  assert.deepEqual(hi.features, { walkoutTunnel: true, broadcastCameraRigs: 4, tunnelClubCrest: true, detailedCameraLenses: 4 }, 'le tunnel porte un blason 3D et les quatre caméras ont des optiques détaillées');
   console.log(`3D CROWD OK — ${lo.fans} / ${me.fans} / ${hi.fans} supporters animés (bas / moyen / haut), ${hi.vertexCount} sommets`);
 }
 

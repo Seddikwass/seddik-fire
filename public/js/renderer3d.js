@@ -1067,8 +1067,13 @@ export class MatchRenderer3D {
     box(g, [2.45,0.75,-38.2], [0.08,1.1,5.2], steel);
     box(g, [-2.75,2.55,tunnelZ-0.35], [0.12,0.65,0.12], home.map(v=>Math.min(1.25,v*1.2)));
     box(g, [2.75,2.55,tunnelZ-0.35], [0.12,0.65,0.12], away.map(v=>Math.min(1.25,v*1.2)));
-    this.stadiumFeatures = { walkoutTunnel: true, broadcastCameraRigs: 4 };
-    // Broadcast camera rigs at touchline corners: tripod, pan head and camera body.
+    this.stadiumFeatures = { walkoutTunnel: true, broadcastCameraRigs: 4, tunnelClubCrest: true, detailedCameraLenses: 4 };
+    // Tunnel crest: layered 3D shield, club-color relief and luminous edge.
+    sphere(g,[0,3.0,tunnelZ+0.34],[0.72,0.82,0.12],[0.035,0.045,0.07],12,8);
+    sphere(g,[0,3.0,tunnelZ+0.48],[0.58,0.68,0.08],home.map(v=>Math.min(1.3,v*1.15)),12,8);
+    box(g,[0,3.0,tunnelZ+0.57],[0.12,0.72,0.05],homeTrim.map(v=>Math.min(1.35,v*1.2)));
+    box(g,[-0.22,3.0,tunnelZ+0.57],[0.12,0.48,0.05],awayTrim.map(v=>Math.min(1.35,v*1.2)));
+    // Broadcast camera rigs at touchline corners: reinforced tripod, pan head and lens barrel.
     for(const sx of [-1,1]) for(const sz of [-1,1]){
       const cx=sx*30.5, cz=sz*38.8, top=[cx,1.75,cz];
       for(const [dx,dz] of [[-0.75,-0.55],[0.75,-0.55],[0,0.8]])
@@ -1076,6 +1081,10 @@ export class MatchRenderer3D {
       box(g,[cx,1.9,cz],[0.72,0.38,0.48],[0.035,0.045,0.06]);
       box(g,[cx+sx*0.42,1.9,cz],[0.2,0.24,0.16],[0.12,0.16,0.22]);
       cylinder(g,[cx,2.05,cz],[cx,2.3,cz],0.09,steel,8);
+      // Long lens points from the sideline toward the pitch; glass is visibly distinct.
+      cylinder(g,[cx,1.92,cz-sz*0.22],[cx,1.92,cz-sz*0.82],0.13,[0.12,0.15,0.2],10);
+      sphere(g,[cx,1.92,cz-sz*0.84],[0.14,0.14,0.06],[0.18,0.42,0.62],10,6);
+      cylinder(g,[cx,1.92,cz-sz*0.36],[cx,1.92,cz-sz*0.43],0.16,[0.28,0.32,0.38],10);
     }
     // Central broadcast camera platform and scoreboard.
     box(g,[0,17.3,-54],[20,1.2,2.2],[0.06,0.08,0.12]);

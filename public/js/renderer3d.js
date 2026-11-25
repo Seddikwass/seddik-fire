@@ -1086,10 +1086,23 @@ export class MatchRenderer3D {
       sphere(g,[cx,1.92,cz-sz*0.84],[0.14,0.14,0.06],[0.18,0.42,0.62],10,6);
       cylinder(g,[cx,1.92,cz-sz*0.36],[cx,1.92,cz-sz*0.43],0.16,[0.28,0.32,0.38],10);
     }
-    // Central broadcast camera platform and scoreboard.
+    // Central broadcast platform and scoreboard: reinforced bezel, team-color side panels and status lamps.
     box(g,[0,17.3,-54],[20,1.2,2.2],[0.06,0.08,0.12]);
     box(g,[0,21,-55.4],[18,4.8,0.55],[0.025,0.04,0.075]);
     box(g,[0,21.2,-55.05],[15.5,3.1,0.08],[0.52,0.045,0.08]);
+    // Front frame around the display (visible in the same stadium depth pass).
+    box(g,[0,23.15,-54.98],[17.8,0.34,0.16],[0.12,0.15,0.2]);
+    box(g,[0,19.25,-54.98],[17.8,0.34,0.16],[0.12,0.15,0.2]);
+    box(g,[-8.35,21.2,-54.98],[0.55,3.55,0.16],home.map(v=>Math.min(1.25,v*1.1)));
+    box(g,[8.35,21.2,-54.98],[0.55,3.55,0.16],away.map(v=>Math.min(1.25,v*1.1)));
+    box(g,[0,23.38,-54.91],[15.8,0.08,0.06],homeTrim.map(v=>Math.min(1.35,v*1.25)));
+    box(g,[0,19.05,-54.91],[15.8,0.08,0.06],awayTrim.map(v=>Math.min(1.35,v*1.25)));
+    for(let i=0;i<6;i++){
+      const lampColor=i%3===0?[0.95,0.48,0.12]:i%3===1?[0.22,0.72,0.95]:[0.82,0.86,0.9];
+      sphere(g,[-6.25+i*2.5,23.55,-54.9],[0.12,0.08,0.06],lampColor,8,5);
+    }
+    this.stadiumFeatures.scoreboardFrame = true;
+    this.stadiumFeatures.scoreboardStatusLamps = 6;
   }
   setQuality(quality) {
     const next = quality || 'high';

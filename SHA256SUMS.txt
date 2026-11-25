@@ -1,0 +1,3 @@
+faf6b309b6e9c35c23c88847bb6078b9803c24b0c5bbc8e1e640e50b8bcf753a  football-tunisia-2026-test.apk
+19c70fa37d2cbf79a7c9e03a6a97522374194fc84ca2dd80216cb2f977ed2c3a  football-tunisia-2026-unsigned.aab
+75acd958464d6358912b65bbe3d1c86178c8d71af621efefb1a0a279e856dde6  versions.txt

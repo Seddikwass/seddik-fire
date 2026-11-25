@@ -1044,6 +1044,38 @@ export class MatchRenderer3D {
     });
     // Table du quatrième arbitre entre les deux bancs.
     box(g,[0,0.45,-36.7],[1.6,0.9,0.7],[0.1,0.11,0.14]); box(g,[0,0.92,-36.7],[1.7,0.05,0.8],[0.85,0.85,0.88]);
+    // Walkout tunnel 3D (structure, portal, roof, lighting and player walkout lane).
+    // It is a fixed part of the stadium geometry and respects the existing WebGL depth buffer.
+    const tunnelZ = -42.8, tunnelW = 5.6, tunnelH = 4.2, tunnelD = 4.8;
+    const concrete = [0.12,0.15,0.19], steel = [0.23,0.27,0.32];
+    box(g, [0,0.12,-38.9], [tunnelW,0.22,8.1], [0.19,0.21,0.23]);
+    // Dark opening and reinforced portal frame.
+    box(g, [0,1.8,tunnelZ], [4.3,3.55,0.18], [0.018,0.025,0.04]);
+    box(g, [-2.45,2.05,tunnelZ], [0.62,4.1,0.62], concrete);
+    box(g, [2.45,2.05,tunnelZ], [0.62,4.1,0.62], concrete);
+    box(g, [0,4.0,tunnelZ], [5.5,0.58,0.62], steel);
+    box(g, [0,4.32,tunnelZ-0.15], [6.1,0.16,5.2], [0.07,0.09,0.13]);
+    // Interior side walls, ceiling and luminous strips.
+    box(g, [-2.15,1.85,tunnelZ-2.2], [0.22,3.6,4.4], [0.06,0.08,0.11]);
+    box(g, [2.15,1.85,tunnelZ-2.2], [0.22,3.6,4.4], [0.06,0.08,0.11]);
+    box(g, [0,3.55,tunnelZ-2.2], [4.4,0.18,4.4], [0.09,0.11,0.15]);
+    box(g, [-1.92,3.18,tunnelZ-2.2], [0.08,0.08,4.0], [0.7,1.05,1.3]);
+    box(g, [1.92,3.18,tunnelZ-2.2], [0.08,0.08,4.0], [0.7,1.05,1.3]);
+    // Lane markings, handrails and club-color welcome panels.
+    box(g, [0,0.25,-37.3], [3.8,0.12,4.0], [0.12,0.14,0.17]);
+    box(g, [-2.45,0.75,-38.2], [0.08,1.1,5.2], steel);
+    box(g, [2.45,0.75,-38.2], [0.08,1.1,5.2], steel);
+    box(g, [-2.75,2.55,tunnelZ-0.35], [0.12,0.65,0.12], home.map(v=>Math.min(1.25,v*1.2)));
+    box(g, [2.75,2.55,tunnelZ-0.35], [0.12,0.65,0.12], away.map(v=>Math.min(1.25,v*1.2)));
+    // Broadcast camera rigs at touchline corners: tripod, pan head and camera body.
+    for(const sx of [-1,1]) for(const sz of [-1,1]){
+      const cx=sx*30.5, cz=sz*38.8, top=[cx,1.75,cz];
+      for(const [dx,dz] of [[-0.75,-0.55],[0.75,-0.55],[0,0.8]])
+        tube(g,[cx+dx,0.12,cz+dz],top,0.055,steel,5);
+      box(g,[cx,1.9,cz],[0.72,0.38,0.48],[0.035,0.045,0.06]);
+      box(g,[cx+sx*0.42,1.9,cz],[0.2,0.24,0.16],[0.12,0.16,0.22]);
+      cylinder(g,[cx,2.05,cz],[cx,2.3,cz],0.09,steel,8);
+    }
     // Central broadcast camera platform and scoreboard.
     box(g,[0,17.3,-54],[20,1.2,2.2],[0.06,0.08,0.12]);
     box(g,[0,21,-55.4],[18,4.8,0.55],[0.025,0.04,0.075]);

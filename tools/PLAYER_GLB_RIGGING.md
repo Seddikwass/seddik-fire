@@ -1,25 +1,19 @@
-# SEDDIK LEAGUE — free player GLB rigging helper
+# SEDDIK LEAGUE — joueur GLB et rig gratuit
 
-This helper prepares a **static humanoid GLB** for a first skeletal deformation test using Blender's built-in automatic weights. It does not generate motion clips and does not itself connect the GLB to the in-game WebGL renderer.
+Un fichier skinné a été généré à partir du modèle source fourni, avec un squelette humanoïde (20 joints), des poids automatiques par proximité des segments, et deux clips simples (« Idle » et « RunCycle »). Le fichier a été vérifié comme GLB 2.0 parsable et son maillage est lisible par trimesh.
 
-## Free local workflow
+## Limites du rig généré
 
-1. Install Blender 3.6+ (free) and download the player's optimized GLB.
-2. Place `tools/rig_player_blender.py` beside the GLB.
-3. Run from a terminal:
+- Le rig et les clips sont une première passe heuristique; les déformations n'ont pas été examinées dans Blender et peuvent nécessiter des corrections manuelles.
+- Les clips ne couvrent pas les animations football complètes (passe, tir, tacle, gardien, célébration).
+- Le fichier riggé est fourni séparément comme package de travail; il n'est pas encore versionné dans le dépôt.
+- Le renderer de match est un WebGL personnalisé. Il faut encore implémenter un loader glTF skinné, l'application des matrices d'os au GPU et le raccordement des poses de match aux clips.
+- La version de production n'a pas été remplacée par ce modèle et aucun déploiement Render n'est revendiqué.
 
-```bash
-blender -b --python tools/rig_player_blender.py -- professional-soccer-standing.glb player_rigged.glb
-```
+## Script Blender gratuit
 
-4. Open `player_rigged.glb` in Blender and test the bone rotations. Inspect shoulder, hip, knee and ankle deformation before using it in a match.
+Le script `tools/rig_player_blender.py` permet de tenter une autre passe d'auto-rigging avec Blender 3.6+ et ses poids automatiques intégrés. Aucun service payant ni crédit cloud n'est requis.
 
-## Important limitations
+## Vérification commerciale
 
-- This is a first-pass, proportion-based humanoid skeleton. It assumes an upright character about 1.8m tall, with forward along +Y.
-- Blender automatic weights can fail on disconnected accessory meshes or produce poor deformation where the source mesh is not anatomically separated. Correct weights manually in Blender if needed.
-- The script does **not** create football animations (idle, run, sprint, pass, shot, tackle, goalkeeper, celebration).
-- The current match renderer is custom WebGL. A separate implementation step is required to load glTF skin data and apply joint matrices to the GPU shader; this helper alone must not be described as a deployed player-model replacement.
-- Review the model's commercial-use license before shipping it publicly.
-
-No paid credits, subscriptions, or cloud rigging service are used.
+Vérifier la licence du modèle source avant distribution commerciale.

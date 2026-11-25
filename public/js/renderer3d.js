@@ -16,6 +16,17 @@ export function get3DQualityProfile(quality = 'high') {
   return { pixelRatio: 1.55, crowd: 620, sphereSegments: 12, detail: 2, seatRows: 5, turfDetail: 224, crowdMotion: 36 };
 }
 
+
+// Niveau de détail joueur adaptatif : visages/tenues renforcés près de la caméra,
+// silhouettes allégées à distance pour préserver les performances mobiles.
+export function getPlayer3DDetailLevel(baseDetail = 2, distance = 0) {
+  const base = clamp(Math.round(Number(baseDetail) || 0), 0, 2);
+  const d = Math.max(0, Number.isFinite(distance) ? distance : 0);
+  if (base === 0) return d < 18 ? 1 : 0;
+  if (base === 1) return d < 44 ? 2 : 1;
+  return d < 96 ? 2 : 1;
+}
+
 export function get3DBallShadowProfile(height = 0) {
   const h = clamp(height, 0, 12);
   const spread = 1 + h * 0.075;
@@ -1154,6 +1165,7 @@ export class MatchRenderer3D {
     const sm=(k,v,rate)=>{ const p=rig[k]; if(!Number.isFinite(p)||!Number.isFinite(v)||Math.abs(v-p)>2.5){ rig[k]=v; return v; } const r=p+(v-p)*(1-Math.exp(-rdt*rate)); rig[k]=r; return r; };
     const x=pose.x,z=-pose.y,yaw=-pose.heading;
     const cos=Math.cos(yaw),sin=Math.sin(yaw);
+    const camE=this.lastCamera?.eye, camDist=camE?Math.hypot(x-camE[0],(-pose.y)-camE[2],1.1-camE[1]):0;
     // Transformation du corps entier (plongeon, tacle glissé, déséquilibre, feinte) autour d'un pivot.
     let BR=null;
     const rotV=(v)=>{ if(!BR) return v; let [f,h,sd]=v;
@@ -1170,9 +1182,9 @@ export class MatchRenderer3D {
     const skinPalette=[[0.91,0.72,0.57],[0.78,0.55,0.39],[0.62,0.39,0.25],[0.43,0.27,0.19],[0.3,0.19,0.14],[0.84,0.64,0.48]];
     const skinSeed=nameHash((player.id??'')+'|'+(player.name||index));
     const skin=parseColor(player.skin,skinPalette[(skinSeed>>>5)%skinPalette.length]), dark=[0.035,0.045,0.06], sock=player.sockColor||parseColor(kit?.socks,shirt.map(v=>v*0.92));
-    const detail=this.quality.detail;
+    const detail=getPlayer3DDetailLevel(this.quality.detail,camDist);
     const physique=clamp(Number(player.a?.phy)||50,0,100)/100;
-    const build=0.98+physique*0.18;
+    const build=0.99+physique*0.20;
     let look=playerLook(player,index);
     // Récompense cosmétique : chaussures de l'équipe du joueur humain.
     const bs=match.settings?.bootColors; if(bs&&player.team===match.userSide&&!player.isOfficial) look={...look,boot:parseColor(bs[0],look.boot),bootAccent:parseColor(bs[1],look.bootAccent)};
@@ -1290,7 +1302,7 @@ export class MatchRenderer3D {
       // Deltoïdes souples pour une transition naturelle entre le maillot et les bras.
       for (const side of [-1, 1]) {
         ell(bodyPoint(torsoF + tilt * 0.08, bodyY + 0.245, side * 0.205 * build),
-          0.112 * build, 0.105, 0.105 * build, sleeveCol, hi ? 14 : 10, hi ? 8 : 6, tilt, twist);
+          0.124 * build, 0.112, 0.112 * build, sleeveCol, hi ? 14 : 10, hi ? 8 : 6, tilt, twist);
       }
     };
     // Ombre douce : noyau sombre sous les pieds, halo plus clair étiré vers l'arrière (projecteurs).
@@ -1325,8 +1337,7 @@ export class MatchRenderer3D {
     const torsoF=lean*0.45;
     // ---- Buste : poitrine, épaules, bassin (vraies proportions, orientés avec le joueur) ----
     // LOD par joueur : pleine résolution près de la caméra (action, ralentis, gros plans), allégée au loin.
-    const camE=this.lastCamera?.eye, camDist=camE?Math.hypot(x-camE[0],(-pose.y)-camE[2],1.1-camE[1]):0;
-    const hi=detail===2&&camDist<48; // conserver les visages et les mains détaillés dans les plans TV rapprochés
+    const hi=detail===2&&camDist<76; // conserver les visages et les mains détaillés dans les plans TV rapprochés
     // Rotation des épaules opposée au bassin pendant la course.
     const twist=-Math.sin(phase)*0.22*clamp(pose.speed/8.5,0,1)*action.gait*(1-pose.idle)*(pose.kick>0.005?0:1);
     // Silhouette athlétique : torse continu et modelé, sans empilement de volumes.
@@ -1437,7 +1448,7 @@ export class MatchRenderer3D {
       const knee=legPoint(kF,kU,side*0.125);
       const ankle=legPoint(ankF,ankU,sideOff+side*0.02);
       const mid=[hip[0]+(knee[0]-hip[0])*0.55,hip[1]+(knee[1]-hip[1])*0.55,hip[2]+(knee[2]-hip[2])*0.55];
-      cylinder(g,hip,mid,0.122*build,shorts,hi?18:detail>0?13:9,0.128*build);
+      cylinder(g,hip,mid,0.13*build,shorts,hi?18:detail>0?13:9,0.128*build);
       if(detail>0&&!player.isOfficial) cylinder(g,legPoint(lean*0.25,hipY+0.04,side*0.205*build),[mid[0]+(legPoint(0,0,side*0.1)[0]-legPoint(0,0,0)[0]),mid[1],mid[2]+(legPoint(0,0,side*0.1)[2]-legPoint(0,0,0)[2])],0.016,trim,4,0.014);
       const legSkin=player.longPants?shorts:skin;
       cylinder(g,mid,knee,player.longPants?0.1:0.098*build,legSkin,hi?18:detail>0?13:9,player.longPants?0.085:0.07);
@@ -1453,7 +1464,7 @@ export class MatchRenderer3D {
       const fd=[Math.sin(footA),-Math.cos(footA)];
       const bootC=legPoint(ankF+fd[0]*0.075,Math.max(0.05,ankU+fd[1]*0.075-0.035),sideOff+side*0.02);
       const bootCol=player.isOfficial?dark:look.boot, bootAcc=player.isOfficial?dark:look.bootAccent;
-      ell(bootC,0.13,0.055,0.06,bootCol,hi?10:7,hi?6:4,-(footA-Math.PI/2),passIn*side*0.9);
+      ell(bootC,0.135,0.058,0.066,bootCol,hi?10:7,hi?6:4,-(footA-Math.PI/2),passIn*side*0.9);
       if(detail>0){
         // Semelle et crampons contrastés + virgule latérale.
         ell([bootC[0],bootC[1]-0.04,bootC[2]],0.125,0.014,0.055,bootAcc,hi?8:6,3,-(footA-Math.PI/2),passIn*side*0.9);
@@ -1561,7 +1572,7 @@ export class MatchRenderer3D {
     // Cou court et puissant + trapèzes sous le maillot (silhouette d'athlète, tête proportionnée ~1/7,5 de la taille).
     cylinder(g,bodyPoint(neckF,bodyY+0.3,0),bodyPoint(neckF+headSnap*0.06,bodyY+0.45,0),0.071,skin,hi?12:8,0.064);
     if(detail>0) ell(bodyPoint(torsoF+tilt*0.15,bodyY+0.285,0),0.085,0.055,0.165*build,kit?.sleeves?sleeveCol:shirtPat,hi?14:10,5,tilt,twist);
-    const HK=0.88;
+    const HK=0.94;
     const headF=neckF+headSnap*0.13+tilt*0.08, headY=bodyY+0.545-headSnap*0.03;
     const headTilt=tilt*0.4+headSnap*0.5+archPre*0.6+Math.sin(idlePhase*0.55+index)*0.025*pose.idle;
     // Regard : la tête suit le ballon (rotation limitée du cou, lissée dans le temps).

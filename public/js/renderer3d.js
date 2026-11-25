@@ -1067,6 +1067,7 @@ export class MatchRenderer3D {
     box(g, [2.45,0.75,-38.2], [0.08,1.1,5.2], steel);
     box(g, [-2.75,2.55,tunnelZ-0.35], [0.12,0.65,0.12], home.map(v=>Math.min(1.25,v*1.2)));
     box(g, [2.75,2.55,tunnelZ-0.35], [0.12,0.65,0.12], away.map(v=>Math.min(1.25,v*1.2)));
+    this.stadiumFeatures = { walkoutTunnel: true, broadcastCameraRigs: 4 };
     // Broadcast camera rigs at touchline corners: tripod, pan head and camera body.
     for(const sx of [-1,1]) for(const sz of [-1,1]){
       const cx=sx*30.5, cz=sz*38.8, top=[cx,1.75,cz];
@@ -1967,6 +1968,7 @@ export function get3DStadiumMeshStats(match, quality = 'high') {
     finite: builder.staticGeometry.every(Number.isFinite),
     fans: builder.fanCount || 0,
     animatedVertices: builder.staticGeometry.filter((v, i) => i % VERTEX_FLOATS === VERTEX_FLOATS - 1 && v > 0).length,
+    features: builder.stadiumFeatures || {},
   };
 }
 

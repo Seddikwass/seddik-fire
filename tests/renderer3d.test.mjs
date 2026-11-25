@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
-import { get3DQualityProfile, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats, getWeatherProfile, playerLook, kitPatternColor } from '../public/js/renderer3d.js';
+import { get3DQualityProfile, getPlayer3DDetailLevel, getPlayer3DPose, getPlayer3DActionWeights, get3DBallShadowProfile, get3DCrowdMotionPose, get3DCameraPose, get3DStadiumMeshStats, getPlayer3DModelStats, getWeatherProfile, playerLook, kitPatternColor } from '../public/js/renderer3d.js';
 
 const low = get3DQualityProfile('low');
+assert.equal(getPlayer3DDetailLevel(0, 10), 1, 'le profil faible conserve des détails près de la caméra');
+assert.equal(getPlayer3DDetailLevel(0, 25), 0, 'le profil faible allège les joueurs éloignés');
+assert.equal(getPlayer3DDetailLevel(1, 30), 2, 'le profil moyen passe en haute définition près du jeu');
+assert.equal(getPlayer3DDetailLevel(2, 60), 2, 'les joueurs proches gardent le détail facial et textile');
+assert.equal(getPlayer3DDetailLevel(2, 120), 1, 'les joueurs éloignés sont allégés pour Android');
 const medium = get3DQualityProfile('medium');
 const high = get3DQualityProfile('high');
 

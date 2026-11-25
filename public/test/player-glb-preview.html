@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SEDDIK LEAGUE — Test joueur GLB</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#08111e;color:#eef4ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#172a42,#08111e 65%);min-height:100vh}
+header{padding:20px clamp(16px,4vw,42px);border-bottom:1px solid #ffffff18;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+h1{font-size:clamp(19px,3vw,27px);margin:0}header p{margin:5px 0 0;color:#9fb1c8;font-size:13px}
+main{max-width:1100px;margin:auto;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px}
+.viewer{min-height:500px;height:min(72vh,720px);position:relative;border:1px solid #ffffff1c;border-radius:18px;overflow:hidden;background:linear-gradient(#0e1a2a,#17263a)}
+canvas{display:block;width:100%;height:100%}.panel{border:1px solid #ffffff1c;border-radius:18px;background:#101d2d;padding:16px}
+.panel h2{font-size:16px;margin:0 0 12px}.status{padding:10px;border-radius:10px;background:#071321;color:#a9c3dd;font-size:13px;line-height:1.5;margin-bottom:12px}
+label{display:block;font-size:13px;color:#a9c3dd;margin:12px 0 6px}select,button{font:inherit;width:100%;border:1px solid #ffffff22;border-radius:10px;padding:11px;background:#182a40;color:#f3f7ff}
+button{cursor:pointer;font-weight:650;margin-top:8px}button.primary{background:#087e62;border-color:#17b68c}
+.small{font-size:12px;color:#93a9c2;line-height:1.55;margin-top:14px}
+.tag{display:inline-block;font-size:11px;padding:5px 8px;border-radius:99px;background:#123d32;color:#79e6bd;margin-bottom:10px}
+@media(max-width:760px){main{grid-template-columns:1fr;padding:12px}.viewer{height:55vh;min-height:350px}.panel{order:2}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<header><div><h1>SEDDIK LEAGUE · Test joueur 3D</h1><p>Aperçu technique isolé — ne remplace pas les joueurs du match</p></div></header>
+<main>
+<section class="viewer" id="viewer" aria-label="Aperçu 3D du joueur"></section>
+<aside class="panel">
+<span class="tag">TEST · BRANCHE SÉPARÉE</span>
+<h2>Chargement du modèle</h2>
+<div class="status" id="status" role="status">Initialisation de WebGL…</div>
+<label for="animation">Animation du modèle</label>
+<select id="animation" disabled><option>Chargement…</option></select>
+<button class="primary" id="play" disabled>▶ Lire l’animation</button>
+<button id="reset">↻ Réinitialiser la caméra</button>
+<div class="small" id="details">Le fichier GLB provient de l’asset Quaternius déjà stocké dans le dépôt (licence CC0). Les animations fournies sont des animations humanoïdes génériques, pas encore des gestes de football.</div>
+<div class="small">Cette page utilise Three.js depuis un CDN pour le test. Le match principal continue d’utiliser son moteur WebGL actuel.</div>
+</aside>
+</main>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const host=document.getElementById('viewer'),status=document.getElementById('status'),select=document.getElementById('animation'),playBtn=document.getElementById('play');
+let mixer=null,actions=[],active=null,model=null,clock=new THREE.Clock();
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0d1928);scene.fog=new THREE.Fog(0x0d1928,8,24);
+const camera=new THREE.PerspectiveCamera(38,1,0.1,100);camera.position.set(3,2.1,5);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;host.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,0.9,0);controls.enableDamping=true;controls.minDistance=1.8;controls.maxDistance=9;controls.maxPolarAngle=Math.PI*0.48;
+scene.add(new THREE.HemisphereLight(0xc8e3ff,0x263044,2.1));
+const key=new THREE.DirectionalLight(0xffffff,3.2);key.position.set(4,7,5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);scene.add(key);
+const fill=new THREE.DirectionalLight(0x75aaff,1.4);fill.position.set(-5,3,-3);scene.add(fill);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(5,64),new THREE.MeshStandardMaterial({color:0x1b2b3a,roughness:.92}));floor.rotation.x=-Math.PI/2;floor.position.y=-.02;floor.receiveShadow=true;scene.add(floor);
+const grid=new THREE.GridHelper(10,20,0x42617a,0x25394e);grid.position.y=.003;scene.add(grid);
+function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(host);resize();
+function setActive(index,autoplay=true){if(!mixer||!actions.length)return;if(active)active.stop();active=actions[index];active.reset();active.setLoop(THREE.LoopRepeat,Infinity);if(autoplay)active.play();playBtn.textContent=autoplay?'❚❚ Pause':'▶ Lire l’animation';}
+select.addEventListener('change',()=>setActive(Number(select.value),true));
+playBtn.addEventListener('click',()=>{if(!active)return;if(active.isRunning()){active.paused=!active.paused;playBtn.textContent=active.paused?'▶ Reprendre':'❚❚ Pause';}else setActive(Number(select.value),true);});
+document.getElementById('reset').addEventListener('click',()=>{camera.position.set(3,2.1,5);controls.target.set(0,.9,0);controls.update();});
+status.textContent='Chargement du modèle GLB…';
+new GLTFLoader().load('../assets/players/rigged/player.glb',gltf=>{
+ model=gltf.scene;scene.add(model);model.updateMatrixWorld(true);
+ const box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+ const height=Math.max(size.y,.01),scale=1.75/height;model.scale.setScalar(scale);model.position.x-=center.x*scale;model.position.z-=center.z*scale;model.position.y-=box.min.y*scale;
+ model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material.side=THREE.FrontSide;}}});
+ mixer=new THREE.AnimationMixer(model);actions=gltf.animations.map(clip=>mixer.clipAction(clip));
+ select.innerHTML='';gltf.animations.forEach((clip,i)=>{const opt=document.createElement('option');opt.value=i;opt.textContent=clip.name||'Animation '+(i+1);select.appendChild(opt);});
+ select.disabled=!actions.length;playBtn.disabled=!actions.length;
+ const idle=gltf.animations.findIndex(a=>/idle|standing/i.test(a.name));if(actions.length)setActive(idle>=0?idle:0,true);
+ status.textContent='Modèle chargé · '+gltf.animations.length+' animations · hauteur normalisée à 1,75 m';
+ document.getElementById('details').textContent='Modèle: '+gltf.scene.name+' · '+gltf.animations.length+' clips. À valider ensuite : orientation, déplacement sur le terrain, course et gestes football.';
+},undefined,error=>{console.error(error);status.textContent='Échec du chargement GLB : '+(error?.message||'vérifier le réseau/CDN et le chemin du fichier');});
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);if(mixer)mixer.update(dt);controls.update();renderer.render(scene,camera);}animate();
+</script>
+</body>
+</html>

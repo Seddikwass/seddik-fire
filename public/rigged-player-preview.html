@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08111f">
+  <title>SEDDIK LEAGUE — Aperçu du joueur 3D</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer@4.1.0/dist/model-viewer.min.js"></script>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #08111f; color: #eef4ff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100svh; display: grid; place-items: center; padding: 20px; }
+    main { width: min(100%, 900px); }
+    header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    h1 { font-size: clamp(1.25rem, 4vw, 2rem); margin: 0 0 8px; }
+    p { color: #a9bbd5; margin: 0 0 18px; }
+    model-viewer { width: 100%; height: min(70svh, 650px); min-height: 360px; background: radial-gradient(ellipse at center, #24364d 0%, #101d2e 55%, #08111f 100%); border: 1px solid #30445e; border-radius: 18px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    button { border: 1px solid #405774; background: #17283d; color: white; border-radius: 10px; padding: 11px 16px; font: inherit; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #80b8ff; outline-offset: 2px; }
+    #status { margin-top: 12px; font-size: .9rem; color: #b7c9e1; }
+    .note { font-size: .8rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>SEDDIK LEAGUE</h1><strong>Prototype joueur 3D</strong></header>
+    <p>Contrôle visuel du modèle CC0 avant toute intégration dans le match.</p>
+    <model-viewer id="player" src="/assets/players/rigged/player.glb" alt="Modèle humanoïde 3D candidat pour le jeu" camera-controls auto-rotate rotation-per-second="18deg" shadow-intensity="1" exposure="1" autoplay ar disable-tap>
+      <span slot="progress-bar">Chargement du modèle…</span>
+    </model-viewer>
+    <div class="controls">
+      <button id="toggle-animation" type="button">Lecture / pause animation</button>
+      <button id="reset-camera" type="button">Réinitialiser la caméra</button>
+    </div>
+    <div id="status" role="status" aria-live="polite">Chargement du GLB…</div>
+    <p class="note">Cette page est un banc d’essai séparé : elle ne remplace pas encore les joueurs du match.</p>
+  </main>
+  <script>
+    const viewer = document.querySelector('#player');
+    const status = document.querySelector('#status');
+    viewer.addEventListener('load', () => {
+      const clips = viewer.availableAnimations || [];
+      status.textContent = clips.length ? 'Modèle chargé — ' + clips.length + ' animation(s) trouvée(s).' : 'Modèle chargé — aucune animation détectée.';
+      if (clips.length) viewer.animationName = clips[0];
+    });
+    viewer.addEventListener('error', () => { status.textContent = 'Erreur de chargement du GLB. Vérifiez le fichier et la connexion.'; });
+    document.querySelector('#toggle-animation').addEventListener('click', () => {
+      if (viewer.paused) viewer.play(); else viewer.pause();
+    });
+    document.querySelector('#reset-camera').addEventListener('click', () => {
+      viewer.cameraOrbit = '0deg 75deg 2.5m';
+      viewer.cameraTarget = '0m 1m 0m';
+    });
+  </script>
+</body>
+</html>

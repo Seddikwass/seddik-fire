@@ -1,5 +1,8 @@
 # Seddik Fire
 
+## Nouveautés 2.47 — Soldat Mixamo « Swat » (uniforme bleu)
+- Les soldats 3D utilisent maintenant le personnage Mixamo **Swat** choisi par Wassim : uniforme bleu, gilet tactique « SWAT », casque et lunettes. Mêmes 7 animations (repos, course, tir, rechargement, grenade, mort, danse).
+
 ## Nouveautés 2.46 — Soldat Mixamo « Steve » en treillis kaki
 - Les soldats 3D utilisent maintenant le personnage Mixamo **Steve** (treillis kaki et casque), plus clair et plus proche d’un soldat de l’armée tunisienne que le Swat Guy noir. Mêmes 7 animations (repos, course, tir, rechargement, grenade, mort, danse).
 

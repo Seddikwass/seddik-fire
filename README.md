@@ -1,5 +1,13 @@
 # Seddik Fire
 
+## Nouveautés 2.42 — Animations des soldats
+- **Touché** : le soldat recule à l’opposé du tir et son buste se tord.
+- **Grenade** : le soldat arme en arrière puis lance d’un coup de buste.
+- **Course** : balancement des hanches et buste qui avance à chaque pas.
+- **Atterrissage** : choc puis rebond en touchant le sol.
+- **Danse de victoire** : pas sur place, balancement et tour complet, en jeu et sur l’écran de fin (donc aussi sur la carte de victoire).
+- Les animations existantes restent : marche, respiration, recul au tir, rechargement, coup de poing, chute à la mort, parachute. Tout est désactivé si le téléphone demande moins d’animations.
+
 ## Nouveautés 2.41 — Motivation : Pass Seddik, missions de la semaine, calendrier, grades tunisiens, carte de victoire
 - **Pass Seddik** (nouveau bouton dans le lobby) : une saison par mois au nom tunisien (Olives de Sfax, Festival du Sahara de Douz, Neige d’Aïn Draham…). 30 paliers de 100 points de saison gagnés à chaque partie (survie, éliminations, Top 10, Top 5, victoire). Récompenses en XP, coffre tous les 5 paliers, titre de saison au palier 30.
 - **Missions de la semaine** dans l’écran Missions : 3 grandes missions qui changent chaque lundi, récompense ×3.

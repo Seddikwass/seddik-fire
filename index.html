@@ -1059,7 +1059,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.41</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.42</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -5616,7 +5616,7 @@ function drawEnt0(e){
   if(e!==player&&e.alive&&!(e.team&&player&&e.team===player.team)){ctx.lineWidth=2.4;ctx.strokeStyle='rgba(12,8,4,.38)';ctx.beginPath();ctx.arc(e.x,e.y,R+1.5,0,TAU);ctx.stroke()}
   /* Contact shadow: anchors each soldier to the terrain and improves depth/readability. */
   if(!e.veh&&e.air<=0){ctx.save();ctx.globalAlpha=.25;ctx.translate(e.x+R*.2,e.y+R*.42);ctx.scale(1.35,.62);const sg=ctx.createRadialGradient(0,0,1,0,0,R*1.15);sg.addColorStop(0,'rgba(5,7,8,.62)');sg.addColorStop(.58,'rgba(5,7,8,.28)');sg.addColorStop(1,'rgba(5,7,8,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(0,0,R*1.15,0,TAU);ctx.fill();ctx.restore()}
-  ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.scale(VSC*PS,VSC*PS);if(!drawBodyCached(e))drawBody(ctx,e);ctx.restore();
+  ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);sfAnim(e);ctx.scale(VSC*PS,VSC*PS);if(!drawBodyCached(e))drawBody(ctx,e);ctx.restore();
   if(!e.veh){if(!RIMS){RIMS=mkCv(96,96);const c=RIMS.getContext('2d'),g=c.createRadialGradient(36,34,4,48,48,46);g.addColorStop(0,'rgba(255,244,222,.34)');g.addColorStop(.45,'rgba(255,244,222,.10)');g.addColorStop(1,'rgba(255,244,222,0)');c.fillStyle=g;c.beginPath();c.arc(48,48,46,0,TAU);c.fill()}ctx.globalAlpha=.55;ctx.drawImage(RIMS,e.x-R*1.05,e.y-R*1.05,R*2.1,R*2.1);ctx.globalAlpha=1}
   if(e.hurtT>0){ctx.globalAlpha=Math.min(.5,e.hurtT*1.8);ctx.fillStyle='#fff4e4';ctx.beginPath();ctx.arc(e.x,e.y,R*.82,0,TAU);ctx.fill();ctx.globalAlpha=1}
   if(e!==player&&e.alive){if(CAMROT){ctx.save();ctx.translate(e.x,e.y);ctx.rotate(-CAMROT);ctx.translate(-e.x,-e.y)}const sc=Math.max(1,.85/cam.z),w=38*sc,y=e.y-R-14*sc,h=4.2*sc,f=clamp(e.hp/100,0,1);ctx.globalAlpha=e.hpShowT>0?1:.82;const vb=e.vest>0?2.8*sc:0;ctx.fillStyle='rgba(8,10,14,.74)';rrect(ctx,e.x-w/2-1.8*sc,y-1.8*sc,w+3.6*sc,h+3.6*sc+vb,3.2*sc);ctx.fill();ctx.fillStyle='rgba(255,255,255,.14)';rrect(ctx,e.x-w/2,y,w,h,h/2);ctx.fill();if(f>0){ctx.fillStyle=f>.6?'#5fd38d':f>.3?'#ffb547':'#ff4d4d';rrect(ctx,e.x-w/2,y,Math.max(h,w*f),h,h/2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.3)';rrect(ctx,e.x-w/2+h*.3,y+h*.12,Math.max(0,w*f-h*.6),h*.32,h*.16);ctx.fill()}if(e.vest>0){ctx.fillStyle='#4cc3ff';rrect(ctx,e.x-w/2,y+h+1.2*sc,Math.max(1.6*sc,w*clamp(e.vest/100,0,1)),1.6*sc,.8*sc);ctx.fill()}ctx.globalAlpha=1}}
@@ -5975,9 +5975,9 @@ function drawShowcase(c,S,o){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,S,S);co
   if(ph){const h=S*.94,w=h*PHOTO.naturalWidth/PHOTO.naturalHeight,x=S*.4-w/2,y=S*.03;c.save();rrect(c,x,y,w,h,S*.03);c.clip();c.drawImage(PHOTO,x,y,w,h);const fg=c.createLinearGradient(0,y+h*.62,0,y+h);fg.addColorStop(0,'rgba(20,14,10,0)');fg.addColorStop(1,'rgba(20,14,10,.8)');c.fillStyle=fg;c.fillRect(x,y,w,h);c.restore();c.strokeStyle='rgba(217,180,90,.9)';c.lineWidth=Math.max(1,S*.007);rrect(c,x,y,w,h,S*.03);c.stroke()}
   if(!ph){c.save();c.translate(S/2,S*.55);c.scale(1,.42);c.strokeStyle='rgba(255,107,34,.75)';c.lineWidth=S*.012;c.beginPath();c.arc(0,0,S*.4,0,TAU);c.stroke();
   c.strokeStyle='rgba(243,233,212,.25)';c.lineWidth=S*.006;c.setLineDash([S*.03,S*.02]);c.rotate(t*.3);c.beginPath();c.arc(0,0,S*.45,0,TAU);c.stroke();c.setLineDash([]);c.restore()}
-  const k=S/96,br=1+Math.sin(t*1.8)*.012;c.save();if(ph){c.fillStyle='rgba(20,14,10,.55)';c.beginPath();c.arc(S*.8,S*.74,S*.17,0,TAU);c.fill();c.strokeStyle='rgba(255,107,34,.8)';c.lineWidth=Math.max(1,S*.006);c.stroke();c.translate(S*.8,S*.74);c.scale(k*br*.52,k*br*.52)}else{c.translate(S/2,S*.56);c.scale(k*br,k*br)}c.fillStyle='rgba(20,12,4,.32)';c.beginPath();c.ellipse(2,4,18,16,0,0,TAU);c.fill();
-  const look=-Math.PI/2+Math.sin(t*.7)*.5+Math.sin(t*.23)*.25;c.rotate(look);
-  const e={sk:o.sk,skin:o.skin||'#c8946a',slots:[o.slot||null],cur:o.slot?0:-1,helmet:0,vestLvl:o.vest||0,vest:o.vest?60:0,fireCd:0,punchT:0,r:15,reloadT:0,x:0,walkPh:t*3,_ws:o.walk?.6:0,cust:o.cust};
+  const k=S/96,br=o.win?1+Math.abs(Math.sin(t*4.4))*.07:1+Math.sin(t*1.8)*.012;c.save();if(ph){c.fillStyle='rgba(20,14,10,.55)';c.beginPath();c.arc(S*.8,S*.74,S*.17,0,TAU);c.fill();c.strokeStyle='rgba(255,107,34,.8)';c.lineWidth=Math.max(1,S*.006);c.stroke();c.translate(S*.8,S*.74);c.scale(k*br*.52,k*br*.52)}else{c.translate(S/2,S*.56);c.scale(k*br,k*br)}c.fillStyle='rgba(20,12,4,.32)';c.beginPath();c.ellipse(2,4,18,16,0,0,TAU);c.fill();
+  const look=o.win?-Math.PI/2+Math.sin(t*4.4)*.42+((t%3.2)<.7?Math.sin((t%3.2)/.7*Math.PI/2)*TAU:0):-Math.PI/2+Math.sin(t*.7)*.5+Math.sin(t*.23)*.25;c.rotate(look);
+  const e={sk:o.sk,skin:o.skin||'#c8946a',slots:[o.slot||null],cur:o.slot?0:-1,helmet:0,vestLvl:o.vest||0,vest:o.vest?60:0,fireCd:0,punchT:0,r:15,reloadT:0,x:0,walkPh:o.win?t*11:t*3,_ws:o.win?.95:o.walk?.6:0,cust:o.cust};
   try{
     drawBody(c,e);
     c.restore();
@@ -6876,6 +6876,7 @@ function sfCal(bonus){const go=()=>{if(!window.__sfReady||game.mode!=='lobby'){s
   for(let i=1;i<=7;i++){const v=i*50+(i===7?500:0);h+='<li class="cd'+(i<cd?' past':'')+(i===cd?' now':'')+(i===7?' big':'')+'"><small>'+trS('Jour')+' '+i+'</small><b>'+(i===7?'🎁':'+'+v)+'</b><em>'+(i===7?'+'+v+' XP':'XP')+'</em></li>'}
   $('#calList').innerHTML=h;$('#calSub').textContent=trS('Jour')+' '+cd+' · +'+bonus+' XP';$('#cal').hidden=false};setTimeout(go,700)}
 $('#calClose').addEventListener('click',()=>{$('#cal').hidden=true;try{fillXP();fillStats()}catch(e){}});
+$('#play').addEventListener('click',()=>{$('#cal').hidden=true;$('#pass').hidden=true;$('#cardV').hidden=true},true);
 
 /* --- carte de victoire à partager (image) --- */
 function sfFlag(c,x,y,w){const h=w*2/3;c.fillStyle='#e70013';c.fillRect(x,y,w,h);const cx=x+w/2,cy=y+h/2,r=h*.25;c.fillStyle='#fff';c.beginPath();c.arc(cx,cy,r,0,6.283);c.fill();
@@ -6906,6 +6907,23 @@ $('#cardShare').addEventListener('click',async()=>{if(!cardBlob)return;try{const
 $('#cardSave').addEventListener('click',()=>{const a=document.createElement('a');a.href=$('#cardImg').src;a.download='seddik-fire-'+Date.now()+'.png';document.body.appendChild(a);a.click();a.remove()});
 $('#cardClose').addEventListener('click',()=>{$('#cardV').hidden=true});
 
+
+/* ===== v2.42 — animations des soldats : impact, lancer de grenade, balancement de course, atterrissage, danse de victoire ===== */
+{const _dmg=damage;damage=function(t,a,s,w){_dmg(t,a,s,w);if(t&&t.alive&&s&&s!==t&&t.hitDir!=null){t.flT=matchT;t.flA=t.hitDir}}}
+{const _thr=throwNade;throwNade=function(e,ty,a,d){const r=_thr(e,ty,a,d);if(r!==false&&e)e.thrT=matchT;return r}}
+function sfEase(x){return x<0?0:x>1?1:x*x*(3-2*x)}
+function sfAnim(e){if(reduceMotion||game.mode==='lobby')return;let tx=0,ty=0,r=0;const ws=e._ws||0,ph=e.walkPh||0;
+  // danse de victoire : pas sur place, balancement et tour complet
+  if(e===player&&e.alive&&endAt&&!e.veh&&oneTeam()){e._ws=1;e.walkPh=TIME*11;const b=TIME%3.2;r+=Math.sin(TIME*4.4)*.5+(b<.7?sfEase(b/.7)*TAU:0);ty+=Math.sin(TIME*8.8)*1.6;ctx.rotate(r);ctx.translate(tx,ty);return}
+  // course : hanches qui balancent, buste qui avance
+  if(ws>.05){r+=Math.sin(ph)*.07*ws;tx+=(.6+Math.abs(Math.cos(ph))*.9)*ws;ty+=Math.sin(ph)*1.1*ws}
+  // touché : le corps recule à l'opposé du tir et se tord
+  if(e.flT!=null){const k=1-(matchT-e.flT)/.28;if(k>0&&k<=1){const la=e.flA-e.angle,f=Math.sin(k*Math.PI*.5)*k;tx-=Math.cos(la)*6*f;ty-=Math.sin(la)*6*f;r-=Math.sin(la)*.32*f}}
+  // grenade : armer en arrière puis lancer
+  if(e.thrT!=null){const q=(matchT-e.thrT)/.5;if(q>=0&&q<1){const wind=q<.3?-sfEase(q/.3)*.6:-.6+sfEase((q-.3)/.25)*1.05-sfEase((q-.55)/.45)*.45;r+=wind;tx+=q<.3?-2*sfEase(q/.3):3*(1-q)}}
+  // atterrissage : choc puis rebond
+  if(e.landT!=null){const q=(matchT-e.landT)/.45;if(q>=0&&q<1)tx+=Math.sin(q*Math.PI*2)*3*(1-q)}
+  if(r)ctx.rotate(r);if(tx||ty)ctx.translate(tx,ty)}
 setLang(detectLang(),false);
 
 

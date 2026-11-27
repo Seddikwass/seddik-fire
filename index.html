@@ -1746,7 +1746,7 @@ em.chp{font-style:normal;font-weight:800;color:var(--acc2,#ffd27a);margin-inline
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V241</span>
+    <span id="build-tag" aria-label="Version">V242</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -2868,8 +2868,8 @@ function taper(mb, a, b, r0, r1, c, m, sides = 10, fl = 1) {
   const rings = [[a, r0], [mid, rm], [b, r1]];
   for (let j = 0; j < 2; j++) for (let k = 0; k < sides; k++) mb.quad(P(rings[j][0], rings[j][1], k), P(rings[j + 1][0], rings[j + 1][1], k), P(rings[j + 1][0], rings[j + 1][1], k + 1), P(rings[j][0], rings[j][1], k + 1), c, m);
 }
-function sphere(mb, cx, cy, cz, r, c, m, la0 = -Math.PI / 2, la1 = Math.PI / 2, seg = 14, sy = 1, sz = 1) {
-  const nv = 8, P = (u, v) => { const a = u / seg * Math.PI * 2, b = la0 + (la1 - la0) * v / nv; return [cx + Math.cos(a) * Math.cos(b) * r, cy + Math.sin(b) * r * sy, cz + Math.sin(a) * Math.cos(b) * r * sz]; };
+function sphere(mb, cx, cy, cz, r, c, m, la0 = -Math.PI / 2, la1 = Math.PI / 2, seg = 14, sy = 1, sz = 1, nv = 8) {
+  const P = (u, v) => { const a = u / seg * Math.PI * 2, b = la0 + (la1 - la0) * v / nv; return [cx + Math.cos(a) * Math.cos(b) * r, cy + Math.sin(b) * r * sy, cz + Math.sin(a) * Math.cos(b) * r * sz]; };
   for (let v = 0; v < nv; v++) for (let u = 0; u < seg; u++) mb.quad(P(u, v), P(u + 1, v), P(u + 1, v + 1), P(u, v + 1), c, m);
 }
 function discZ(mb, cx, cy, z, r, c, m, seg = 14, dir = 1) {
@@ -4843,6 +4843,7 @@ function textQuads(mb, txt, o, rv, uv, px, col, mat) {
 function tnh(x, z) { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }
 function tnoise(x, z) { const ix = Math.floor(x), iz = Math.floor(z); let fx = x - ix, fz = z - iz; fx = fx * fx * (3 - 2 * fx); fz = fz * fz * (3 - 2 * fz); const a = tnh(ix, iz), b = tnh(ix + 1, iz), c = tnh(ix, iz + 1), d = tnh(ix + 1, iz + 1); return a + (b - a) * fx + (c - a) * fz + (a - b - c + d) * fx * fz; }
 function tfbm(x, z) { return tnoise(x, z) * 0.55 + tnoise(x * 2.03 + 17.1, z * 2.03 + 3.7) * 0.28 + tnoise(x * 4.1 + 5.3, z * 4.1 + 41.2) * 0.17; }
+const FAN_TPL = new Map();   // V242 : gabarits de spectateurs partagés entre circuits
 function buildTrack(def, quality) {
   const rng = mulberry(def.seed), r = rng;
   const W = W_HALF, theme = def.theme;
@@ -5091,7 +5092,7 @@ function buildTrack(def, quality) {
   // Public 3D : gradins et silhouettes de spectateurs sur les circuits urbains, côtiers et au stade.
   // Les personnages sont regroupés dans les chunks du décor pour préserver les performances mobiles.
   { // Public présent sur tous les environnements de course.
-    const crowdStep = theme === 'circuit' ? 20 : 28;
+    const crowdStep = theme === 'circuit' ? 30 : 56;   // V242 : foule allégée (chargement et mémoire), toujours présente à chaque tribune
     const crowdSides = [-1, 1];
     const skin = [[0.68,0.43,0.29],[0.82,0.61,0.43],[0.48,0.29,0.2],[0.9,0.72,0.55],[0.72,0.52,0.37],[0.34,0.22,0.16],[0.76,0.57,0.42]];
     const shirts = [[0.78,0.12,0.1],[0.08,0.22,0.48],[0.9,0.82,0.65],[0.12,0.42,0.28],[0.88,0.48,0.08],[0.22,0.2,0.24],[0.04,0.55,0.62],[0.58,0.12,0.62],[0.92,0.76,0.12]];
@@ -5101,28 +5102,33 @@ function buildTrack(def, quality) {
         const female = (n + row + Math.floor(i / 7)) % 2 === 0;
         const tnFan = (i + n * 7 + row * 3) % 5 < 2, shirt = tnFan ? ((n + row) % 2 ? [0.86, 0.06, 0.08] : [0.95, 0.94, 0.92]) : shirts[(i + n * 3 + row * 2) % shirts.length], tone = skin[(n + i + row) % skin.length];
         const hc = hair[(n * 2 + row + i) % hair.length];
-        // Personnages 3D : têtes, cous, bustes, bassins et membres individualisés.
-        sphere(mb, x, y + 1.18, z, female ? 0.155 : 0.17, tone, 3, -Math.PI / 2, Math.PI / 2, 7, 1.12, 0.92);
-        sphere(mb, x, y + 1.29, z - 0.025, 0.17, hc, 3, -0.05, Math.PI / 2, 8, 0.78, 0.95);
-        bar(mb, [x, y + 0.97, z], [x, y + 0.82, z], 0.065, tone, 3, 0.06, 6);
-        sphere(mb, x, y + 0.61, z, female ? 0.235 : 0.25, shirt, 3, -Math.PI / 2, Math.PI / 2, 7, 1.35, 0.78);
-        sphere(mb, x, y + 0.34, z, 0.19, shirt, 3, -Math.PI / 2, Math.PI / 2, 8, 0.72, 0.78);
-        const shoulderL = [x - 0.19, y + 0.78, z], shoulderR = [x + 0.19, y + 0.78, z];
-        const waving = (n + row + i) % 3 !== 1;
-        const handL = waving ? [x - 0.34, y + 1.28, z] : [x - 0.36, y + 0.48, z + 0.02];
-        const handR = [x + 0.36, y + (waving ? 1.22 : 0.5), z + 0.02];
-        bar(mb, shoulderL, handL, 0.065, shirt, 3, 0.055, 6);
-        bar(mb, shoulderR, handR, 0.065, shirt, 3, 0.055, 6);
-        sphere(mb, handL[0], handL[1], handL[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 6);
-        sphere(mb, handR[0], handR[1], handR[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 6);
-        const legC = [0.09,0.09,0.1];
-        bar(mb, [x - 0.1, y + 0.28, z], [x - 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 6);
-        bar(mb, [x + 0.1, y + 0.28, z], [x + 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 6);
+        const waving = (n + row + i) % 3 !== 1, handL = waving ? [x - 0.34, y + 1.28, z] : [x - 0.36, y + 0.48, z + 0.02];
+        // V242 — le corps est un gabarit construit une fois par apparence, puis recopié : chargement bien plus rapide
+        const tk = (female ? 1 : 0) + '|' + shirt + '|' + tone + '|' + hc + '|' + (waving ? 1 : 0);
+        let tpl = FAN_TPL.get(tk); if (!tpl) { const tb = new MB(); fanBody(tb, 0, 0, 0, female, shirt, tone, hc, waving); tpl = tb.a; FAN_TPL.set(tk, tpl); }
+        const A = mb.a; for (let v = 0; v < tpl.length; v += STRIDE) A.push(tpl[v] + x, tpl[v + 1] + y, tpl[v + 2] + z, tpl[v + 3], tpl[v + 4], tpl[v + 5], tpl[v + 6], tpl[v + 7], tpl[v + 8], tpl[v + 9], tpl[v + 10]);
         if (waving && (n + row + i) % 2 === 0) {
           const ii = ((i % N) + N) % N, tg = [tx[ii], 0, tz[ii]], nr = [-rx[ii] * side, 0, -rz[ii] * side], top = [handL[0], handL[1] + 0.62, handL[2]];
           bar(mb, handL, top, 0.012, [0.75, 0.75, 0.78], 4, 0.012, 4);
           flagQuad(mb, [top[0] + tg[0] * 0.27, top[1] - 0.17, top[2] + tg[2] * 0.27], 0.52, 0.34, tg, nr, 8);
         }
+      }
+    function fanBody(mb, x, y, z, female, shirt, tone, hc, waving) {
+        sphere(mb, x, y + 1.18, z, female ? 0.155 : 0.17, tone, 3, -Math.PI / 2, Math.PI / 2, 6, 1.12, 0.92, 4);
+        sphere(mb, x, y + 1.29, z - 0.025, 0.17, hc, 3, -0.05, Math.PI / 2, 6, 0.78, 0.95, 3);
+        bar(mb, [x, y + 0.97, z], [x, y + 0.82, z], 0.065, tone, 3, 0.06, 5);
+        sphere(mb, x, y + 0.61, z, female ? 0.235 : 0.25, shirt, 3, -Math.PI / 2, Math.PI / 2, 6, 1.35, 0.78, 4);
+        sphere(mb, x, y + 0.34, z, 0.19, shirt, 3, -Math.PI / 2, Math.PI / 2, 4, 0.72, 0.78, 4);
+        const shoulderL = [x - 0.19, y + 0.78, z], shoulderR = [x + 0.19, y + 0.78, z];
+        const handL = waving ? [x - 0.34, y + 1.28, z] : [x - 0.36, y + 0.48, z + 0.02];
+        const handR = [x + 0.36, y + (waving ? 1.22 : 0.5), z + 0.02];
+        bar(mb, shoulderL, handL, 0.065, shirt, 3, 0.055, 5);
+        bar(mb, shoulderR, handR, 0.065, shirt, 3, 0.055, 5);
+        sphere(mb, handL[0], handL[1], handL[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 3, 1, 1, 4);
+        sphere(mb, handR[0], handR[1], handR[2], 0.065, tone, 3, -Math.PI / 2, Math.PI / 2, 3, 1, 1, 4);
+        const legC = [0.09,0.09,0.1];
+        bar(mb, [x - 0.1, y + 0.28, z], [x - 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 5);
+        bar(mb, [x + 0.1, y + 0.28, z], [x + 0.12, y + 0.04, z], 0.075, legC, 3, 0.065, 5);
       }
     // drapeau tunisien plat (rouge, disque blanc, croissant et étoile rouges) dans le plan formé par la tangente et la verticale
     function flagQuad(mb, C, w, h, tg, nr, seg = 12) {
@@ -5134,7 +5140,7 @@ function buildTrack(def, quality) {
     }
     for (let i = 20; i < N; i += crowdStep) for (const side of crowdSides) {
       const mb = ch(rk(i)), stadium = theme === 'circuit', baseD = stadium ? W + 12 : W + 7.5;
-      const count = stadium ? 13 : 10, rows = stadium ? 4 : 3;
+      const count = stadium ? 12 : 9, rows = stadium ? 3 : 2;
       if (stadium) {
         for (let row = 0; row < rows; row++) {
           const d = side * (baseD + row * 1.65), p = pos(i, d, 0.55 + row * 0.62);
@@ -6289,7 +6295,7 @@ function buildTrack(def, quality) {
     for (const l of T.lamps) { const k = gk(Math.floor(l.p[0] / LC), Math.floor(l.p[2] / LC)); let a = LG.get(k); if (!a) { a = []; LG.set(k, a); } a.push(l); }
     const R2 = 60 * 60;
     for (const [key, mb] of chunks) {
-      if (key === 'always' || key[0] === 'G') continue;
+      if (key === 'always' || key[0] === 'G' || key[0] === 'D' || key[0] === 'F') continue;
       const a = mb.a;
       for (let v = 0; v < a.length; v += STRIDE) {
         const x = a[v], y = a[v + 1], z = a[v + 2], gx = Math.floor(x / LC), gz = Math.floor(z / LC); let sum = 0;
@@ -6315,7 +6321,7 @@ function buildTrack(def, quality) {
       mb.quad(pos(i, off[i] - hw, up), pos(i, off[i] + hw, up), pos(j, off[j] + hw * 0.2, up), pos(j, off[j] - hw * 0.2, up), c, 15); }
   }
   LODCH = null;
-  for (const [key, mb] of chunks) { if (key[0] !== 'L' && mb.n) mb.smoothFast(38); const m = R.upload(mb); if (m) { m.always = key === 'always'; if (key[0] === 'D') m.maxD = LOD_D; if (key[0] === 'F') { m.minD = LOD_D; m.nosh = true; } if (key[0] === 'G') { m.nosh = true; m.maxD = 110; } if (key[0] === 'L') { m.nosh = true; m.rline = true; m.maxD = 140; } T.meshes.push(m); } }
+  for (const [key, mb] of chunks) { if (key[0] !== 'L' && key[0] !== 'D' && key[0] !== 'F' && mb.n) mb.smoothFast(38); const m = R.upload(mb); if (m) { m.always = key === 'always'; if (key[0] === 'D') m.maxD = LOD_D; if (key[0] === 'F') { m.minD = LOD_D; m.nosh = true; } if (key[0] === 'G') { m.nosh = true; m.maxD = 110; } if (key[0] === 'L') { m.nosh = true; m.rline = true; m.maxD = 140; } T.meshes.push(m); } }
   T.verts = T.meshes.reduce((s, m) => s + m.n, 0);
   // fonctions d'accès
   T.wrap = s => ((s % total) + total) % total;
@@ -8839,7 +8845,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V241';
+const GAME_VERSION = 'V242';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),

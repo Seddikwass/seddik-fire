@@ -1727,6 +1727,10 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 .evphase .champ.c1{background:#9ff0b4}.evphase .champ.c2{background:#ffd27a}.evphase .champ.c3{background:#ff9f5a}.evphase .champ.c4{background:#ff6b8a;color:#fff}.evphase .champ.c5{background:linear-gradient(90deg,#c69bff,#ffd27a)}
 em.chp{font-style:normal;font-weight:800;color:var(--acc2,#ffd27a);margin-inline-start:4px}
 .mnew.wk em{background:linear-gradient(90deg,#7a3cff,#c06bff)}
+
+/* V238 — raids */
+.bk em.loan{font-style:normal;font:900 9px 'Chakra Petch',sans-serif;letter-spacing:.06em;padding:1px 6px;border-radius:999px;background:#ffb020;color:#1a1000;vertical-align:middle}
+.mnew.raid em{background:linear-gradient(90deg,#e0902a,#b8551a)}
 @media (max-width:620px){.dbgrid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
@@ -1742,7 +1746,7 @@ em.chp{font-style:normal;font-weight:800;color:var(--acc2,#ffd27a);margin-inline
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V237</span>
+    <span id="build-tag" aria-label="Version">V238</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1757,7 +1761,7 @@ em.chp{font-style:normal;font-weight:800;color:var(--acc2,#ffd27a);margin-inline
       <button data-go="options" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></i><b data-i18n="options">OPTIONS</b><small data-i18n="optionsSub"></small></button>
       <button data-go="help" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12a4 4 0 0 1 4 4v1a4 4 0 0 1-7 2.6L14 14h-4l-1 1.6A4 4 0 0 1 2 13v-1a4 4 0 0 1 4-4zM7 11v3M5.5 12.5h3M16 12h.01M18 14h.01"/></svg></i><b data-i18n="help">COMMENT JOUER</b><small data-i18n="helpSub"></small></button>
     </nav>
-    <div class="mnews" id="mnews"><button class="mnew wk hidden" data-nm="weekend"><em>LIVE</em><span data-i18n="we_title">Événement du week-end</span></button><button class="mnew" data-nm="quad"><em>NEW</em><span data-i18n="m_quad">Course de quads</span></button><button class="mnew" data-nm="velo"><em>NEW</em><span data-i18n="m_velo">Course de vélos</span></button><button class="mnew" data-nm="stunt"><em>NEW</em><span data-i18n="st_wh">Roue arrière</span></button></div>
+    <div class="mnews" id="mnews"><button class="mnew wk hidden" data-nm="weekend"><em>LIVE</em><span data-i18n="we_title">Événement du week-end</span></button><button class="mnew raid" data-nm="offroad"><em>NEW</em><span data-i18n="raid_chip">Raid Sahara &amp; montagne</span></button><button class="mnew" data-nm="quad"><em>NEW</em><span data-i18n="m_quad">Course de quads</span></button><button class="mnew" data-nm="velo"><em>NEW</em><span data-i18n="m_velo">Course de vélos</span></button><button class="mnew" data-nm="stunt"><em>NEW</em><span data-i18n="st_wh">Roue arrière</span></button></div>
     <div class="carline" id="maincar"></div>
   </section>
 
@@ -4613,6 +4617,28 @@ TRACKS.push(
 );
 
 /* V225 — identité visuelle de chaque ville : couleurs des façades, volets, coupoles, moucharabiehs */
+
+// V238 — pistes tout-terrain (sable compacté, terre) réservées aux raids : 4x4, quads, motos
+TRACKS.push(
+  {
+    id: 'erg_douz', name: 'Grand Erg — Dunes de Douz', sub: 'Sahara • Piste de sable entre les dunes', theme: 'desert', seed: 141, piste: true,
+    pts: [[0, -420, 4], [40, -120, 12], [-60, 140, 22], [40, 360, 10], [240, 470, 26], [460, 420, 14], [560, 240, 30], [500, 40, 16], [640, -140, 24], [560, -380, 10], [340, -480, 20], [160, -560, 8]],
+    env: { sky: [0.2, 0.36, 0.7], hor: [0.98, 0.8, 0.56], gnd: [0.62, 0.44, 0.26], fog: [0.95, 0.78, 0.56], fogDen: 0.0019, sunDir: nrm([-0.5, 0.42, 0.6]), sunCol: [1.45, 1.12, 0.78], wet: 0, clouds: 0.25, sunSize: 0.0022, haze: 1, dust: [0.9, 0.72, 0.48], sat: 1.06, grade: GR([0.02, 0.01, 0.0], [1.04, 1.0, 0.92], 0.3) },
+    road: [0.66, 0.5, 0.32], cols: [[0.86, 0.64, 0.4], [0.84, 0.6, 0.36], [0.78, 0.55, 0.33], [0.74, 0.56, 0.36], [0.62, 0.42, 0.26], [0.68, 0.48, 0.3]],
+  },
+  {
+    id: 'ghilane_raid', name: 'Ksar Ghilane — Raid de l\'oasis', sub: 'Sahara • Coucher de soleil sur la piste', theme: 'desert', seed: 157, piste: true,
+    pts: [[0, -380, 2], [0, -60, 6], [-120, 160, 12], [-40, 380, 18], [180, 420, 10], [300, 260, 16], [480, 320, 8], [600, 140, 14], [520, -80, 6], [640, -280, 12], [460, -460, 4], [220, -420, 8]],
+    env: { sky: [0.16, 0.22, 0.48], hor: [0.98, 0.62, 0.38], gnd: [0.52, 0.34, 0.2], fog: [0.9, 0.64, 0.46], fogDen: 0.0019, sunDir: nrm([-0.7, 0.12, 0.5]), sunCol: [1.45, 0.92, 0.56], wet: 0, clouds: 0.4, sunSize: 0.0034, haze: 1, dust: [0.9, 0.58, 0.36], sat: 1.05, grade: GR([0.03, 0.006, 0.01], [1.05, 0.96, 0.88], 0.32) },
+    road: [0.6, 0.42, 0.27], cols: [[0.82, 0.55, 0.33], [0.78, 0.51, 0.3], [0.72, 0.46, 0.28], [0.66, 0.46, 0.3], [0.56, 0.34, 0.2], [0.62, 0.4, 0.24]],
+  },
+  {
+    id: 'semmama_piste', name: 'Djebel Semmama — Piste de montagne', sub: 'Kasserine • Lacets en terre et pins d\'Alep', theme: 'mountain', seed: 173, piste: true,
+    pts: [[0, -260, 20], [0, 40, 32], [-120, 200, 46], [-40, 360, 60], [120, 300, 70], [60, 160, 80], [220, 120, 90], [360, 220, 98], [480, 120, 90], [440, -60, 78], [560, -200, 66], [420, -360, 50], [220, -380, 36], [90, -360, 26]],
+    env: { sky: [0.2, 0.42, 0.86], hor: [0.72, 0.8, 0.92], gnd: [0.3, 0.32, 0.22], fog: [0.7, 0.77, 0.86], fogDen: 0.0021, sunDir: nrm([0.45, 0.6, 0.35]), sunCol: [1.3, 1.16, 0.98], wet: 0, clouds: 0.65, sunSize: 0.0013, sat: 1.0, grade: GR([0.0, 0.012, 0.028], [1.03, 1.0, 0.96], 0.3) },
+    road: [0.46, 0.38, 0.29], cols: [[0.3, 0.38, 0.17], [0.27, 0.34, 0.15], [0.24, 0.31, 0.14], [0.44, 0.38, 0.3], [0.48, 0.44, 0.38], [0.55, 0.52, 0.47]],
+  },
+);
 const TRACK_PAL = {
   tunis_jour: { walls: [[0.88, 0.85, 0.78], [0.92, 0.9, 0.84], [0.82, 0.78, 0.7], [0.86, 0.8, 0.68], [0.78, 0.74, 0.68]], shut: [[0.1, 0.3, 0.6], [0.12, 0.4, 0.26], [0.2, 0.22, 0.24]], dome: 0.03, mouch: 0.12, mouchC: [0.12, 0.34, 0.62], maxH: 30 },
   sousse: { walls: [[0.92, 0.91, 0.87], [0.88, 0.86, 0.8], [0.94, 0.92, 0.88]], shut: [[0.08, 0.32, 0.72], [0.1, 0.45, 0.62]], dome: 0.14, mouch: 0.08, mouchC: [0.08, 0.32, 0.72], maxH: 20 },
@@ -4787,7 +4813,7 @@ function buildTrack(def, quality) {
   let minY = 1e9, maxY = -1e9, bx0 = 1e9, bx1 = -1e9, bz0 = 1e9, bz1 = -1e9;
   for (let i = 0; i < N; i++) { minY = Math.min(minY, py[i]); maxY = Math.max(maxY, py[i]); bx0 = Math.min(bx0, px[i]); bx1 = Math.max(bx1, px[i]); bz0 = Math.min(bz0, pz[i]); bz1 = Math.max(bz1, pz[i]); }
   const yG = theme === 'coast' ? -1 : theme === 'port' ? -1.4 : theme === 'city' ? minY - 1.2 : minY - 3;
-  const TMAT = theme === 'port' || theme === 'city' ? 18 : 16;
+  const TMAT = theme === 'port' || theme === 'city' ? 18 : 16, piste = !!def.piste;   // V238 : piste tout-terrain
   T.yG = yG; T.bbox = [bx0, bz0, bx1, bz1];
   const cx = (bx0 + bx1) / 2, cz = (bz0 + bz1) / 2, rad = Math.hypot(bx1 - bx0, bz1 - bz0) / 2;
   // grille spatiale
@@ -4887,10 +4913,14 @@ function buildTrack(def, quality) {
     const cs = [-W, -W * 0.5, 0, W * 0.5, W];
     // usure : le centre de chaque voie (passage des roues, gomme) est plus sombre que près des lignes
     const cs8 = [-W, -W * 0.75, -W * 0.5, -W * 0.25, 0, W * 0.25, W * 0.5, W * 0.75, W], kw = [1.07, 0.8, 1.0, 0.8, 0.97, 0.8, 1.0, 0.8, 1.07];
+    if (piste) {   // ornières sombres, bandes de roulement, bords qui se fondent dans le terrain
+      const kp = [0.97, 0.86, 1.05, 0.84, 1.08, 0.84, 1.05, 0.86, 0.97], nz = 0.94 + 0.12 * Math.sin(i * 0.53) * Math.sin(i * 0.19 + 2);
+      for (let c = 0; c < 8; c++) { const ca = jit(V3.sc(rc, kp[c] * nz), r, 0.025), cb = jit(V3.sc(rc, kp[c + 1] * nz), r, 0.025); mb.quad(pos(i, cs8[c]), pos(i, cs8[c + 1]), pos(j, cs8[c + 1]), pos(j, cs8[c]), ca, TMAT, cb, cb, ca); }
+    } else
     for (let c = 0; c < 8; c++) { const ca = V3.sc(rc, kw[c]), cb = V3.sc(rc, kw[c + 1]); mb.quad(pos(i, cs8[c]), pos(i, cs8[c + 1]), pos(j, cs8[c + 1]), pos(j, cs8[c]), ca, 8, cb, cb, ca); }
     const lm = [0.94, 0.94, 0.90];
-    if (i % 6 < 2) for (const d of [-W * 0.5, 0, W * 0.5]) mb.quad(pos(i, d - 0.07, 0.025), pos(i, d + 0.07, 0.025), pos(j, d + 0.07, 0.025), pos(j, d - 0.07, 0.025), lm, 22);
-    for (const sd of [-1, 1]) { const d = sd * (W - 0.4); mb.quad(pos(i, d - 0.09, 0.025), pos(i, d + 0.09, 0.025), pos(j, d + 0.09, 0.025), pos(j, d - 0.09, 0.025), lm, 22); }
+    if (!piste && i % 6 < 2) for (const d of [-W * 0.5, 0, W * 0.5]) mb.quad(pos(i, d - 0.07, 0.025), pos(i, d + 0.07, 0.025), pos(j, d + 0.07, 0.025), pos(j, d - 0.07, 0.025), lm, 22);
+    if (!piste) for (const sd of [-1, 1]) { const d = sd * (W - 0.4); mb.quad(pos(i, d - 0.09, 0.025), pos(i, d + 0.09, 0.025), pos(j, d + 0.09, 0.025), pos(j, d - 0.09, 0.025), lm, 22); }
     for (const side of [-1, 1]) {
       if (theme === 'city') {
         const swc = jit((i >> 1) % 2 ? [0.46, 0.44, 0.4] : [0.42, 0.4, 0.37], r, 0.03), cc = (i >> 1) % 2 ? [0.8, 0.1, 0.08] : [0.9, 0.9, 0.88];   // bordure peinte rouge / blanc
@@ -4898,7 +4928,7 @@ function buildTrack(def, quality) {
         mb.quad(pos(i, side * W, 0.18), pos(j, side * W, 0.18), pos(j, side * (W + 4), 0.18), pos(i, side * (W + 4), 0.18), swc, 19);
         mb.quad(pos(i, side * (W + 4), 0.18), pos(j, side * (W + 4), 0.18), pos(j, side * (W + 4), 0.06), pos(i, side * (W + 4), 0.06), cc, 0);
       } else {
-        const curb = Math.abs(kk[i]) > 0.007;
+        const curb = !piste && Math.abs(kk[i]) > 0.007;
         if (curb) {
           // vibreur : bandes rouge/blanc d'1 m, profil bombé (bord intérieur, crête, bord extérieur)
           const L3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -4911,10 +4941,16 @@ function buildTrack(def, quality) {
               mb.quad(L3(a0, a1, k / 2), L3(a0, a1, (k + 1) / 2), L3(b0, b1, (k + 1) / 2), L3(b0, b1, k / 2), q ? V3.sc(c, 0.9) : c, 0);
             }
           }
-        } else mb.quad(pos(i, side * W, 0), pos(j, side * W, 0), pos(j, side * (W + 1.2), -0.02), pos(i, side * (W + 1.2), -0.02), jit(cols[3], r, 0.04), TMAT);
+        } else mb.quad(pos(i, side * W, 0), pos(j, side * W, 0), pos(j, side * (W + 1.2), -0.02), pos(i, side * (W + 1.2), -0.02), piste ? jit(V3.lerp ? V3.lerp(rc, cols[0], 0.5) : V3.sc(V3.add(rc, cols[0]), 0.5), r, 0.04) : jit(cols[3], r, 0.04), TMAT);
+        if (piste && i % 3 === 0 && r() < 0.55) { const dd = W + 0.4 + r() * 3.2, al = r() * ds; addRock(ch(rk(i)), px[i] + rx[i] * side * dd + tx[i] * al, profH(i, side, dd) - 0.05, pz[i] + rz[i] * side * dd + tz[i] * al, 0.18 + r() * 0.35, r, jit(theme === 'desert' ? [0.6, 0.44, 0.3] : [0.5, 0.47, 0.43], r, 0.06)); }   // cailloux en bord de piste
       }
       // Balises réfléchissantes régulières : meilleure lecture des virages, de nuit et sous la pluie.
-      if (i % 18 === 0) {
+      if (piste && i % 14 === 0) {   // jalons de rallye (bois, tête orange et blanche) et cairns
+        const rp = pos(i, side * (W + 2.4), 0.02), rb = ch(rk(i));
+        rb.box(rp[0], rp[1] + 0.5, rp[2], 0.09, 1.0, 0.09, [0.45, 0.32, 0.2], 0, hd[i]); rb.box(rp[0], rp[1] + 1.02, rp[2], 0.1, 0.16, 0.1, [1, 0.45, 0.06], 0, hd[i]); rb.box(rp[0], rp[1] + 0.86, rp[2], 0.1, 0.12, 0.1, [0.95, 0.95, 0.95], 0, hd[i]);
+        if (i % 56 === 0) for (let k = 0; k < 4; k++) addRock(rb, rp[0] + (r() - 0.5) * 0.4, rp[1] + k * 0.22, rp[2] + (r() - 0.5) * 0.4, 0.32 - k * 0.06, r, jit([0.62, 0.58, 0.52], r, 0.05));
+      }
+      if (!piste && i % 18 === 0) {
         const rp = pos(i, side * (W + 1.65), 0.02), rb = ch(rk(i));
         const postCol = theme === 'desert' ? [0.92, 0.72, 0.38] : [0.72, 0.76, 0.8];
         rb.box(rp[0], rp[1] + 0.38, rp[2], 0.14, 0.76, 0.14, [0.12, 0.14, 0.17], 0, hd[i]);
@@ -4948,7 +4984,7 @@ function buildTrack(def, quality) {
         }
       }
       // glissières
-      if (theme !== 'city' && theme !== 'circuit' && theme !== 'port' && !T.cliff(i, side)) {
+      if (!piste && theme !== 'city' && theme !== 'circuit' && theme !== 'port' && !T.cliff(i, side)) {
         const d = side * (W + 1.7), mc = [0.5, 0.52, 0.55];
         mb.quad(pos(i, d, 0.42), pos(j, d, 0.42), pos(j, d, 0.78), pos(i, d, 0.78), mc, 0);
         if (i % 2 === 0) { const p = pos(i, side * (W + 1.78)); mb.box(p[0], p[1], p[2], 0.12, 0.82, 0.12, [0.3, 0.3, 0.32], 0, hd[i]); }
@@ -6244,7 +6280,7 @@ function buildTrack(def, quality) {
   const sc = Math.max(bx1 - bx0, bz1 - bz0);
   T.mini = { pts: [], map: (x, z) => [((x - bx0) - (bx1 - bx0) / 2) / sc, -((z - bz0) - (bz1 - bz0) / 2) / sc], mx: (x) => ((x - bx0) - (bx1 - bx0) / 2) / sc, mz: (z) => -((z - bz0) - (bz1 - bz0) / 2) / sc };
   for (let i = 0; i < N; i += 4) T.mini.pts.push(T.mini.map(px[i], pz[i]));
-  T.lim = theme === 'city' ? W + 0.05 : theme === 'circuit' ? W + 4.1 : W + 1.25;
+  T.lim = def.piste ? W + 3.4 : theme === 'city' ? W + 0.05 : theme === 'circuit' ? W + 4.1 : W + 1.25;
   return T;
 }
 
@@ -7160,7 +7196,10 @@ for (const l in V224_TXT) { const v = V224_TXT[l]; Object.assign(LANGS[l], { cat
 // V234 — quads
 const V234_TXT = {"fr": ["Quads", "Course de quads", "Peloton de quads tout-terrain, sans circulation. Choisis ton quad.", "Ton quad"], "en": ["Quads", "Quad race", "A pack of off-road quads, no traffic. Pick your quad.", "Your quad"], "es": ["Quads", "Carrera de quads", "Pelotón de quads todoterreno, sin tráfico. Elige tu quad.", "Tu quad"], "pt": ["Quads", "Corrida de quads", "Pelotão de quads todo-o-terreno, sem trânsito. Escolhe o teu quad.", "O teu quad"], "de": ["Quads", "Quad-Rennen", "Ein Feld aus Gelände-Quads, ohne Verkehr. Wähle dein Quad.", "Dein Quad"], "it": ["Quad", "Gara di quad", "Gruppo di quad fuoristrada, senza traffico. Scegli il tuo quad.", "Il tuo quad"], "tr": ["ATV", "ATV yarışı", "Trafiksiz arazi ATV grubu. ATV'ni seç.", "ATV'n"], "ar": ["كوادات", "سباق الكوادات", "مجموعة كوادات للطرق الوعرة بدون حركة مرور. اختر الكواد الخاص بك.", "الكواد الخاص بك"], "tn": ["كوادات", "كورسة كوادات", "كوادات للرمل والطرقات الصعيبة، بلاش كراهب. اختار الكواد متاعك.", "الكواد متاعك"]};
 for (const l in V234_TXT) { const v = V234_TXT[l]; if (LANGS[l]) Object.assign(LANGS[l], { cat_quad: v[0], m_quad: v[1], m_quadD: v[2], q_quad: v[3] }); }
-const VMODE = { velo: { cat: 'velo', def: 'bisklet', key: 'bike', lbl: 'q_bike' }, quad: { cat: 'quad', def: 'quad_hammamet', key: 'quad', lbl: 'q_quad' } };   // courses réservées à une famille de véhicules
+// V238 — raids tout-terrain
+const V238_TXT = {"fr": ["Raid 4x4", "Pistes de sable et de montagne en 4x4.", "Raid moto", "Pistes de sable et de montagne à moto.", "Ton 4x4", "Ta moto", "Pistes", "ESSAI", "Raid Sahara & montagne", "Véhicule d'essai prêté pour cette course"], "en": ["4x4 raid", "Sand and mountain tracks in a 4x4.", "Moto raid", "Sand and mountain tracks on a motorbike.", "Your 4x4", "Your motorbike", "Dirt tracks", "TRIAL", "Sahara & mountain raid", "Trial vehicle lent for this race"], "ar": ["رالي 4x4", "مسالك رملية وجبلية بسيارات 4x4.", "رالي الدراجات النارية", "مسالك رملية وجبلية بالدراجة النارية.", "سيارتك 4x4", "دراجتك النارية", "مسالك", "تجربة", "رالي الصحراء والجبل", "مركبة تجربة معارة لهذا السباق"], "tn": ["رالي 4x4", "ثنايا رمل وجبل بالـ 4x4.", "رالي موتورات", "ثنايا رمل وجبل بالموتور.", "الـ 4x4 متاعك", "الموتور متاعك", "ثنايا تراب", "تجربة", "رالي الصحرا والجبل", "كرهبة تجربة مسلّفة للكورسة هاذي"]};
+for (const l in V238_TXT) { const v = V238_TXT[l]; if (LANGS[l]) Object.assign(LANGS[l], { m_offroad: v[0], m_offroadD: v[1], m_moto: v[2], m_motoD: v[3], q_x4: v[4], q_mo: v[5], f_piste: v[6], loan: v[7], raid_chip: v[8], loanT: v[9] }); }
+const VMODE = { velo: { cat: 'velo', def: 'bisklet', key: 'bike', lbl: 'q_bike' }, quad: { cat: 'quad', def: 'quad_hammamet', key: 'quad', lbl: 'q_quad', raid: 1 }, offroad: { cat: 'offroad', def: 'kerkennah', key: 'x4', lbl: 'q_x4', raid: 1, loan: 1 }, moto: { cat: 'moto', def: 'zitouna', key: 'mo', lbl: 'q_mo', raid: 1, loan: 1 } };   // courses réservées à une famille de véhicules
 for (const k in V224_TRK) { const v = V224_TRK[k]; TXT.trk[k] = [v[0], v[1], v[2]]; TN_CONTENT.trk[k] = v[3]; }
 // V226 — progression du pilote : niveaux, grades, XP de course et trophées récompensés
 const V226_TXT = {
@@ -7514,7 +7553,7 @@ function placeOnTrack(c, s, d) {
 }
 function randomPaint() { return hexToRgb(PAINTS[Math.floor(Math.random() * 8)]); }
 
-const velSfx = () => { const k = G.player && G.player.car && catOf(G.player.car); return k === 'velo' || k === 'quad' ? '_' + k : ''; };   // records et fantômes séparés pour les vélos
+const velSfx = () => { const k = G.player && G.player.car && catOf(G.player.car); return k === 'velo' || k === 'quad' || k === 'moto' || k === 'offroad' ? '_' + k : ''; };   // records et fantômes séparés pour les vélos
 function setupRace(cfg) {
   coachReset();
   const T = G.T; G.cars = []; G.cfg = cfg; G.time = 0; G.raceT = 0; G.style = 0; G.msgs = []; G.laps = []; G.best = Infinity; G.lapStart = 0;
@@ -7559,7 +7598,7 @@ function setupRace(cfg) {
   G.cars.unshift(p);
   const Q = SAVE.settings.quality, TCOL = ['#7a7f86', '#c9c9c9', '#3b4a63', '#6b2a2a', '#2e4d3a', '#e8e4dc', '#1c1c1e', '#8a6d3b', '#a3282c', '#d7d2c4', '#2b5f8a', '#5b5f63'];
   const trafCol = mn => mn === 'taxi' ? [1, 0.8, 0.08] : mn === 'louage' ? [0.94, 0.94, 0.92] : hexToRgb(TCOL[Math.floor(Math.random() * TCOL.length)]);
-  if (cfg.traffic && catOf(car) !== 'velo' && catOf(car) !== 'quad') {
+  if (cfg.traffic && catOf(car) !== 'velo' && catOf(car) !== 'quad' && !TRACKS[cfg.track].piste) {
     // V214 — circulation réaliste : berlines, citadines, taxis jaunes, louages, utilitaires, camions, bus, pick-up, 4x4, scooters, motos et voitures anciennes
     const models = ['sedan', 'taxi', 'louage', 'hatch', 'moto_scoot', 'van', 'suv', 'truck', 'sedan', 'retro80', 'bus', 'taxi', 'pickup', 'moto_trail', 'hatch', 'retro70', 'louage', 'coupe'];
     const n = (cfg.mode === 'chase' ? 14 : 10) + (Q === 'ultra' ? 4 : Q === 'high' ? 2 : 0);
@@ -8170,6 +8209,12 @@ function emitDetails(dt) {
     const j = (Math.random() * T.fans.length / 3 | 0) * 3, fx = T.fans[j], fz = T.fans[j + 2];
     if ((fx - p.x) ** 2 + (fz - p.z) ** 2 < 120 * 120) { G.glow.emit(fx, T.fans[j + 1], fz, 0, 0, 0, 0.09, 0.55, -2, 1, 1, 1, env.night ? 1 : 0.85, 1, 0); break; }
   }
+  if (T.def.piste) {   // V238 : panaches de sable / terre derrière chaque véhicule proche
+    const dc = T.def.theme === 'desert' ? [0.86, 0.68, 0.46] : [0.6, 0.52, 0.42];
+    for (const c of G.cars) { if (c.v < 6 || (c.x - p.x) ** 2 + (c.z - p.z) ** 2 > 110 * 110 || Math.random() > Math.min(0.9, c.v / 40)) continue;
+      const Mc = c.M || carMatrix(c), wz = Math.min(...c.model.wheels.map(w => w[2]));
+      for (const sx of c.model.wheels.length > 2 ? [-1, 1] : [0]) { localToWorld(Mc, sx * c.model.W * 0.4, 0.15, wz - 0.2, Q1); G.smoke.emit(Q1[0], Q1[1], Q1[2], c.vx * 0.15 + rnd(-1.2, 1.2), rnd(0.8, 2.2), c.vz * 0.15 + rnd(-1.2, 1.2), rnd(1.1, 1.9), 0.9, 3.6, dc[0], dc[1], dc[2], 0.34, 1, 0); } }
+  }
   const M = p.M || carMatrix(p), m = p.model;
   if (p.brake && p.v > 30 && !m.cyc) for (const w of m.wheels) if (w[3]) { localToWorld(M, w[0] * 0.92, w[1], w[2], Q1); G.glow.emit(Q1[0], Q1[1], Q1[2], p.vx, 0, p.vz, 0.06, 0.26, 0, 1, 0.32, 0.05, 0.5, 1, 0); }
   if (T.lim && Math.abs(p.d || 0) > T.lim - 0.4 && p.v > 7) {
@@ -8614,7 +8659,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V237';
+const GAME_VERSION = 'V238';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -8789,17 +8834,17 @@ const UI = {
   /* ----- course rapide ----- */
   renderQuick() {
     const q = this.q;
-    $('q-modes').innerHTML = ['race', 'velo', 'quad', 'tt', 'chase'].map(k => `<button class="mode ${q.mode === k ? 'on' : ''}" data-m="${k}"><b>${t('m_' + k)}</b><small>${t('m_' + k + 'D')}</small></button>`).join('');
-    $('q-modes').querySelectorAll('button').forEach(b => b.onclick = () => { q.mode = b.dataset.m; if (q.mode === 'chase') q.traffic = 1; this.renderQuick(); });
-    const trackFilters=['all','city','desert','mountain','coast','circuit'].map(k=>[k,t('f_'+k)]);
+    $('q-modes').innerHTML = ['race', 'offroad', 'quad', 'moto', 'velo', 'tt', 'chase'].map(k => `<button class="mode ${q.mode === k ? 'on' : ''}" data-m="${k}"><b>${t('m_' + k)}</b><small>${t('m_' + k + 'D')}</small></button>`).join('');
+    $('q-modes').querySelectorAll('button').forEach(b => b.onclick = () => { q.mode = b.dataset.m; if (q.mode === 'chase') q.traffic = 1; if (VMODE[q.mode] && VMODE[q.mode].raid && !(TRACKS[q.track] || {}).piste) { q.track = TRACKS.findIndex(x => x.piste); q.trackFilter = 'piste'; } this.renderQuick(); });
+    const trackFilters=['all','piste','city','desert','mountain','coast','circuit'].map(k=>[k,t('f_'+k)]);
     $('q-track-filters').innerHTML=trackFilters.map(([key,label])=>`<button type="button" data-filter="${key}" class="${(q.trackFilter||'all')===key?'on':''}">${label}</button>`).join('');
     $('q-track-filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{q.trackFilter=b.dataset.filter;this.renderQuick();});
-    const visibleTracks=TRACKS.map((d,i)=>({d,i})).filter(x=>(q.trackFilter||'all')==='all'||x.d.theme===(q.trackFilter||'all'));
+    const visibleTracks=TRACKS.map((d,i)=>({d,i})).filter(x=>(q.trackFilter||'all')==='all'||(q.trackFilter==='piste'?!!x.d.piste:x.d.theme===(q.trackFilter||'all')));
     $('q-tracks').innerHTML = visibleTracks.map(({d,i}) => `<button class="trk ${q.track === i ? 'on' : ''}" data-i="${i}"><span class="tinfo" role="button" aria-label="${t('ts_info')}">i</span><canvas width="240" height="160"></canvas><b>${d.name}</b><small>${tTrk(d)}</small>${trackFacts(d)}<small>${t('record', SAVE.best[d.id + (VMODE[q.mode] ? '_' + q.mode : '')] ? fmtT(SAVE.best[d.id + (VMODE[q.mode] ? '_' + q.mode : '')]) : '—')}</small></button>`).join('');
     $('q-tracks').querySelectorAll('button').forEach(b => { b.onclick = () => { q.track = +b.dataset.i; this.renderQuick(); }; b.querySelector('.tinfo').onclick = e => { e.stopPropagation(); const ti = +b.dataset.i; openTrackSheet(ti, () => { q.track = ti; this.renderQuick(); }); }; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.i], q.track === +b.dataset.i); });
     { const VM = VMODE[q.mode], vb = !!VM, bx = $('q-bikes'); bx.classList.toggle('hidden', !vb);
       if (vb) { const K = VM.key, bikes = CARS.filter(c => catOf(c) === VM.cat); if (!q[K] || !SAVE.owned.includes(q[K])) q[K] = SAVE.owned.includes(SAVE.car) && catOf(CARS.find(c => c.id === SAVE.car) || {}) === VM.cat ? SAVE.car : (bikes.find(c => SAVE.owned.includes(c.id)) || {}).id || VM.def;
-        bx.innerHTML = `<h3>${t(VM.lbl)}</h3><div>` + bikes.map(c => { const own = SAVE.owned.includes(c.id); return `<button class="bk ${q[K] === c.id ? 'on' : ''} ${own ? '' : 'lock'}" data-b="${c.id}" ${own ? '' : 'disabled'}><span class="cls mini ${c.cls}">${c.cls}</span><b>${c.name}</b><small>${own ? Math.round(c.vmax * spdU()) + ' ' + (MPH() ? 'mph' : 'km/h') : '🔒 ' + money(c.price)}</small></button>`; }).join('') + '</div>';
+        bx.innerHTML = `<h3>${t(VM.lbl)}</h3><div>` + bikes.map(c => { const own = SAVE.owned.includes(c.id), ln = !own && VM.loan && c.id === VM.def, ok = own || ln; return `<button class="bk ${q[K] === c.id ? 'on' : ''} ${ok ? '' : 'lock'}" data-b="${c.id}" ${ok ? '' : 'disabled'}><span class="cls mini ${c.cls}">${c.cls}</span><b>${c.name}${ln ? ` <em class="loan">${t('loan')}</em>` : ''}</b><small>${ok ? Math.round(c.vmax * spdU()) + ' ' + (MPH() ? 'mph' : 'km/h') : '🔒 ' + money(c.price)}</small></button>`; }).join('') + '</div>';
         bx.querySelectorAll('button.bk').forEach(b => b.onclick = () => { q[K] = b.dataset.b; this.renderQuick(); }); } }
     $('q-traf').classList.toggle('hidden', !!VMODE[q.mode]);
     $('q-laps').classList.toggle('hidden', q.mode === 'chase'); $('q-opp').classList.toggle('hidden', q.mode !== 'race' && !VMODE[q.mode]); $('q-diff').classList.toggle('hidden', q.mode !== 'race' && !VMODE[q.mode]);
@@ -9575,7 +9620,7 @@ function bindInputs() {
   cv.addEventListener('wheel', e => { if (G.state === 'menu') GAR.zoom = clamp(GAR.zoom + e.deltaY * 0.001, 0.7, 1.4); }, { passive: true });
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { AU.shot(700, 0.04, 'sine', 0.05); UI.show(b.dataset.go); }));
   // V236 — raccourcis « nouveautés » du menu principal
-  document.querySelectorAll('#mnews .mnew').forEach(b => b.addEventListener('click', () => { AU.shot(820, 0.04, 'sine', 0.05); const m = b.dataset.nm; if (m === 'weekend') { UI.show('career'); } else if (m === 'stunt') { UI.show('garage'); toast(t('st_help')); } else { UI.show('quick'); UI.q.mode = m; UI.renderQuick(); } }));
+  document.querySelectorAll('#mnews .mnew').forEach(b => b.addEventListener('click', () => { AU.shot(820, 0.04, 'sine', 0.05); const m = b.dataset.nm; if (m === 'weekend') { UI.show('career'); } else if (m === 'stunt') { UI.show('garage'); toast(t('st_help')); } else { UI.show('quick'); UI.q.mode = m; if (VMODE[m] && VMODE[m].raid) { UI.q.track = TRACKS.findIndex(x => x.piste); UI.q.trackFilter = 'piste'; } UI.renderQuick(); } }));
   $('m-play').onclick = () => { AU.shot(900, 0.06, 'sine', 0.07); UI.startRace(UI.nextCfg()); };
   $('lang-sel').innerHTML = LANG_LIST.map(([v, l]) => `<option value="${v}">${l}</option>`).join(''); $('lang-sel').value = LANG;
   $('lang-sel').onchange = e => { SAVE.settings.lang = LANG = e.target.value; saveGame(); UI.refresh(); };
@@ -9585,7 +9630,7 @@ function bindInputs() {
   $('q-diff').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.diff = +b.dataset.v; UI.renderQuick(); });
   $('q-traf').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.traffic = +b.dataset.v; UI.renderQuick(); });
   $('q-wx').querySelectorAll('button').forEach(b => b.onclick = () => { UI.q.weather = +b.dataset.v; UI.renderQuick(); });
-  $('q-go').onclick = () => { const q = UI.q, VM = VMODE[q.mode], vb = !!VM; UI.startRace({ mode: vb ? 'race' : q.mode, velo: vb ? (q[VM.key] || VM.def) : undefined, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: vb ? 0 : q.traffic, heat: 1, weather: q.weather === 1 ? 'rain' : q.weather === 2 ? 'night' : undefined }); };
+  $('q-go').onclick = () => { const q = UI.q, VM = VMODE[q.mode], vb = !!VM; UI.startRace({ mode: vb ? 'race' : q.mode, velo: vb ? (q[VM.key] || VM.def) : undefined, loan: vb && !SAVE.owned.includes(q[VM.key] || VM.def) ? 1 : undefined, track: q.track, laps: q.mode === 'chase' ? 1 : q.laps, opp: q.opp, diff: q.diff, traffic: vb ? 0 : q.traffic, heat: 1, weather: q.weather === 1 ? 'rain' : q.weather === 2 ? 'night' : undefined }); };
   $('q-rand').onclick = () => quickSurprise();
   $('p-resume').onclick = () => UI.pause(false);
   $('p-restart').onclick = () => { $('pause').classList.remove('show'); UI.startRace(Object.assign({}, UI.lastCfg)); };

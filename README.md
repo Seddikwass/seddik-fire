@@ -1,5 +1,8 @@
 # Seddik Fire
 
+## Nouveautés 2.46 — Soldat Mixamo « Steve » en treillis kaki
+- Les soldats 3D utilisent maintenant le personnage Mixamo **Steve** (treillis kaki et casque), plus clair et plus proche d’un soldat de l’armée tunisienne que le Swat Guy noir. Mêmes 7 animations (repos, course, tir, rechargement, grenade, mort, danse).
+
 ## Nouveautés 2.45 — Soldats 3D Mixamo
 - Tous les soldats en partie sont maintenant des **soldats 3D animés avec Mixamo** (personnage Swat Guy), rendus vus de dessus avec three.js : repos en visée, course, tir, rechargement, lancer de grenade, mort (chute réelle) et danse de victoire.
 - L’arme du joueur reste celle du jeu, placée dans les mains du soldat à chaque image. La tenue prend la couleur du héros choisi.

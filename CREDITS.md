@@ -12,5 +12,5 @@ Tous les graphismes du jeu (personnages, armes, véhicules, bâtiments, arbres, 
 Noms d'armes, de cartes et de personnages : inventés. Aucune marque, aucun logo réel.
 
 ## Soldats 3D (version 2.45)
-- Personnage « Swat Guy » et animations (Pro Rifle Pack, Firing Rifle, Reload, Toss Grenade, Hip Hop Dancing) : **Mixamo** (Adobe), utilisés dans le jeu selon les conditions de Mixamo (usage libre dans un projet, y compris commercial ; les fichiers bruts ne sont pas redistribués : seules les images rendues sont dans le jeu).
+- Personnage « Steve » (version 2.46, auparavant « Swat Guy ») et animations (Pro Rifle Pack, Firing Rifle, Reload, Toss Grenade, Hip Hop Dancing) : **Mixamo** (Adobe), utilisés dans le jeu selon les conditions de Mixamo (usage libre dans un projet, y compris commercial ; les fichiers bruts ne sont pas redistribués : seules les images rendues sont dans le jeu).
 - Rendu vu de dessus : **three.js** (licence MIT), outils dans `tools/mixamo_threejs/`.

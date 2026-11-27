@@ -1746,7 +1746,7 @@ em.chp{font-style:normal;font-weight:800;color:var(--acc2,#ffd27a);margin-inline
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V238</span>
+    <span id="build-tag" aria-label="Version">V239</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -2792,6 +2792,9 @@ const STYLES = {
   raid: { L: 4.98, W: 2.04, bot: 0.48, wr: 0.42, zr: -0.6, zf: 0.64, flare: 0.05, ytK: [[-1, 1.22], [-0.95, 1.26], [-0.6, 1.26], [0.3, 1.24], [0.62, 1.2], [0.9, 1.12], [1, 1.05]], wK: [[-1, 0.95], [-0.92, 1], [0.88, 1], [1, 0.93]], cabR: -0.92, cabF: 0.2, roof: 1.94, roofW: 0.86, rs: 0.16, fs: 0.62, spoiler: 'roof', doors: 4, rim: 'ten', rails: true, chrome: true },
   desertx: { L: 4.7, W: 2.12, bot: 0.6, wr: 0.47, zr: -0.6, zf: 0.64, flare: 0.1, ytK: [[-1, 1.2], [-0.95, 1.24], [-0.6, 1.24], [0.3, 1.22], [0.62, 1.16], [0.9, 1.06], [1, 0.98]], wK: [[-1, 0.95], [-0.92, 1], [0.88, 1], [1, 0.92]], cabR: -0.86, cabF: 0.14, roof: 1.9, roofW: 0.84, rs: 0.2, fs: 0.66, spoiler: 'roof', doors: 2, rim: 'dish', rally: true, snorkel: true, spare: true },
   // 4x4 et pick-up : garde au sol haute, gros pneus, formes carrées
+  classic4x4: { L: 4.12, W: 1.86, bot: 0.56, wr: 0.42, zr: -0.6, zf: 0.62, flare: 0.06, ytK: [[-1, 1.3], [-0.96, 1.32], [-0.6, 1.32], [0.3, 1.31], [0.62, 1.29], [0.9, 1.25], [1, 1.2]], wK: [[-1, 0.97], [-0.93, 1], [0.9, 1], [1, 0.96]], cabR: -0.92, cabF: 0.24, roof: 2.06, roofW: 0.9, rs: 0.04, fs: 0.3, spoiler: 'none', doors: 2, rim: 'dish', rails: true, bullbar: true, spare: true, snorkel: true },
+  pickup_raid: { L: 5.3, W: 2.04, bot: 0.56, wr: 0.45, zr: -0.62, zf: 0.66, flare: 0.09, ytK: [[-1, 1.2], [-0.95, 1.22], [-0.2, 1.22], [0.3, 1.22], [0.62, 1.17], [0.9, 1.1], [1, 1.02]], wK: [[-1, 0.96], [-0.92, 1], [0.88, 1], [1, 0.92]], cabR: -0.28, cabF: 0.3, roof: 1.94, roofW: 0.86, rs: 0.1, fs: 0.6, spoiler: 'none', doors: 4, rim: 'dish', bed: true, bullbar: true, rally: true, snorkel: true },
+  proto_t1: { L: 4.62, W: 2.2, bot: 0.62, wr: 0.5, zr: -0.58, zf: 0.62, flare: 0.13, ytK: [[-1, 1.12], [-0.95, 1.16], [-0.6, 1.16], [0.25, 1.12], [0.6, 1.02], [0.9, 0.92], [1, 0.84]], wK: [[-1, 0.92], [-0.9, 1], [0.86, 1], [1, 0.9]], cabR: -0.72, cabF: 0.2, roof: 1.84, roofW: 0.72, rs: 0.32, fs: 0.72, spoiler: 'roof', doors: 2, rim: 'ten', rally: true, spare: true },
   offroad: { L: 4.5, W: 1.96, bot: 0.52, wr: 0.43, zr: -0.6, zf: 0.64, flare: 0.07, ytK: [[-1, 1.24], [-0.96, 1.27], [-0.6, 1.27], [0.3, 1.25], [0.62, 1.22], [0.9, 1.17], [1, 1.1]], wK: [[-1, 0.96], [-0.92, 1], [0.88, 1], [1, 0.94]], cabR: -0.94, cabF: 0.16, roof: 1.98, roofW: 0.88, rs: 0.08, fs: 0.5, spoiler: 'none', doors: 4, rim: 'dish', rails: true, bullbar: true, spare: true, snorkel: true },
   pickup: { L: 5.25, W: 1.94, bot: 0.47, wr: 0.41, zr: -0.62, zf: 0.66, flare: 0.05, ytK: [[-1, 1.18], [-0.95, 1.2], [-0.2, 1.2], [0.3, 1.2], [0.62, 1.16], [0.9, 1.1], [1, 1.03]], wK: [[-1, 0.96], [-0.92, 1], [0.88, 1], [1, 0.92]], cabR: -0.28, cabF: 0.3, roof: 1.86, roofW: 0.86, rs: 0.07, fs: 0.62, spoiler: 'none', doors: 4, rim: 'five', bed: true, bullbar: true },
   // voitures rétro : années 70 (berline carrée, chromes, phares ronds) et années 80 (coupé en coin, phares rectangulaires, persiennes)
@@ -3442,7 +3445,7 @@ STYLES.sport_wide = Object.assign({}, STYLES.sports, {L:4.86,W:2.04,bot:0.19,wr:
 const MODEL_BUILDERS = {
   police: () => buildCarModel('sedan', { police: true }), polgt: () => buildCarModel('gt', { police: true }), taxi: () => buildCarModel('sedan', { taxi: true }),
   van: () => buildVan(), louage: () => buildVan([0.8, 0.08, 0.08]), truck: () => buildTruck(), bus: () => buildBus(),
-  moto_sport: () => buildMoto('sport'), moto_trail: () => buildMoto('trail'), moto_scoot: () => buildMoto('scoot'), moto_naked: () => buildMoto('naked'), moto_cruiser: () => buildMoto('cruiser'),
+  moto_sport: () => buildMoto('sport'), moto_trail: () => buildMoto('trail'), moto_rally: () => buildMoto('rally'), moto_enduro: () => buildMoto('enduro'), moto_scoot: () => buildMoto('scoot'), moto_naked: () => buildMoto('naked'), moto_cruiser: () => buildMoto('cruiser'),
   bike_piste: () => buildBike('piste'), bike_fat: () => buildBike('fat'),
   quad_sport: () => buildQuad('sport'), quad_cross: () => buildQuad('cross'), quad_dune: () => buildQuad('dune'), quad_util: () => buildQuad('util'), quad_mini: () => buildQuad('mini'), quad_elec: () => buildQuad('elec'), quad_raid: () => buildQuad('raid'),
   bike_ville: () => buildBike('ville'), bike_bmx: () => buildBike('bmx'), bike_vtt: () => buildBike('vtt'), bike_route: () => buildBike('route'), bike_elec: () => buildBike('elec'), bike_clm: () => buildBike('clm'),
@@ -3513,6 +3516,37 @@ function buildMoto(kind) {
     brakes(zf, 0.22, [0.15, 0.15, 0.16]); discX(mb, 0.085, r, zr, 0.15, DISC, 4, 14, 0.005);
     bar(mb, [0.16, 0.38, -0.05], [0.21, 0.78, -0.62], 0.055, TI, 4); mb.box(0, 0.95, -0.99, 0.1, 0.04, 0.02, RED, 5);
     heads = [[0, 1.06, 0.8]]; exhaust = [[0.21, 0.78, -0.66]];
+  } else if (kind === 'rally' || kind === 'enduro') {
+    // V239 — rallye-raid (tour de navigation, grande bulle, réservoirs avant) et enduro (fin, plaque numéro, garde-boue haut)
+    const ral = kind === 'rally';
+    L = ral ? 2.36 : 2.2; r = ral ? 0.38 : 0.36; zf = ral ? 0.82 : 0.78; zr = ral ? -0.76 : -0.74; H = ral ? 1.62 : 1.36; rim = 'ten'; ww = 0.13;
+    if (ral) {
+      add(loftSE([{ z: 0.78, yb: 0.9, yt: 1.12, w: 0.3 }, { z: 0.66, yb: 0.84, yt: 1.34, w: 0.5 }, { z: 0.46, yb: 0.86, yt: 1.32, w: 0.46 }, { z: 0.36, yb: 0.92, yt: 1.12, w: 0.32 }], P, 1, 2.6));
+      add(loftSE([{ z: 0.62, yb: 1.32, yt: 1.36, w: 0.4 }, { z: 0.56, yb: 1.34, yt: 1.5, w: 0.38 }, { z: 0.48, yb: 1.36, yt: 1.66, w: 0.32 }], GL, 3, 2.2));
+      mb.box(0, 1.26, 0.44, 0.26, 0.18, 0.04, BLK, 0); mb.box(0, 1.27, 0.462, 0.22, 0.14, 0.006, [0.25, 0.7, 1], 15);   // écran de navigation
+      discZ(mb, -0.07, 1.06, 0.792, 0.052, HEAD, 15); discZ(mb, 0.07, 1.06, 0.792, 0.052, HEAD, 15); discZ(mb, 0, 1.18, 0.78, 0.045, HEAD, 15);
+      for (const sx of [-1, 1]) add(loftSE([{ z: 0.4, yb: 0.6, yt: 0.96, w: 0.2, x: sx * 0.19 }, { z: 0.12, yb: 0.56, yt: 1.02, w: 0.24, x: sx * 0.21 }, { z: -0.08, yb: 0.62, yt: 0.98, w: 0.2, x: sx * 0.19 }], P, 1, 2.6, 10));
+      add(loftSE([{ z: -0.56, yb: 0.86, yt: 0.99, w: 0.24 }, { z: -0.84, yb: 0.88, yt: 1.0, w: 0.22 }, { z: -1.02, yb: 0.92, yt: 1.0, w: 0.16 }], P, 1, 3));
+      mb.box(0, 0.96, -0.98, 0.2, 0.1, 0.06, BLK, 0);   // trousse de navigation arrière
+    } else {
+      add(loftSE([{ z: 0.86, yb: 0.92, yt: 0.96, w: 0.14 }, { z: 0.78, yb: 0.82, yt: 1.12, w: 0.3 }, { z: 0.72, yb: 0.82, yt: 1.12, w: 0.3 }], [0.96, 0.96, 0.96], 0, 2.4));   // plaque numéro avant
+      discZ(mb, 0, 1.0, 0.86, 0.045, HEAD, 15);
+      add(loftSE([{ z: 0.34, yb: 0.76, yt: 0.96, w: 0.22 }, { z: 0.06, yb: 0.74, yt: 1.0, w: 0.26 }, { z: -0.12, yb: 0.82, yt: 0.96, w: 0.2 }], P, 1, 2.6));
+      for (const sx of [-1, 1]) mb.box(sx * 0.15, 0.82, -0.62, 0.02, 0.16, 0.36, [0.96, 0.96, 0.96], 0);   // plaques latérales
+      add(loftSE([{ z: -0.5, yb: 0.9, yt: 0.98, w: 0.2 }, { z: -1.02, yb: 0.96, yt: 1.0, w: 0.12 }], P, 1, 3));
+    }
+    add(loftSE([{ z: ral ? -0.02 : 0.1, yb: ral ? 0.95 : 0.93, yt: ral ? 1.04 : 1.0, w: 0.26 }, { z: -0.4, yb: 0.94, yt: 1.02, w: 0.27 }, { z: -0.78, yb: 0.95, yt: 1.02, w: 0.2 }], BLK, 0, 3));
+    add(loftSE([{ z: 1.16, yb: 0.82, yt: 0.85, w: 0.13 }, { z: 0.92, yb: 0.86, yt: 0.9, w: 0.16 }, { z: 0.7, yb: 0.85, yt: 0.89, w: 0.15 }], P, 1, 2.2, 10));   // garde-boue avant haut
+    mb.box(0, 0.36, 0.02, 0.28, 0.38, 0.5, MET, 4); mb.box(0, 0.22, 0.06, 0.32, 0.05, 0.62, ALU, 4);
+    for (const sx of [-1, 1]) {
+      bar(mb, [sx * 0.09, r, zf], [sx * 0.09, 1.16, 0.52], 0.034, ral ? GOLD : [0.14, 0.14, 0.15], 4); bar(mb, [sx * 0.08, 1.16, 0.5], [sx * 0.42, 1.2, 0.44], 0.016, BLK, 0);
+      mb.box(sx * 0.42, 1.2, 0.5, 0.04, 0.1, 0.16, [1, 0.5, 0.06], 0);   // protège-mains
+      bar(mb, [sx * 0.11, r + 0.02, zr], [sx * 0.12, 0.44, -0.06], 0.03, ALU, 4, 0.05);
+    }
+    bar(mb, [0, 0.5, -0.2], [0, 0.92, -0.4], 0.04, [0.9, 0.55, 0.1], 4);   // amortisseur arrière
+    brakes(zf, 0.2, [0.15, 0.15, 0.16]); discX(mb, 0.085, r, zr, 0.14, DISC, 4, 14, 0.005);
+    bar(mb, [0.14, 0.4, -0.05], [0.2, 0.88, -0.66], 0.05, TI, 4); mb.box(0, ral ? 0.95 : 0.93, -1.0, 0.09, 0.04, 0.02, RED, 5);
+    heads = [[0, ral ? 1.08 : 1.0, 0.82]]; exhaust = [[0.2, 0.88, -0.7]];
   } else if (kind === 'naked') {
     // roadster « naked » : moteur apparent, cadre treillis rouge, phare rond, guidon plat, échappement court
     L = 2.08; r = 0.32; zf = 0.72; zr = -0.7; H = 1.36; rim = 'five'; ww = 0.17; const TRL = [0.85, 0.12, 0.08];
@@ -4313,7 +4347,8 @@ const POSES = {
   cruiser: { hip: [0, 0.74, -0.34], sh: [0, 1.24, -0.32], head: [0, 1.42, -0.28], hands: [[0.42, 1.12, 0.3], [-0.42, 1.12, 0.3]], knees: [[0.25, 0.72, 0.26], [-0.25, 0.72, 0.26]], feet: [[0.26, 0.38, 0.5], [-0.26, 0.38, 0.5]], helmet: true },
   scoot: { hip: [0, 0.88, -0.32], sh: [0, 1.39, -0.24], head: [0, 1.56, -0.2], hands: [[0.32, 1.02, 0.41], [-0.32, 1.02, 0.41]], knees: [[0.18, 0.9, 0.12], [-0.18, 0.9, 0.12]], feet: [[0.15, 0.31, 0.13], [-0.15, 0.31, 0.13]], helmet: true },
 };
-Object.assign(POSES, CYC_POSES, QUAD_POSES);   // V224 : postures des cyclistes ; V234 : pilotes de quad
+Object.assign(POSES, CYC_POSES, QUAD_POSES);
+POSES.rally = Object.assign({}, POSES.trail, { hip: [0, 1.08, -0.26], sh: [0, 1.6, -0.12], head: [0, 1.77, -0.06] }); POSES.enduro = Object.assign({}, POSES.trail, { hands: [[0.38, 1.18, 0.47], [-0.38, 1.18, 0.47]] });   // V239   // V224 : postures des cyclistes ; V234 : pilotes de quad
 const DRV_MESH = {};
 function driverMesh(idx, pose) {
   const key = idx + '_' + pose; if (DRV_MESH[key]) return DRV_MESH[key];
@@ -4679,6 +4714,11 @@ const FONT = {
 };
 
 /* ---------- constructeurs de décors ---------- */
+// V239 — niveaux de détail : les détails fins (palmes, feuillages, spectateurs) ne sont dessinés que de près ;
+// au loin, une version simplifiée les remplace. Gros gain de triangles sur téléphone.
+const MBKEY = new WeakMap(); let LODCH = null; const LOD_D = 170;
+function lodD(mb) { const k = LODCH && MBKEY.get(mb); return k && k[0] === 'r' ? LODCH('D' + k) : mb; }
+function lodF(mb) { const k = LODCH && MBKEY.get(mb); return k && k[0] === 'r' ? LODCH('F' + k) : null; }
 function addPalm(mb, x, y, z, h, r) {
   const lean = [rnd(-1, 1) * 0.12, 0, rnd(-1, 1) * 0.12]; const segs = 6; let px = x, pz = z, py = y;
   const tc = [0.36, 0.27, 0.18];
@@ -4696,6 +4736,11 @@ function addPalm(mb, x, y, z, h, r) {
   mb.cyl(x, y - 0.05, z, 0.34, 1.15, 6, [0.93, 0.93, 0.9], 0, 0.33, null, false);   // base du tronc chaulée
   // V232 — couronne réaliste : palmes arquées pliées en V (folioles), dégradé vert, palmes sèches pendantes et régimes de dattes
   const top = [px, py, pz], nf = 12, rot = r() * 6.28;
+  { const fm = lodF(mb); if (fm) for (let f = 0; f < 6; f++) {   // couronne lointaine : 6 palmes simples
+    const a = rot + f * 1.047, d = [Math.cos(a), 0, Math.sin(a)], sd = [-d[2] * 0.5, 0, d[0] * 0.5], g = [0.16, 0.36, 0.11];
+    const tip = [top[0] + d[0] * 3.6, top[1] - 1.4, top[2] + d[2] * 3.6], mid = [top[0] + d[0] * 1.9, top[1] + 0.5, top[2] + d[2] * 1.9];
+    fm.quad(top, [mid[0] + sd[0], mid[1] - 0.1, mid[2] + sd[2]], tip, [mid[0] - sd[0], mid[1] - 0.1, mid[2] - sd[2]], V3.sc(g, 0.7), 20, g, V3.sc(g, 1.2), g); } }
+  mb = lodD(mb);
   const frond = (a, len, lift, droop, cB, cT, wd) => {
     const dir = [Math.cos(a), 0, Math.sin(a)], sd = [-dir[2], 0, dir[0]], S = 4, sp = [];
     for (let k = 0; k <= S; k++) { const t = k / S; sp.push([top[0] + dir[0] * len * t, top[1] + lift * t - droop * t * t, top[2] + dir[2] * len * t]); }
@@ -4748,6 +4793,8 @@ function addOak(mb, x, y, z, s, r) {
   const tc = jit([0.3, 0.21, 0.15], r, 0.12), lean = (r() - 0.5) * 0.6;
   mb.cyl(x, y, z, 0.18 + s * 0.025, s * 0.5, 6, tc, 0, 0.1 + s * 0.015, null, false);
   const g = jit([0.12, 0.21, 0.07], r, 0.18);
+  { const fm = lodF(mb); if (fm) fm.dome(x + lean, y + s * 0.62, z, s * 0.38, s * 0.34, s * 0.38, 6, 2, V3.sc(g, 0.85), 20, V3.sc(g, 1.25)); }
+  mb = lodD(mb);
   for (let k = 0; k < 6; k++) {   // V232 — houppier en 6 touffes de teintes différentes : silhouette plus naturelle
     const a = r() * 6.28, d = s * (k ? 0.24 : 0.04) * (0.5 + r() * 0.5), rr = s * (k ? 0.17 + r() * 0.08 : 0.26), cy = y + s * (0.5 + r() * 0.26 + (k ? 0 : 0.08));
     const X = x + Math.cos(a) * d + lean, Z = z + Math.sin(a) * d, gk = jit(g, r, 0.14);
@@ -4892,7 +4939,7 @@ function buildTrack(def, quality) {
 
   /* ---------- géométrie ---------- */
   const chunks = new Map();
-  const ch = key => { let c = chunks.get(key); if (!c) { c = new MB(); chunks.set(key, c); } return c; };
+  const ch = key => { let c = chunks.get(key); if (!c) { c = new MB(); chunks.set(key, c); MBKEY.set(c, key); } return c; }; LODCH = ch;
   const rk = i => 'r' + Math.floor(((i % N) + N) % N / 40);
   const ok = (x, z) => { const i = T.nearest(x, z, 140); if (i >= 0) return rk(i); return 'g' + Math.floor(x / 300) + '_' + Math.floor(z / 300); };
   const pos = (i, d, dy = 0) => { i = ((i % N) + N) % N; return [px[i] + rx[i] * d, py[i] + dy, pz[i] + rz[i] * d]; };
@@ -5087,7 +5134,7 @@ function buildTrack(def, quality) {
         const d = side * (baseD + (stadium ? row * 1.65 : row * 1.15));
         const pp = pos(i, d, stadium ? 0.95 + row * 0.62 : 0.7 + row * 0.72);
         const x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
-        fan(mb, x, y, z, i, n, row, side); if ((n + row) % 4 === 0) (T.fans || (T.fans = [])).push(x, y + 1.35, z);
+        fan(lodD(mb), x, y, z, i, n, row, side); if ((n + row) % 4 === 0) (T.fans || (T.fans = [])).push(x, y + 1.35, z);
       }
       // Panneaux publicitaires de course, espacés pour préserver les performances mobiles.
       if (Math.floor(i / crowdStep) % 4 === 1) {
@@ -5116,7 +5163,7 @@ function buildTrack(def, quality) {
       for (let row = 0; row < 5; row++) { const p = pos(i, side * (baseD + row * 1.6), 0.5 + row * 0.6); mb.box(p[0], p[1], p[2], 2.0, 0.46, 15, [0.86, 0.86, 0.84], 18, hd[i]); }
       for (let row = 0; row < 5; row++) for (let n = 0; n < 11; n++) {
         const along = (n - 5) * 1.3 + (row % 2) * 0.35, pp = pos(i, side * (baseD + row * 1.6), 0.93 + row * 0.6), x = pp[0] + tx[i] * along, z = pp[2] + tz[i] * along, y = pp[1];
-        crowdFan(mb, x, y, z, i, n, row, side, skin, shirts, hair); if ((n + row) % 3 === 0) (T.fans || (T.fans = [])).push(x, y + 1.35, z);
+        crowdFan(lodD(mb), x, y, z, i, n, row, side, skin, shirts, hair); if ((n + row) % 3 === 0) (T.fans || (T.fans = [])).push(x, y + 1.35, z);
       }
     }
   }
@@ -5537,8 +5584,8 @@ function buildTrack(def, quality) {
         if (T.resv && T.resv.some(q => (p[0] - q[0]) ** 2 + (p[2] - q[1]) ** 2 < (q[2] + 2) ** 2)) continue;
         const mb = ch(rk(i)), y = T.groundY(p[0], p[2]) + (theme === 'city' ? 0.18 : -0.05);
         bar(mb, [p[0], y, p[2]], [p[0], y + 2.3, p[2]], 0.16, [0.4, 0.34, 0.27], 0, 0.16, 6); mb.cyl(p[0], y - 0.02, p[2], 0.19, 1.0, 6, [0.93, 0.93, 0.9], 0, 0.18, null, false);
-        const g = jit([0.13, 0.3, 0.12], r, 0.1); sphere(mb, p[0], y + 3.25, p[2], 1.25, V3.sc(g, 0.8), 20, -Math.PI / 2, Math.PI / 2, 7, 0.8);   // V232 — ficus taillé : cœur sombre + 6 touffes de teintes variées, branches visibles
-        for (let k = 0; k < 6; k++) { const a = k * 1.047 + r() * 0.6, rr = 0.95 + r() * 0.25, q = [p[0] + Math.cos(a) * 0.95, y + 3.2 + (k % 2) * 0.55 + r() * 0.25, p[2] + Math.sin(a) * 0.95]; if (k < 3) bar(mb, [p[0], y + 2.1, p[2]], [q[0] * 0.7 + p[0] * 0.3, q[1] - 0.6, q[2] * 0.7 + p[2] * 0.3], 0.06, [0.36, 0.3, 0.24], 0, 0.04, 4); sphere(mb, q[0], q[1], q[2], rr * 0.82, V3.sc(jit(g, r, 0.16), 1.05 + (k % 2) * 0.15), 20, -Math.PI / 2, Math.PI / 2, 6, 0.8); }
+        const g = jit([0.13, 0.3, 0.12], r, 0.1); { const fm = lodF(mb); if (fm) sphere(fm, p[0], y + 3.45, p[2], 1.75, g, 20, -Math.PI / 2, Math.PI / 2, 6, 0.85); } const dmb = lodD(mb); sphere(dmb, p[0], y + 3.25, p[2], 1.25, V3.sc(g, 0.8), 20, -Math.PI / 2, Math.PI / 2, 7, 0.8);   // V232 — ficus taillé : cœur sombre + 6 touffes de teintes variées, branches visibles
+        for (let k = 0; k < 6; k++) { const a = k * 1.047 + r() * 0.6, rr = 0.95 + r() * 0.25, q = [p[0] + Math.cos(a) * 0.95, y + 3.2 + (k % 2) * 0.55 + r() * 0.25, p[2] + Math.sin(a) * 0.95]; if (k < 3) bar(dmb, [p[0], y + 2.1, p[2]], [q[0] * 0.7 + p[0] * 0.3, q[1] - 0.6, q[2] * 0.7 + p[2] * 0.3], 0.06, [0.36, 0.3, 0.24], 0, 0.04, 4); sphere(dmb, q[0], q[1], q[2], rr * 0.82, V3.sc(jit(g, r, 0.16), 1.05 + (k % 2) * 0.15), 20, -Math.PI / 2, Math.PI / 2, 6, 0.8); }
         if (theme === 'city') mb.box(p[0], y - 0.15, p[2], 1.1, 0.2, 1.1, [0.3, 0.26, 0.2], 0, hd[i]);
       }
     }
@@ -6253,7 +6300,8 @@ function buildTrack(def, quality) {
     for (let i = 0; i < N; i++) { if (i % 3 === 2) continue; const j = (i + 1) % N, v = vp[i], c = v > 48 ? [0.15, 0.95, 0.35] : v > 30 ? [1, 0.82, 0.1] : [1, 0.16, 0.1], hw = 0.45, mb = ch('L' + Math.floor(i / 40)), up = 0.05;
       mb.quad(pos(i, off[i] - hw, up), pos(i, off[i] + hw, up), pos(j, off[j] + hw * 0.2, up), pos(j, off[j] - hw * 0.2, up), c, 15); }
   }
-  for (const [key, mb] of chunks) { if (key[0] !== 'L' && mb.n) mb.smoothFast(38); const m = R.upload(mb); if (m) { m.always = key === 'always'; if (key[0] === 'G') { m.nosh = true; m.maxD = 110; } if (key[0] === 'L') { m.nosh = true; m.rline = true; m.maxD = 140; } T.meshes.push(m); } }
+  LODCH = null;
+  for (const [key, mb] of chunks) { if (key[0] !== 'L' && mb.n) mb.smoothFast(38); const m = R.upload(mb); if (m) { m.always = key === 'always'; if (key[0] === 'D') m.maxD = LOD_D; if (key[0] === 'F') { m.minD = LOD_D; m.nosh = true; } if (key[0] === 'G') { m.nosh = true; m.maxD = 110; } if (key[0] === 'L') { m.nosh = true; m.rline = true; m.maxD = 140; } T.meshes.push(m); } }
   T.verts = T.meshes.reduce((s, m) => s + m.n, 0);
   // fonctions d'accès
   T.wrap = s => ((s % total) + total) % total;
@@ -7378,6 +7426,11 @@ const CARS = [
   { id: 'djebel', name: 'Djebel 800', cls: 'B', tier: 2, cat: 'moto', style: 'moto_trail', price: 30000, vmax: 228, acc: 10.2, lat: 21.5, nos: 1.15, mass: 0.55, desc: 'Trail aventure.' },
   { id: 'raad', name: 'Raad 1000 RR', cls: 'S', tier: 4, cat: 'moto', style: 'moto_sport', price: 82000, vmax: 315, acc: 13.4, lat: 24, nos: 1.3, mass: 0.5, desc: 'Sportive de piste.' },
   // 4x4 et pick-up
+  { id: 'tataouine_classic', name: 'Tataouine Classic 4x4', cls: 'C', tier: 1, cat: 'offroad', style: 'classic4x4', price: 18000, vmax: 172, acc: 7.0, lat: 19.4, nos: 1.08, mass: 1.6, desc: '4x4 court et carré : roue de secours, tuba et pare-buffle, increvable sur la piste.' },
+  { id: 'chott_raid', name: 'Chott El Jerid Raid Pick-up', cls: 'B', tier: 2, cat: 'offroad', style: 'pickup_raid', price: 47000, vmax: 216, acc: 8.6, lat: 20.6, nos: 1.12, mass: 1.7, desc: 'Pick-up de raid surélevé : voies élargies, tuba et équipement de rallye.' },
+  { id: 'erg_t1', name: 'Grand Erg T1 Proto', cls: 'S', tier: 4, cat: 'offroad', style: 'proto_t1', price: 125000, vmax: 255, acc: 10.8, lat: 22.8, nos: 1.22, mass: 1.45, desc: 'Prototype de rallye-raid : très large, grandes roues, débattement énorme. Le roi des dunes.' },
+  { id: 'douz_rally', name: 'Douz Rally 450', cls: 'A', tier: 3, cat: 'moto', style: 'moto_rally', price: 52000, vmax: 208, acc: 11.0, lat: 22.4, nos: 1.15, mass: 0.5, desc: 'Moto de rallye-raid : tour de navigation, grande bulle, réservoirs avant et protège-mains.' },
+  { id: 'chambi_enduro', name: 'Chambi Enduro 300', cls: 'C', tier: 1, cat: 'moto', style: 'moto_enduro', price: 14000, vmax: 168, acc: 9.4, lat: 21.6, nos: 1.1, mass: 0.45, desc: 'Enduro léger et agile : garde-boue haut, plaque numéro, parfait pour les lacets de montagne.' },
   { id: 'chaambi', name: 'Chaambi 4x4', cls: 'C', tier: 1, cat: 'offroad', style: 'offroad', price: 26000, vmax: 210, acc: 7.8, lat: 19.8, nos: 1.1, mass: 1.55, desc: '4x4 tout-terrain.' },
   { id: 'kerkennah', name: 'Kerkennah Pick-up', cls: 'C', tier: 1, cat: 'offroad', style: 'pickup', price: 21000, vmax: 202, acc: 7.4, lat: 19.4, nos: 1.1, mass: 1.6, desc: 'Pick-up double cabine.' },
   // poids lourds
@@ -8380,7 +8433,7 @@ function renderWorld(dtv) {
   R.begin(e, G.cam);
   R.setDyn(0);
   const rl = !!SAVE.settings.rline;
-  for (const m of T.meshes) if ((!m.rline || rl) && (m.always || R.visible(m, m.maxD ? Math.min(maxD, m.maxD) : maxD))) R.draw(m);
+  for (const m of T.meshes) if ((!m.rline || rl) && (m.always || R.visible(m, m.maxD ? Math.min(maxD, m.maxD) : maxD)) && !(m.minD && R.visible(m, m.minD))) R.draw(m);
   if (G.skids) G.skids.draw();
   R.setDyn(1);
   let nVis = 0; // tableau réutilisé avec un compteur (length = 0 libère la mémoire et force une réallocation)
@@ -8659,7 +8712,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V238';
+const GAME_VERSION = 'V239';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -9484,7 +9537,7 @@ function applySettings() {
     G.drawMul = Math.min(Math.max(G.drawMul, modest ? 0.82 : capable ? 1.1 : 1.0), modest ? 0.88 : capable ? 1.16 : 1.06);
     G.lodNear = Math.min(Math.max(G.lodNear, modest ? 24 : capable ? 58 : 42), modest ? 30 : capable ? 68 : 50);
   }
-  R.setLite(s.quality === 'low');
+  R.setLite(s.quality === 'low'); G.drawMulMax = G.drawMul;
   if (!s.dyn) DYN = 1;
   if (R.post && !R.fbo) R.makeFBOs();
   AU.setVol(s.sfx / 100); MUS.setVol(s.music / 100);
@@ -9696,7 +9749,8 @@ function frame(now) {
   FPS.acc += raw; FPS.n++;
   if (FPS.acc >= 1) {
     FPS.v = FPS.n / FPS.acc; FPS.acc = 0; FPS.n = 0;
-    if (SAVE.settings.dyn && (G.state === 'race' || G.state === 'countdown')) { if (FPS.v < 24 && DYN > 0.38) DYN = Math.max(0.38, DYN - (FPS.v < 14 ? 0.14 : 0.08)); else if (FPS.v > 48 && DYN < 1) DYN = Math.min(1, DYN + 0.04); }
+    if (SAVE.settings.dyn && (G.state === 'race' || G.state === 'countdown')) { if (FPS.v < 38 && DYN > 0.5) DYN = Math.max(0.5, DYN - (FPS.v < 20 ? 0.15 : FPS.v < 28 ? 0.1 : 0.05)); else if (FPS.v > 54 && DYN < 1) DYN = Math.min(1, DYN + 0.04);
+      if (IS_TOUCH) { if (FPS.v < 28 && G.drawMul > 0.6) G.drawMul = Math.max(0.6, G.drawMul - 0.08); else if (FPS.v > 52 && G.drawMulMax && G.drawMul < G.drawMulMax) G.drawMul = Math.min(G.drawMulMax, G.drawMul + 0.03); } }   // V239 : distance d'affichage adaptative
   }
   try {
     R.resize(PR * DYN);

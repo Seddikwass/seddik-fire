@@ -981,7 +981,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
         <div class="cz"><b>Housse de sac</b><div id="czBag" class="chips"></div></div>
         <small class="czn">Les maillots et accessoires se débloquent en montant de niveau. Housse de sac : soldats uniquement.</small>
       </div>
-      <div class="row"><button id="howBtn" class="ghost" aria-expanded="false">Comment jouer</button><button id="optBtn" class="ghost">Réglages</button><button id="missBtn" class="ghost">Missions</button></div>
+      <div class="row"><button id="howBtn" class="ghost" aria-expanded="false">Comment jouer</button><button id="optBtn" class="ghost">Réglages</button><button id="missBtn" class="ghost">Missions</button><button id="passBtn" class="ghost">Pass Seddik</button></div>
       <div id="how" class="how" hidden>
         <h3>Sur téléphone</h3>
         <ul><li>Pouce gauche : se déplacer.</li><li>Pouce droit : viser. Poussez jusqu'au cercle extérieur pour tirer, ou touchez brièvement pour un tir.</li><li>Touchez une arme en bas pour changer, touchez-la encore pour ranger.</li><li>Bandage, trousse, boisson : touchez pour vous soigner.</li><li>Grenade : touchez le bouton, visez avec le pouce droit, relâchez pour lancer. Le petit bouton change de grenade.</li><li>Près d'un véhicule : Monter, puis conduisez avec le pouce gauche.</li></ul>
@@ -1059,7 +1059,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.40</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.41</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1068,6 +1068,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
   <div class="endbox">
     <h2 class="ptitle">Missions</h2>
     <div class="set"><h3>Missions du jour</h3><ul id="missList" class="mlist"></ul><p>Elles changent chaque jour. Le mode Entraînement ne compte pas.</p></div>
+    <div class="set"><h3 id="wmH">Missions de la semaine</h3><ul id="wmList" class="mlist"></ul><p>Elles changent chaque lundi.</p></div>
     <div class="set"><h3 id="achH">Succès</h3><ul id="achList" class="mlist"></ul></div>
     <button id="missClose" class="cta">Fermer</button>
   </div>
@@ -1076,7 +1077,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
 <section id="career" class="screen center" hidden>
   <div class="endbox">
     <h2 class="ptitle">Carrière</h2>
-    <div class="set"><h3 id="carLg">Ligue Bronze</h3><div class="lgbar"><i id="carLgFill"></i></div><p id="carLgTxt"></p></div>
+    <div class="set"><h3 id="carLg">Grade Recrue</h3><div class="lgbar"><i id="carLgFill"></i></div><p id="carLgTxt"></p></div>
     <div class="set"><h3>Statistiques</h3><dl id="carList" class="carlist"></dl></div>
     <button id="carClose" class="cta">Fermer</button>
   </div>
@@ -1109,7 +1110,35 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <button id="adXp" class="adbtn sm" hidden><b>▶</b> Regarder une pub · <em>XP ×2</em></button>
     </div>
     <ul id="endMiss" class="endmiss"></ul>
-    <div class="row"><button id="again" class="cta">Rejouer</button><button id="toMenu" class="ghost">Menu</button><button id="shareBtn" class="ghost">Partager</button></div>
+    <div class="row"><button id="again" class="cta">Rejouer</button><button id="toMenu" class="ghost">Menu</button><button id="shareBtn" class="ghost">Partager</button><button id="cardBtn" class="ghost">Carte de victoire</button></div>
+  </div>
+</section>
+
+<section id="pass" class="screen center" hidden>
+  <div class="endbox">
+    <h2 class="ptitle">Pass Seddik</h2>
+    <div class="set"><h3><span id="passSeason"></span> · <small id="passLeft"></small></h3><p id="passTier" class="pass-tier"></p><div class="lgbar"><i id="passFill"></i></div><p id="passPts"></p><p id="passTitle" class="pass-title"></p></div>
+    <ul id="passGrid" class="pgrid"></ul>
+    <p class="czn">Gagnez des points de saison à chaque partie : survie, éliminations, Top 5 et victoire.</p>
+    <button id="passClose" class="cta">Fermer</button>
+  </div>
+</section>
+
+<section id="cal" class="screen center" hidden>
+  <div class="endbox">
+    <h2 class="ptitle">Récompense quotidienne</h2>
+    <p id="calSub" class="pass-tier"></p>
+    <ul id="calList" class="cgrid"></ul>
+    <p class="czn">Revenez demain pour la suite.</p>
+    <button id="calClose" class="cta">Récupérer</button>
+  </div>
+</section>
+
+<section id="cardV" class="screen center" hidden>
+  <div class="endbox">
+    <img id="cardImg" class="cardimg" alt="Carte de victoire">
+    <p class="czn">Appui long sur l’image pour l’enregistrer.</p>
+    <div class="row"><button id="cardShare" class="cta">Partager</button><button id="cardSave" class="ghost">Enregistrer</button><button id="cardClose" class="ghost">Fermer</button></div>
   </div>
 </section>
 
@@ -6713,7 +6742,7 @@ stats.camBehind=false;$('#camBtn').addEventListener('click',()=>{nextCam(false);
 for(const [id,k] of [['#afBtn','autoFire'],['#numBtn','noNums'],['#bloodBtn','noBlood'],['#fpsBtn','fps']])$(id).addEventListener('click',()=>{stats[k]=!stats[k];saveStats();optLabels()});
 document.querySelectorAll('#tod .chip').forEach(b=>b.addEventListener('click',()=>{stats.tod=b.dataset.t==='night'?'night':'day';saveStats();optLabels()}));
 /* ===== v2.5 — ligues, rapport de partie et carrière ===== */
-const LEAGUES=[['Bronze',0],['Argent',300],['Or',700],['Platine',1200],['Diamant',1800],['Légende',2600]];
+const LEAGUES=[['Recrue',0],['Caporal',300],['Sergent',700],['Lieutenant',1200],['Capitaine',1800],['Légende de Carthage',2600]];
 function leagueOf(rp){let k=0;for(let i=0;i<LEAGUES.length;i++)if(rp>=LEAGUES[i][1])k=i;return k}
 function leagueApply(win){if(MDcur.nostat)return null;const p=player,np=Math.max(2,ents.length),rank=win?1:p.rank,rp0=Math.max(0,stats.rp|0),t0=leagueOf(rp0);
   let gain=Math.round(60*(1-(rank-1)/(np-1)))+(win?30:0)+Math.min(10,p.kills)*8+(p.bountyN|0)*15;gain=Math.round(gain*[.7,1,1.3][stats.diff===0||stats.diff===2?stats.diff:1]);
@@ -6725,12 +6754,12 @@ function endReport(LG){const p=player,sh=p.shotsN|0,parts=[];
   if(p.longK)parts.push('Plus longue élimination '+Math.round(p.longK/10)+' m');parts.push('Distance '+Math.round((p.distW||0)/10)+' m');
   $('#endRep').textContent=parts.join(' · ');
   const el=$('#endLg');if(!LG){el.textContent='';return}
-  el.textContent=(LG.t1>LG.t0?'Promotion · ':LG.t1<LG.t0?'Relégation · ':'')+'Ligue '+LEAGUES[LG.t1][0]+' · '+LG.rp+' pts ('+(LG.d>=0?'+':'')+LG.d+')';el.className='endlg'+(LG.d>=0?' up':' down')}
-function leagueLabel(){const rp=Math.max(0,stats.rp|0);return 'Ligue '+LEAGUES[leagueOf(rp)][0]+' · '+rp+' pts'}
+  el.textContent=(LG.t1>LG.t0?'Promotion · ':LG.t1<LG.t0?'Relégation · ':'')+'Grade '+LEAGUES[LG.t1][0]+' · '+LG.rp+' pts ('+(LG.d>=0?'+':'')+LG.d+')';el.className='endlg'+(LG.d>=0?' up':' down')}
+function leagueLabel(){const rp=Math.max(0,stats.rp|0);return 'Grade '+LEAGUES[leagueOf(rp)][0]+' · '+rp+' pts'}
 function careerBtn(){const b=$('#carBtn');if(b)b.textContent='Carrière · '+leagueLabel()}
 function openCareer(){const rp=Math.max(0,stats.rp|0),t=leagueOf(rp),nx=LEAGUES[t+1],g=stats.games|0,w=stats.wins|0,k=stats.kills|0,sh=stats.shotsT|0,tm=stats.timeT|0;
-  $('#carLg').textContent='Ligue '+LEAGUES[t][0];$('#carLgFill').style.width=(nx?Math.round((rp-LEAGUES[t][1])/(nx[1]-LEAGUES[t][1])*100):100)+'%';
-  $('#carLgTxt').textContent=nx?rp+' pts · Ligue '+nx[0]+' à '+nx[1]+' pts':rp+' pts · ligue la plus haute';
+  $('#carLg').textContent='Grade '+LEAGUES[t][0];$('#carLgFill').style.width=(nx?Math.round((rp-LEAGUES[t][1])/(nx[1]-LEAGUES[t][1])*100):100)+'%';
+  $('#carLgTxt').textContent=nx?rp+' pts · Grade '+nx[0]+' à '+nx[1]+' pts':rp+' pts · grade le plus haut';
   const rows=[['Parties',g],['Victoires',w],['Taux de victoire',(g?Math.round(w/g*100):0)+' %'],['Éliminations',k],['Ratio élim. / défaite',(k/Math.max(1,g-w)).toFixed(2)],['Record élim.',stats.best|0],['Précision',(sh?Math.round((stats.hitsT|0)/sh*100):0)+' %'],['Tirs à la tête',stats.hsT|0],['Plus longue élimination',(stats.longK|0)+' m'],['Temps de jeu',Math.floor(tm/3600)+' h '+Math.floor(tm%3600/60)+' min']];
   $('#carList').innerHTML=rows.map(r=>'<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>').join('');$('#career').hidden=false}
 $('#carBtn').addEventListener('click',openCareer);$('#carClose').addEventListener('click',()=>{$('#career').hidden=true});
@@ -6779,11 +6808,104 @@ function sfSuspense(){if(game.mode!=='play'){if(game.mode!=='paused'){SUSP.alive
 (function daily(){const D=new Date(),key=D.getFullYear()+'-'+(D.getMonth()+1)+'-'+D.getDate();if(stats.lastDay===key)return;
   const Y=new Date(D.getTime()-864e5),yk=Y.getFullYear()+'-'+(Y.getMonth()+1)+'-'+Y.getDate();stats.streak=stats.lastDay===yk?(stats.streak|0)+1:1;stats.lastDay=key;
   if(!stats.games){saveStats();return}
-  const bonus=Math.min(7,stats.streak)*50;addXp(bonus);try{fillXP()}catch(e){}
-  setTimeout(()=>sfBanner('Connexion quotidienne','Jour '+stats.streak+' · +'+bonus+' XP',3.2,'gold'),900)})();
+  const cd=((stats.streak-1)%7)+1,bonus=cd*50+(cd===7?500:0);addXp(bonus);try{fillXP()}catch(e){}
+  try{sfCal(bonus)}catch(e){setTimeout(()=>sfBanner('Connexion quotidienne','Jour '+cd+' · +'+bonus+' XP',3.2,'gold'),900)}})();
 {const c=document.createElement('div');c.id='sfCine';c.innerHTML='<i></i><i></i>';document.body.appendChild(c)}
 optLabels();
 setInterval(()=>{if(game.mode!=='play'&&cam.bars){cam.bars=false;$('#sfCine').classList.remove('on')}const el=$('#sfFps'),on=!!stats.fps&&game.mode==='play';if(el.hidden===on)el.hidden=!on;if(on)el.textContent=SFF+' i/s';SFF=0},1000);
+/* ===== v2.41 — motivation : Pass Seddik de saison, missions de la semaine, calendrier 7 jours, grades tunisiens, carte de victoire ===== */
+Object.assign(I18N.en,{'Recrue':'Recruit','Caporal':'Corporal','Sergent':'Sergeant','Lieutenant':'Lieutenant','Capitaine':'Captain','Légende de Carthage':'Legend of Carthage','grade le plus haut':'highest rank',
+  'Pass Seddik':'Seddik Pass','Missions de la semaine':'Weekly missions','Elles changent chaque lundi.':'They change every Monday.','Palier':'Tier','Coffre de saison':'Season chest','Titre de saison':'Season title',
+  'Récompense quotidienne':'Daily reward','Revenez demain pour la suite.':'Come back tomorrow for the next one.','Récupérer':'Collect','Fermer':'Close','Jour':'Day','Coffre':'Chest',
+  'Carte de victoire':'Victory card','Carte du combat':'Battle card','Enregistrer':'Save','Partager':'Share','Appui long sur l’image pour l’enregistrer.':'Long-press the image to save it.',
+  'Gagnez des points de saison à chaque partie : survie, éliminations, Top 5 et victoire.':'Earn season points every match: survival, kills, Top 5 and wins.','Saison':'Season','jours restants':'days left','Pass terminé !':'Pass complete!'});
+Object.assign(I18N.ar,{'Recrue':'مجنّد','Caporal':'عريف','Sergent':'رقيب','Lieutenant':'ملازم','Capitaine':'نقيب','Légende de Carthage':'أسطورة قرطاج','grade le plus haut':'أعلى رتبة',
+  'Pass Seddik':'باس الصدّيق','Missions de la semaine':'مهام الجمعة','Elles changent chaque lundi.':'تتبدّل كل نهار اثنين.','Palier':'درجة','Coffre de saison':'صندوق الموسم','Titre de saison':'لقب الموسم',
+  'Récompense quotidienne':'هدية اليوم','Revenez demain pour la suite.':'إرجع غدوة للهدية الجاية.','Récupérer':'خوذ','Fermer':'سكّر','Jour':'نهار','Coffre':'صندوق',
+  'Carte de victoire':'بطاقة الربح','Carte du combat':'بطاقة المعركة','Enregistrer':'سجّل','Partager':'شارك','Appui long sur l’image pour l’enregistrer.':'اضغط مطوّل على التصويرة باش تسجّلها.',
+  'Gagnez des points de saison à chaque partie : survie, éliminations, Top 5 et victoire.':'اربح نقاط الموسم في كل طرح: البقاء، الإقصاءات، التوب 5 والربح.','Saison':'موسم','jours restants':'أيام باقية','Pass terminé !':'كمّلت الباس!'});
+I18N_RX.unshift([/^Grade (.+) à (\d+) pts$/,{en:(m,a,b)=>trS(a)+' at '+b+' pts',ar:(m,a,b)=>trS(a)+' عند '+b+' نقطة'}],[/^Grade (.+)$/,{en:(m,a)=>'Rank: '+trS(a),ar:(m,a)=>'الرتبة: '+trS(a)}]);
+
+/* --- saisons tunisiennes (une par mois) --- */
+const SEASONS=['Neige d’Aïn Draham','Mimosas de Tabarka','Printemps de Dougga','Fleurs d’oranger de Nabeul','Roses de l’Ariana','Plages de Hammamet','Festival de Carthage','Été à Djerba','Rentrée à Tunis','Dattes de Tozeur','Olives de Sfax','Festival du Sahara de Douz'];
+const PASS_N=30,PASS_PT=100;
+function passRew(t){return t===PASS_N?{k:'title',xp:1000,n:'Titre de saison'}:t%5===0?{k:'chest',xp:400,n:'Coffre de saison'}:{k:'xp',xp:80+t*10,n:'+'+(80+t*10)+' XP'}}
+function passState(){const d=new Date(),sk=d.getFullYear()+'-'+(d.getMonth()+1);if(!stats.ps||stats.ps.s!==sk)stats.ps={s:sk,m:d.getMonth(),pts:0,tier:0};return stats.ps}
+function passDaysLeft(){const d=new Date(),e=new Date(d.getFullYear(),d.getMonth()+1,1);return Math.max(1,Math.ceil((e-d)/864e5))}
+function passAdd(pts){const P=passState();const out=[];P.pts+=pts;let xp=0;
+  while(P.tier<PASS_N&&P.pts>=(P.tier+1)*PASS_PT){P.tier++;const r=passRew(P.tier);xp+=r.xp;
+    if(r.k==='title'){stats.titles=Array.isArray(stats.titles)?stats.titles:[];const T=SEASONS[P.m]+' '+P.s.split('-')[0];if(!stats.titles.includes(T))stats.titles.push(T);stats.title=T}
+    out.push('Pass Seddik · Palier '+P.tier+' : '+trS(r.n)+(r.k!=='xp'?' · +'+r.xp+' XP':''))}
+  return {xp,out}}
+
+/* --- missions de la semaine (lundi à dimanche) --- */
+function weekKey(){const d=new Date();const m=new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+6)%7));return m.getFullYear()+'-'+(m.getMonth()+1)+'-'+m.getDate()}
+function weeklyMissions(){const wk=weekKey();
+  if(!stats.wm||stats.wm.w!==wk){let h=7;for(const ch of wk)h=(h*37+ch.charCodeAt(0))|0;const R=mulberry32(h),pool=MPOOL.slice(),list=[];
+    for(let i=0;i<3&&pool.length;i++){const p=pool.splice(Math.floor(R()*pool.length),1)[0],lv=p.g.length-1;list.push({id:p.id,g:Math.ceil(p.g[lv]*5),xp:p.xp[lv]*3,p:0,done:false})}
+    stats.wm={w:wk,list};saveStats()}return stats.wm.list}
+
+/* --- après chaque partie : semaine + pass --- */
+function sfMotivAfter(win){if(MDcur.nostat||!player)return;const p=player,rank=win?1:p.rank;const out=[];let xp=0;
+  const add={kills:p.kills,games:1,surv:(win?matchT:p.deathT)/60,top5:rank<=5?1:0,mel:p.kMel||0,nade:p.kNade||0,dmg:p.dmg};
+  for(const ms of weeklyMissions()){if(ms.done)continue;const P=MPOOL.find(x=>x.id===ms.id);if(!P)continue;ms.p=Math.min(ms.g,ms.p+(add[P.key]||0));if(ms.p>=ms.g){ms.done=true;xp+=ms.xp;out.push('Mission de la semaine : '+P.n(ms.g)+' · +'+ms.xp+' XP')}}
+  const pts=Math.round(25+Math.min(12,p.kills|0)*10+(rank<=10?15:0)+(rank<=5?20:0)+(win?60:0)+Math.min(30,((win?matchT:p.deathT)||0)/20));
+  const r=passAdd(pts);xp+=r.xp;out.push('Pass Seddik : +'+pts+' points de saison');out.push(...r.out);
+  if(xp){stats.xp=(stats.xp||0)+xp;stats.lastXp=(+stats.lastXp||0)+xp;stats.level=xpLevel(stats.xp);stats.lvlFrom=levelXp(stats.level);stats.lvlTo=levelXp(stats.level+1)}
+  saveStats();const ul=$('#endMiss');if(ul)ul.insertAdjacentHTML('beforeend',out.map(x=>'<li>'+esc(trS(x))+'</li>').join(''));
+  try{fillEnd(win)}catch(e){}
+  const cb=$('#cardBtn');if(cb)cb.textContent=win?'Carte de victoire':'Carte du combat'}
+{const _fin=finish;finish=function(){_fin();try{sfMotivAfter(!!(player&&player.alive))}catch(e){console.warn('motiv',e)}}}
+
+/* --- écrans --- */
+function openPass(){const P=passState(),pct=P.tier>=PASS_N?100:Math.round((P.pts-P.tier*PASS_PT)/PASS_PT*100);
+  $('#passSeason').textContent=SEASONS[P.m];$('#passLeft').textContent=passDaysLeft()+' '+trS('jours restants');
+  $('#passTier').textContent=P.tier>=PASS_N?trS('Pass terminé !'):trS('Palier')+' '+P.tier+' / '+PASS_N;
+  $('#passFill').style.width=pct+'%';$('#passPts').textContent=P.tier>=PASS_N?P.pts+' pts':(P.pts-P.tier*PASS_PT)+' / '+PASS_PT+' pts';
+  let h='';for(let t=1;t<=PASS_N;t++){const r=passRew(t),ok=t<=P.tier;h+='<li class="pt '+r.k+(ok?' ok':'')+(t===P.tier+1?' nx':'')+'"><b>'+t+'</b><span>'+(r.k==='title'?'👑':r.k==='chest'?'🎁':r.xp)+'</span></li>'}
+  $('#passGrid').innerHTML=h;$('#passTitle').textContent=stats.title?'👑 '+stats.title:'';$('#pass').hidden=false;
+  const nx=$('#passGrid .nx');if(nx)setTimeout(()=>nx.scrollIntoView({block:'nearest',inline:'center'}),30)}
+function fillWeekly(){const L=weeklyMissions();const ul=$('#wmList');if(!ul)return;
+  ul.innerHTML=L.map(ms=>{const P=MPOOL.find(x=>x.id===ms.id);if(!P)return'';const pc=Math.round(ms.p/ms.g*100);return'<li class="ms'+(ms.done?' ok':'')+'"><b>'+(ms.done?'✓ ':'')+P.n(ms.g)+'</b><i><span style="width:'+pc+'%"></span></i><em>'+(ms.done?'Terminée · +'+ms.xp+' XP':Math.floor(ms.p)+' / '+ms.g+' · récompense +'+ms.xp+' XP')+'</em></li>'}).join('')}
+$('#passBtn').addEventListener('click',openPass);$('#passClose').addEventListener('click',()=>{$('#pass').hidden=true});
+$('#missBtn').addEventListener('click',fillWeekly);
+
+/* --- calendrier de connexion (7 jours, coffre le 7e) --- */
+function sfCal(bonus){const go=()=>{if(!window.__sfReady||game.mode!=='lobby'){setTimeout(go,400);return}
+  const cd=((Math.max(1,stats.streak|0)-1)%7)+1;let h='';
+  for(let i=1;i<=7;i++){const v=i*50+(i===7?500:0);h+='<li class="cd'+(i<cd?' past':'')+(i===cd?' now':'')+(i===7?' big':'')+'"><small>'+trS('Jour')+' '+i+'</small><b>'+(i===7?'🎁':'+'+v)+'</b><em>'+(i===7?'+'+v+' XP':'XP')+'</em></li>'}
+  $('#calList').innerHTML=h;$('#calSub').textContent=trS('Jour')+' '+cd+' · +'+bonus+' XP';$('#cal').hidden=false};setTimeout(go,700)}
+$('#calClose').addEventListener('click',()=>{$('#cal').hidden=true;try{fillXP();fillStats()}catch(e){}});
+
+/* --- carte de victoire à partager (image) --- */
+function sfFlag(c,x,y,w){const h=w*2/3;c.fillStyle='#e70013';c.fillRect(x,y,w,h);const cx=x+w/2,cy=y+h/2,r=h*.25;c.fillStyle='#fff';c.beginPath();c.arc(cx,cy,r,0,6.283);c.fill();
+  c.fillStyle='#e70013';c.beginPath();c.arc(cx,cy,r*.75,0,6.283);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(cx+r*.19,cy,r*.6,0,6.283);c.fill();
+  c.fillStyle='#e70013';c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.2:r*.45;c.lineTo(cx+r*.2+Math.cos(a)*rr,cy+Math.sin(a)*rr)}c.closePath();c.fill()}
+function sfCard(){const win=!!(player&&player.alive),W=1080,H=1350,cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+  const F1="'Saira Stencil One','Barlow Condensed',sans-serif",F2="'Barlow Condensed',system-ui,sans-serif";
+  let g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b0f14');g.addColorStop(.55,'#1d120c');g.addColorStop(1,'#3a1406');c.fillStyle=g;c.fillRect(0,0,W,H);
+  g=c.createRadialGradient(W/2,560,40,W/2,560,620);g.addColorStop(0,win?'rgba(255,150,60,.55)':'rgba(220,180,130,.35)');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(0,0,W,H);
+  c.fillStyle='#e70013';c.fillRect(0,0,W,14);c.fillRect(0,H-14,W,14);
+  c.textAlign='left';c.fillStyle='#ff7a2a';c.font='88px '+F1;c.fillText('SEDDIK FIRE',60,140);
+  c.fillStyle='rgba(243,233,212,.7)';c.font='600 34px '+F2;c.fillText(trS('Battle royale tunisien').toUpperCase(),64,190);sfFlag(c,W-220,78,150);
+  const sc=$('#endCv');if(sc&&sc.width){try{c.drawImage(sc,W/2-330,250,660,660)}catch(e){}}
+  c.textAlign='center';const rank=win?1:player.rank;c.fillStyle='#fff';c.font='190px '+F1;c.fillText('#'+rank,W/2,1035);
+  c.font='600 44px '+F2;c.fillStyle=win?'#ffcf5a':'rgba(243,233,212,.85)';c.fillText(win?'TOP 1 · يعطيك الصحة':trS('sur 30 soldats'),W/2,1095);
+  const st=[[trS('Éliminations'),$('#eKills').textContent],[trS('Dégâts'),$('#eDmg').textContent],[trS('Survie'),$('#eTime').textContent]];
+  st.forEach((s,i)=>{const x=W/2+(i-1)*320;c.fillStyle='rgba(255,255,255,.07)';c.fillRect(x-140,1130,280,120);c.fillStyle='#fff';c.font='700 62px '+F2;c.fillText(s[1],x,1200);c.fillStyle='rgba(243,233,212,.65)';c.font='600 28px '+F2;c.fillText(String(s[0]).toUpperCase(),x,1236)});
+  c.fillStyle='rgba(243,233,212,.8)';c.font='600 32px '+F2;
+  c.fillText((player.name||stats.name||'Seddik')+' · '+trS(LEAGUES[leagueOf(Math.max(0,stats.rp|0))][0])+' · '+trS(MAP.n||''),W/2,1300);
+  c.fillStyle='rgba(243,233,212,.5)';c.font='600 26px '+F2;c.fillText('seddik-fire.onrender.com',W/2,1328);
+  return cv}
+let cardBlob=null;
+$('#cardBtn').addEventListener('click',()=>{let cv;try{cv=sfCard()}catch(e){console.warn(e);toast('Image indisponible');return}
+  $('#cardImg').src=cv.toDataURL('image/png');cardBlob=null;try{cv.toBlob(b=>{cardBlob=b},'image/png')}catch(e){}
+  const canFile=!!(navigator.canShare&&window.File);$('#cardShare').hidden=!canFile;$('#cardV').hidden=false});
+$('#cardShare').addEventListener('click',async()=>{if(!cardBlob)return;try{const f=new File([cardBlob],'seddik-fire.png',{type:'image/png'});
+  if(navigator.canShare({files:[f]}))await navigator.share({files:[f],title:'Seddik Fire',text:'Seddik Fire 🇹🇳 https://seddik-fire.onrender.com/'})}catch(e){}});
+$('#cardSave').addEventListener('click',()=>{const a=document.createElement('a');a.href=$('#cardImg').src;a.download='seddik-fire-'+Date.now()+'.png';document.body.appendChild(a);a.click();a.remove()});
+$('#cardClose').addEventListener('click',()=>{$('#cardV').hidden=true});
+
 setLang(detectLang(),false);
 
 
@@ -7000,6 +7122,26 @@ body.p3 #game{filter:none}
 #lobby::before{content:"";position:fixed;inset:-4%;z-index:-2;background:var(--mapbg,none) center 30%/cover no-repeat,#0b0f14;filter:saturate(1.15) brightness(.62) contrast(1.05);transform:scale(1.06);transition:background-image .4s}
 #lobby::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 70% 42% at 50% 38%,rgba(255,150,70,.18),transparent 70%),linear-gradient(180deg,rgba(8,11,16,.55) 0%,rgba(8,11,16,.15) 22%,rgba(8,11,16,.35) 50%,rgba(8,11,16,.92) 78%,rgba(8,11,16,.98) 100%)}
 #lobby{background:transparent!important}
+
+/* v2.41 — Pass Seddik, calendrier, carte de victoire */
+#pass,#cal,#cardV{z-index:10}
+.pass-tier{font-size:18px;font-weight:700;margin:2px 0 8px;color:var(--flare,#ffb347)}
+.pass-title{color:#ffcf5a;font-weight:700;margin:6px 0 0}
+#passFill{background:linear-gradient(90deg,#e70013,#ff7a2a,#ffcf5a)!important}
+.pgrid{list-style:none;margin:6px 0 10px;padding:4px 2px 8px;display:grid;grid-auto-flow:column;grid-auto-columns:58px;gap:6px;overflow-x:auto;scroll-snap-type:x proximity}
+.pgrid .pt{scroll-snap-align:center;display:grid;place-items:center;gap:2px;height:72px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);font-size:13px;opacity:.7}
+.pgrid .pt b{font-size:12px;color:var(--mute,#bbb)}.pgrid .pt span{font-weight:700;font-size:15px}
+.pgrid .pt.chest{background:rgba(255,160,60,.12)}.pgrid .pt.title{background:rgba(231,0,19,.18)}
+.pgrid .pt.ok{opacity:1;border-color:#86c96a;box-shadow:inset 0 0 0 1px #86c96a}.pgrid .pt.ok b::after{content:" ✓";color:#86c96a}
+.pgrid .pt.nx{opacity:1;border-color:#ffb347;box-shadow:0 0 0 2px rgba(255,179,71,.5)}
+.cgrid{list-style:none;margin:8px 0 10px;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cgrid .cd{display:grid;place-items:center;gap:2px;padding:10px 4px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+.cgrid .cd small{font-size:12px;color:var(--mute,#bbb)}.cgrid .cd b{font-size:20px}.cgrid .cd em{font-style:normal;font-size:12px;color:var(--mute,#bbb)}
+.cgrid .cd.past{opacity:.45}.cgrid .cd.past b::after{content:" ✓";color:#86c96a;font-size:14px}
+.cgrid .cd.now{border-color:#ffb347;background:rgba(255,140,40,.18);box-shadow:0 0 18px rgba(255,140,40,.35);transform:scale(1.04)}
+.cgrid .cd.big{grid-column:span 2;background:linear-gradient(135deg,rgba(231,0,19,.25),rgba(255,160,60,.18))}
+.cardimg{display:block;width:100%;max-width:360px;max-height:62vh;object-fit:contain;margin:0 auto 6px;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#cardV .row{flex-wrap:wrap}
 </style>
 </body>
 </html>

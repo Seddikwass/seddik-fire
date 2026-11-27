@@ -1,5 +1,13 @@
 # Seddik Fire
 
+## Nouveautés 2.41 — Motivation : Pass Seddik, missions de la semaine, calendrier, grades tunisiens, carte de victoire
+- **Pass Seddik** (nouveau bouton dans le lobby) : une saison par mois au nom tunisien (Olives de Sfax, Festival du Sahara de Douz, Neige d’Aïn Draham…). 30 paliers de 100 points de saison gagnés à chaque partie (survie, éliminations, Top 10, Top 5, victoire). Récompenses en XP, coffre tous les 5 paliers, titre de saison au palier 30.
+- **Missions de la semaine** dans l’écran Missions : 3 grandes missions qui changent chaque lundi, récompense ×3.
+- **Calendrier de connexion sur 7 jours** : fenêtre avec les 7 jours, coffre de +850 XP le 7e jour, puis le cycle recommence.
+- **Grades militaires tunisiens** au lieu des ligues : Recrue, Caporal, Sergent, Lieutenant, Capitaine, Légende de Carthage (mêmes points).
+- **Carte de victoire** à la fin de chaque partie : image 1080 × 1350 avec le soldat, le classement, les statistiques, le grade, la carte et le drapeau tunisien, à partager sur Facebook, WhatsApp ou TikTok.
+- **Outil Mixamo → sprites** dans `tools/` (script Blender et guide `tools/MIXAMO.md`).
+
 ## Nouveautés 2.40 — Voix arabe et tunisienne réparée sur Android et sur le site
 - **Android** : le module vocal refuse toute langue dont le code ne correspond pas exactement à celui annoncé par le moteur du téléphone. Le moteur Google annonce souvent l'arabe sous « ar-XA » : les demandes « ar-TN », « ar » et « ar-SA » étaient toutes refusées et le jeu se croyait sans voix arabe. Le jeu lit maintenant la vraie liste des langues et des voix du téléphone et utilise exactement le code et la voix arabes qu'il annonce. En cas de refus, il réessaie sans voix précise, puis avec « ar ».
 - **Site (Render)** : quand le navigateur n'avait pas encore chargé ses voix, les premiers messages étaient perdus. Ils sont désormais dits avec la langue arabe, puis avec la voix arabe dès qu'elle est chargée.

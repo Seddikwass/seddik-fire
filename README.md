@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Nouveautés 2.43 — Week-end ×2, objets exclusifs du Pass, douilles
+- **Week-end ×2** : le samedi et le dimanche, l’XP de chaque partie et les points du Pass Seddik sont doublés (annonce dans le lobby).
+- **Objets exclusifs du Pass Seddik** : Rangers rouges Tunisie au palier 10, Sac drapeau Tunisie au palier 20 (dans Personnaliser, une fois débloqués ils restent pour toujours).
+- **Douilles éjectées** à chaque tir (laiton, rouges pour le fusil à pompe) : elles rebondissent, restent quelques secondes au sol et coulent dans l’eau.
+
 ## Nouveautés 2.42 — Animations des soldats
 - **Touché** : le soldat recule à l’opposé du tir et son buste se tord.
 - **Grenade** : le soldat arme en arrière puis lance d’un coup de buste.

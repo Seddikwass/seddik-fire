@@ -1059,7 +1059,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.42</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.43</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -1387,10 +1387,10 @@ SOLDIERS.push(
  for(const sk of SOLDIERS)if(sk.role&&sk.d&&!sk.d.startsWith(sk.role))sk.d=sk.role+' · '+sk.d}
 
 const ACCS=[{n:'Aucun',lv:1},{n:'Bandeau',lv:1},{n:'Lunettes',lv:3},{n:'Laurier',lv:5},{n:'Lunettes dorées',lv:'S10'},{n:'Couronne',lv:'S20'},{n:'Peinture de guerre',lv:'S30'},{n:'Couronne de feu',lv:'S50'}];
-const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35'];
-const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a','#8e44ad','#dcdcdc','#1b1b1d','#ff6b22'],BAG_LV=[1,2,3,5,7,'S10','S25','S40','S45'];
-const lvOK=n=>typeof n==='string'?(stats.cupBest|0)>=+n.slice(1):(stats.level||1)>=n||(stats.cupBest|0)>=50;
-const lvTxt=n=>typeof n==='string'?'Parcours étape '+n.slice(1):'Niv. '+n;
+const BOOTS=[null,'#f2f2f2','#c0392b','#d4a72c','#2f6fb5','#7b3fbf','#17a589','#c9ccd1','#e70013'],BOOT_LV=[1,1,2,4,6,'S5','S15','S35','P10'];
+const BAGC=[null,'#b3322b','#2f6fb5','#d4a72c','#2f8a4a','#8e44ad','#dcdcdc','#1b1b1d','#ff6b22','#e70013'],BAG_LV=[1,2,3,5,7,'S10','S25','S40','S45','P20'];
+const lvOK=n=>typeof n==='string'?(n[0]==='P'?(stats.passMax|0)>=+n.slice(1):(stats.cupBest|0)>=+n.slice(1)):(stats.level||1)>=n||(stats.cupBest|0)>=50;
+const lvTxt=n=>typeof n==='string'?(n[0]==='P'?'Pass Seddik palier '+n.slice(1):'Parcours étape '+n.slice(1)):'Niv. '+n;
 const WARRIORS=()=>SOLDIERS.filter(s=>s.sp);
 /* v132 — l'IA utilise des silhouettes de soldats modernes, pas les skins fantaisie. */
 function botSkin(){if(Math.random()<.8&&typeof themeSkin==='function'){const t=themeSkin();if(t)return t}const field=SOLDIERS.filter(sk=>!sk.ftr&&!sk.sp&&!sk.jc&&!sk.best);return pick(field.length?field:SOLDIERS)}
@@ -6829,11 +6829,11 @@ I18N_RX.unshift([/^Grade (.+) à (\d+) pts$/,{en:(m,a,b)=>trS(a)+' at '+b+' pts'
 /* --- saisons tunisiennes (une par mois) --- */
 const SEASONS=['Neige d’Aïn Draham','Mimosas de Tabarka','Printemps de Dougga','Fleurs d’oranger de Nabeul','Roses de l’Ariana','Plages de Hammamet','Festival de Carthage','Été à Djerba','Rentrée à Tunis','Dattes de Tozeur','Olives de Sfax','Festival du Sahara de Douz'];
 const PASS_N=30,PASS_PT=100;
-function passRew(t){return t===PASS_N?{k:'title',xp:1000,n:'Titre de saison'}:t%5===0?{k:'chest',xp:400,n:'Coffre de saison'}:{k:'xp',xp:80+t*10,n:'+'+(80+t*10)+' XP'}}
+function passRew(t){return t===PASS_N?{k:'title',xp:1000,n:'Titre de saison'}:t===10?{k:'item',xp:400,n:'Rangers rouges Tunisie',ic:'👢'}:t===20?{k:'item',xp:400,n:'Sac drapeau Tunisie',ic:'🎒'}:t%5===0?{k:'chest',xp:400,n:'Coffre de saison'}:{k:'xp',xp:80+t*10,n:'+'+(80+t*10)+' XP'}}
 function passState(){const d=new Date(),sk=d.getFullYear()+'-'+(d.getMonth()+1);if(!stats.ps||stats.ps.s!==sk)stats.ps={s:sk,m:d.getMonth(),pts:0,tier:0};return stats.ps}
 function passDaysLeft(){const d=new Date(),e=new Date(d.getFullYear(),d.getMonth()+1,1);return Math.max(1,Math.ceil((e-d)/864e5))}
 function passAdd(pts){const P=passState();const out=[];P.pts+=pts;let xp=0;
-  while(P.tier<PASS_N&&P.pts>=(P.tier+1)*PASS_PT){P.tier++;const r=passRew(P.tier);xp+=r.xp;
+  while(P.tier<PASS_N&&P.pts>=(P.tier+1)*PASS_PT){P.tier++;stats.passMax=Math.max(stats.passMax|0,P.tier);const r=passRew(P.tier);xp+=r.xp;
     if(r.k==='title'){stats.titles=Array.isArray(stats.titles)?stats.titles:[];const T=SEASONS[P.m]+' '+P.s.split('-')[0];if(!stats.titles.includes(T))stats.titles.push(T);stats.title=T}
     out.push('Pass Seddik · Palier '+P.tier+' : '+trS(r.n)+(r.k!=='xp'?' · +'+r.xp+' XP':''))}
   return {xp,out}}
@@ -6850,7 +6850,8 @@ function sfMotivAfter(win){if(MDcur.nostat||!player)return;const p=player,rank=w
   const add={kills:p.kills,games:1,surv:(win?matchT:p.deathT)/60,top5:rank<=5?1:0,mel:p.kMel||0,nade:p.kNade||0,dmg:p.dmg};
   for(const ms of weeklyMissions()){if(ms.done)continue;const P=MPOOL.find(x=>x.id===ms.id);if(!P)continue;ms.p=Math.min(ms.g,ms.p+(add[P.key]||0));if(ms.p>=ms.g){ms.done=true;xp+=ms.xp;out.push('Mission de la semaine : '+P.n(ms.g)+' · +'+ms.xp+' XP')}}
   const pts=Math.round(25+Math.min(12,p.kills|0)*10+(rank<=10?15:0)+(rank<=5?20:0)+(win?60:0)+Math.min(30,((win?matchT:p.deathT)||0)/20));
-  const r=passAdd(pts);xp+=r.xp;out.push('Pass Seddik : +'+pts+' points de saison');out.push(...r.out);
+  const we=sfWeekend();if(we){const bx=Math.max(0,+stats.lastXp||0);xp+=bx;out.push('Bonus du week-end : +'+bx+' XP');}
+  const r=passAdd(we?pts*2:pts);xp+=r.xp;out.push('Pass Seddik : +'+(we?pts*2:pts)+' points de saison'+(we?' (×2)':''));out.push(...r.out);
   if(xp){stats.xp=(stats.xp||0)+xp;stats.lastXp=(+stats.lastXp||0)+xp;stats.level=xpLevel(stats.xp);stats.lvlFrom=levelXp(stats.level);stats.lvlTo=levelXp(stats.level+1)}
   saveStats();const ul=$('#endMiss');if(ul)ul.insertAdjacentHTML('beforeend',out.map(x=>'<li>'+esc(trS(x))+'</li>').join(''));
   try{fillEnd(win)}catch(e){}
@@ -6862,7 +6863,7 @@ function openPass(){const P=passState(),pct=P.tier>=PASS_N?100:Math.round((P.pts
   $('#passSeason').textContent=SEASONS[P.m];$('#passLeft').textContent=passDaysLeft()+' '+trS('jours restants');
   $('#passTier').textContent=P.tier>=PASS_N?trS('Pass terminé !'):trS('Palier')+' '+P.tier+' / '+PASS_N;
   $('#passFill').style.width=pct+'%';$('#passPts').textContent=P.tier>=PASS_N?P.pts+' pts':(P.pts-P.tier*PASS_PT)+' / '+PASS_PT+' pts';
-  let h='';for(let t=1;t<=PASS_N;t++){const r=passRew(t),ok=t<=P.tier;h+='<li class="pt '+r.k+(ok?' ok':'')+(t===P.tier+1?' nx':'')+'"><b>'+t+'</b><span>'+(r.k==='title'?'👑':r.k==='chest'?'🎁':r.xp)+'</span></li>'}
+  let h='';for(let t=1;t<=PASS_N;t++){const r=passRew(t),ok=t<=P.tier;h+='<li class="pt '+r.k+(ok?' ok':'')+(t===P.tier+1?' nx':'')+'"><b>'+t+'</b><span>'+(r.k==='title'?'👑':r.k==='item'?r.ic:r.k==='chest'?'🎁':r.xp)+'</span></li>'}
   $('#passGrid').innerHTML=h;$('#passTitle').textContent=stats.title?'👑 '+stats.title:'';$('#pass').hidden=false;
   const nx=$('#passGrid .nx');if(nx)setTimeout(()=>nx.scrollIntoView({block:'nearest',inline:'center'}),30)}
 function fillWeekly(){const L=weeklyMissions();const ul=$('#wmList');if(!ul)return;
@@ -6924,6 +6925,24 @@ function sfAnim(e){if(reduceMotion||game.mode==='lobby')return;let tx=0,ty=0,r=0
   // atterrissage : choc puis rebond
   if(e.landT!=null){const q=(matchT-e.landT)/.45;if(q>=0&&q<1)tx+=Math.sin(q*Math.PI*2)*3*(1-q)}
   if(r)ctx.rotate(r);if(tx||ty)ctx.translate(tx,ty)}
+
+/* ===== v2.43 — week-end ×2, objets exclusifs du Pass, douilles éjectées ===== */
+Object.assign(I18N.en,{'Rangers rouges Tunisie':'Tunisia red boots','Sac drapeau Tunisie':'Tunisia flag backpack','Week-end ×2':'Weekend ×2','XP et points de saison doublés jusqu’à dimanche soir.':'XP and season points doubled until Sunday night.'});
+Object.assign(I18N.ar,{'Rangers rouges Tunisie':'رونجرز حمراء تونس','Sac drapeau Tunisie':'شكارة علم تونس','Week-end ×2':'الويكاند ×2','XP et points de saison doublés jusqu’à dimanche soir.':'XP ونقاط الموسم مضاعفة حتى الأحد في الليل.'});
+I18N_RX.unshift([/^Pass Seddik palier (\d+)$/,{en:(m,a)=>'Seddik Pass tier '+a,ar:(m,a)=>'باس الصدّيق درجة '+a}]);
+function sfWeekend(){const d=new Date().getDay();return d===0||d===6}
+if(sfWeekend()){const k='we'+new Date().toDateString();(function go(){if(!window.__sfReady||game.mode!=='lobby'||!$('#cal').hidden){setTimeout(go,800);return}if(sessionStorage.getItem(k))return;try{sessionStorage.setItem(k,1)}catch(e){}sfBanner('Week-end ×2','XP et points de saison doublés jusqu’à dimanche soir.',4,'gold')})()}
+const CASES=[];let caseT=0;
+{const _tf=tryFire;tryFire=function(e){const w=curW(e),m=w?w.mag:-1;_tf(e);if(!w||w.mag>=m||reduceMotion||!Q.hi||!vis(e.x,e.y,60))return;const Wp=WEAP[w.type];if(!Wp||MELEEN.has(Wp.n))return;
+  const a=e.angle,sx=e.x+Math.cos(a)*e.r*.9-Math.sin(a)*4,sy=e.y+Math.sin(a)*e.r*.9+Math.cos(a)*4,ej=a+Math.PI/2+rand(-.35,.35),v=rand(70,120);
+  CASES.push({x:sx,y:sy,vx:Math.cos(ej)*v-Math.cos(a)*15,vy:Math.sin(ej)*v-Math.sin(a)*15,z:6,vz:rand(60,95),r:Math.random()*TAU,vr:rand(-22,22),t:matchT,c:Wp.cls==='sg'?'#b8322a':'#d8ad4a',L:Wp.cls==='sn'||Wp.cls==='dmr'?4.2:Wp.cls==='sg'?4:3,b:0});if(CASES.length>140)CASES.shift()}}
+{const _db=drawBlood;drawBlood=function(){_db();if(!CASES.length)return;const dt=Math.min(.05,Math.max(0,TIME-caseT));caseT=TIME;
+  for(let i=CASES.length-1;i>=0;i--){const k=CASES[i],age=matchT-k.t;if(age>7||age<0){CASES.splice(i,1);continue}
+    if(k.z>0||k.vz>0){k.x+=k.vx*dt;k.y+=k.vy*dt;k.r+=k.vr*dt;k.vz-=420*dt;k.z+=k.vz*dt;if(k.z<=0){k.z=0;if(isWater(k.x,k.y)){CASES.splice(i,1);continue}if(k.b<2&&k.vz<-30){k.vz*=-.35;k.vx*=.45;k.vy*=.45;k.vr*=.5;k.b++}else{k.vz=0;k.vx=k.vy=0}}}
+    if(!vis(k.x,k.y,20))continue;const al=age>5?1-(age-5)/2:1;ctx.save();ctx.globalAlpha=al;
+    if(k.z>0){ctx.fillStyle='rgba(20,12,4,.25)';ctx.beginPath();ctx.ellipse(k.x+3,k.y+3,k.L*.85,1.6,k.r,0,TAU);ctx.fill()}
+    ctx.translate(k.x,k.y-k.z*.35);ctx.rotate(k.r);ctx.scale(1.7,1.7);ctx.fillStyle='#3a2a10';ctx.fillRect(-k.L/2-.4,-1.05,k.L+.8,2.1);ctx.fillStyle=k.c;ctx.fillRect(-k.L/2,-.75,k.L,1.5);
+    ctx.fillStyle='rgba(255,245,200,.75)';ctx.fillRect(-k.L/2+.3,-.65,k.L*.55,.45);ctx.restore()}}}
 setLang(detectLang(),false);
 
 

@@ -1,5 +1,9 @@
 # Seddik Fire
 
+## Nouveautés 2.44 — Objectif du lobby, « presque ! », records
+- **Sous le bouton Jouer** : points qu’il manque pour le prochain palier du Pass Seddik, missions de la semaine faites (0/3), titre de saison et bonus du week-end.
+- **Fin de partie** : « Nouveau record d’éliminations ! », « Plus que 2 places pour le Top 5 : rejoue ! », « Si près du Top 1 ! » pour donner envie de relancer une partie.
+
 ## Nouveautés 2.43 — Week-end ×2, objets exclusifs du Pass, douilles
 - **Week-end ×2** : le samedi et le dimanche, l’XP de chaque partie et les points du Pass Seddik sont doublés (annonce dans le lobby).
 - **Objets exclusifs du Pass Seddik** : Rangers rouges Tunisie au palier 10, Sac drapeau Tunisie au palier 20 (dans Personnaliser, une fois débloqués ils restent pour toujours).

@@ -1000,6 +1000,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
     </dl>
     <div class="go">
       <button id="play" class="cta">Jouer<small>Île de Seddik · classique</small></button>
+      <p id="sfGoal" class="sfgoal" aria-live="polite"></p>
       <button id="adBonus" class="adbtn sm" hidden><b>▶</b> Pub : <em>+300 XP</em></button>
     </div>
   </div>
@@ -1059,7 +1060,7 @@ body.sf3d-battle #sf3dBattle{display:block}body.sf3d-battle #game{visibility:hid
       <p>Taille, opacité et hauteur s'appliquent aux boutons Tirer, Pistolet et actions. La sensibilité règle la course du pouce de visée.</p>
       <div class="row"><button id="qBtn" class="ghost">Qualité : Haute</button><button id="diffBtn" class="ghost">Difficulté : Normale</button><button id="vibBtn" class="ghost">Vibration : activée</button><button id="leftyBtn" class="ghost">Gaucher : non</button><button id="aimBtn" class="ghost">Ligne de visée : courte</button><button id="miniBtn" class="ghost">Mini-carte : normale</button><button id="camBtn" class="ghost">Caméra : cinématique</button><button id="afBtn" class="ghost">Tir auto : non</button><button id="numBtn" class="ghost">Chiffres de dégâts : oui</button><button id="bloodBtn" class="ghost">Sang : oui</button><button id="fpsBtn" class="ghost">Compteur i/s : non</button><button id="oReset" class="ghost">Réinitialiser</button><button id="oTuto" class="ghost">Revoir le tutoriel</button></div>
     </div>
-    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.43</p>
+    <p id="sfVer" style="margin:0;text-align:center;font-size:11px;letter-spacing:.14em;opacity:.55">SEDDIK FIRE · 2.44</p>
     <button id="oClose" class="cta">Terminé</button>
   </div>
 </section>
@@ -6856,7 +6857,7 @@ function sfMotivAfter(win){if(MDcur.nostat||!player)return;const p=player,rank=w
   saveStats();const ul=$('#endMiss');if(ul)ul.insertAdjacentHTML('beforeend',out.map(x=>'<li>'+esc(trS(x))+'</li>').join(''));
   try{fillEnd(win)}catch(e){}
   const cb=$('#cardBtn');if(cb)cb.textContent=win?'Carte de victoire':'Carte du combat'}
-{const _fin=finish;finish=function(){_fin();try{sfMotivAfter(!!(player&&player.alive))}catch(e){console.warn('motiv',e)}}}
+{const _fin=finish;finish=function(){const pb=stats.best|0;_fin();try{sfMotivAfter(!!(player&&player.alive))}catch(e){console.warn('motiv',e)}try{sfNearMiss(!!(player&&player.alive),pb)}catch(e){}}}
 
 /* --- écrans --- */
 function openPass(){const P=passState(),pct=P.tier>=PASS_N?100:Math.round((P.pts-P.tier*PASS_PT)/PASS_PT*100);
@@ -6943,6 +6944,22 @@ const CASES=[];let caseT=0;
     if(k.z>0){ctx.fillStyle='rgba(20,12,4,.25)';ctx.beginPath();ctx.ellipse(k.x+3,k.y+3,k.L*.85,1.6,k.r,0,TAU);ctx.fill()}
     ctx.translate(k.x,k.y-k.z*.35);ctx.rotate(k.r);ctx.scale(1.7,1.7);ctx.fillStyle='#3a2a10';ctx.fillRect(-k.L/2-.4,-1.05,k.L+.8,2.1);ctx.fillStyle=k.c;ctx.fillRect(-k.L/2,-.75,k.L,1.5);
     ctx.fillStyle='rgba(255,245,200,.75)';ctx.fillRect(-k.L/2+.3,-.65,k.L*.55,.45);ctx.restore()}}}
+
+/* ===== v2.44 — objectif dans le lobby, « presque ! » et records en fin de partie ===== */
+Object.assign(I18N.en,{'Prochain palier du Pass Seddik':'Next Seddik Pass tier','Missions de la semaine terminées':'Weekly missions done','Nouveau record d’éliminations !':'New kill record!'});
+Object.assign(I18N.ar,{'Prochain palier du Pass Seddik':'الدرجة الجاية في باس الصدّيق','Missions de la semaine terminées':'مهام الجمعة كمّلت','Nouveau record d’éliminations !':'رقم قياسي جديد في الإقصاءات!'});
+function sfGoal(){const el=$('#sfGoal');if(!el||game.mode!=='lobby')return;const P=passState(),L=weeklyMissions(),done=L.filter(m=>m.done).length;let h='';
+  if(stats.title)h+='<span class="t">👑 '+esc(stats.title)+'</span>';
+  h+=P.tier>=PASS_N?esc(trS('Pass terminé !')):esc(trS('Prochain palier du Pass Seddik'))+' : <b>'+((P.tier+1)*PASS_PT-P.pts)+' pts</b>';
+  h+=' · '+(done>=L.length?esc(trS('Missions de la semaine terminées'))+' ✓':esc(trS('Missions de la semaine'))+' : <b>'+done+'/'+L.length+'</b>');
+  if(sfWeekend())h+=' · <b>'+esc(trS('Week-end ×2'))+'</b>';
+  if(el.innerHTML!==h)el.innerHTML=h}
+setInterval(()=>{try{sfGoal()}catch(e){}},1000);
+function sfNearMiss(win,pb){if(MDcur.nostat||!player)return;const m=$('#endMsg');if(!m)return;const out=[];
+  if(player.kills>0&&player.kills>pb)out.push(trS('Nouveau record d’éliminations !')+' ('+player.kills+')');
+  if(!win){const r=player.rank;if(r<=3)out.push(r===2?'Si près du Top 1 ! Plus qu’un seul adversaire.':'Plus que '+(r-1)+' places pour le Top 1 !');else if(r<=10)out.push('Plus que '+(r-5)+' places pour le Top 5 : rejoue !')}
+  if(out.length)m.insertAdjacentHTML('beforeend',out.map(x=>'<span class="nm">'+esc(trS(x))+'</span>').join(''))}
+I18N_RX.unshift([/^Plus que (\d+) places pour le Top (\d)( : rejoue !| !)$/,{en:(m,a,b)=>'Only '+a+' places to the Top '+b+'!',ar:(m,a,b)=>'باقي '+a+' بلايص للتوب '+b+'!'}],[/^Si près du Top 1 ! Plus qu’un seul adversaire\.$/,{en:()=>'So close to Top 1! Just one opponent left.',ar:()=>'قريب برشا من التوب 1! باقي خصم واحد.'}]);
 setLang(detectLang(),false);
 
 
@@ -7179,6 +7196,11 @@ body.p3 #game{filter:none}
 .cgrid .cd.big{grid-column:span 2;background:linear-gradient(135deg,rgba(231,0,19,.25),rgba(255,160,60,.18))}
 .cardimg{display:block;width:100%;max-width:360px;max-height:62vh;object-fit:contain;margin:0 auto 6px;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 #cardV .row{flex-wrap:wrap}
+
+/* v2.44 — objectif du lobby */
+.sfgoal{margin:8px 0 0;font-size:14px;line-height:1.35;color:rgba(243,233,212,.82);text-align:center}
+.sfgoal b{color:#ffb347}.sfgoal .t{display:block;color:#ffcf5a;font-weight:700}
+.endmsg .nm{display:block;margin-top:4px;font-size:.9em;color:#ffb347}
 </style>
 </body>
 </html>

@@ -1,5 +1,10 @@
 # Seddik Fire
 
+## Nouveautés 2.48 — Radio d’équipe à la voix dans toutes les langues
+- **Correction Android** : l’application n’avait pas de moteur de voix (la vue web d’Android ne parle pas toute seule). Le module officiel `@capacitor-community/text-to-speech` 6 (Capacitor 7) est ajouté, et l’APK déclare le service de synthèse vocale demandé par Android 11 et plus. La radio d’équipe parle maintenant dans l’application.
+- **Langue de la radio** : 11 choix au lieu de 5 — comme le jeu, tunisien, arabe, français, anglais, espagnol, allemand, italien, portugais, turc, russe.
+- Radio réglée sur **voix** par défaut.
+
 ## Nouveautés 2.47 — Soldat Mixamo « Swat » (uniforme bleu)
 - Les soldats 3D utilisent maintenant le personnage Mixamo **Swat** choisi par Wassim : uniforme bleu, gilet tactique « SWAT », casque et lunettes. Mêmes 7 animations (repos, course, tir, rechargement, grenade, mort, danse).
 

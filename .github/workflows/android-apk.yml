@@ -50,6 +50,12 @@ jobs:
         run: npx cap add android
       - name: Sync Android project
         run: npx cap sync android
+      - name: Allow the text-to-speech engine (team radio voice, Android 11+)
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          grep -q 'TTS_SERVICE' "$M" || sed -i 's#</manifest>#    <queries><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries>\n</manifest>#' "$M"
+          grep -n 'TTS_SERVICE' "$M"
+          grep -rn 'text-to-speech\|TextToSpeech' android/capacitor.settings.gradle android/app/capacitor.build.gradle || (echo 'Plugin de synthèse vocale absent' && exit 1)
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon

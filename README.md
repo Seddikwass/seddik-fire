@@ -1,5 +1,11 @@
 # Seddik Fire
 
+## Nouveautés 2.45 — Soldats 3D Mixamo
+- Tous les soldats en partie sont maintenant des **soldats 3D animés avec Mixamo** (personnage Swat Guy), rendus vus de dessus avec three.js : repos en visée, course, tir, rechargement, lancer de grenade, mort (chute réelle) et danse de victoire.
+- L’arme du joueur reste celle du jeu, placée dans les mains du soldat à chaque image. La tenue prend la couleur du héros choisi.
+- Réglage **Soldats 3D Mixamo : oui / non** pour revenir aux soldats dessinés.
+- Planche d’animations : `assets/mixamo/swat.webp` (345 Ko, 136 images). Outils de rendu : `tools/mixamo_threejs/`.
+
 ## Nouveautés 2.44 — Objectif du lobby, « presque ! », records
 - **Sous le bouton Jouer** : points qu’il manque pour le prochain palier du Pass Seddik, missions de la semaine faites (0/3), titre de saison et bonus du week-end.
 - **Fin de partie** : « Nouveau record d’éliminations ! », « Plus que 2 places pour le Top 5 : rejoue ! », « Si près du Top 1 ! » pour donner envie de relancer une partie.

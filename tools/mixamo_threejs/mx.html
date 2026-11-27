@@ -1,0 +1,32 @@
+<!doctype html><html><body style="margin:0;background:transparent">
+<script type="importmap">{"imports":{"three":"./three/build/three.module.js","three/addons/":"./three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {FBXLoader} from 'three/addons/loaders/FBXLoader.js';
+const S=160;
+const R=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});R.setSize(S,S);R.setPixelRatio(1);R.outputColorSpace=THREE.SRGBColorSpace;R.setClearColor(0x000000,0);document.body.appendChild(R.domElement);
+const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xfff2dc,0x6a5a44,3.4));const sun=new THREE.DirectionalLight(0xfff6e8,3.6);sun.position.set(-2,10,-3);sc.add(sun);
+const L=new FBXLoader();
+const ch=await L.loadAsync('pack/Ch15_nonPBR.fbx');
+ch.traverse(o=>{if(o.isMesh){o.frustumCulled=false;const ms=Array.isArray(o.material)?o.material:[o.material];for(const m of ms){if(m.shininess!==undefined)m.shininess=8;if(m.specular)m.specular.setScalar(.08)}}});
+sc.add(ch);
+const box=new THREE.Box3().setFromObject(ch);const H=box.max.y-box.min.y;const M=H/1.8; // unités FBX par mètre
+ch.rotation.y=Math.PI/2; // regarde vers +X (droite de l'image)
+const cam=new THREE.OrthographicCamera(-1,1,1,-1,.1,100000);cam.up.set(0,0,-1);
+const mix=new THREE.AnimationMixer(ch);
+const bone=n=>{let b=null;ch.traverse(o=>{if(!b&&o.name===n)b=o});return b};
+const RH=bone('mixamorigRightHand'),LH=bone('mixamorigLeftHand'),HIP=bone('mixamorigHips');
+const U=48; // unités du jeu par mètre
+window.INFO={H,M,bones:!!(RH&&LH&&HIP)};
+const clips={};
+window.load=async(url,keepRoot)=>{const f=await L.loadAsync(url);const c=f.animations.sort((a,b)=>b.duration-a.duration)[0];
+  if(!keepRoot)for(const t of c.tracks){if(/Hips\.position$/.test(t.name)){const v=t.values;const x0=v[0],z0=v[2];for(let i=0;i<v.length;i+=3){v[i]=x0;v[i+2]=z0}}}
+  clips[url]=c;return [c.name,c.duration]};
+window.frames=(url,n,t0,t1,loop,span)=>{const c=clips[url];mix.stopAllAction();const a=mix.clipAction(c);a.reset().play();
+  const half=span*M;cam.left=-half;cam.right=half;cam.top=half;cam.bottom=-half;cam.position.set(0,box.max.y+4*M,0);cam.lookAt(0,0,0);cam.updateProjectionMatrix();
+  const out=[],hands=[];const v=new THREE.Vector3();
+  for(let i=0;i<n;i++){const t=t0+(t1-t0)*(loop?i/n:i/Math.max(1,n-1));mix.setTime(t);ch.updateMatrixWorld(true);R.render(sc,cam);out.push(R.domElement.toDataURL('image/png'));
+    const p=b=>{b.getWorldPosition(v);return[+(v.x/M*U).toFixed(1),+(v.z/M*U).toFixed(1)]};hands.push([...p(RH),...p(LH)])}
+  return {out,hands}};
+window.READY=true;
+</script></body></html>

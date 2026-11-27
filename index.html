@@ -1708,6 +1708,26 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 .mnew:hover{transform:translateY(-1px);border-color:var(--acc,#ff8a1f)}
 @media (max-height:430px){.mnews{margin-top:6px}.mnew{padding:4px 10px 4px 4px;font-size:11px}#scr-main .nbtn .nico{width:30px;height:30px}}
 @media (max-width:560px){#scr-main .nbtn .nico{width:28px;height:28px;opacity:.4}}
+
+/* V237 — bonus de connexion, événement du week-end, championnats, missions */
+#dbonus{position:fixed;inset:0;z-index:262;display:flex;align-items:center;justify-content:center;background:rgba(3,5,9,.82);backdrop-filter:blur(5px);padding:10px}
+#dbonus.hidden{display:none}
+.db-box{max-width:640px}.db-sub{margin:4px 0 10px;color:#cfd6df;font:600 12.5px var(--fb)}
+.dbgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dbt{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);text-align:center}
+.dbt small{font:800 10px var(--fb);color:#9fb0c4}.dbt i{font-style:normal;font-size:22px}.dbt b{font:800 10.5px var(--fb);color:#ffd27a;line-height:1.2}
+.dbt.past{opacity:.45}.dbt.now{border-color:var(--acc,#ff8a1f);background:color-mix(in srgb,var(--acc,#ff8a1f) 18%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--acc,#ff8a1f) 45%,transparent);transform:scale(1.05)}
+.db-foot{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:12px}.db-got{margin:0;font:800 14px var(--fb);color:#7cf7a0}
+.db-claim{padding:10px 26px;font-size:15px}
+#c-week .wevent{display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:10px;border-radius:12px;background:linear-gradient(110deg,rgba(60,40,140,.55),rgba(14,18,30,.75));border:1px solid rgba(170,140,255,.35)}
+#c-week .wevent div{flex:1;display:flex;flex-direction:column;gap:2px}#c-week .wevent b{font:900 13px 'Chakra Petch',sans-serif;letter-spacing:.04em;color:#e5dcff}
+#c-week .wevent span{font:600 12px var(--fb);color:#d4d9e3}#c-week .wevent em{font-style:normal;font:800 12px var(--fb);color:#ffd27a;white-space:nowrap}
+#c-week .wevent.ok{border-color:rgba(99,219,140,.45)}#c-week .wevent.off{opacity:.7;flex-direction:column;align-items:flex-start;gap:2px}
+.evphase .champ{display:inline-block;margin-inline-end:10px;padding:2px 9px;border-radius:999px;font:900 10.5px 'Chakra Petch',sans-serif;letter-spacing:.06em;color:#0b0f18;background:#9fe3ff}
+.evphase .champ.c1{background:#9ff0b4}.evphase .champ.c2{background:#ffd27a}.evphase .champ.c3{background:#ff9f5a}.evphase .champ.c4{background:#ff6b8a;color:#fff}.evphase .champ.c5{background:linear-gradient(90deg,#c69bff,#ffd27a)}
+em.chp{font-style:normal;font-weight:800;color:var(--acc2,#ffd27a);margin-inline-start:4px}
+.mnew.wk em{background:linear-gradient(90deg,#7a3cff,#c06bff)}
+@media (max-width:620px){.dbgrid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
@@ -1722,7 +1742,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
     <button id="ad-bonus" class="adbonus hidden"><svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg><b>+1 000 $</b></button>
     <button id="lvl-chip" class="lvlchip" aria-label="Niveau"><b id="lvl-n">1</b><span><small id="lvl-rank"></small><i><u id="lvl-bar"></u></i></span></button>
     <div class="money" id="money">$ 0</div>
-    <span id="build-tag" aria-label="Version">V236</span>
+    <span id="build-tag" aria-label="Version">V237</span>
     <button id="btn-install" class="icon hidden" title="Install" aria-label="Install"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button id="btnFs" class="icon" title="Plein écran" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
   </div>
@@ -1737,7 +1757,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
       <button data-go="options" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></i><b data-i18n="options">OPTIONS</b><small data-i18n="optionsSub"></small></button>
       <button data-go="help" class="nbtn"><i class="nico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12a4 4 0 0 1 4 4v1a4 4 0 0 1-7 2.6L14 14h-4l-1 1.6A4 4 0 0 1 2 13v-1a4 4 0 0 1 4-4zM7 11v3M5.5 12.5h3M16 12h.01M18 14h.01"/></svg></i><b data-i18n="help">COMMENT JOUER</b><small data-i18n="helpSub"></small></button>
     </nav>
-    <div class="mnews" id="mnews"><button class="mnew" data-nm="quad"><em>NEW</em><span data-i18n="m_quad">Course de quads</span></button><button class="mnew" data-nm="velo"><em>NEW</em><span data-i18n="m_velo">Course de vélos</span></button><button class="mnew" data-nm="stunt"><em>NEW</em><span data-i18n="st_wh">Roue arrière</span></button></div>
+    <div class="mnews" id="mnews"><button class="mnew wk hidden" data-nm="weekend"><em>LIVE</em><span data-i18n="we_title">Événement du week-end</span></button><button class="mnew" data-nm="quad"><em>NEW</em><span data-i18n="m_quad">Course de quads</span></button><button class="mnew" data-nm="velo"><em>NEW</em><span data-i18n="m_velo">Course de vélos</span></button><button class="mnew" data-nm="stunt"><em>NEW</em><span data-i18n="st_wh">Roue arrière</span></button></div>
     <div class="carline" id="maincar"></div>
   </section>
 
@@ -1779,7 +1799,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 
   <section id="scr-career" class="screen">
     <div class="scr-head"><button class="back" data-go="main" data-i18n="back">‹ RETOUR</button><h1 data-i18n="career">CARRIÈRE</h1></div>
-    <div class="qwrap"><div class="daily" id="c-daily"></div><div class="prog" id="c-prog"></div><div class="evlist" id="c-list"></div></div>
+    <div class="qwrap"><div id="c-week"></div><div class="daily" id="c-daily"></div><div class="prog" id="c-prog"></div><div class="evlist" id="c-list"></div></div>
   </section>
 
   <section id="scr-options" class="screen">
@@ -1843,6 +1863,7 @@ body.sub #btn-install,.native #btn-install{display:none!important}
 <div id="results" class="overlay"><div class="box wide" id="res-body"></div></div>
 <div id="trk-sheet" class="hidden" role="dialog"></div>
 <div id="prog" class="hidden" role="dialog"></div>
+<div id="dbonus" class="hidden" role="dialog"></div>
 <div id="fest" class="hidden" role="dialog" aria-live="polite"><canvas id="fest-cv"></canvas><div class="fest-card" id="fest-card"></div></div>
 <div id="confirm" class="overlay"><div class="box"><p id="cf-text"></p><div class="row"><button id="cf-no" data-i18n="cancel">Annuler</button><button id="cf-yes" class="cta" data-i18n="confirm">CONFIRMER</button></div></div></div>
 <div id="rotate" class="overlay"><div class="rotic"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 40a24 24 0 0 0 20 16M52 24A24 24 0 0 0 36 8" fill="none" stroke="#ff7a18" stroke-width="3"/></svg></div><p data-i18n="rotate">Tourne ton téléphone en mode paysage pour mieux jouer.</p><button id="rot-ok" data-i18n="rotateOk">Continuer quand même</button></div>
@@ -6942,13 +6963,46 @@ for (const l in V200_TXT) { const v = V200_TXT[l]; LANGS[l] = Object.assign(LANG
 // V200 — bonus quotidien : 500 par jour consécutif (jusqu'à 3 500 le 7e jour), remis au premier lancement de la journée
 const DAILY_TXT = { fr: 'Bonus du jour {0} : +{1}', en: 'Daily bonus, day {0}: +{1}', es: 'Bonus diario, día {0}: +{1}', pt: 'Bônus diário, dia {0}: +{1}', de: 'Tagesbonus, Tag {0}: +{1}', it: 'Bonus giornaliero, giorno {0}: +{1}', tr: 'Günlük bonus, {0}. gün: +{1}', ar: 'مكافأة اليوم {0}: +{1}', tn: 'بونيس النهار {0}: +{1}' };
 for (const l in DAILY_TXT) LANGS[l].daily = DAILY_TXT[l];
+// V237 — missions, bonus de connexion 7 jours, événement du week-end, championnats
+const V237_TXT = {"fr": {"ch_fin3": "Termine 3 courses", "ch_win2": "Gagne 2 courses", "ch_clean": "Termine une course sans collision", "ch_night": "Termine une course de nuit", "ch_pass5": "Fais 5 dépassements en une course", "ch_moto": "Termine une course à moto", "ch_velo": "Termine une course à vélo", "ch_quad": "Termine une course en quad", "db_title": "Bonus de connexion", "db_day": "Jour {0}", "db_claim": "Récupérer", "db_chest": "Coffre", "db_big": "Grand coffre", "db_got": "Reçu : {0}", "db_sub": "Reviens chaque jour : la série monte jusqu'au grand coffre du 7e jour.", "we_title": "Événement du week-end", "we_desc": "Course de nuit sur {0} : termine dans le top 3 sans collision.", "we_go": "Participer", "we_done": "Événement réussi ce week-end ✓", "we_win": "Événement du week-end réussi ! +{0} · +{1} XP", "we_fail": "Événement : top 3 sans collision requis. Réessaie !", "we_off": "Prochain événement : vendredi", "champ": ["Championnat Débutant", "Championnat Amateur", "Championnat Professionnel", "Championnat Expert", "Championnat Champion", "Championnat Légende"], "final": "FINALE"}, "en": {"ch_fin3": "Finish 3 races", "ch_win2": "Win 2 races", "ch_clean": "Finish a race without a collision", "ch_night": "Finish a night race", "ch_pass5": "Make 5 overtakes in one race", "ch_moto": "Finish a race on a motorbike", "ch_velo": "Finish a race on a bicycle", "ch_quad": "Finish a race on a quad", "db_title": "Login bonus", "db_day": "Day {0}", "db_claim": "Claim", "db_chest": "Chest", "db_big": "Big chest", "db_got": "Received: {0}", "db_sub": "Come back every day: the streak builds up to the big chest on day 7.", "we_title": "Weekend event", "we_desc": "Night race at {0}: finish top 3 with no collision.", "we_go": "Enter", "we_done": "Event completed this weekend ✓", "we_win": "Weekend event completed! +{0} · +{1} XP", "we_fail": "Event: top 3 with no collision required. Try again!", "we_off": "Next event: Friday", "champ": ["Rookie Championship", "Amateur Championship", "Pro Championship", "Expert Championship", "Champion Championship", "Legend Championship"], "final": "FINAL"}, "ar": {"ch_fin3": "أنهِ 3 سباقات", "ch_win2": "اربح سباقين", "ch_clean": "أنهِ سباقًا دون أي اصطدام", "ch_night": "أنهِ سباقًا ليليًا", "ch_pass5": "قم بخمس تجاوزات في سباق واحد", "ch_moto": "أنهِ سباقًا بدراجة نارية", "ch_velo": "أنهِ سباقًا بدراجة هوائية", "ch_quad": "أنهِ سباقًا بالكواد", "db_title": "مكافأة الدخول", "db_day": "اليوم {0}", "db_claim": "استلام", "db_chest": "صندوق", "db_big": "صندوق كبير", "db_got": "استلمت: {0}", "db_sub": "عُد كل يوم: السلسلة تصل إلى الصندوق الكبير في اليوم السابع.", "we_title": "حدث نهاية الأسبوع", "we_desc": "سباق ليلي في {0}: أنهِ ضمن الثلاثة الأوائل دون اصطدام.", "we_go": "شارك", "we_done": "تم إنجاز حدث هذا الأسبوع ✓", "we_win": "نجحت في حدث نهاية الأسبوع! +{0} · +{1} XP", "we_fail": "الحدث: يجب الإنهاء ضمن الثلاثة الأوائل دون اصطدام. حاول مجددًا!", "we_off": "الحدث القادم: الجمعة", "champ": ["بطولة المبتدئين", "بطولة الهواة", "البطولة الاحترافية", "بطولة الخبراء", "بطولة الأبطال", "بطولة الأساطير"], "final": "النهائي"}, "tn": {"ch_fin3": "كمّل 3 كورسات", "ch_win2": "اربح زوز كورسات", "ch_clean": "كمّل كورسة بلاش ما تضرب", "ch_night": "كمّل كورسة في الليل", "ch_pass5": "فوّت 5 كراهب في كورسة وحدة", "ch_moto": "كمّل كورسة بالموتور", "ch_velo": "كمّل كورسة بالبيسكلات", "ch_quad": "كمّل كورسة بالكواد", "db_title": "كادو الدخول", "db_day": "النهار {0}", "db_claim": "خوذ", "db_chest": "صندوق", "db_big": "صندوق كبير", "db_got": "خذيت: {0}", "db_sub": "ارجع كل نهار: السلسلة توصل للصندوق الكبير في النهار السابع.", "we_title": "إيفنت الويكاند", "we_desc": "كورسة في الليل في {0}: كمّل في التوب 3 بلاش ما تضرب.", "we_go": "شارك", "we_done": "الإيفنت تعمل هالويكاند ✓", "we_win": "ربحت إيفنت الويكاند! +{0} · +{1} XP", "we_fail": "الإيفنت: لازم التوب 3 بلاش ضربة. عاود!", "we_off": "الإيفنت الجاي: نهار الجمعة", "champ": ["بطولة المبتدئين", "بطولة الهواة", "البطولة المحترفة", "بطولة الخبراء", "بطولة الأبطال", "بطولة الأساطير"], "final": "الفينال"}};
+for (const l in V237_TXT) if (LANGS[l]) Object.assign(LANGS[l], V237_TXT[l]);
+const DB_REW = [{ m: 500 }, { m: 800 }, { m: 1000, xp: 300 }, { m: 1500 }, { chest: 1 }, { m: 2500, xp: 400 }, { chest: 2 }];
+function dbRewardText(r) { return [r.m ? money(r.m) : '', r.xp ? '+' + r.xp + ' XP' : ''].filter(Boolean).join(' · '); }
+function openDailyBonus(st) {
+  const el = $('dbonus'); if (!el) return;
+  const idx = (st.n - 1) % 7;
+  const tile = (r, k) => `<div class="dbt ${k < idx ? 'past' : k === idx ? 'now' : ''}"><small>${t('db_day', k + 1)}</small><i>${r.chest === 2 ? '🎁' : r.chest ? '📦' : k < idx ? '✓' : '🪙'}</i><b>${r.chest === 2 ? t('db_big') : r.chest ? t('db_chest') : dbRewardText(r)}</b></div>`;
+  el.innerHTML = `<div class="pg-box db-box"><div class="ts-head"><div><small>🔥 ${st.n}</small><h2>${t('db_title')}</h2></div></div><p class="db-sub">${t('db_sub')}</p><div class="dbgrid">${DB_REW.map(tile).join('')}</div><div class="db-foot"><button class="cta db-claim">${t('db_claim')}</button></div></div>`;
+  el.classList.remove('hidden');
+  el.querySelector('.db-claim').onclick = () => {
+    const base = DB_REW[idx], r = { m: base.m || 0, xp: base.xp || 0 };
+    if (base.chest) { const big = base.chest === 2; r.m = Math.round((big ? 5000 + Math.random() * 4000 : 1500 + Math.random() * 2500) / 100) * 100; r.xp = big ? 600 : 200; }
+    SAVE.money += r.m; let lv = null; if (r.xp) lv = addXP(r.xp); SAVE.daily.claimed = true; saveGame(); UI.updMoney(); try { updLvl(); checkAch(); } catch (e) { }
+    AU.shot(880, 0.08, 'triangle', 0.06); setTimeout(() => AU.shot(1320, 0.1, 'triangle', 0.05), 90);
+    el.querySelector('.db-foot').innerHTML = `<p class="db-got">${t('db_got', dbRewardText(r))}${lv && lv.ups.length ? ' · ⭐ ' + lv.ups[lv.ups.length - 1] : ''}</p><button class="ghost db-ok">OK</button>`;
+    el.querySelector('.db-ok').onclick = () => { el.classList.add('hidden'); el.innerHTML = ''; };
+  };
+}
+// événement du week-end : vendredi, samedi, dimanche ; circuit tunisien différent chaque semaine ; une seule récompense par week-end
+const WE_TRACKS = ['tunis', 'hammamet', 'sousse', 'djerba', 'sfax', 'tozeur_oasis', 'bizerte'], WE_REWARD = 6000, WE_XP = 500;
+function weekendInfo() {
+  const d = new Date(), wd = d.getDay(), on = wd === 5 || wd === 6 || wd === 0;
+  const fri = new Date(d); fri.setDate(d.getDate() - ((wd + 2) % 7)); const key = fri.getFullYear() + '-' + (fri.getMonth() + 1) + '-' + fri.getDate();
+  const wk = Math.floor(fri.getTime() / 6048e5), ti = Math.max(0, TRACKS.findIndex(x => x.id === WE_TRACKS[wk % WE_TRACKS.length]));
+  return { on, key, track: ti, done: SAVE.weDone === key };
+}
+function weekendCfg() { const w = weekendInfo(); return { mode: 'race', track: w.track, laps: 2, opp: 7, diff: 2, traffic: 0, heat: 1, weather: 'night', weekend: w.key }; }
+function weekendHTML() {
+  const w = weekendInfo(); if (!w.on) return `<div class="wevent off"><b>🌙 ${t('we_title')}</b><span>${t('we_off')}</span></div>`;
+  return `<div class="wevent ${w.done ? 'ok' : ''}"><div><b>🌙 ${t('we_title')}</b><span>${w.done ? t('we_done') : t('we_desc', TRACKS[w.track].name)}</span></div>${w.done ? '' : `<em>${money(WE_REWARD)} · ${WE_XP} XP</em><button class="cta we-go">${t('we_go')}</button>`}</div>`;
+}
 function dailyBonus() {
   const day = d => { const x = new Date(d); return x.getFullYear() + '-' + (x.getMonth() + 1) + '-' + x.getDate(); };
   const now = Date.now(), today = day(now), last = SAVE.daily || {};
-  if (last.d === today) return 0;
-  const streak = last.d === day(now - 864e5) ? Math.min(7, (last.n || 0) + 1) : 1, gain = 500 * streak;
-  SAVE.daily = { d: today, n: streak }; SAVE.money += gain; saveGame();
-  return { streak, gain };
+  if (last.d === today) return last.claimed === false ? { streak: last.n, n: last.n, gain: 0 } : 0;
+  const streak = last.d === day(now - 864e5) ? (last.n || 0) + 1 : 1;
+  SAVE.daily = { d: today, n: streak, claimed: false }; saveGame();
+  return { streak, n: streak, gain: 0 };
 }
 // V207 — rôles des pilotes et sous-titres de circuits : versions anglaise et arabe (étaient restés en français)
 const DRV_ROLE = {
@@ -6977,10 +7031,14 @@ const spdL = () => MPH() ? 'mph' : 'km/h';
 // V209 — défis du jour : trois objectifs tirés chaque jour, 1 500 par défi réussi
 const V209_TXT = {"fr": ["Défis du jour", "Gagne une course", "Termine sur le podium", "Sème la police", "Bats le temps cible en contre-la-montre", "Marque 1 500 points de style en une course", "Atteins 220 km/h", "Défi réussi : {0} · +{1}"], "en": ["Daily challenges", "Win a race", "Finish on the podium", "Escape the police", "Beat the target in a time trial", "Score 1,500 style points in one race", "Reach 220 km/h", "Challenge done: {0} · +{1}"], "es": ["Retos del día", "Gana una carrera", "Termina en el podio", "Despista a la policía", "Supera el objetivo en contrarreloj", "Consigue 1.500 puntos de estilo en una carrera", "Alcanza 220 km/h", "Reto superado: {0} · +{1}"], "pt": ["Desafios do dia", "Vença uma corrida", "Termine no pódio", "Despiste a polícia", "Bata a meta no contrarrelógio", "Faça 1.500 pontos de estilo em uma corrida", "Chegue a 220 km/h", "Desafio concluído: {0} · +{1}"], "de": ["Tagesaufgaben", "Gewinne ein Rennen", "Komm aufs Podium", "Häng die Polizei ab", "Schlag die Zielzeit im Zeitfahren", "Hol 1.500 Stilpunkte in einem Rennen", "Erreiche 220 km/h", "Aufgabe geschafft: {0} · +{1}"], "it": ["Sfide del giorno", "Vinci una gara", "Arriva sul podio", "Semina la polizia", "Batti l’obiettivo nella prova a tempo", "Fai 1.500 punti stile in una gara", "Raggiungi 220 km/h", "Sfida completata: {0} · +{1}"], "tr": ["Günün görevleri", "Bir yarış kazan", "Podyumda bitir", "Polisi atlat", "Zamana karşı hedefi geç", "Tek yarışta 1.500 stil puanı topla", "220 km/sa hıza ulaş", "Görev tamam: {0} · +{1}"], "ar": ["تحديات اليوم", "اربح سباقاً", "أنهِ السباق على منصّة التتويج", "اهرب من الشرطة", "حطّم الوقت المستهدف في سباق ضد الساعة", "اجمع 1500 نقطة أسلوب في سباق واحد", "بلغ سرعة 220 كم/س", "تمّ التحدي: {0} · +{1}"], "tn": ["تحدّيات النهار", "اربح سباق", "كمّل في الثلاثة الأوائل", "اهرب من الحاكم", "اضرب الوقت في سباق ضدّ الساعة", "لمّ 1500 نقطة ستيل في سباق واحد", "أوصل 220 كم/س", "التحدّي تعدّى: {0} · +{1}"]};
 for (const l in V209_TXT) { const v = V209_TXT[l]; Object.assign(LANGS[l], { ch_title: v[0], ch_win: v[1], ch_podium: v[2], ch_chase: v[3], ch_tt: v[4], ch_style: v[5], ch_speed: v[6], ch_done: v[7] }); }
-const CH_POOL = ['win', 'podium', 'chase', 'tt', 'style', 'speed'], CH_REWARD = 1500;
+const CH_POOL = ['win', 'podium', 'chase', 'tt', 'style', 'speed', 'fin3', 'win2', 'clean', 'night', 'pass5', 'moto', 'velo', 'quad'], CH_REWARD = 1500;
+const CH_GOAL = { fin3: 3, win2: 2 };   // V237 : missions à progression sur la journée
+const chFin = r => r.mode === 'race' ? !r.dnf && r.pos > 0 : r.mode === 'tt' ? !!r.time : true, chCat = k => r => r.mode === 'race' && G.player && G.player.car && catOf(G.player.car) === k && r.pos > 0;
 const CH_TEST = {
   win: r => r.mode === 'race' && r.pos === 1, podium: r => r.mode === 'race' && r.pos <= 3, chase: r => r.mode === 'chase' && r.success,
   tt: r => r.mode === 'tt' && r.success && !!r.target, style: r => r.style >= 1500, speed: () => (G.topV || 0) * 3.6 >= 220,
+  fin3: r => chFin(r), win2: r => r.mode === 'race' && r.pos === 1, clean: r => r.mode === 'race' && r.pos > 0 && !(G.hitsN > 0), night: r => r.mode === 'race' && r.pos > 0 && !!(G.env && G.env.night),
+  pass5: r => r.mode === 'race' && (G.passN || 0) >= 5, moto: chCat('moto'), velo: chCat('velo'), quad: chCat('quad'),
 };
 function dailyChallenges() {
   const x = new Date(), today = x.getFullYear() + '-' + (x.getMonth() + 1) + '-' + x.getDate();
@@ -6996,7 +7054,8 @@ function dailyCheck(res) {
   let gain = 0;
   try {
     const ch = dailyChallenges();
-    ch.ids.forEach((id, i) => { if (!ch.done[i] && CH_TEST[id] && CH_TEST[id](res)) { ch.done[i] = true; gain += CH_REWARD; const label = t('ch_' + id); setTimeout(() => toast(t('ch_done', label, money(CH_REWARD))), 1800 + i * 2600); } });
+    ch.prog = ch.prog || [0, 0, 0];
+    ch.ids.forEach((id, i) => { if (!ch.done[i] && CH_TEST[id] && CH_TEST[id](res) && (!CH_GOAL[id] || ++ch.prog[i] >= CH_GOAL[id])) { ch.done[i] = true; gain += CH_REWARD; const label = t('ch_' + id); setTimeout(() => toast(t('ch_done', label, money(CH_REWARD))), 1800 + i * 2600); } });
     if (gain) SAVE.money += gain;
   } catch (e) { }
   return gain;
@@ -7553,7 +7612,7 @@ function readInput(dt) {
   const rightDown = !!(KEYS.ArrowRight || KEYS.KeyD || TOUCH.right);
   // Réponse tactile plus franche : les flèches atteignent rapidement leur braquage utile,
   // puis reviennent au centre sans à-coup dès que le doigt est relâché.
-  const steerRise = 20.0, steerReturn = 14.0;
+  const sens = clamp((SAVE.settings.sens || 100) / 100, 0.5, 1.5), steerRise = 20.0 * sens, steerReturn = 12.0 + 4.0 * sens;   // V237 : sensibilité appliquée aux flèches
   if (leftDown && rightDown) {
     // Deux directions simultanées = neutre immédiat, sans cumul parasite.
     TOUCH.leftAmount = 0; TOUCH.rightAmount = 0;
@@ -7689,7 +7748,7 @@ function physPlayer(c, dt, inp) {
       if (imp > 2.5) {
         const px = c.x + A.rx * sg * c.W / 2, pz = c.z + A.rz * sg * c.W / 2;
         for (let k = 0; k < Math.min(25, imp * 2); k++) G.glow.emit(px, c.y + 0.5, pz, c.vx * 0.5 + rnd(-3, 3), rnd(1, 5), c.vz * 0.5 + rnd(-3, 3), rnd(0.2, 0.5), 0.12, 0, 1, 0.6, 0.2, 1, 1.5, 9);
-        if (G.time - c.lastHit > 0.25) { AU.hit(imp); c.lastHit = G.time; buzz(imp); }
+        if (G.time - c.lastHit > 0.25) { AU.hit(imp); c.lastHit = G.time; buzz(imp); if (c === G.player) G.hitsN = (G.hitsN || 0) + 1; }
         G.shake = Math.min(1, G.shake + imp * 0.05); G.hitFx = Math.max(G.hitFx || 0, Math.min(0.7, imp * 0.04));
       }
     }
@@ -7813,7 +7872,7 @@ function collide(a, b) {
     const pl = a.kind === 'player' ? a : b.kind === 'player' ? b : null;
     if (pl) {
       const o = pl === a ? b : a;
-      if (G.time - pl.lastHit > 0.2) { AU.hit(imp); pl.lastHit = G.time; buzz(imp); }
+      if (G.time - pl.lastHit > 0.2) { AU.hit(imp); pl.lastHit = G.time; buzz(imp); if (imp > 2) G.hitsN = (G.hitsN || 0) + 1; }
       o.lastHit = G.time;
       { const mx = (a.x + b.x) / 2, my = Math.max(a.y, b.y) + 0.45, mz = (a.z + b.z) / 2; for (let k = 0; k < Math.min(18, imp * 2); k++) G.glow.emit(mx, my, mz, (a.vx + b.vx) * 0.25 + rnd(-3, 3), rnd(1, 4), (a.vz + b.vz) * 0.25 + rnd(-3, 3), rnd(0.2, 0.45), 0.11, 0, 1, 0.62, 0.22, 1, 1.5, 9); }
       G.shake = Math.min(1, G.shake + imp * 0.06); G.hitFx = Math.max(G.hitFx || 0, Math.min(0.7, imp * 0.045));
@@ -7906,6 +7965,7 @@ function updateGame(dt) {
     }
   }
   try { stuntUpdate(dt, inp, racing); } catch (e) { }
+  if (racing && G.cfg && G.cfg.mode === 'race' && G.raceT > 4 && (G.mrT = (G.mrT || 0) + dt) > 0.3) { G.mrT = 0; const rk = rankOf(p); if (G.mRank && rk < G.mRank) G.passN = (G.passN || 0) + (G.mRank - rk); G.mRank = rk; }   // V237 : dépassements
   // progression du joueur
   if (p.prevS >= 0) { const dS = T.dS(p.prevS, p.s); if (Math.abs(dS) < 30) p.progress += dS; }
   p.prevS = p.s;
@@ -8034,6 +8094,10 @@ function endRace() {
     else res.reward = Math.round(res.reward * 0.3 / 10) * 10;
   }
   res.total = Math.round((res.reward + res.styleBonus) * ((p.perk && p.perk.money) || 1) / 10) * 10;
+  if (cfg.weekend && cfg.weekend === weekendInfo().key && SAVE.weDone !== cfg.weekend) {
+    if (res.mode === 'race' && res.pos > 0 && res.pos <= 3 && !(G.hitsN > 0)) { SAVE.weDone = cfg.weekend; res.total += WE_REWARD; try { addXP(WE_XP); } catch (e) { } setTimeout(() => toast(t('we_win', money(WE_REWARD), WE_XP)), 1400); }
+    else setTimeout(() => toast(t('we_fail')), 1400);
+  }
   res.daily = dailyCheck(res); SAVE.money += res.total; SAVE.stats.races++; if (res.success) SAVE.stats.wins++;
   { // V226 : statistiques détaillées, XP, niveaux et trophées
     const S2 = SAVE.stats, tid = (TRACKS[cfg.track] || {}).id;
@@ -8550,7 +8614,7 @@ function fmtCd(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.fl
    ===================================================================== */
 const $ = id => document.getElementById(id);
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches);
-const GAME_VERSION = 'V236';
+const GAME_VERSION = 'V237';
 const SAVE_KEY = 'superjoud_save_v1';
 const SAVE_BACKUP_KEY = 'superjoud_save_backup_v1';
 // Profils : le premier joueur garde l'emplacement historique (aucune partie existante n'est perdue),
@@ -8747,7 +8811,8 @@ const UI = {
   },
   /* ----- carrière ----- */
   renderCareer() {
-    { const ch = dailyChallenges(); $('c-daily').innerHTML = `<h3>${t('ch_title')} · ${ch.done.filter(Boolean).length}/3</h3><div>` + ch.ids.map((id, i) => `<p class="${ch.done[i] ? 'ok' : ''}"><i>${ch.done[i] ? '✓' : ''}</i><span>${t('ch_' + id)}</span><b>${money(CH_REWARD)}</b></p>`).join('') + '</div>'; }
+    try { $('c-week').innerHTML = weekendHTML(); const wb = $('c-week').querySelector('.we-go'); if (wb) wb.onclick = () => this.startRace(weekendCfg()); } catch (e) { }
+    { const ch = dailyChallenges(); $('c-daily').innerHTML = `<h3>${t('ch_title')} · ${ch.done.filter(Boolean).length}/3</h3><div>` + ch.ids.map((id, i) => `<p class="${ch.done[i] ? 'ok' : ''}"><i>${ch.done[i] ? '✓' : ''}</i><span>${t('ch_' + id)}${CH_GOAL[id] && !ch.done[i] ? ` <em class="chp">${(ch.prog || [])[i] || 0}/${CH_GOAL[id]}</em>` : ''}</span><b>${money(CH_REWARD)}</b></p>`).join('') + '</div>'; }
     const done = SAVE.careerDone.length;
     $('c-prog').innerHTML = `<span>${t('progress')}</span><div class="pb"><i style="transform:scaleX(${done / CAREER.length})"></i></div><span>${done} / ${CAREER.length}</span>`;
     const phaseNames = ['Qualifications','Éliminatoires','Play-offs','Finales','Tournée continentale','Série Élite','Maîtres','Ligue Pro','Légendes','Championnat ultime'];
@@ -8755,7 +8820,8 @@ const UI = {
     $('c-list').innerHTML = CAREER.map((e, i) => {
       const isDone = SAVE.careerDone.includes(i), lock = i > SAVE.career, next = i === SAVE.career, tc = tierCars(e.tier)[0].cls;
       const SEP = LANG === 'ar' || LANG === 'tn' ? '، ' : ', ', meta = modeName(e.mode) + SEP + TRACKS[e.track].name + (e.laps ? SEP + e.laps + ' ' + (e.laps > 1 ? t('lapN') : t('lap1')) : '') + (e.weather === 'rain' ? SEP + t('rainTag') : '');
-      const phase = i % 5 === 0 ? `<h3 class="evphase">${phases[Math.floor(i / 5)]}</h3>` : '';
+      const gi = Math.floor(i / 5), cn = t('champ'), ci = [0, 0, 1, 1, 2, 2, 3, 3, 4, 5][gi] || 0;
+      const phase = i % 5 === 0 ? `<h3 class="evphase"><span class="champ c${ci}">${Array.isArray(cn) ? cn[ci] : ''}</span>${phases[gi]}</h3>` : '';
       return `${phase}<button class="ev ${isDone ? 'done' : ''} ${lock ? 'lock' : ''} ${next ? 'next' : ''}" data-i="${i}" data-track="${e.track}" ${lock ? 'aria-disabled="true"' : ''}><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="st">${isDone ? t('done') : lock ? t('locked') : t('available')}</span><canvas width="240" height="120" aria-hidden="true"></canvas><b>${tEvName(i)}</b><span class="meta">${meta}</span><small>${tEvDesc(i)}</small><div class="rw"><span>${t('advised')} <b class="cls ${tc} mini">${tc}</b></span><em>${money(isDone ? e.reward * 0.3 : e.reward)}</em></div><span class="lvl" title="${t('ev_level', i + 1)}"><em>${t('ev_level', i + 1)}</em>${[1, 2, 3, 4, 5].map(n => `<i class="${n <= Math.ceil(((e.diff || 0) + 1) / 10) ? 'on' : ''}"></i>`).join('')}</span></button>`;
     }).join('');
     $('c-list').querySelectorAll('button.ev').forEach(b => { const i = +b.dataset.i; drawTrackPreview(b.querySelector('canvas'), TRACKS[+b.dataset.track], i === SAVE.career); b.onclick = () => { if (i > SAVE.career) return; this.startRace(evCfg(i)); }; });
@@ -8829,7 +8895,7 @@ const UI = {
     for (const k in st) b.style.setProperty(k, st[k], 'important');   // les règles tactiles du HUD sont en !important
   },
   startRace(cfg) {
-    guardArm();
+    guardArm(); G.hitsN = 0; G.passN = 0; G.mRank = 0;
     if (cfg.tier === undefined) cfg.tier = (CARS.find(k => k.id === SAVE.car) || CARS[0]).tier;
     this.lastCfg = Object.assign({}, cfg);
     $('results').classList.remove('show'); $('pause').classList.remove('show');
@@ -9509,7 +9575,7 @@ function bindInputs() {
   cv.addEventListener('wheel', e => { if (G.state === 'menu') GAR.zoom = clamp(GAR.zoom + e.deltaY * 0.001, 0.7, 1.4); }, { passive: true });
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { AU.shot(700, 0.04, 'sine', 0.05); UI.show(b.dataset.go); }));
   // V236 — raccourcis « nouveautés » du menu principal
-  document.querySelectorAll('#mnews .mnew').forEach(b => b.addEventListener('click', () => { AU.shot(820, 0.04, 'sine', 0.05); const m = b.dataset.nm; if (m === 'stunt') { UI.show('garage'); toast(t('st_help')); } else { UI.show('quick'); UI.q.mode = m; UI.renderQuick(); } }));
+  document.querySelectorAll('#mnews .mnew').forEach(b => b.addEventListener('click', () => { AU.shot(820, 0.04, 'sine', 0.05); const m = b.dataset.nm; if (m === 'weekend') { UI.show('career'); } else if (m === 'stunt') { UI.show('garage'); toast(t('st_help')); } else { UI.show('quick'); UI.q.mode = m; UI.renderQuick(); } }));
   $('m-play').onclick = () => { AU.shot(900, 0.06, 'sine', 0.07); UI.startRace(UI.nextCfg()); };
   $('lang-sel').innerHTML = LANG_LIST.map(([v, l]) => `<option value="${v}">${l}</option>`).join(''); $('lang-sel').value = LANG;
   $('lang-sel').onchange = e => { SAVE.settings.lang = LANG = e.target.value; saveGame(); UI.refresh(); };
@@ -9624,7 +9690,8 @@ function boot() {
   setTimeout(() => $('loading').classList.remove('show'), 350);
   if (safe) setTimeout(() => toast(t('safeMode')), 900);
   try { $('lvl-chip').onclick = () => openProg(); updLvl(); checkAch(); } catch (e) { }
-  try { const db = dailyBonus(); if (db) { UI.updMoney(); setTimeout(() => toast(t('daily', db.streak, money(db.gain))), safe ? 5600 : 1200); } } catch (e) { }
+  try { const w = weekendInfo(), wb = document.querySelector('#mnews .wk'); if (wb) wb.classList.toggle('hidden', !w.on || w.done); } catch (e) { }
+  try { const db = dailyBonus(); if (db) setTimeout(() => openDailyBonus(db), safe ? 5600 : 1600); } catch (e) { }
   BOOT_FRAMES = 0;
   ADS.init();
   requestAnimationFrame(x => { LAST = x; frame(x); });
